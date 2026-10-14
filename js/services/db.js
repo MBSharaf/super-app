@@ -156,6 +156,13 @@
       { id: 'bn-coaching', title: 'Private coaching with CAF-licensed coaches', badge: 'New', cta: '', link: '#/shop?cat=services', image: 'kidsTraining', active: true, order: 3, from: '', to: '' },
     ]);
     ensure('newsPosts', () => []);
+    // Fantasy sponsors (fictional demo companies) and announced winners
+    ensure('sponsors', () => [
+      { id: 'sp-nilefuel', name: 'Nile Fuel Drinks', tier: 'gold', contact: 'partnerships@nilefuel.example', value: 60000, from: SA.core.utils.isoDate(new Date(Date.now() - 40 * DAY)), to: SA.core.utils.isoDate(new Date(Date.now() + 140 * DAY)), color: '#0B6E4F', note: 'Grand League prizes and the derby trip' },
+      { id: 'sp-deltakits', name: 'Delta Kits', tier: 'silver', contact: 'hello@deltakits.example', value: 25000, from: SA.core.utils.isoDate(new Date(Date.now() - 20 * DAY)), to: SA.core.utils.isoDate(new Date(Date.now() + 70 * DAY)), color: '#2459D6', note: 'Signed shirts every gameweek' },
+    ]);
+    ensure('fantasyWinners', () => []);
+    if (!data.settings.fantasyLeagues) { data.settings.fantasyLeagues = { 'ol-grand': { sponsorId: 'sp-nilefuel' }, 'ol-derby': { sponsorId: 'sp-nilefuel' }, 'ol-weekly': { sponsorId: 'sp-deltakits' } }; changed = true; }
     if (!data.settings.announcement) { data.settings.announcement = { on: false, text: '', link: '', cta: '', tone: 'info', until: '', v: 0 }; changed = true; }
     if (!data.settings.adminSeed) {
       // A few withdrawal requests so the admin console has something to approve (demo)

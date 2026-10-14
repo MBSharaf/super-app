@@ -153,6 +153,20 @@
     'Write a headline (10+ characters).': 'اكتب عنوان (10 حروف أو أكتر).', 'Choose a category.': 'اختار القسم.', 'Write a short summary (20+ characters).': 'اكتب ملخص قصير (20 حرف أو أكتر).', 'Write the story (60+ characters; empty lines start a new paragraph).': 'اكتب الخبر (60 حرف أو أكتر؛ السطر الفاضي بيبدأ فقرة جديدة).',
     'Up to 20% off turf and FG boots': 'خصم لحد 20% على أحذية النجيل والـFG', 'Boots week': 'أسبوع الأحذية', 'Shop boots': 'تسوّق الأحذية', 'Weekday mornings': 'صباحات أيام الأسبوع', 'Pitches from 500 EGP an hour before 4 PM': 'ملاعب من 500 جنيه في الساعة قبل 4 العصر',
     'Private coaching with CAF-licensed coaches': 'تدريب خاص مع مدربين معتمدين من الكاف', 'Super App': 'Super App',
+    /* ---------- Fantasy ---------- */
+    'Prize leagues': 'دوريات الجوايز', 'Sponsors': 'الرعاة', 'Winners': 'الفايزين', 'Free': 'مجاني', 'Pass': 'Pass', 'Sponsor': 'الراعي', '1st prize': 'الجايزة الأولى', 'Managers': 'المدربين', 'Announce winners': 'أعلن الفايزين',
+    'Prizes from': 'الجوايز من', 'Description': 'الوصف', 'No sponsor': 'من غير راعي', 'Max managers (0 = no cap)': 'أقصى عدد مدربين (0 = مفتوح)', 'Prizes worth (EGP)': 'قيمة الجوايز (جنيه)', 'Hide from the site': 'اخفيه من الموقع',
+    'Places: 1st, 2nd, 4th – 10th, Top 100. Vouchers like “500 EGP shop voucher” or “25% off one booking” become single-use codes when you announce winners. No cash prizes.': 'المراكز: 1st و2nd و4th – 10th وTop 100. القسايم زي “500 EGP shop voucher” أو “25% off one booking” بتتحول لأكواد استخدام واحد لما تعلن الفايزين. مفيش جوايز فلوس.',
+    'Save league': 'احفظ الدوري', 'League saved': 'الدوري اتحفظ', 'New sponsor': 'راعي جديد', 'Sponsors provide the prizes — Super App never pays cash prizes.': 'الرعاة بيقدموا الجوايز — Super App مش بتدفع جوايز فلوس أبداً.', 'Name': 'الاسم', 'Tier': 'الفئة',
+    'Deal value (EGP)': 'قيمة الاتفاق (جنيه)', 'Until': 'لحد', 'Contact': 'التواصل', 'email or phone': 'إيميل أو تليفون', 'Colour': 'اللون', 'Save sponsor': 'احفظ الراعي', 'Sponsor saved': 'الراعي اتحفظ', 'Gold': 'ذهبي', 'Silver': 'فضي',
+    'Leagues': 'الدوريات', 'Deal': 'الاتفاق', 'No sponsors yet.': 'مفيش رعاة لسه.', 'Rank': 'المركز', 'Manager': 'المدرب', 'Prize': 'الجايزة', 'Voucher code': 'كود القسيمة', 'Delivery': 'التسليم', 'Code sent': 'الكود اتبعت', 'Delivered': 'اتسلّم',
+    'Mark delivered': 'اتسلّم', 'No winners announced yet': 'مفيش فايزين اتعلنوا لسه', 'Announce winners from the Leagues tab when a round or a competition ends.': 'أعلن الفايزين من تبويب الدوريات لما جولة أو مسابقة تخلص.', 'Fantasy Pass — last 30 days': 'Fantasy Pass — آخر 30 يوم',
+    'Chose both': 'اختاروا الاتنين', 'Prices': 'الأسعار', 'One league / month': 'دوري واحد / شهر', 'Both leagues / month': 'الدوريين / شهر', 'Pro sellers': 'بايعين Pro', 'Elite sellers': 'بايعين Elite', 'Change prices': 'غيّر الأسعار',
+    'Prize leagues give sponsor prizes and vouchers only — no cash prizes and no entry fees.': 'دوريات الجوايز فيها جوايز رعاة وقسايم بس — مفيش جوايز فلوس ولا رسوم دخول.', 'Latest passes': 'آخر الاشتراكات', 'Plan': 'الخطة', 'Paid': 'اتدفع',
+    'Active sponsors': 'رعاة نشطين', 'Passes (30 days)': 'اشتراكات (30 يوم)', 'Prizes to deliver': 'جوايز محتاجة تتسلّم',
+    'Prize leagues, sponsors, winners and Fantasy Pass subscribers — Egyptian league and Premier League': 'دوريات الجوايز والرعاة والفايزين ومشتركين Fantasy Pass — الدوري المصري والإنجليزي',
+    'The top of the table gets the prizes. Vouchers become single-use codes; other prizes are listed for delivery. Winners on this device are notified.': 'أول الجدول بياخدوا الجوايز. القسايم بتبقى أكواد استخدام واحد؛ والجوايز التانية بتتسجل للتسليم. الفايزين على الجهاز ده بيوصلهم إشعار.',
+    'Winners announced': 'الفايزين اتعلنوا', 'Their leagues show no sponsor until you pick another one.': 'دورياتهم هتبقى من غير راعي لحد ما تختار واحد تاني.', 'Remove': 'شيل', 'Sponsor removed': 'الراعي اتشال', 'Marked as delivered': 'اتسجل إنه اتسلّم',
     /* Shared */
     'Reason': 'السبب', 'Write a short reason (it’s saved in the audit log).': 'اكتب سبب قصير (بيتسجل في سجل العمليات).', 'Open their dashboard': 'افتح لوحتهم',
   });
@@ -178,6 +192,6 @@
     ['^Super App replied · (TK-\\d+)$', 'Super App ردت · {1}'], ['^Your request was resolved · (TK-\\d+)$', 'طلبك اتحل · {1}'], ['^(.+) EGP refund sent · (TK-\\d+)$', 'اترجّع {1} جنيه · {2}'],
     ['^Refund of (.+) EGP sent to the customer(.*)\\.$', 'اترجّع {1} جنيه للعميل{2}.'],
     ['^Reaches (\\d+) partner accounts?\\.$', 'بتوصل لـ{1} حساب شريك.'], ['^Reaches (\\d+) partner accounts? and (\\d+) customers\\.$', 'بتوصل لـ{1} حساب شريك و{2} عميل.'], ['^It goes to (\\d+) people right away\\.$', 'هتوصل لـ{1} شخص حالاً.'],
-    ['^Edit (.+)$', 'تعديل {1}'], ['^On the home page · #(\d)$', 'في الرئيسية · #{1}'], ['^(.+) game$', 'ماتش {1}'], ['^Delete (.+)\\?$', 'تمسح {1}؟'], ['^min (.+)$', 'أقل حاجة {1}'], ['^(.+) – no end$', '{1} – مفتوح'], ['^(\\d+) active$', '{1} نشط'],
+    ['^Edit (.+)$', 'تعديل {1}'], ['^Announce winners of (.+)\?$', 'تعلن الفايزين في {1}؟'], ['^Remove (.+)\?$', 'تشيل {1}؟'], ['^You won in (.+)!$', 'كسبت في {1}!'], ['^(.+) · GW(\d+)$', '{1} · الجولة {2}'], ['^On the home page · #(\d)$', 'في الرئيسية · #{1}'], ['^(5-a-side|7-a-side|11-a-side|Pickup) game$', 'ماتش {1}'], ['^Delete (.+)\\?$', 'تمسح {1}؟'], ['^min (.+)$', 'أقل حاجة {1}'], ['^(.+) – no end$', '{1} – مفتوح'], ['^(\\d+) active$', '{1} نشط'],
   );
 })(window.SA);

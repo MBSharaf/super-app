@@ -22,6 +22,10 @@
   };
   index();
   const POS = ['GK', 'DEF', 'MID', 'FWD'];
+  /** Prize leagues with the admin's edits (prizes, blurb, cap, sponsor, hidden) */
+  const sponsorOf = (id) => (SA.services.db?.all('sponsors') || []).find((s) => s.id === id) || null;
+  const editLeague = (l) => { const e = SA.services.db?.settings().fantasyLeagues?.[l.id] || {}; const m = { ...l, ...e }; return { ...m, sponsor: sponsorOf(m.sponsorId) }; };
+  const OL = (lg) => (lg ? LEAGUES[lg] : D).officialLeagues.map(editLeague).filter((l) => !l.hidden);
 
   const fstate = () => store.get()[STATE_KEY[league()]] || blank();
   const setF = (patch) => store.set((s) => { const k = STATE_KEY[league()]; const cur = s[k] || blank(); return { [k]: { ...cur, ...(typeof patch === 'function' ? patch(cur) : patch) } }; }, 'fantasy');
@@ -151,6 +155,7 @@
   // ---------- Public API ----------
   const fantasyService = {
     get byId() { return byId; }, get teamById() { return teamById; }, get D() { return D; },
+    allOfficial: (lg) => (lg ? LEAGUES[lg] : D).officialLeagues.map(editLeague), sponsorOf, LEAGUES,
     posName, formationOf, validXI, validateSquad, cost, counts, teamCounts,
     /* Leagues to play */
     leagues: () => Object.values(LEAGUES).map((l) => ({ key: l.key, label: l.label, short: l.short, hasTeam: !!(store.get()[STATE_KEY[l.key]] || {}).team })),
@@ -332,7 +337,7 @@
     // ---------- Leagues ----------
     officialLeagues: () => {
       const joined = fstate().joinedLeagues || [];
-      return D.officialLeagues.map((l) => ({ ...l, joined: l.kind === 'official' ? !!fstate().team : joined.includes(l.id), participants: l.participants + (joined.includes(l.id) ? 1 : 0) }));
+      return OL().map((l) => ({ ...l, joined: l.kind === 'official' ? !!fstate().team : joined.includes(l.id), participants: l.participants + (joined.includes(l.id) ? 1 : 0) }));
     },
     privateGroups: () => {
       const f = fstate();
@@ -341,7 +346,7 @@
       return [...(f.createdGroups || []), ...seedGroups];
     },
     group(id) {
-      const g = fantasyService.privateGroups().find((x) => x.id === id) || D.officialLeagues.find((x) => x.id === id);
+      const g = fantasyService.privateGroups().find((x) => x.id === id) || OL().find((x) => x.id === id);
       if (!g) return null;
       return { ...g, standings: fantasyService.standings(g) };
     },
@@ -393,7 +398,7 @@
     },
     /** Enter a prize league: free with an active Fantasy Pass for this league (no entry fees, no cash prizes) */
     async joinOfficial(id) {
-      const l = D.officialLeagues.find((x) => x.id === id);
+      const l = OL().find((x) => x.id === id);
       if (!l) throw new ApiError('League not found.', 'not_found');
       if (!fstate().team) throw new ApiError('Create your fantasy team before entering a league.', 'no_team');
       if ((fstate().joinedLeagues || []).includes(id)) throw new ApiError('You’ve already entered this league.', 'already');

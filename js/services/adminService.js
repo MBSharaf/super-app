@@ -474,6 +474,88 @@
       db().setSettings({ hiddenMatches: h });
       log(h[id] ? 'match.hidden' : 'match.restored', `${h[id] ? 'Hid' : 'Restored'} pickup game ${id}${reason ? `: ${reason.trim()}` : ''}`, id);
     },
+    /* ---------- Fantasy: sponsors, leagues, winners ---------- */
+    saveSponsor(d, id = null) {
+      me();
+      const e = {};
+      if (!d.name || d.name.trim().length < 2) e.name = 'Enter the sponsor’s name.';
+      if (d.value !== '' && d.value != null && !(+d.value >= 0)) e.value = 'Enter 0 or more.';
+      if (d.to && d.from && d.to < d.from) e.to = 'End on or after the start date.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const rec = { name: d.name.trim(), tier: ['gold', 'silver', 'partner'].includes(d.tier) ? d.tier : 'partner', contact: (d.contact || '').trim(), value: Math.round(+d.value || 0), from: d.from || '', to: d.to || '', color: d.color || '#0B6E4F', note: (d.note || '').trim() };
+      const out = id ? db().update('sponsors', id, rec) : db().insert('sponsors', rec, 'sp');
+      log(id ? 'sponsor.updated' : 'sponsor.added', `${id ? 'Updated' : 'Added'} fantasy sponsor ${out.name}`, out.id);
+      return out;
+    },
+    deleteSponsor(id) {
+      me();
+      const s = db().find('sponsors', id);
+      const fl = { ...(db().settings().fantasyLeagues || {}) };
+      Object.keys(fl).forEach((k) => { if (fl[k].sponsorId === id) fl[k] = { ...fl[k], sponsorId: '' }; });
+      db().setSettings({ fantasyLeagues: fl });
+      db().remove('sponsors', id);
+      log('sponsor.removed', `Removed fantasy sponsor ${s.name}`, id);
+    },
+    /** Edit a prize league: blurb, cap, sponsor, prizes ("1st | Signed kit" per line), hidden */
+    saveLeague(id, d) {
+      me();
+      const prizes = String(d.prizes || '').split('\n').map((l) => l.split('|').map((x) => x.trim())).filter(([a, b]) => a && b);
+      if (!prizes.length) throw new ApiError('Add at least one prize, like “1st | Signed kit”.', 'invalid', { prizes: 'Add prizes' });
+      if (d.cap !== '' && d.cap != null && !(+d.cap >= 0)) throw new ApiError('Enter 0 (no cap) or more.', 'invalid', { cap: 'Invalid' });
+      const fl = { ...(db().settings().fantasyLeagues || {}) };
+      fl[id] = { ...(fl[id] || {}), blurb: (d.blurb || '').trim(), cap: d.cap === '' || +d.cap === 0 ? undefined : Math.round(+d.cap), sponsorId: d.sponsorId || '', prizes, prizeValue: Math.round(+d.prizeValue || 0) || undefined, hidden: !!d.hidden && d.hidden !== 'off' };
+      if (!fl[id].blurb) delete fl[id].blurb;
+      db().setSettings({ fantasyLeagues: fl });
+      log('fantasy.league', `Updated prize league ${id}: ${prizes.length} prize line${prizes.length > 1 ? 's' : ''}${fl[id].hidden ? ' (hidden)' : ''}`, id);
+    },
+    /** Prize for a rank from labels like "1st", "4th – 10th", "Top 100", "11th – 100th" */
+    prizeFor(prizes, rank) {
+      for (const [label, prize] of prizes) {
+        const one = label.match(/^(\d+)(?:st|nd|rd|th)$/i); if (one && +one[1] === rank) return prize;
+        const rng = label.match(/^(\d+)(?:st|nd|rd|th)?\s*[–-]\s*(\d+)(?:st|nd|rd|th)?$/i); if (rng && rank >= +rng[1] && rank <= +rng[2]) return prize;
+        const top = label.match(/^top\s+(\d+)$/i); if (top && rank <= +top[1]) return prize;
+      }
+      return null;
+    },
+    /** Close a round: winners from the league table get their prize; vouchers become single-use Super App codes */
+    announceWinners(leagueId, lg) {
+      me();
+      const F = SA.services.fantasy;
+      const prev = F.league();
+      if (lg && lg !== prev) F.use(lg);
+      try {
+        const l = F.allOfficial().find((x) => x.id === leagueId);
+        if (!l) throw new ApiError('League not found.', 'not_found');
+        const meta = F.meta();
+        const table = F.standings(l).filter((r) => r.rank <= 10);
+        const rows = table.map((r) => {
+          const prize = admin.prizeFor(l.prizes, r.rank);
+          if (!prize) return null;
+          let code = '';
+          const egp = prize.match(/([\d,]+)\s*EGP[^.]*voucher/i), pct = prize.match(/(\d+)%\s*(?:shop\s+)?(?:discount|off)/i);
+          if (egp || pct) {
+            const booking = /booking|pitch/i.test(prize);
+            code = `WIN-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+            db().insert('codes', { code, kind: 'platform', ownerId: me().id, storeId: null, pitchIds: [], scope: booking ? 'bookings' : 'shop', type: egp ? 'fixed' : 'percent', value: egp ? +egp[1].replace(/,/g, '') : +pct[1], min: 0, maxUses: 1, perCustomer: 1,
+              from: isoDate(today()), to: isoDate(addDays(today(), 60)), label: `${l.name} prize`, note: `Fantasy prize — ${r.name}, rank ${r.rank}`, status: 'active', uses: 0, discountGiven: 0, revenue: 0, usedBy: [] }, 'cd');
+          }
+          return { rank: r.rank, name: r.name, team: r.team, total: r.total, prize, code, delivered: !!code, isMe: !!r.isMe };
+        }).filter(Boolean);
+        if (!rows.length) throw new ApiError('No prize matches the top of the table.', 'invalid');
+        const w = db().insert('fantasyWinners', { leagueId, league: l.name, lg: lg || prev, gw: Math.max(1, meta.gw - 1), at: Date.now(), sponsor: l.sponsor?.name || '', rows, by: me().name }, 'fw');
+        const mine = rows.find((r) => r.isMe);
+        if (mine) SA.services.user.notify({ kind: 'fantasy', title: `You won in ${l.name}!`, body: `Rank ${mine.rank}: ${mine.prize}.${mine.code ? ` Your code: ${mine.code}` : ' The Super App team will contact you to deliver it.'}`, link: '/fantasy/leagues' });
+        log('fantasy.winners', `Announced ${rows.length} winner${rows.length > 1 ? 's' : ''} in ${l.name} (GW${w.gw})`, w.id);
+        return w;
+      } finally { if (lg && lg !== prev) F.use(prev); }
+    },
+    markPrizeDelivered(winId, i) {
+      me();
+      const w = db().find('fantasyWinners', winId); if (!w) throw new ApiError('Not found.', 'not_found');
+      const rows = w.rows.map((r, k) => (k === i ? { ...r, delivered: true, deliveredAt: Date.now() } : r));
+      db().update('fantasyWinners', winId, { rows });
+      log('fantasy.prize-delivered', `Marked prize delivered: ${w.rows[i].name} — ${w.rows[i].prize} (${w.league})`, winId);
+    },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,

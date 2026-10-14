@@ -54,7 +54,7 @@ Agreed with the user on 2026-10-15.
   - support tickets and disputes, plus "Get help" on the site's order and booking pages.
 - [x] 5. Marketing: broadcast notifications, platform promo codes (with site checkout integration).
 - [x] 6. Content: home banners, the announcement bar, news (write, edit, hide, breaking), pickup-game moderation.
-- [ ] 7. Fantasy: sponsors, league prizes, announcing winners with vouchers, pass subscribers.
+- [x] 7. Fantasy: sponsors, league prizes, announcing winners with vouchers, pass subscribers.
 - [ ] 8. Part 4:
   - monthly level review with a grace month;
   - samples (seller, admin and print queue);

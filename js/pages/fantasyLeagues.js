@@ -14,6 +14,7 @@
         <div class="row wrap" style="--gap:6px">${l.kind === 'official' ? '<span class="badge badge-glass">Free · Official</span>' : `<span class="badge badge-glass">${icon('crown', 12, 2)} Fantasy Pass</span>`}<span class="badge badge-glass">${esc(l.scope)}</span></div>
         <h3 class="h3" style="margin-top:14px">${esc(l.name)}</h3>
         <p class="small lc-dim">${esc(l.blurb)}</p>
+        ${l.sponsor ? `<p class="xs lc-dim lc-sponsor">${icon('sparkle', 12)} Prizes from <b>${esc(l.sponsor.name)}</b></p>` : ''}
       </div>
       <div class="lc-figs">
         <div><span class="xs lc-dim">1st prize</span><b class="small lc-prize">${esc(l.prizes[0][1])}</b></div>
