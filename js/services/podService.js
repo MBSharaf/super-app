@@ -312,8 +312,11 @@
       const pending = os.filter((o) => ['received', 'printing', 'shipped'].includes(o.status)).concat(delivered.filter((o) => now - o.deliveredAt < hold));
       const paidOut = db().all('sellerPayouts').filter((p) => p.sellerId === sellerId && p.status !== 'rejected').reduce((t, p) => t + p.amount, 0);
       const history = (s?.history?.profit || 0); // earned (and already paid) before the recent ledger
+      // Admin adjustments (refund shares, sample charges, corrections) on the seller's account
+      const adjustments = (db().all('adjustments') || []).filter((x) => x.accountId === s?.accountId && x.wallet === 'pod');
+      const adjusted = adjustments.reduce((t, x) => t + x.amount, 0);
       return {
-        pending: sum(pending), available: Math.max(0, sum(cleared) - paidOut), lifetime: history + sum(delivered), paidOut,
+        pending: sum(pending), available: Math.max(0, sum(cleared) - paidOut + adjusted), lifetime: history + sum(delivered), paidOut, adjustments, adjusted,
         nextClear: delivered.filter((o) => now - o.deliveredAt < hold).map((o) => ({ id: o.id, amount: o.profit, at: o.deliveredAt + hold })).sort((a, b) => a.at - b.at),
         minWithdraw: cfg().minWithdraw,
       };

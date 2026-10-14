@@ -119,8 +119,95 @@
       .map((x) => ({ ...x, kind: actorKind(x), actorName: x.actor === 'customer' ? 'Customer' : db().find('accounts', x.actor)?.name || 'System' }));
   };
 
+  /* ======================= Withdrawals ======================= */
+  const N = () => SA.services.notify;
+  /** Partner withdrawals (payouts) and seller withdrawals (sellerPayouts) in one shape */
+  const allPayouts = () => {
+    const acc = (id) => db().find('accounts', id);
+    const partner = db().all('payouts').map((p) => ({ ...p, kind: acc(p.accountId)?.role === 'printer' ? 'printer' : 'partner', account: acc(p.accountId) }));
+    const seller = (db().all('sellerPayouts') || []).map((p) => { const s = db().find('sellers', p.sellerId); return { ...p, kind: 'seller', seller: s, accountId: s?.accountId, account: acc(s?.accountId) }; });
+    return [...partner, ...seller].map((p) => ({ ...p, name: p.account?.name || 'Unknown', company: p.seller?.name || p.account?.company || '' })).sort((a, b) => b.createdAt - a.createdAt);
+  };
+  /** Things to check before sending money */
+  const checks = (p) => {
+    const out = [];
+    if (p.account?.status === 'suspended') out.push(['danger', 'Account suspended']);
+    if (p.kind === 'seller') {
+      if (p.seller?.kyc !== 'verified') out.push(['danger', 'ID not verified']);
+      if (p.seller?.status === 'suspended') out.push(['danger', 'Seller suspended']);
+      if ((p.seller?.strikes || []).length) out.push(['gold', `${p.seller.strikes.length} copyright strike${p.seller.strikes.length > 1 ? 's' : ''}`]);
+    }
+    const open = (db().all('tickets') || []).filter((t) => t.status !== 'resolved' && t.against === p.accountId).length;
+    if (open) out.push(['gold', `${open} open dispute${open > 1 ? 's' : ''}`]);
+    if (!p.detail || p.detail === '—') out.push(['danger', 'No payout account']);
+    return out;
+  };
+  const setPayout = (p, patch) => (p.kind === 'seller' ? db().update('sellerPayouts', p.id, patch) : db().update('payouts', p.id, patch));
+  const findPayout = (id) => { const p = allPayouts().find((x) => x.id === id); if (!p) throw new ApiError('Withdrawal not found.', 'not_found'); return p; };
+
+  /** What Super App owes the print partner: partner cost of every item it printed, minus settlements already paid */
+  const printerAccount = () => db().all('accounts').find((a) => a.role === 'printer');
+  const printerOwed = () => {
+    const pr = printerAccount();
+    // Demo history: older seeded items count as already settled; the last two weeks are still owed
+    const done = (db().all('podOrders') || []).filter((o) => ['shipped', 'delivered', 'refused'].includes(o.status) && (!o.seed || o.placedAt > Date.now() - 14 * DAY));
+    const earned = sumBy(done, (o) => o.partnerCost * (o.qty || 1));
+    const paid = sumBy(db().all('payouts').filter((p) => p.accountId === pr?.id && p.status !== 'rejected'), (p) => p.amount);
+    return { account: pr, items: done.length, earned: Math.round(earned), paid: Math.round(paid), owed: Math.max(0, Math.round(earned - paid)), orders: done };
+  };
+
   const admin = {
     me, log, alerts, revenue, passSales, audit, actorKind, STREAMS, COSTS,
+    payouts: allPayouts, checks, printerOwed,
+    pendingPayouts: () => allPayouts().filter((p) => p.status === 'processing'),
+    approvePayout(id, { ref = '' } = {}) {
+      me();
+      const p = findPayout(id);
+      if (p.status !== 'processing') throw new ApiError('This withdrawal was already handled.', 'invalid');
+      const hard = checks(p).filter(([t]) => t === 'danger');
+      if (hard.length) throw new ApiError(`Can’t send it yet: ${hard.map(([, l]) => l.toLowerCase()).join(', ')}.`, 'invalid');
+      setPayout(p, { status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id });
+      log('payout.approved', `Approved ${p.amount.toLocaleString()} EGP withdrawal for ${p.company || p.name} via ${p.method}`, p.id);
+      N()?.toAccount(p.accountId, { cat: 'money', tone: 'turf', title: `${p.amount.toLocaleString()} EGP sent`, body: `To ${p.method} ${p.detail}. It usually arrives within 1–2 working days.`, link: p.kind === 'seller' ? '#/dash/seller/wallet' : '#/dash/wallet' });
+    },
+    rejectPayout(id, reason) {
+      me();
+      const p = findPayout(id);
+      if (p.status !== 'processing') throw new ApiError('This withdrawal was already handled.', 'invalid');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason — the partner sees it.', 'invalid');
+      setPayout(p, { status: 'rejected', reason: reason.trim(), rejectedAt: Date.now(), by: me().id });
+      log('payout.rejected', `Rejected ${p.amount.toLocaleString()} EGP withdrawal for ${p.company || p.name}: ${reason.trim()}`, p.id);
+      N()?.toAccount(p.accountId, { cat: 'money', tone: 'danger', title: `Withdrawal not sent: ${p.amount.toLocaleString()} EGP`, body: `${reason.trim()} The money is back in your available balance.`, link: p.kind === 'seller' ? '#/dash/seller/wallet' : '#/dash/wallet' });
+    },
+    /** Pay the print partner what it is owed (one transfer) */
+    settlePrinter({ amount, ref = '' } = {}) {
+      me();
+      const o = printerOwed();
+      const amt = Math.round(+amount || o.owed);
+      if (!o.account) throw new ApiError('No print partner account.', 'not_found');
+      if (!(amt > 0 && amt <= o.owed)) throw new ApiError(`Enter up to ${o.owed.toLocaleString()} EGP.`, 'invalid');
+      const p = db().insert('payouts', { accountId: o.account.id, amount: amt, method: o.account.payout?.method || 'Bank transfer', detail: o.account.payout?.detail || 'Print partner account', status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id, settlement: true }, 'PO');
+      log('printer.settled', `Paid the print partner ${amt.toLocaleString()} EGP for printed items`, p.id);
+      N()?.toAccount(o.account.id, { cat: 'account', tone: 'turf', title: `Settlement sent: ${amt.toLocaleString()} EGP`, body: 'Payment for printed and shipped items.', link: '#/dash/print' });
+      return p;
+    },
+    /** Credit (+) or debit (−) a partner's or seller's balance, with a reason they can see */
+    adjust({ accountId, amount, reason, kind = 'manual', ref = '' }) {
+      me();
+      const a = db().find('accounts', accountId);
+      const amt = Math.round(+amount);
+      if (!a || a.role === 'admin') throw new ApiError('Choose a partner or seller.', 'invalid');
+      if (!amt || Math.abs(amt) > 100000) throw new ApiError('Enter an amount between −100,000 and 100,000 EGP (not 0).', 'invalid');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason — they see it in their wallet.', 'invalid');
+      // Sellers with print-on-demand: their print wallet; pitch owners and store-only sellers: the partner wallet
+      const sl = SA.services.sellers?.byAccount(accountId);
+      const wallet = sl && sl.mode !== 'store' ? 'pod' : 'store';
+      const x = db().insert('adjustments', { accountId, amount: amt, reason: reason.trim(), kind, ref, wallet, at: Date.now(), by: me().id }, 'adj');
+      log('balance.adjusted', `${amt > 0 ? 'Credited' : 'Debited'} ${Math.abs(amt).toLocaleString()} EGP ${amt > 0 ? 'to' : 'from'} ${a.company || a.name}: ${reason.trim()}`, x.id);
+      N()?.toAccount(accountId, { cat: 'money', tone: amt > 0 ? 'turf' : 'gold', title: `${amt > 0 ? '+' : '−'}${Math.abs(amt).toLocaleString()} EGP balance ${amt > 0 ? 'credit' : 'adjustment'}`, body: reason.trim(), link: wallet === 'pod' ? '#/dash/seller/wallet' : '#/dash/wallet' });
+      return x;
+    },
+    adjustments: () => (db().all('adjustments') || []).map((x) => ({ ...x, account: db().find('accounts', x.accountId) })).sort((a, b) => b.at - a.at),
     /** Called by the Fantasy Pass checkout on the site */
     recordPass({ plan, amount, customer }) {
       if (!db().all('passSales')) return;

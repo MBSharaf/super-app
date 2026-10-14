@@ -23,6 +23,14 @@
     <div class="legend xs">${streams.map(([, l, tone]) => `<span><i style="background:${TONE[tone]}"></i>${l}</span>`).join('')}</div>`;
   };
 
+  /** Hover tooltip for the revenue chart */
+  const bindRevChart = (el) => el.querySelectorAll('.adm-chart').forEach((ch) => {
+    const tip = document.createElement('div'); tip.className = 'bc-tip'; tip.hidden = true; ch.appendChild(tip);
+    ch.addEventListener('pointermove', (e) => { const c = e.target.closest('.adm-col'); if (!c) { tip.hidden = true; return; } const r = ch.getBoundingClientRect(); tip.textContent = c.dataset.tip; tip.hidden = false; tip.style.left = `${Math.min(r.width - 200, Math.max(0, e.clientX - r.left - 100))}px`; });
+    ch.addEventListener('pointerleave', () => (tip.hidden = true));
+  });
+  Object.assign(A, { revChart, bindRevChart, TONE });
+
   SA.pages.adminOverview = A.guard({
     title: 'Overview — Super App Admin',
     render() {
@@ -65,13 +73,7 @@
           <ol class="activity" style="margin-top:10px">${recent.map((x, i) => `<li style="--i:${i}"><span class="ac-ico">${icon(x.kind === 'admin' ? 'shield' : x.kind === 'seller' ? 'shirt' : x.kind === 'customer' ? 'user' : 'clock', 15)}</span><span class="grow"><b class="small">${esc(x.text)}</b><span class="xs muted" style="display:block">${esc(x.actorName)} · ${timeAgo(x.at)}</span></span></li>`).join('')}</ol></section>`;
       return C.layout('overview', { title: 'Overview', subtitle: `Super App platform · ${fmtDate(from)} – ${fmtDate(to)}`, body });
     },
-    mount(el) {
-      el.querySelectorAll('.adm-chart').forEach((ch) => {
-        const tip = document.createElement('div'); tip.className = 'bc-tip'; tip.hidden = true; ch.appendChild(tip);
-        ch.addEventListener('pointermove', (e) => { const c = e.target.closest('.adm-col'); if (!c) { tip.hidden = true; return; } const r = ch.getBoundingClientRect(); tip.textContent = c.dataset.tip; tip.hidden = false; tip.style.left = `${Math.min(r.width - 200, Math.max(0, e.clientX - r.left - 100))}px`; });
-        ch.addEventListener('pointerleave', () => (tip.hidden = true));
-      });
-    },
+    mount(el) { bindRevChart(el); },
   });
 
   /* ======================= Audit log ======================= */

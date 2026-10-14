@@ -293,11 +293,14 @@
       if (deliveredAt < cut) { s.settled += x.money.net; const k = weekKey(deliveredAt); weekly.set(k, (weekly.get(k) || 0) + x.money.net); }
       else s.available += x.money.net;
     });
-    const requested = db.all('payouts').filter((p) => (scopeOwner ? p.accountId === scopeOwner : isAdmin(a) ? true : p.accountId === a.id)).map((p) => ({ ...p, status: p.status === 'processing' && Date.now() - p.createdAt > 36e5 ? 'paid' : p.status }));
+    // Withdrawals stay "processing" until the Super App team approves them in the admin console
+    const requested = db.all('payouts').filter((p) => (scopeOwner ? p.accountId === scopeOwner : isAdmin(a) ? true : p.accountId === a.id));
+    const adjust = (db.all('adjustments') || []).filter((x) => x.accountId === (scopeOwner || a.id) && x.wallet !== 'pod');
     const autoPayouts = [...weekly.entries()].filter(([, amt]) => amt > 0).map(([t, amt]) => ({ id: `PO-AUTO-${t}`, createdAt: t, amount: Math.round(amt), method: acct?.payout?.method || 'Bank transfer', detail: acct?.payout?.detail || '—', status: 'paid', auto: true }));
     const withdrawn = sumBy(requested.filter((p) => p.status !== 'rejected'), (p) => p.amount);
-    const balance = Math.round(b.available + s.available - withdrawn);
-    return { account: acct, bookings: b, store: s, payouts: [...requested, ...autoPayouts].sort((x, y) => y.createdAt - x.createdAt), withdrawn, balance: Math.max(0, balance), lastSettlement: cut, ledger: L, sales: S };
+    const adjusted = sumBy(adjust, (x) => x.amount);
+    const balance = Math.round(b.available + s.available - withdrawn + adjusted);
+    return { account: acct, bookings: b, store: s, payouts: [...requested, ...autoPayouts].sort((x, y) => y.createdAt - x.createdAt), adjustments: adjust, adjusted, withdrawn, balance: Math.max(0, balance), lastSettlement: cut, ledger: L, sales: S };
   };
 
   /* ======================= Mutations ======================= */

@@ -139,6 +139,17 @@
     ensure('notifications', () => seedNotifications(now0()));
     // Admin console (release 5): Fantasy Pass sales ledger, refunds/adjustments, platform promo uses, support, content, samples, level reviews
     ['passSales', 'refunds', 'adjustments', 'promoUses', 'broadcasts', 'samples', 'levelReviews'].forEach((k) => ensure(k, () => []));
+    if (!data.settings.adminSeed) {
+      // A few withdrawal requests so the admin console has something to approve (demo)
+      const H = 36e5, t = Date.now();
+      data.payouts.push(
+        { id: 'PO-SEED-1', accountId: 'acc-o1', amount: 4200, method: 'Bank transfer', detail: 'NBE •••• 7731', status: 'processing', createdAt: t - 5 * H, updatedAt: t - 5 * H },
+        { id: 'PO-SEED-2', accountId: 'acc-o3', amount: 2750, method: 'Bank transfer', detail: 'QNB •••• 1180', status: 'processing', createdAt: t - 26 * H, updatedAt: t - 26 * H },
+        { id: 'PO-SEED-3', accountId: 'acc-o2', amount: 6100, method: 'InstaPay', detail: 'hazem.tarek@instapay', status: 'paid', paidAt: t - 8 * 24 * H, ref: 'TRX-8KQ2LM', createdAt: t - 9 * 24 * H, updatedAt: t - 8 * 24 * H },
+      );
+      if (data.sellerPayouts && data.sellers?.some((s) => s.id === 'sl-koora')) data.sellerPayouts.push({ id: 'sp-seed-1', sellerId: 'sl-koora', amount: 500, method: 'InstaPay', detail: 'koora-ink@instapay', status: 'processing', createdAt: t - 3 * H, updatedAt: t - 3 * H });
+      data.settings.adminSeed = 1; changed = true;
+    }
     if (!data.settings.fantasySubs) { data.settings.fantasySubs = { one: 50, both: 80 }; changed = true; }
     if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.2, minRedeem: 500 }; changed = true; }
     if (data.settings.vat == null) { data.settings.vat = 0.14; changed = true; }

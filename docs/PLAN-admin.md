@@ -39,7 +39,7 @@ Agreed with the user on 2026-10-15.
 
 ## Chunks
 - [x] 1. Admin console shell: sign-in, layout, nav, bell, routes, overview, audit log. Existing admin pages move here.
-- [ ] 2. Money:
+- [x] 2. Money:
   - withdrawal approvals (partners, sellers, print partner settlement);
   - adjustments;
   - platform revenue report with export;

@@ -76,6 +76,8 @@
     // Admin console (separate system for the Super App team)
     .add('/admin', P.adminOverview)
     .add('/admin/audit', P.adminAudit)
+    .add('/admin/payouts', P.adminPayouts)
+    .add('/admin/revenue', P.adminRevenue)
     .add('/admin/notifications', P.dashNotifications)
     .add('/admin/designs', P.dashPodReview)
     .add('/admin/catalog', P.dashPodCatalog)
