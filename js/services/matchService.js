@@ -30,7 +30,7 @@
   };
 
   // Matches at a pitch that was removed from the platform are no longer listed
-  const exists = (m) => !!SA.services.pitches.getSync(m.pitchId);
+  const exists = (m) => !!SA.services.pitches.getSync(m.pitchId) && !SA.services.content?.matchHidden(m.id);
   const all = () => [...store.get().publishedMatches, ...SA.data.matches.list].filter(exists).map(hydrate).filter((m) => m.startsAt + m.duration * 36e5 > Date.now() - 36e5);
 
   const matchService = {

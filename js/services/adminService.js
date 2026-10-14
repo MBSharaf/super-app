@@ -405,6 +405,75 @@
     /** Send scheduled broadcasts that are due (runs on start-up and every minute; a server job with the backend) */
     sweepBroadcasts() { (db().all('broadcasts') || []).filter((b) => b.status === 'scheduled' && b.sendAt <= Date.now()).forEach((b) => admin._deliver(b)); },
 
+    /* ---------- Site content ---------- */
+    saveBanner(d, id = null) {
+      me();
+      const e = {};
+      if (!d.title || d.title.trim().length < 5) e.title = 'Write a headline (5+ characters).';
+      if (!d.link || !/^#\//.test(d.link.trim())) e.link = 'Use a link inside Super App, like #/shop?cat=boots.';
+      if (!d.image) e.image = 'Choose a photo.';
+      if (d.to && d.from && d.to < d.from) e.to = 'End on or after the start date.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const rec = { title: d.title.trim(), badge: (d.badge || '').trim(), cta: (d.cta || '').trim(), link: d.link.trim(), image: d.image, from: d.from || '', to: d.to || '', active: d.active !== false && d.active !== 'off' };
+      const list = db().all('banners');
+      const out = id ? db().update('banners', id, rec) : db().insert('banners', { ...rec, order: (list.reduce((m, b) => Math.max(m, b.order), 0) || 0) + 1 }, 'bn');
+      log(id ? 'banner.updated' : 'banner.created', `${id ? 'Updated' : 'Added'} home banner “${out.title}”`, out.id);
+      return out;
+    },
+    moveBanner(id, dir) {
+      me();
+      const list = db().all('banners').slice().sort((a, b) => a.order - b.order);
+      const i = list.findIndex((b) => b.id === id), j = i + dir;
+      if (i < 0 || j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      list.forEach((b, k) => { b.order = k + 1; });
+      db().touch('banners');
+      log('banner.moved', `Moved home banner “${list[j].title}” ${dir < 0 ? 'up' : 'down'}`, id);
+    },
+    toggleBanner(id) { me(); const b = db().find('banners', id); db().update('banners', id, { active: !b.active }); log('banner.toggled', `${b.active ? 'Hid' : 'Showed'} home banner “${b.title}”`, id); },
+    deleteBanner(id) { me(); const b = db().find('banners', id); db().remove('banners', id); log('banner.deleted', `Deleted home banner “${b.title}”`, id); },
+    setAnnouncement(d) {
+      me();
+      const on = !!d.on && d.on !== 'off';
+      if (on && (!d.text || d.text.trim().length < 5)) throw new ApiError('Write the announcement (5+ characters).', 'invalid', { text: 'Write the announcement' });
+      if (d.link && !/^#\//.test(d.link.trim())) throw new ApiError('Use a link inside Super App.', 'invalid', { link: 'Use a link like #/fantasy' });
+      const prev = db().settings().announcement || {};
+      const a = { on, text: (d.text || '').trim().slice(0, 160), link: (d.link || '').trim(), cta: (d.cta || '').trim().slice(0, 24), tone: ['info', 'promo', 'alert'].includes(d.tone) ? d.tone : 'info', until: d.until || '', v: (prev.v || 0) + 1 };
+      db().setSettings({ announcement: a });
+      log('announcement', on ? `Announcement on: “${a.text}”` : 'Announcement switched off');
+      SA.ui.shell?.render();
+    },
+    saveNews(d, id = null) {
+      me();
+      const e = {};
+      if (!d.title || d.title.trim().length < 10) e.title = 'Write a headline (10+ characters).';
+      if (!SA.data.news.categories.some((c) => c.id === d.cat)) e.cat = 'Choose a category.';
+      if (!d.excerpt || d.excerpt.trim().length < 20) e.excerpt = 'Write a short summary (20+ characters).';
+      const body = String(d.body || '').split(/\n{2,}|\r\n\r\n/).map((x) => x.trim()).filter(Boolean);
+      if (!body.length || body.join(' ').length < 60) e.body = 'Write the story (60+ characters; empty lines start a new paragraph).';
+      if (!d.img) e.img = 'Choose a photo.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const rec = { cat: d.cat, clubs: [d.cat], type: 'Super App', title: d.title.trim(), excerpt: d.excerpt.trim(), body, img: d.img, breaking: !!d.breaking && d.breaking !== 'off', read: Math.max(1, Math.round(body.join(' ').split(/\s+/).length / 200)) };
+      const out = id ? db().update('newsPosts', id, rec) : db().insert('newsPosts', { ...rec, id: `n-sa-${Date.now().toString(36)}`, at: Date.now(), hoursAgo: 0 }, 'n');
+      log(id ? 'news.updated' : 'news.published', `${id ? 'Updated' : 'Published'} news “${out.title}”`, out.id);
+      return out;
+    },
+    deleteNews(id) { me(); const p = db().find('newsPosts', id); db().update('newsPosts', id, { deleted: true }); log('news.deleted', `Deleted news “${p.title}”`, id); },
+    flagNews(id, patch) {
+      me();
+      const edits = { ...(db().settings().newsEdits || {}) };
+      edits[id] = { ...(edits[id] || {}), ...patch };
+      db().setSettings({ newsEdits: edits });
+      const s = SA.services.content.allStories().find((x) => x.id === id);
+      log('news.flag', `${Object.entries(patch).map(([k, v]) => `${v ? '' : 'un-'}${k === 'hidden' ? 'hid' : 'marked breaking'}`).join(', ')}: “${s?.title || id}”`, id);
+    },
+    hideMatch(id, reason = '') {
+      me();
+      const h = { ...(db().settings().hiddenMatches || {}) };
+      if (h[id]) delete h[id]; else h[id] = { reason: reason.trim(), at: Date.now() };
+      db().setSettings({ hiddenMatches: h });
+      log(h[id] ? 'match.hidden' : 'match.restored', `${h[id] ? 'Hid' : 'Restored'} pickup game ${id}${reason ? `: ${reason.trim()}` : ''}`, id);
+    },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,

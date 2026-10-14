@@ -150,6 +150,13 @@
       );
       changed = true;
     }
+    ensure('banners', () => [
+      { id: 'bn-boots', title: 'Up to 20% off turf and FG boots', badge: 'Boots week', cta: 'Shop boots', link: '#/shop?cat=boots', image: 'photo-1529900748604-07564a03e7a6', active: true, order: 1, from: '', to: '' },
+      { id: 'bn-mornings', title: 'Pitches from 500 EGP an hour before 4 PM', badge: 'Weekday mornings', cta: '', link: '#/pitches?sort=price', image: 'nightGrass', active: true, order: 2, from: '', to: '' },
+      { id: 'bn-coaching', title: 'Private coaching with CAF-licensed coaches', badge: 'New', cta: '', link: '#/shop?cat=services', image: 'kidsTraining', active: true, order: 3, from: '', to: '' },
+    ]);
+    ensure('newsPosts', () => []);
+    if (!data.settings.announcement) { data.settings.announcement = { on: false, text: '', link: '', cta: '', tone: 'info', until: '', v: 0 }; changed = true; }
     if (!data.settings.adminSeed) {
       // A few withdrawal requests so the admin console has something to approve (demo)
       const H = 36e5, t = Date.now();

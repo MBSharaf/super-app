@@ -150,3 +150,11 @@ html.reduce-motion .wa-fab::before { display: none; }
 .footer-grid .social-btn { display: grid; padding: 0; color: #fff; }
 .footer-grid .brand { display: inline-flex; padding: 0; color: #fff; }
 .site-footer .brand-mark svg { stroke: var(--ink); }
+
+/* Announcement bar (set by the Super App team in the admin console) */
+.announce { background: var(--ink-bg); color: #fff; }
+.announce.t-promo { background: linear-gradient(90deg, var(--blaze-2), var(--blaze)); }
+.announce.t-alert { background: var(--danger-fill); }
+.announce-inner { display: flex; align-items: center; gap: 10px; min-height: 38px; padding-block: 6px; }
+.announce-link { color: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; margin-inline-start: 4px; }
+.announce .announce-x { width: 28px; height: 28px; color: #fff; background: rgba(255,255,255,.12); border: 0; }

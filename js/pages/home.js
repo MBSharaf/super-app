@@ -178,11 +178,7 @@
       </section>
 
       <section class="container section-tight">
-        <div class="promo-grid">
-          <a class="promo promo-a reveal" href="#/shop?cat=boots"><img src="${media.u('photo-1529900748604-07564a03e7a6', 900, 700)}" alt="" loading="lazy" /><div><span class="badge badge-blaze">Boots week</span><h3 class="h2">Up to 20% off turf and FG boots</h3><span class="link" style="color:#fff">Shop boots ${icon('arrowRight', 16)}</span></div></a>
-          <a class="promo promo-b reveal" style="--d:80ms" href="#/pitches?sort=price"><img src="${media.photo('nightGrass', 900, 700)}" alt="" loading="lazy" /><div><span class="badge badge-glass">Weekday mornings</span><h3 class="h3">Pitches from ${money(500)} an hour before 4 PM</h3></div></a>
-          <a class="promo promo-c reveal" style="--d:160ms" href="#/shop?cat=services"><img src="${media.photo('kidsTraining', 900, 700)}" alt="" loading="lazy" /><div><span class="badge badge-glass">New</span><h3 class="h3">Private coaching with CAF-licensed coaches</h3></div></a>
-        </div>
+        <div class="promo-grid">${S.content.banners().map((b, i) => `<a class="promo promo-${'abc'[i]} reveal" ${i ? `style="--d:${i * 80}ms"` : ''} href="${esc(b.link || '#/')}"><img src="${media.photo(b.image, 900, 700)}" alt="" loading="lazy" /><div>${b.badge ? `<span class="badge ${i ? 'badge-glass' : 'badge-blaze'}">${esc(b.badge)}</span>` : ''}<h3 class="${i ? 'h3' : 'h2'}">${esc(b.title)}</h3>${!i && b.cta ? `<span class="link" style="color:#fff">${esc(b.cta)} ${icon('arrowRight', 16)}</span>` : ''}</div></a>`).join('')}</div>
       </section>
 
       <section class="container section">

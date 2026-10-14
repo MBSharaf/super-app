@@ -28,7 +28,9 @@
     const cartCount = s.cart.reduce((a, l) => a + l.qty, 0);
     const unread = s.notifications.filter((n) => !n.read).length;
     const u = s.user;
-    return `<div class="container header-inner">
+    const an = SA.services.content?.announcement();
+    const bar = an && !SA.services.content.dismissed(an) ? `<div class="announce t-${an.tone || 'info'}" role="status"><div class="container announce-inner">${icon(an.tone === 'promo' ? 'gift' : an.tone === 'alert' ? 'alert' : 'megaphone', 16)}<span class="grow small">${SA.core.utils.esc(an.text)}${an.link ? ` <a class="announce-link" href="${SA.core.utils.esc(an.link)}">${SA.core.utils.esc(an.cta || 'Learn more')}</a>` : ''}</span><button class="icon-btn announce-x" data-announce-x aria-label="Hide announcement">${icon('x', 14)}</button></div></div>` : '';
+    return `${bar}<div class="container header-inner">
       ${brand}
       <nav class="main-nav" aria-label="Main">${[...NAV, ...EXTRA].map((n) => `<a href="${n.href}" ${n.match(path) ? 'aria-current="page"' : ''}>${n.label}</a>`).join('')}</nav>
       <div class="header-actions">
@@ -96,6 +98,7 @@
   /** Global click delegation for actions that appear on many pages. */
   const bindGlobal = () => {
     document.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-announce-x]')) { const an = SA.services.content?.announcement(); if (an) SA.services.content.dismiss(an); render(); return; }
       const t = e.target.closest('[data-action]');
       if (!t) return;
       const { action, id } = t.dataset;

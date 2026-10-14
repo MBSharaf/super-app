@@ -133,6 +133,26 @@
     'Promo code': 'كود خصم', 'This code works on pitch bookings, not in the shop.': 'الكود ده شغال على حجز الملاعب، مش المتجر.', 'This code works in the shop, not on pitch bookings.': 'الكود ده شغال في المتجر، مش على حجز الملاعب.',
     'This code is paused.': 'الكود ده متوقف.', 'This code is for free delivery in the shop.': 'الكود ده للشحن المجاني في المتجر.', 'Free delivery': 'شحن مجاني', '10% off your order': 'خصم 10% على طلبك', '50 EGP off': 'خصم 50 جنيه', '15% off your first booking': 'خصم 15% على أول حجز',
     'Welcome code': 'كود ترحيب', 'New players — Super App pays, venues get the full price': 'لاعيبة جداد — Super App بتدفع، والملاعب بتاخد السعر كامل',
+    /* ---------- Site content ---------- */
+    'Home banners': 'بنرات الرئيسية', 'Announcement bar': 'شريط الإعلانات', 'News': 'الأخبار', 'Pickup games': 'الماتشات الودية', 'Open the site': 'افتح الموقع',
+    'What visitors see: home banners, the announcement bar, news and pickup games': 'اللي الزوار بيشوفوه: بنرات الرئيسية، شريط الإعلانات، الأخبار والماتشات الودية',
+    'The first three live banners show on the home page.': 'أول 3 بنرات شغالة بيظهروا في الصفحة الرئيسية.', 'New banner': 'بنر جديد', 'Hidden': 'مخفي', 'Hide': 'اخفي', 'Show': 'اظهر', 'Move up': 'لفوق', 'Move down': 'لتحت',
+    'Waiting (dates or more than 3)': 'مستني (التواريخ أو أكتر من 3)', 'Edit banner': 'عدّل البنر', 'New home banner': 'بنر جديد للرئيسية', 'Up to three banners show on the home page, in order. The first one is the big one.': 'لحد 3 بنرات بيظهروا في الرئيسية بالترتيب. الأول هو الكبير.',
+    'Headline': 'العنوان الرئيسي', 'e.g. Ramadan nights: pitches open until 3 AM': 'مثلاً ليالي رمضان: الملاعب مفتوحة لحد 3 الفجر', 'Badge (optional)': 'شارة (اختياري)', 'Button text (first banner)': 'نص الزرار (البنر الأول)', 'Opens': 'بيفتح',
+    'Show from (optional)': 'يظهر من (اختياري)', 'Until (optional)': 'لحد (اختياري)', 'Photo': 'الصورة', 'Upload': 'ارفع', 'Your uploaded photo is selected.': 'الصورة اللي رفعتها متختارة.', 'Photo uploaded': 'الصورة اترفعت', 'Save banner': 'احفظ البنر', 'Add banner': 'أضف البنر',
+    'Banner saved': 'البنر اتحفظ', 'Delete this banner?': 'تمسح البنر ده؟', 'It disappears from the home page.': 'هيختفي من الصفحة الرئيسية.', 'Banner deleted': 'البنر اتمسح',
+    'A strip above the site header on every page — for a holiday, a big match, an outage or an offer. Visitors can close it.': 'شريط فوق هيدر الموقع في كل الصفحات — لعيد، ماتش كبير، عطل أو عرض. الزوار يقدروا يقفلوه.',
+    'Show the announcement': 'اظهر الإعلان', 'Text': 'النص', 'e.g. Derby night: free pitch for the first 10 teams who book before 6 PM': 'مثلاً ليلة الديربي: ملعب ببلاش لأول 10 فرق يحجزوا قبل 6 المغرب', 'Link text': 'نص اللينك', 'Learn more': 'اعرف أكتر',
+    'Style': 'الشكل', 'Dark — information': 'غامق — معلومة', 'Orange — offer': 'برتقالي — عرض', 'Red — warning': 'أحمر — تحذير', 'Show until (optional)': 'يظهر لحد (اختياري)', 'Save announcement': 'احفظ الإعلان', 'Announcement saved': 'الإعلان اتحفظ', 'Hide announcement': 'اخفي الإعلان',
+    'Your stories plus the news feed. Hide anything that shouldn’t be on Super App.': 'أخبارك مع الأخبار العامة. اخفي أي حاجة مينفعش تبقى على Super App.', 'Write a story': 'اكتب خبر', 'Story': 'الخبر', 'Published': 'اتنشر', 'Breaking': 'عاجل', 'Not breaking': 'مش عاجل', 'Live': 'منشور',
+    'Edit story': 'عدّل الخبر', 'Published as “Super App” in the news section. Leave an empty line between paragraphs.': 'بيتنشر باسم “Super App” في الأخبار. سيب سطر فاضي بين الفقرات.', 'Category': 'القسم', 'Summary': 'الملخص', 'Save story': 'احفظ الخبر', 'Publish': 'انشر',
+    'Story saved': 'الخبر اتحفظ', 'Story published': 'الخبر اتنشر', 'Delete this story?': 'تمسح الخبر ده؟', 'It disappears from the news section.': 'هيختفي من قسم الأخبار.', 'Story deleted': 'الخبر اتمسح', 'Story hidden': 'الخبر اتخفى', 'Story is back': 'الخبر رجع',
+    'Games players post to find teammates. Hide one that breaks the rules — it disappears from Find players.': 'الماتشات اللي اللاعيبة بينزلوها عشان يلاقوا زمايل. اخفي أي واحد مخالف — هيختفي من دوّر على لاعيبة.', 'Game': 'الماتش', 'Host': 'المنظم', 'Spots': 'الأماكن', 'Restore': 'رجّعه',
+    'No upcoming games.': 'مفيش ماتشات جاية.', 'Hide this game?': 'تخفي الماتش ده؟', 'It disappears from Find players. Players who joined keep their spot.': 'هيختفي من دوّر على لاعيبة. اللي انضموا هيفضل مكانهم محجوز.', 'Hide game': 'اخفي الماتش', 'Game hidden': 'الماتش اتخفى', 'Game restored': 'الماتش رجع',
+    'Write a headline (5+ characters).': 'اكتب عنوان (5 حروف أو أكتر).', 'Use a link inside Super App, like #/shop?cat=boots.': 'استخدم لينك جوه Super App، زي #/shop?cat=boots.', 'Choose a photo.': 'اختار صورة.', 'Write the announcement (5+ characters).': 'اكتب الإعلان (5 حروف أو أكتر).',
+    'Write a headline (10+ characters).': 'اكتب عنوان (10 حروف أو أكتر).', 'Choose a category.': 'اختار القسم.', 'Write a short summary (20+ characters).': 'اكتب ملخص قصير (20 حرف أو أكتر).', 'Write the story (60+ characters; empty lines start a new paragraph).': 'اكتب الخبر (60 حرف أو أكتر؛ السطر الفاضي بيبدأ فقرة جديدة).',
+    'Up to 20% off turf and FG boots': 'خصم لحد 20% على أحذية النجيل والـFG', 'Boots week': 'أسبوع الأحذية', 'Shop boots': 'تسوّق الأحذية', 'Weekday mornings': 'صباحات أيام الأسبوع', 'Pitches from 500 EGP an hour before 4 PM': 'ملاعب من 500 جنيه في الساعة قبل 4 العصر',
+    'Private coaching with CAF-licensed coaches': 'تدريب خاص مع مدربين معتمدين من الكاف', 'Super App': 'Super App',
     /* Shared */
     'Reason': 'السبب', 'Write a short reason (it’s saved in the audit log).': 'اكتب سبب قصير (بيتسجل في سجل العمليات).', 'Open their dashboard': 'افتح لوحتهم',
   });
@@ -158,6 +178,6 @@
     ['^Super App replied · (TK-\\d+)$', 'Super App ردت · {1}'], ['^Your request was resolved · (TK-\\d+)$', 'طلبك اتحل · {1}'], ['^(.+) EGP refund sent · (TK-\\d+)$', 'اترجّع {1} جنيه · {2}'],
     ['^Refund of (.+) EGP sent to the customer(.*)\\.$', 'اترجّع {1} جنيه للعميل{2}.'],
     ['^Reaches (\\d+) partner accounts?\\.$', 'بتوصل لـ{1} حساب شريك.'], ['^Reaches (\\d+) partner accounts? and (\\d+) customers\\.$', 'بتوصل لـ{1} حساب شريك و{2} عميل.'], ['^It goes to (\\d+) people right away\\.$', 'هتوصل لـ{1} شخص حالاً.'],
-    ['^Edit (.+)$', 'تعديل {1}'], ['^Delete (.+)\\?$', 'تمسح {1}؟'], ['^min (.+)$', 'أقل حاجة {1}'], ['^(.+) – no end$', '{1} – مفتوح'], ['^(\\d+) active$', '{1} نشط'],
+    ['^Edit (.+)$', 'تعديل {1}'], ['^On the home page · #(\d)$', 'في الرئيسية · #{1}'], ['^(.+) game$', 'ماتش {1}'], ['^Delete (.+)\\?$', 'تمسح {1}؟'], ['^min (.+)$', 'أقل حاجة {1}'], ['^(.+) – no end$', '{1} – مفتوح'], ['^(\\d+) active$', '{1} نشط'],
   );
 })(window.SA);
