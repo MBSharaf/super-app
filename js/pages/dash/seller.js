@@ -96,17 +96,48 @@
         <section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Design</th><th>Status</th><th class="r">Price</th><th class="r">You earn</th><th class="r">Views</th><th class="r">Sold</th><th></th></tr></thead><tbody>
         ${list.map((d) => `<tr><td><span class="row" style="--gap:10px"><span class="sl-thumb"><img src="${SA.data.media.u(`pod:${d.id}:${d.colors[0] || ''}`)}" alt="" /></span><span><b class="small">${esc(d.title || 'Untitled')}</b><span class="xs muted" style="display:block">${esc(d.product?.name)} · ${esc(P().category(d.category)?.name || 'No category')}</span>${d.status === 'rejected' ? `<span class="xs text-danger" style="display:block">${esc(d.reason)}</span>` : ''}</span></span></td>
           <td>${SA.ui.seller.designStatus(d)}</td><td class="r num">${money(d.price)}</td><td class="r num">${money(d.profit)}</td><td class="r num">${fmtNum(d.views || 0)}</td><td class="r num">${fmtNum(d.sales || 0)}</td>
-          <td class="r"><span class="row" style="--gap:6px;justify-content:flex-end"><a class="btn btn-outline btn-sm" href="#/sell/studio/${d.id}">${icon('edit', 13)} Edit</a>${['live', 'paused'].includes(d.status) ? `<button class="btn btn-ghost btn-sm" data-pause="${d.id}" data-to="${d.status === 'live' ? 1 : 0}">${d.status === 'live' ? 'Pause' : 'Resume'}</button>` : ''}${d.status === 'live' ? `<a class="btn btn-ghost btn-sm" href="#/shop/pod-${d.id}" target="_blank" rel="noopener" aria-label="View in shop">${icon('arrowUpRight', 13)}</a>` : ''}</span></td></tr>`).join('') || `<tr><td colspan="7" class="small soft">Nothing here.</td></tr>`}
-        </tbody></table></div></section>`;
+          <td class="r"><span class="row" style="--gap:6px;justify-content:flex-end">${d.status !== 'rejected' ? `<button class="btn btn-ghost btn-sm" data-sample="${d.id}">${icon('shirt', 13)} Sample</button>` : ''}<a class="btn btn-outline btn-sm" href="#/sell/studio/${d.id}">${icon('edit', 13)} Edit</a>${['live', 'paused'].includes(d.status) ? `<button class="btn btn-ghost btn-sm" data-pause="${d.id}" data-to="${d.status === 'live' ? 1 : 0}">${d.status === 'live' ? 'Pause' : 'Resume'}</button>` : ''}${d.status === 'live' ? `<a class="btn btn-ghost btn-sm" href="#/shop/pod-${d.id}" target="_blank" rel="noopener" aria-label="View in shop">${icon('arrowUpRight', 13)}</a>` : ''}</span></td></tr>`).join('') || `<tr><td colspan="7" class="small soft">Nothing here.</td></tr>`}
+        </tbody></table></div></section>
+        ${(() => { const sm = P().samples(s.id); const SS = { requested: ['badge-gold', 'Waiting for approval'], approved: ['badge-info', 'Printing'], delivered: ['badge-turf', 'Delivered'], rejected: ['badge-danger', 'Not approved'] }; return sm.length ? `<section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">${icon('shirt', 18)} Samples</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Design</th><th>Ordered</th><th>Status</th><th class="r">Paid</th></tr></thead><tbody>
+          ${sm.map((x) => { const o = x.orderId && SA.services.db.find('podOrders', x.orderId); const st = o && x.status === 'approved' && o.status === 'shipped' ? ['badge-info', 'Shipped'] : SS[x.status] || ['', x.status]; return `<tr><td class="small"><b>${esc(x.title)}</b><span class="xs muted" style="display:block">${esc(x.color)} · ${esc(x.size)}</span></td><td class="small">${fmtDate(new Date(x.createdAt))}</td><td><span class="badge ${st[0]}">${st[1]}</span>${x.reason ? `<span class="xs muted" style="display:block">${esc(x.reason)}</span>` : ''}</td><td class="r num">${x.free ? 'Free' : money(x.price)}</td></tr>`; }).join('')}
+          </tbody></table></div></section>` : ''; })()}`;
       return C.layout('seller-designs', { title: 'Designs', subtitle: 'Print-on-demand designs in your store', actions: `<a class="btn btn-primary" href="#/sell/studio">${icon('plus', 16)} New design</a>`, body });
     },
     mount(el) {
       el.addEventListener('click', (e) => {
+        const sm = e.target.closest('[data-sample]');
+        if (sm) { sampleDialog(sm.dataset.sample); return; }
         const p = e.target.closest('[data-pause]');
         if (p) { try { P().setPaused(p.dataset.pause, p.dataset.to === '1'); SA.ui.overlay.toast(p.dataset.to === '1' ? 'Design paused' : 'Design is live again'); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } }
       });
     },
   });
+
+  /** Order a sample of a design (price depends on the level: base price, Pro 30% off, Elite one free a month) */
+  const sampleDialog = (designId) => {
+    const d = SA.services.db.find('designs', designId);
+    const cat = SA.services.db.find('podCatalog', d.catalogId);
+    const acc = D().me();
+    const priceLine = (size) => { const p = P().samplePrice(designId, size); return p.free ? `<b>Free</b> — your Elite sample this month` : `<b class="num">${money(p.price)}</b>${p.discount ? ` <span class="xs muted">(${Math.round(p.discount * 100)}% off the ${money(p.base)} base price)</span>` : ' <span class="xs muted">(base price)</span>'}`; };
+    SA.ui.overlay.open({
+      title: `Order a sample: ${esc(d.title)}`, subtitle: 'Check the print quality before customers do. It’s paid from your available balance.',
+      body: `<form class="form-grid" data-smp novalidate>
+        <div class="field"><label for="sm-c">Colour</label><select class="select" id="sm-c" name="color">${d.colors.map((c) => `<option>${esc(c)}</option>`).join('')}</select></div>
+        <div class="field"><label for="sm-s">Size</label><select class="select" id="sm-s" name="size">${cat.sizes.map((z) => `<option ${z === 'L' ? 'selected' : ''}>${esc(z)}</option>`).join('')}</select></div>
+        <div class="field span-2"><label for="sm-a">Deliver to</label><input class="input" id="sm-a" name="address" value="${esc(SA.services.sellers.byAccount(acc.id)?.sampleAddress || '')}" placeholder="Street, building, area, city" /></div>
+        <p class="small span-2" data-sm-price>${priceLine('L')}</p><p class="field-error span-2" data-err="form"></p>
+        <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">Request sample</button></div></form>`,
+      onMount(m, close) {
+        const f = m.querySelector('[data-smp]');
+        f.size.addEventListener('change', () => { m.querySelector('[data-sm-price]').innerHTML = priceLine(f.size.value); });
+        f.addEventListener('submit', (e) => {
+          e.preventDefault();
+          try { P().requestSample(designId, SA.core.utils.formData(f)); close(); SA.ui.overlay.toast('Sample requested — the Super App team approves it shortly'); SA.app.rerender(); }
+          catch (err) { m.querySelector('[data-err="form"]').textContent = err.message; }
+        });
+      },
+    });
+  };
 
   /* ---------- Print orders ---------- */
   SA.pages.dashSellerOrders = C.guard({
@@ -115,7 +146,7 @@
     render(ctx) {
       const s = seller(); if (!s) return noSeller('seller-orders', 'Print orders');
       const st = ctx.query.status || '';
-      const all = P().orders({ sellerId: s.id });
+      const all = P().orders({ sellerId: s.id }).filter((o) => !o.sample);
       const list = st ? all.filter((o) => (st === 'open' ? ['received', 'printing', 'shipped'].includes(o.status) : o.status === st)) : all;
       const tabs = [['', 'All'], ['open', 'In progress'], ['delivered', 'Delivered'], ['refused', 'Refused']];
       const cnt = (k) => (k === 'open' ? all.filter((o) => ['received', 'printing', 'shipped'].includes(o.status)).length : k ? all.filter((o) => o.status === k).length : all.length);
@@ -317,6 +348,74 @@
           err.textContent = e2.message; SA.ui.overlay.toast(e2.message, { type: 'error' });
           if (e2.message.includes('storage') || e2.code === 'storage_full') SA.ui.overlay.toast('Images are too big for this device — try smaller ones.', { type: 'error' });
         }
+      });
+    },
+  });
+
+  /* ---------- Analytics (Pro: advanced, Elite: advanced + Excel export) ---------- */
+  const meters = (rows, fmt = (v) => fmtNum(v), tone = 'var(--turf)') => { const max = Math.max(1, ...rows.map((r) => r[1])); return rows.length ? `<ul class="adm-mix">${rows.map(([l, v]) => `<li><span class="row-between small"><span>${esc(l)}</span><b class="num">${fmt(v)}</b></span><span class="meter"><span style="width:${Math.max(2, (v / max) * 100)}%;background:${tone}"></span></span></li>`).join('')}</ul>` : '<p class="small muted">Nothing yet.</p>'; };
+  const groupBy = (arr, key, val) => { const m = new Map(); arr.forEach((x) => { const k = key(x); m.set(k, (m.get(k) || 0) + val(x)); }); return [...m.entries()].sort((a, b) => b[1] - a[1]); };
+  const sellerData = (s, days) => {
+    const since = Date.now() - days * 864e5;
+    const orders = P().orders({ sellerId: s.id }).filter((o) => !o.sample && o.placedAt >= since);
+    const ok = orders.filter((o) => !['refused', 'cancelled'].includes(o.status));
+    const designs = P().list({ sellerId: s.id, status: ['live', 'paused', 'review'] }).map((d) => { const os = ok.filter((o) => o.designId === d.id); const sold = os.reduce((t, o) => t + o.qty, 0); return { d, sold, views: d.views || 0, conv: d.views ? (d.sales || 0) / d.views : 0, revenue: os.reduce((t, o) => t + o.price * o.qty, 0), profit: os.reduce((t, o) => t + o.profit, 0) }; }).sort((a, b) => b.profit - a.profit);
+    const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return {
+      orders, ok, designs,
+      sold: ok.reduce((t, o) => t + o.qty, 0), revenue: ok.reduce((t, o) => t + o.price * o.qty, 0), profit: ok.reduce((t, o) => t + o.profit, 0),
+      refused: orders.filter((o) => o.status === 'refused').length, views: designs.reduce((t, x) => t + x.views, 0), lifetimeSales: designs.reduce((t, x) => t + (x.d.sales || 0), 0),
+      colors: groupBy(ok, (o) => o.color, (o) => o.qty).slice(0, 6), sizes: groupBy(ok, (o) => o.size, (o) => o.qty), cities: groupBy(ok, (o) => o.customer?.city || '—', (o) => o.qty).slice(0, 6),
+      weekdays: WD.map((w, i) => [w, ok.filter((o) => new Date(o.placedAt).getDay() === i).reduce((t, o) => t + o.qty, 0)]),
+    };
+  };
+  SA.pages.dashSellerAnalytics = C.guard({
+    roles: ['seller'],
+    title: 'Analytics — Super App',
+    render(ctx) {
+      const s = seller(); if (!s) return noSeller('seller-analytics', 'Analytics');
+      const lv = SL().levelOf(s);
+      const days = +ctx.query.days === 90 ? 90 : 30;
+      const x = sellerData(s, days);
+      const conv = x.views ? (x.lifetimeSales / x.views) * 100 : 0;
+      const head = `<div class="kpi-grid kpi-sm">
+          ${C.kpi({ label: `Items sold (${days} days)`, value: fmtNum(x.sold), ic: 'shirt' })}
+          ${C.kpi({ label: 'Your profit', value: money(x.profit), ic: 'wallet', tone: 'k-turf' })}
+          ${C.kpi({ label: 'Design views', value: fmtNum(x.views), ic: 'eye' })}
+          ${C.kpi({ label: 'Views that became a sale', value: `${conv.toFixed(1)}%`, ic: 'percent', sub: 'All time, live designs' })}
+        </div>`;
+      if (lv.analytics === 'basic') {
+        const pro = SL().levels().find((l) => l.analytics !== 'basic');
+        const body = `${head}<section class="dash-card adm-lock">${icon('lock', 26)}<h2 class="h3">Advanced analytics unlock at ${esc(pro.name)}</h2>
+          <p class="soft">See which designs turn views into sales, the colours, sizes and cities that sell, the best days to post — and export it all at Elite.</p>
+          <p class="small" style="margin-top:8px">${lv.next ? `<b class="num">${fmtNum(Math.max(0, pro.sales - lv.stats.sales))}</b> more delivered items to reach ${esc(pro.name)}.` : ''}</p><a class="btn btn-outline" href="#/dash/seller" style="margin-top:14px">See your level</a></section>`;
+        return C.layout('seller-analytics', { title: 'Analytics', subtitle: `${esc(s.name)} · ${esc(lv.name)} level`, body });
+      }
+      const body = `<div class="chips" role="tablist">${[[30, 'Last 30 days'], [90, 'Last 90 days']].map(([d, l]) => `<a class="chip" role="tab" href="#/dash/seller/analytics${d === 90 ? '?days=90' : ''}" aria-pressed="${days === d}" aria-selected="${days === d}">${l}</a>`).join('')}</div>
+        ${head}
+        <section class="dash-card"><div class="row-between"><h2 class="h4">Profit by day</h2><span class="xs muted">${money(x.profit)} · ${x.refused} refused (cost you nothing)</span></div>${profitBars(x.orders, days)}</section>
+        <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Designs</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Design</th><th class="r">Views</th><th class="r">Sold (${days}d)</th><th class="r">Views → sale</th><th class="r">Revenue</th><th class="r">Your profit</th></tr></thead><tbody>
+          ${x.designs.map((r) => `<tr><td><span class="row" style="--gap:10px"><span class="sl-thumb"><img src="${SA.data.media.u(`pod:${r.d.id}:${r.d.colors[0] || ''}`)}" alt="" /></span><b class="small">${esc(r.d.title)}</b></span></td><td class="r num">${fmtNum(r.views)}</td><td class="r num">${r.sold}</td><td class="r num">${(r.conv * 100).toFixed(1)}%</td><td class="r num">${money(r.revenue)}</td><td class="r num strong">${money(r.profit)}</td></tr>`).join('')}
+        </tbody></table></div></section>
+        <div class="dash-grid g-1-1">
+          <section class="dash-card"><h2 class="h4">Colours that sell</h2>${meters(x.colors, (v) => `${v} sold`, 'var(--blaze)')}</section>
+          <section class="dash-card"><h2 class="h4">Sizes</h2>${meters(x.sizes, (v) => `${v} sold`, 'var(--info)')}</section>
+          <section class="dash-card"><h2 class="h4">Cities</h2>${meters(x.cities, (v) => `${v} sold`)}</section>
+          <section class="dash-card"><h2 class="h4">Best days</h2><p class="xs muted" style="margin-top:4px">Post new designs and share your link the day before the busiest days.</p>${meters(x.weekdays, (v) => `${v} sold`, 'var(--gold)')}</section>
+        </div>`;
+      const exp = lv.analytics === 'export';
+      return C.layout('seller-analytics', { title: 'Analytics', subtitle: `${esc(s.name)} · ${esc(lv.name)} level${exp ? ' · export included' : ''}`, actions: exp ? `<button class="btn btn-outline btn-sm" data-export>${icon('file', 15)} Export (Excel)</button>` : `<span class="xs muted">${icon('lock', 12)} Excel export at Elite</span>`, body });
+    },
+    mount(el, ctx) {
+      el.querySelector('[data-export]')?.addEventListener('click', () => {
+        const s = seller(); const days = +ctx.query.days === 90 ? 90 : 30; const x = sellerData(s, days);
+        C.xlsx(`${s.handle}-analytics-${days}d.xlsx`, [
+          { name: 'Designs', columns: [{ header: 'Design', width: 30 }, { header: 'Views', width: 10, type: 'number' }, { header: `Sold (${days}d)`, width: 12, type: 'number' }, { header: 'Views to sale %', width: 14 }, { header: 'Revenue', width: 12, type: 'money' }, { header: 'Profit', width: 12, type: 'money' }],
+            rows: x.designs.map((r) => [r.d.title, r.views, r.sold, (r.conv * 100).toFixed(1), r.revenue, r.profit]), totals: ['Total', x.views, x.sold, '', x.revenue, x.profit] },
+          { name: 'Orders', columns: [{ header: 'Item', width: 14 }, { header: 'Date', width: 12 }, { header: 'Design', width: 28 }, { header: 'Colour', width: 14 }, { header: 'Size', width: 7 }, { header: 'City', width: 14 }, { header: 'Status', width: 11 }, { header: 'Price', width: 11, type: 'money' }, { header: 'Profit', width: 11, type: 'money' }],
+            rows: x.orders.map((o) => [o.id, isoDate(new Date(o.placedAt)), o.title, o.color, o.size, o.customer?.city || '', o.status, o.price * o.qty, ['refused', 'cancelled'].includes(o.status) ? 0 : o.profit]) },
+          { name: 'Breakdown', columns: [{ header: 'Type', width: 12 }, { header: 'Value', width: 20 }, { header: 'Items sold', width: 12, type: 'number' }], rows: [...x.colors.map(([k, v]) => ['Colour', k, v]), ...x.sizes.map(([k, v]) => ['Size', k, v]), ...x.cities.map(([k, v]) => ['City', k, v]), ...x.weekdays.map(([k, v]) => ['Weekday', k, v])] },
+        ]);
       });
     },
   });

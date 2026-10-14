@@ -135,3 +135,10 @@
 .adm-pick-up { display: grid; place-items: center; align-content: center; gap: 2px; color: var(--ink-2); border: 2px dashed var(--line); }
 tr.is-dim td { opacity: .55; }
 .lc-sponsor { margin-top: 8px; display: flex; gap: 6px; align-items: center; }
+.adm-howto ol { display: grid; gap: 8px; margin-top: 10px; padding-inline-start: 20px; list-style: decimal; }
+.lvl-grace { margin-top: 10px; padding: 8px 10px; border-radius: var(--r-sm); background: rgba(201,146,15,.16); }
+.adm-occ { display: inline-flex; align-items: center; gap: 8px; min-width: 120px; justify-content: flex-end; }
+.adm-occ .meter { width: 60px; }
+.adm-lock { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 36px 20px; }
+.adm-lock > svg { color: var(--gold); }
+.adm-lock .soft { max-width: 52ch; }

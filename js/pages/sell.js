@@ -47,6 +47,7 @@
       <div class="lvl-card-top"><span class="lvl-medal">${icon(l.index === 3 ? 'crown' : 'star', 22)}</span>
         <div class="grow"><p class="xs lvl-kicker">Your level</p><h3 class="h3">${esc(l.name)}</h3></div>
         <div class="lvl-stat"><b class="num">${fmtNum(l.stats.sales)}</b><span class="xs">items sold</span></div></div>
+      ${l.grace ? `<p class="small lvl-grace">${icon('clock', 14)} <b>Grace month</b> — your rating is ${l.stats.rating.toFixed(1)}; ${esc(l.name)} needs ${l.rating.toFixed(1)}. Bring it back up before the next monthly review to keep your perks.</p>` : ''}
       ${l.next ? `<div class="lvl-progress"><span class="meter"><span style="width:${Math.round(l.progress * 100)}%"></span></span>
         <p class="small">${l.toNext ? `<b class="num">${fmtNum(l.toNext)}</b> more delivered items to reach <b>${esc(l.next.name)}</b>` : `Sales target for <b>${esc(l.next.name)}</b> reached`}${l.ratingOk ? '' : ` · needs a ${l.next.rating.toFixed(1)} ★ rating (now ${l.stats.rating ? l.stats.rating.toFixed(1) : '—'})`}</p></div>`
         : '<p class="small">Top level — every perk is unlocked.</p>'}

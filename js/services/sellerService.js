@@ -18,7 +18,7 @@
 
   /** Delivered items + rating for a seller (older history is summarised on the record) */
   const stats = (s) => {
-    const orders = db().all('podOrders').filter((o) => o.sellerId === s.id);
+    const orders = db().all('podOrders').filter((o) => o.sellerId === s.id && !o.sample);
     const delivered = orders.filter((o) => o.status === 'delivered');
     const delivered0 = (x) => (SA.services.dash ? SA.services.dash.saleState(x).status === 'delivered' : x.fulfil?.status === 'delivered');
     const storeSold = s.storeId ? db().all('sales').filter((x) => x.storeId === s.storeId && delivered0(x)).reduce((t, x) => t + (x.qty || 1), 0) : 0;
@@ -32,7 +32,7 @@
   let watching = false;
   const levelOf = (s) => {
     if (!watching) { watching = true; db().subscribe(() => memo.clear()); }
-    const key = `${s.id}|${s.updatedAt}|${s.frozenUntil || 0}`;
+    const key = `${s.id}|${s.updatedAt}|${s.frozenUntil || 0}|${s.levelKept ?? ''}`;
     if (!memo.has(key)) memo.set(key, computeLevel(s));
     return memo.get(key);
   };
@@ -42,11 +42,15 @@
     const frozen = (s.frozenUntil || 0) > Date.now();
     let idx = 0;
     L.forEach((l, i) => { if (st.sales >= l.sales && (i === 0 || st.rating >= l.rating)) idx = i; });
+    const earned = idx;
+    // Levels only go down at the monthly review, after a grace month: until then the seller keeps the reviewed level
+    const kept = s.levelKept != null && idx < s.levelKept && s.levelKept < L.length;
+    if (kept) idx = s.levelKept;
     // A copyright strike freezes the level: no promotion until it expires
     if (frozen && s.level != null && idx > s.level) idx = s.level;
     const next = L[idx + 1] || null;
     return {
-      ...L[idx], index: idx, stats: st, frozen, frozenUntil: s.frozenUntil || 0, next,
+      ...L[idx], index: idx, earned, grace: kept, graceSince: kept ? s.grace?.since || '' : '', stats: st, frozen, frozenUntil: s.frozenUntil || 0, next,
       toNext: next ? Math.max(0, next.sales - st.sales) : 0,
       ratingOk: next ? st.rating >= next.rating : true,
       progress: next ? Math.min(1, (st.sales - L[idx].sales) / Math.max(1, next.sales - L[idx].sales)) : 1,

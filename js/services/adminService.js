@@ -556,6 +556,57 @@
       db().update('fantasyWinners', winId, { rows });
       log('fantasy.prize-delivered', `Marked prize delivered: ${w.rows[i].name} — ${w.rows[i].prize} (${w.league})`, winId);
     },
+    /* ---------- Samples ---------- */
+    /** Approve: the seller is charged (unless it's their free Elite sample) and the print partner gets the job */
+    approveSample(id) {
+      me();
+      const x = db().find('samples', id); if (!x || x.status !== 'requested') throw new ApiError('This request was already handled.', 'invalid');
+      const s = db().find('sellers', x.sellerId);
+      const c = db().find('podCatalog', x.catalogId);
+      const now = Date.now();
+      const o = db().insert('podOrders', { id: `PO-S${now.toString(36).toUpperCase().slice(-5)}`, orderId: `SMP-${id.slice(-5).toUpperCase()}`, designId: x.designId, sellerId: x.sellerId, catalogId: x.catalogId, title: x.title, color: x.color, size: x.size, qty: 1,
+        price: 0, base: 0, profit: 0, partnerCost: c?.partnerCost || 0, sample: true, customer: { id: `seller-${s.id}`, name: `${s.name} (sample)`, city: x.address.split(',').pop().trim() }, payment: 'Seller wallet', status: 'received', history: [{ status: 'received', at: now }], placedAt: now, deliveredAt: 0 });
+      if (x.price > 0) admin.adjust({ accountId: s.accountId, amount: -x.price, reason: `Sample: ${x.title} (${x.color}, ${x.size})`, kind: 'sample', ref: id });
+      db().update('samples', id, { status: 'approved', orderId: o.id, approvedAt: now });
+      log('sample.approved', `Approved a sample of “${x.title}” for ${s.name}${x.price ? ` (${x.price} EGP)` : ' (free)'}`, id);
+      N()?.toSeller(s.id, { cat: 'designs', tone: 'turf', title: `Sample approved: ${x.title}`, body: `It’s in the print queue. ${x.price ? `${x.price.toLocaleString()} EGP was taken from your balance.` : 'This one is free with Elite.'}`, link: '#/dash/seller/designs' });
+      db().all('accounts').filter((a) => a.role === 'printer').forEach((a) => N()?.toAccount(a.id, { cat: 'orders', tone: 'blaze', title: `Sample to print: ${x.title}`, body: `${x.color} · ${x.size} · ship to the seller`, link: '#/dash/print' }));
+    },
+    rejectSample(id, reason) {
+      me();
+      const x = db().find('samples', id); if (!x || x.status !== 'requested') throw new ApiError('This request was already handled.', 'invalid');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      db().update('samples', id, { status: 'rejected', reason: reason.trim() });
+      log('sample.rejected', `Rejected a sample of “${x.title}”: ${reason.trim()}`, id);
+      N()?.toSeller(x.sellerId, { cat: 'designs', tone: 'danger', title: `Sample not approved: ${x.title}`, body: reason.trim(), link: '#/dash/seller/designs' });
+    },
+
+    /* ---------- Monthly seller level review (grace month before a level goes down) ---------- */
+    levelReviewDue() { const last = (db().all('levelReviews') || [])[0]; return !last || last.month < new Date().toISOString().slice(0, 7); },
+    previewLevelReview() {
+      const S = SA.services.sellers, L = S.levels();
+      return S.list().map((s) => {
+        const lv = S.levelOf(s);
+        const kept = s.levelKept != null ? s.levelKept : lv.earned;
+        const action = lv.earned > kept ? 'up' : lv.earned === kept ? 'ok' : s.grace ? 'down' : 'grace';
+        return { s, from: L[kept]?.name || lv.name, to: L[action === 'grace' ? kept : lv.earned].name, earned: lv.earned, kept, action, rating: lv.stats.rating, sales: lv.stats.sales };
+      });
+    },
+    runLevelReview() {
+      me();
+      const month = new Date().toISOString().slice(0, 7);
+      const L = SA.services.sellers.levels();
+      const results = admin.previewLevelReview().map((r) => {
+        const patch = r.action === 'grace' ? { levelKept: r.kept, grace: { since: month } } : { levelKept: r.earned, grace: null };
+        db().update('sellers', r.s.id, patch);
+        if (r.action === 'grace') N()?.toSeller(r.s.id, { cat: 'level', tone: 'gold', title: `Grace month: keep ${r.from}`, body: `Your rating is ${r.rating.toFixed(1)} — ${L[r.kept].name} needs ${L[r.kept].rating}. Bring it back up before next month’s review to keep your perks.`, link: '#/dash/seller' });
+        // A level that goes down is announced by the notification sweep ("Your level is now …")
+        return { sellerId: r.s.id, name: r.s.name, from: r.from, to: r.to, action: r.action, rating: r.rating, sales: r.sales };
+      });
+      const rv = db().insert('levelReviews', { month, results, by: me().name, at: Date.now() }, 'lr');
+      log('levels.reviewed', `Ran the ${month} level review: ${results.filter((x) => x.action === 'grace').length} grace, ${results.filter((x) => x.action === 'down').length} down, ${results.filter((x) => x.action === 'up').length} up`, rv.id);
+      return rv;
+    },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,

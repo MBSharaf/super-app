@@ -272,7 +272,8 @@
       if (status === 'shipped') Object.assign(patch, { courier: courier || 'Courier', tracking });
       if (status === 'delivered') {
         patch.deliveredAt = now;
-        const d = db().find('designs', o.designId); if (d) db().update('designs', d.id, { sales: (d.sales || 0) + o.qty });
+        const d = db().find('designs', o.designId); if (d && !o.sample) db().update('designs', d.id, { sales: (d.sales || 0) + o.qty });
+        if (o.sample) { const sm = (db().all('samples') || []).find((x) => x.orderId === o.id); if (sm) db().update('samples', sm.id, { status: 'delivered' }); }
       }
       if (status === 'refused') {
         const pc = db().raw().podCustomers;
@@ -303,6 +304,37 @@
       N()?.toSeller(o.sellerId, { cat: 'orders', title: `Reprinted: ${o.title}`, body: 'The print partner fixed a print fault at their own cost. Your profit doesn’t change.', link: '#/dash/seller/orders' });
       return db().update('podOrders', id, { reprints: (o.reprints || 0) + 1, history: [...o.history, { status: 'reprint', at: Date.now(), note }] });
     },
+
+    /* ---------- Samples (a seller orders their own design to check the print) ---------- */
+    /** Price of a sample for this seller: base price, Pro 30% off, Elite one free a month */
+    samplePrice(designId, size) {
+      const d = db().find('designs', designId); if (!d) throw new ApiError('Design not found.', 'not_found');
+      const s = S().get(d.sellerId); const lv = S().levelOf(s);
+      const base = baseFor(d.catalogId, { size, back: !!d.placement?.back, sellerId: d.sellerId });
+      const month = new Date().toISOString().slice(0, 7);
+      const usedFree = (db().all('samples') || []).filter((x) => x.sellerId === s.id && x.free && x.status !== 'rejected' && new Date(x.createdAt).toISOString().slice(0, 7) === month).length;
+      const free = (lv.freeSamples || 0) > usedFree;
+      // Elite: one free a month, then the Pro discount (30%)
+      const disc = lv.sampleDiscount >= 1 ? 0.3 : lv.sampleDiscount || 0;
+      const price = free ? 0 : Math.round(base * (1 - disc));
+      return { base, price, free, discount: free ? 1 : disc, freeLeft: Math.max(0, (lv.freeSamples || 0) - usedFree), level: lv.name };
+    },
+    requestSample(designId, { color, size, address }) {
+      const d = db().find('designs', designId); if (!d) throw new ApiError('Design not found.', 'not_found');
+      if (!['live', 'review', 'paused', 'draft'].includes(d.status)) throw new ApiError('This design can’t be sampled.', 'invalid');
+      if (!d.colors.includes(color)) throw new ApiError('Choose one of the design’s colours.', 'invalid');
+      const c = catalogItem(d.catalogId); if (!c?.sizes.includes(size)) throw new ApiError('Choose a size.', 'invalid');
+      if (!address || String(address).trim().length < 8) throw new ApiError('Enter the delivery address.', 'invalid');
+      const p = pod.samplePrice(designId, size);
+      const s = S().get(d.sellerId);
+      const e = pod.earnings(s.id);
+      if (p.price > e.available) throw new ApiError(`The sample costs ${p.price} EGP — your available balance is ${e.available} EGP. Wait for more profit to clear.`, 'insufficient');
+      const x = db().insert('samples', { sellerId: s.id, designId, title: d.title, catalogId: d.catalogId, color, size, address: String(address).trim(), price: p.price, free: p.free, status: 'requested' }, 'sm');
+      db().log(s.accountId, 'sample.requested', `${s.name} ordered a sample of “${d.title}” (${color}, ${size})`, x.id);
+      N()?.toAdmins({ cat: 'designs', title: `Sample request: ${d.title}`, body: `${s.name} · ${color} · ${size} · ${p.free ? 'free (Elite)' : `${p.price} EGP`}`, link: '#/admin/samples' });
+      return x;
+    },
+    samples: (sellerId) => (db().all('samples') || []).filter((x) => !sellerId || x.sellerId === sellerId).sort((a, b) => b.createdAt - a.createdAt),
 
     /* ---------- Seller earnings ---------- */
     earnings(sellerId) {

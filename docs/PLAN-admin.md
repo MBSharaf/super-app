@@ -55,7 +55,7 @@ Agreed with the user on 2026-10-15.
 - [x] 5. Marketing: broadcast notifications, platform promo codes (with site checkout integration).
 - [x] 6. Content: home banners, the announcement bar, news (write, edit, hide, breaking), pickup-game moderation.
 - [x] 7. Fantasy: sponsors, league prizes, announcing winners with vouchers, pass subscribers.
-- [ ] 8. Part 4:
+- [x] 8. Part 4:
   - monthly level review with a grace month;
   - samples (seller, admin and print queue);
   - advanced analytics and export (admin and seller).

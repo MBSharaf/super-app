@@ -44,6 +44,7 @@
         { key: 'seller', label: 'Overview', href: '#/dash/seller', icon: 'grid' },
         { key: 'seller-store', label: 'Store settings', href: '#/dash/seller/store', icon: 'settings' },
         { key: 'seller-calendar', label: 'Marketing calendar', href: '#/dash/seller/calendar', icon: 'calendar' },
+        { key: 'seller-analytics', label: 'Analytics', href: '#/dash/seller/analytics', icon: 'chart' },
         ...(s?.mode !== 'store' ? [{ group: 'Print on demand' }, { key: 'seller-designs', label: 'Designs', href: '#/dash/seller/designs', icon: 'image' }, { key: 'seller-orders', label: 'Print orders', href: '#/dash/seller/orders', icon: 'package' }] : []),
         ...(s?.storeId ? [{ group: 'My store' }, { key: 'store', label: 'Products', href: '#/dash/store', icon: 'bag', badge: 'stock' }, { key: 'orders', label: 'Store orders', href: '#/dash/orders', icon: 'truck', badge: 'orders' }] : []),
         { group: 'Money' }, { key: 'seller-wallet', label: 'Wallet', href: '#/dash/seller/wallet', icon: 'wallet' }, ...(s?.storeId ? [{ key: 'codes', label: 'Discount codes', href: '#/dash/codes', icon: 'tag' }] : []),

@@ -12,6 +12,7 @@
 
   const TABS = [['todo', 'To print'], ['shipped', 'On the way'], ['done', 'Delivered'], ['refused', 'Refused']];
   const TAB_STATUS = { todo: ['received', 'printing'], shipped: ['shipped'], done: ['delivered'], refused: ['refused', 'cancelled'] };
+  const sampleTag = (o) => (o.sample ? ' <span class="badge badge-gold">Sample → seller</span>' : '');
   const BADGE = { received: ['badge-blaze', 'New'], printing: ['badge-gold', 'Printing'], shipped: ['badge-info', 'Shipped'], delivered: ['badge-turf', 'Delivered'], refused: ['badge-danger', 'Refused'], cancelled: ['badge-danger', 'Cancelled'] };
   const COURIERS = ['Bosta', 'Aramex', 'Mylerz', 'Egypt Post'];
 
@@ -28,7 +29,7 @@
     return `<article class="dash-card pr-item" data-po="${o.id}">
       <div class="pr-media">${d ? sides.map((x) => `<div class="pr-mock">${sideMock(d, o, x)}<span class="xs muted">${x === 'front' ? 'Front' : 'Back'}</span></div>`).join('') : '<span class="xs muted">Design removed</span>'}</div>
       <div class="pr-body">
-        <div class="row-between" style="--gap:8px"><b class="num">${esc(o.id)}</b><span class="badge ${cls}">${label}</span></div>
+        <div class="row-between" style="--gap:8px"><b class="num">${esc(o.id)}${sampleTag(o)}</b><span class="badge ${cls}">${label}</span></div>
         <p class="small strong">${o.qty} × ${esc(d?.product?.name || o.catalogId)} · ${esc(o.color)} · ${esc(o.size)}</p>
         <p class="xs muted">“${esc(o.title)}” · order ${esc(o.orderId)} · ${timeAgo(o.placedAt)} · ${esc(o.customer.city || '')}${o.reprints ? ` · reprinted ${o.reprints}×` : ''}</p>
         ${o.tracking ? `<p class="xs">${icon('truck', 12)} ${esc(o.courier)} · <span class="num">${esc(o.tracking)}</span></p>` : ''}
