@@ -284,6 +284,63 @@
       N()?.toSeller(sellerId, { cat: 'account', tone: 'turf', title: 'A copyright strike was removed', body: reason.trim(), link: '#/dash/seller' });
     },
     verifyKyc(sellerId, ok) { me(); const s = SA.services.sellers.verifyKyc(sellerId, ok); log(`seller.kyc-${ok ? 'verified' : 'rejected'}`, `${ok ? 'Verified' : 'Rejected'} ${s.name}’s ID`, sellerId); return s; },
+    /* ---------- Support & disputes ---------- */
+    replyTicket(id, text, { resolve = false } = {}) {
+      me();
+      const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');
+      const t = String(text || '').trim();
+      if (t.length < 2) throw new ApiError('Write a reply first.', 'invalid');
+      db().update('tickets', id, { messages: [...tk.messages, { by: 'admin', name: me().name, text: t.slice(0, 2000), at: Date.now() }], status: resolve ? 'resolved' : 'pending', resolvedAt: resolve ? Date.now() : tk.resolvedAt || 0 });
+      log('support.replied', `Replied to ${tk.id}${resolve ? ' and resolved it' : ''}: ${t.slice(0, 80)}`, id);
+      admin._tellTicket(tk, 'Super App replied', t.slice(0, 140));
+    },
+    setTicket(id, patch) {
+      me();
+      const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');
+      db().update('tickets', id, { ...patch, ...(patch.status === 'resolved' ? { resolvedAt: Date.now() } : {}) });
+      log('support.updated', `${tk.id}: ${Object.entries(patch).map(([k, v]) => `${k} → ${v}`).join(', ')}`, id);
+      if (patch.status === 'resolved') admin._tellTicket(tk, 'Your request was resolved', tk.subject);
+    },
+    /** Refund a dispute: the customer gets the money; Super App, the partner or the seller pays for it */
+    async refundTicket(id, { amount, bearer, note = '' }) {
+      me();
+      const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');
+      if (tk.refund) throw new ApiError('This dispute was already refunded.', 'invalid');
+      const amt = Math.round(+amount);
+      const max = tk.amount || 20000;
+      if (!(amt >= 1 && amt <= max)) throw new ApiError(`Refund between 1 and ${max.toLocaleString()} EGP.`, 'invalid');
+      if (!['platform', 'partner'].includes(bearer)) throw new ApiError('Choose who pays for it.', 'invalid');
+      if (bearer === 'partner' && !tk.against) throw new ApiError('No partner or seller is linked to this request.', 'invalid');
+      const u = deviceUser();
+      if (tk.from?.kind === 'customer' && u && tk.from.id === u.id) await SA.services.payment.refund(amt, `Refund — ${tk.id} ${tk.subject}`);
+      const rf = db().insert('refunds', { ticketId: id, customerId: tk.from?.id, amount: amt, bearer: bearer === 'partner' ? 'partner' : 'platform', against: tk.against, ref: tk.ref, note: note.trim(), at: Date.now() }, 'rf');
+      if (bearer === 'partner') admin.adjust({ accountId: tk.against, amount: -amt, reason: `Refund to a customer for ${tk.id}: ${tk.subject}`, kind: 'refund', ref: id });
+      const who = bearer === 'partner' ? (db().find('accounts', tk.against)?.company || 'the partner') : 'Super App';
+      db().update('tickets', id, { refund: { amount: amt, bearer, at: Date.now(), id: rf.id }, messages: [...tk.messages, { by: 'system', name: 'Super App', text: `Refund of ${amt.toLocaleString()} EGP sent to the customer${note.trim() ? ` — ${note.trim()}` : ''}.`, at: Date.now() }] });
+      log('support.refunded', `Refunded ${amt.toLocaleString()} EGP for ${tk.id} (paid by ${who})`, id);
+      admin._tellTicket(tk, `${amt.toLocaleString()} EGP refund sent`, tk.from?.kind === 'customer' ? 'It’s in your Super App wallet.' : tk.subject);
+    },
+    /** Notify whoever opened the ticket */
+    _tellTicket(tk, title, body) {
+      const u = deviceUser();
+      if (tk.from?.kind === 'customer') { if (u && tk.from.id === u.id) SA.services.user.notify({ kind: 'shop', title: `${title} · ${tk.id}`, body, link: `/support/${tk.id}` }); }
+      else N()?.toAccount(tk.from.id, { cat: 'account', title: `${title} · ${tk.id}`, body, link: `#/dash/support/${tk.id}` });
+    },
+
+    /** Cancel a printed item before it ships (refund the customer; a started print is a cost for Super App) */
+    async cancelPrint(id, reason) {
+      me();
+      const o = db().find('podOrders', id); if (!o) throw new ApiError('Item not found.', 'not_found');
+      if (!['received', 'printing'].includes(o.status)) throw new ApiError('Only items that haven’t shipped can be cancelled.', 'invalid');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      const loss = o.status === 'printing' ? o.partnerCost * (o.qty || 1) : 0;
+      db().update('podOrders', id, { status: 'cancelled', loss, reason: reason.trim(), history: [...(o.history || []), { status: 'cancelled', at: Date.now(), note: reason.trim() }] });
+      const u = deviceUser();
+      const mine = u && o.customer.id === u.id ? (SA.core.store.get().orders || []).find((x) => x.id === o.orderId) : null;
+      if (mine && mine.payment?.method !== 'cod') { await SA.services.payment.refund(o.price * (o.qty || 1), `Refund — ${o.title} (cancelled)`); SA.services.user.notify({ kind: 'shop', title: 'A printed item was cancelled', body: `“${o.title}” — ${reason.trim()} The money is back in your wallet.`, link: `/order/${o.orderId}` }); }
+      N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'danger', title: `Cancelled: ${o.title}`, body: `${reason.trim()} No profit is counted for this item.`, link: '#/dash/seller/orders' });
+      log('print.cancelled', `Cancelled printed item ${o.id} “${o.title}”: ${reason.trim()}`, id);
+    },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,

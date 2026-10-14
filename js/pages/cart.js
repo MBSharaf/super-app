@@ -193,7 +193,7 @@
             </div>
           </div>
         </article>
-        <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button><a class="btn btn-outline" href="#/orders">Order history</a></div>
+        <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button><a class="btn btn-outline" href="#/orders">Order history</a><a class="btn btn-ghost" href="#/support?ref=order:${encodeURIComponent(o.id)}">${icon('help', 16)} Get help</a></div>
       </div>`;
     },
     mount(el, ctx) {

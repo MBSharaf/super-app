@@ -21,6 +21,7 @@
         ['heart', 'Wishlist', `${s.wishlist.length} saved`, '#/wishlist'],
         ['wallet', 'Wallet', money(s.wallet.balance), '#/wallet'],
         ['sparkle', 'Super Points', `${S.loyalty.summary().balance.toLocaleString()} points · ${S.loyalty.summary().tier.name}`, '#/wallet'],
+        ['help', 'Help & support', `${S.support.mine().filter((t) => t.status !== 'resolved').length} open request${S.support.mine().filter((t) => t.status !== 'resolved').length === 1 ? '' : 's'}`, '#/support'],
         ['trophy', 'Tournaments', `${(SA.services.db.all('tournaments') || []).filter((t) => t.status !== 'cancelled' && t.teams.some((x) => x.userId === u.id)).length} team entries`, '#/tournaments'],
       ];
       return `<div class="container">

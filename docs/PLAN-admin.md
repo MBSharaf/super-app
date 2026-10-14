@@ -49,7 +49,7 @@ Agreed with the user on 2026-10-15.
   - partners (suspend, open dashboard);
   - sellers (suspend, strikes, ID, levels).
   - Blocking and suspension are enforced on the site.
-- [ ] 4. Operations:
+- [x] 4. Operations:
   - all orders and bookings in one place, with admin cancel and refund;
   - support tickets and disputes, plus "Get help" on the site's order and booking pages.
 - [ ] 5. Marketing: broadcast notifications, platform promo codes (with site checkout integration).

@@ -171,6 +171,7 @@
           <button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button>
           ${!cancelled && !past && !checkedIn ? `<button class="btn btn-ghost" data-cancel style="color:var(--danger)">Cancel booking</button>` : ''}
           <a class="btn btn-ghost" href="#/bookings">All bookings</a>
+          <a class="btn btn-ghost" href="#/support?ref=booking:${encodeURIComponent(b.id)}">${icon('help', 16)} Get help</a>
         </div>
         ${!cancelled && !past ? `<p class="xs muted" style="text-align:center;margin-top:12px">${icon('shield', 12)} ${esc(pol.name)} policy — ${esc(pol.summary)}</p>` : ''}
       </div>`;

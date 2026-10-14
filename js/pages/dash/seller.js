@@ -13,7 +13,7 @@
   const DAY = 864e5;
 
   const seller = () => SL().byAccount(D().me().id);
-  const ST = { received: ['badge-blaze', 'Received'], printing: ['badge-gold', 'Printing'], shipped: ['badge-info', 'Shipped'], delivered: ['badge-turf', 'Delivered'], refused: ['badge-danger', 'Refused'] };
+  const ST = { received: ['badge-blaze', 'Received'], printing: ['badge-gold', 'Printing'], shipped: ['badge-info', 'Shipped'], delivered: ['badge-turf', 'Delivered'], refused: ['badge-danger', 'Refused'], cancelled: ['badge-danger', 'Cancelled'] };
   const status = (s) => { const [c, l] = ST[s] || ['badge', s]; return `<span class="badge ${c}">${l}</span>`; };
   const noSeller = (key, title) => C.layout(key, { title, body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Sellers only', text: 'Sign in with a seller account to see this page.' })}</div>` });
 

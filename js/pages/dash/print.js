@@ -11,8 +11,8 @@
   const DAY = 864e5;
 
   const TABS = [['todo', 'To print'], ['shipped', 'On the way'], ['done', 'Delivered'], ['refused', 'Refused']];
-  const TAB_STATUS = { todo: ['received', 'printing'], shipped: ['shipped'], done: ['delivered'], refused: ['refused'] };
-  const BADGE = { received: ['badge-blaze', 'New'], printing: ['badge-gold', 'Printing'], shipped: ['badge-info', 'Shipped'], delivered: ['badge-turf', 'Delivered'], refused: ['badge-danger', 'Refused'] };
+  const TAB_STATUS = { todo: ['received', 'printing'], shipped: ['shipped'], done: ['delivered'], refused: ['refused', 'cancelled'] };
+  const BADGE = { received: ['badge-blaze', 'New'], printing: ['badge-gold', 'Printing'], shipped: ['badge-info', 'Shipped'], delivered: ['badge-turf', 'Delivered'], refused: ['badge-danger', 'Refused'], cancelled: ['badge-danger', 'Cancelled'] };
   const COURIERS = ['Bosta', 'Aramex', 'Mylerz', 'Egypt Post'];
 
   const sideMock = (d, o, side) => {

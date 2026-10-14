@@ -70,8 +70,8 @@
     return { from: isoDate(addDays(t, -(n - 1))), to: isoDate(t), preset: String(n) };
   };
   const rangeLabel = (r) => `${fmtDate(r.from)} – ${fmtDate(r.to)}`;
-  const rangePicker = (r, base) => `<div class="dr">
-      <div class="chips" role="group" aria-label="Date range">${PRESETS.map(([v, l]) => `<a class="chip" href="${SA.core.router.href(base, { range: v })}" aria-pressed="${r.preset === v}">${l}</a>`).join('')}</div>
+  const rangePicker = (r, base, extra = {}) => `<div class="dr">
+      <div class="chips" role="group" aria-label="Date range">${PRESETS.map(([v, l]) => `<a class="chip" href="${SA.core.router.href(base, { ...extra, range: v })}" aria-pressed="${r.preset === v}">${l}</a>`).join('')}</div>
       <form class="dr-custom" data-range-form><input class="input" type="date" name="from" value="${r.from}" aria-label="From" /><span class="muted">→</span><input class="input" type="date" name="to" value="${r.to}" aria-label="To" /><button class="btn btn-outline btn-sm" type="submit">Apply</button></form>
     </div>`;
   const bindRange = (el, base, extra = {}) => el.querySelector('[data-range-form]')?.addEventListener('submit', (e) => {
@@ -94,7 +94,7 @@
     <nav class="dash-nav" aria-label="Dashboard">
       ${navFor(a).map((n, i) => (n.group !== undefined ? (n.group ? `<span class="dash-nav-label xs">${n.group}</span>` : '<span class="dash-nav-sep"></span>') : navLink(n, i, active, al))).join('')}
     </nav>
-    ${(() => { const u = unreadNow(); return `<nav class="dash-nav dash-nav-notes" aria-label="Notifications"><a href="${home}/notifications" ${active === 'notifications' ? 'aria-current="page"' : ''}>${icon('bell', 18)}<span class="grow">Notifications</span><span class="nav-badge ${u ? 'nb-blaze' : ''}" data-badge="notifications" ${u ? '' : 'hidden'}>${u || ''}</span></a></nav>`; })()}
+    ${(() => { const u = unreadNow(); return `<nav class="dash-nav dash-nav-notes" aria-label="Notifications"><a href="${home}/notifications" ${active === 'notifications' ? 'aria-current="page"' : ''}>${icon('bell', 18)}<span class="grow">Notifications</span><span class="nav-badge ${u ? 'nb-blaze' : ''}" data-badge="notifications" ${u ? '' : 'hidden'}>${u || ''}</span></a>${adm ? '' : `<a href="#/dash/support" ${active === 'support' ? 'aria-current="page"' : ''}>${icon('help', 18)}<span class="grow">Help & support</span></a>`}</nav>`; })()}
     <div class="dash-side-foot">
       <a href="#/" class="dash-foot-link">${icon('home', 16)} View the site</a>
       <button class="dash-foot-link" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button>

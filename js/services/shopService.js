@@ -299,7 +299,7 @@
       if (l.pod) {
         // Printed items: one group, status from the print partner's orders
         const po = db.all('podOrders').filter((x) => x.orderId === o.id);
-        const PST = { received: 'confirmed', printing: 'packed', shipped: 'shipped', delivered: 'delivered', refused: 'cancelled' };
+        const PST = { received: 'confirmed', printing: 'packed', shipped: 'shipped', delivered: 'delivered', refused: 'cancelled', cancelled: 'cancelled' };
         const rank = (s) => STAGES.indexOf(PST[s] || 'confirmed');
         const slow = po.filter((x) => x.status !== 'refused').sort((a, b) => rank(a.status) - rank(b.status))[0] || po[0];
         const g = groups.get('pod') || { storeId: 'pod', storeName: 'Printed for you by Super App', official: false, pod: true, status: slow ? PST[slow.status] : 'confirmed',

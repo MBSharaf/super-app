@@ -97,3 +97,24 @@
 .adm-rows tbody tr[data-open] { cursor: pointer; transition: background 160ms; }
 .adm-rows tbody tr[data-open]:hover, .adm-rows tbody tr[data-open]:focus-visible { background: var(--surface-2); outline: none; }
 .dl-acc:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
+
+/* Tickets & conversation (admin console, partner dashboard and the site's Help & support) */
+.adm-tickets { display: grid; }
+.adm-tickets > li > a { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; border-bottom: 1px solid var(--line-2); transition: background 160ms; }
+.adm-tickets > li:last-child > a { border-bottom: 0; }
+.adm-tickets > li > a:hover { background: var(--surface-2); }
+.adm-snip { display: block; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60ch; }
+.sup-list { background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-lg); overflow: hidden; }
+.adm-thread { display: grid; gap: 12px; margin-top: 14px; }
+.adm-thread li { display: flex; }
+.adm-thread li.by-admin, .adm-thread li.by-system { justify-content: flex-end; }
+.adm-bubble { max-width: min(560px, 88%); display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px 16px 16px 4px; background: var(--surface-2); border: 1px solid var(--line-2); }
+.adm-thread li.by-admin .adm-bubble, .adm-thread li.by-system .adm-bubble { border-radius: 16px 16px 4px 16px; background: var(--blaze-tint); border-color: transparent; }
+.adm-thread li.by-system .adm-bubble { background: var(--turf-tint); }
+.adm-bubble p { white-space: pre-wrap; }
+[dir="rtl"] .adm-bubble { border-radius: 16px 16px 4px 16px; }
+[dir="rtl"] .adm-thread li.by-admin .adm-bubble, [dir="rtl"] .adm-thread li.by-system .adm-bubble { border-radius: 16px 16px 16px 4px; }
+.sup-page .page-head .lead { margin-top: 8px; }
+.sup-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 22px; margin-top: 20px; align-items: start; }
+.sup-form { margin-top: 14px; }
+@media (max-width: 900px) { .sup-grid { grid-template-columns: minmax(0, 1fr); } }
