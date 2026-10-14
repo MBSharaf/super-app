@@ -1,7 +1,8 @@
 /**
  * Discount codes created by partners: pitch codes (used at booking checkout) and store codes
  * (used in the shop cart, only on that store's products). The partner pays for the discount —
- * their revenue is the discounted price. Platform codes (KICKOFF10…) stay in SA.data.products.
+ * their revenue is the discounted price. Platform codes (kind "platform") are made by the Super App team in the admin console,
+ * work in the shop, on bookings or both, and Super App pays for the discount (partners still earn on the full price).
  * Future API: POST /partner/codes, GET /codes/:code/validate
  */
 (function (SA) {
@@ -12,7 +13,7 @@
 
   const norm = (c) => String(c || '').trim().toUpperCase().replace(/\s+/g, '');
   const find = (code) => db().all('codes').find((x) => x.code === norm(code) && !x.deleted);
-  const label = (c) => (c.type === 'percent' ? `${Math.round(c.value)}% off` : `${c.value.toLocaleString()} EGP off`);
+  const label = (c) => (c.type === 'shipping' ? 'Free delivery' : c.type === 'percent' ? `${Math.round(c.value)}% off` : `${c.value.toLocaleString()} EGP off`);
   const me = () => SA.core.store.get().user?.id || 'u-001';
 
   /** Times this shopper (this device) already used the code */
@@ -23,7 +24,7 @@
     const c = find(code);
     const t = isoDate(today());
     if (!c || c.kind !== kind) return null;
-    if (c.status !== 'active') throw new ApiError('This code is paused by the venue.', 'invalid_coupon');
+    if (c.status !== 'active') throw new ApiError(kind === 'platform' ? 'This code is paused.' : 'This code is paused by the venue.', 'invalid_coupon');
     if (c.from && t < c.from) throw new ApiError(`This code starts on ${SA.core.utils.fmtDate(c.from)}.`, 'invalid_coupon');
     if (c.to && t > c.to) throw new ApiError('This code has expired.', 'invalid_coupon');
     if (c.maxUses && (c.uses || 0) >= c.maxUses) throw new ApiError('This code has been fully used.', 'invalid_coupon');
@@ -52,6 +53,15 @@
       if (!mine.length) throw new ApiError(`This code only works on products from ${db().find('stores', c0.storeId)?.name || 'one store'}.`, 'invalid_coupon');
       const c = check(code, { kind: 'store', amount: sub });
       return { code: c.code, id: c.id, storeId: c.storeId, storeName: db().find('stores', c.storeId)?.name, label: `${label(c)} ${db().find('stores', c.storeId)?.name}`, amount: discountOf(c, sub), base: sub };
+    },
+    /** Super App code for the shop or bookings (null when it isn't a platform code) */
+    platform(code, { scope, amount }) {
+      const c0 = find(code);
+      if (!c0 || c0.kind !== 'platform') return null;
+      if (!(c0.scope === 'both' || c0.scope === scope)) throw new ApiError(scope === 'shop' ? 'This code works on pitch bookings, not in the shop.' : 'This code works in the shop, not on pitch bookings.', 'invalid_coupon');
+      if (scope === 'bookings' && c0.type === 'shipping') throw new ApiError('This code is for free delivery in the shop.', 'invalid_coupon');
+      const c = check(code, { kind: 'platform', amount });
+      return { code: c.code, id: c.id, label: c.label || label(c), amount: c.type === 'shipping' ? 0 : discountOf(c, amount), freeShip: c.type === 'shipping', platform: true };
     },
     /** Record a use (called after payment succeeds) */
     use(id, { discount, revenue }) {

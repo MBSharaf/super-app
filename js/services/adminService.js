@@ -341,6 +341,70 @@
       N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'danger', title: `Cancelled: ${o.title}`, body: `${reason.trim()} No profit is counted for this item.`, link: '#/dash/seller/orders' });
       log('print.cancelled', `Cancelled printed item ${o.id} “${o.title}”: ${reason.trim()}`, id);
     },
+    /* ---------- Super App promo codes ---------- */
+    promos: () => db().all('codes').filter((c) => c.kind === 'platform' && !c.deleted).sort((a, b) => b.createdAt - a.createdAt),
+    partnerCodes: () => db().all('codes').filter((c) => c.kind !== 'platform' && !c.deleted).map((c) => ({ ...c, owner: db().find('accounts', c.ownerId) })).sort((a, b) => b.createdAt - a.createdAt),
+    savePromo(d, id = null) {
+      me();
+      const C = SA.services.codes;
+      const e = {};
+      const code = C.norm(d.code);
+      if (!/^[A-Z0-9-]{4,16}$/.test(code)) e.code = 'Use 4–16 letters or numbers (no spaces).';
+      else if (db().all('codes').some((c) => c.code === code && c.id !== id && !c.deleted)) e.code = 'This code is already taken.';
+      if (!['shop', 'bookings', 'both'].includes(d.scope)) e.scope = 'Choose where it works.';
+      if (!['percent', 'fixed', 'shipping'].includes(d.type)) e.type = 'Choose the discount type.';
+      if (d.type === 'shipping' && d.scope !== 'shop') e.type = 'Free delivery only works in the shop.';
+      const v = +d.value;
+      if (d.type === 'percent' && !(v >= 5 && v <= 70)) e.value = 'Between 5% and 70%.';
+      if (d.type === 'fixed' && !(v >= 10 && v <= 5000)) e.value = 'Between 10 and 5,000 EGP.';
+      if (d.to && d.from && d.to < d.from) e.to = 'End on or after the start date.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const rec = { code, kind: 'platform', ownerId: me().id, storeId: null, pitchIds: [], scope: d.scope, type: d.type, value: d.type === 'shipping' ? 0 : Math.round(v), min: Math.round(+d.min || 0), maxUses: Math.round(+d.maxUses || 0),
+        perCustomer: d.perCustomer ? 1 : 0, from: d.from || isoDate(today()), to: d.to || '', label: (d.label || '').trim(), note: (d.note || '').trim(), status: d.status === 'paused' ? 'paused' : 'active' };
+      const out = id ? db().update('codes', id, rec) : db().insert('codes', { ...rec, uses: 0, discountGiven: 0, revenue: 0, usedBy: [] }, 'cd');
+      log(id ? 'promo.updated' : 'promo.created', `${id ? 'Updated' : 'Created'} Super App code ${code} (${SA.services.codes.label(out)}, ${d.scope})`, out.id);
+      return out;
+    },
+    setCodeStatus(id, status) { me(); const c = db().find('codes', id); db().update('codes', id, { status }); log('promo.status', `${status === 'active' ? 'Resumed' : 'Paused'} code ${c.code}${c.kind !== 'platform' ? ` (${db().find('accounts', c.ownerId)?.company || 'partner'})` : ''}`, id); },
+    deleteCode(id) { me(); const c = db().find('codes', id); db().update('codes', id, { deleted: true, status: 'paused' }); log('promo.deleted', `Deleted code ${c.code}`, id); },
+
+    /* ---------- Broadcasts ---------- */
+    AUDIENCES: { owners: 'All pitch owners', sellers: 'All sellers', printer: 'The print partner', partners: 'Every partner (owners, sellers, print partner)', customers: 'Customers on the site', everyone: 'Everyone' },
+    audience(key, level = '') {
+      const accs = db().all('accounts');
+      const owners = accs.filter((a) => a.role === 'owner' && a.status !== 'suspended');
+      const sellers = accs.filter((a) => a.role === 'seller').filter((a) => !level || SA.services.sellers.levelOf(SA.services.sellers.byAccount(a.id) || {}).id === level);
+      const printer = accs.filter((a) => a.role === 'printer');
+      const ids = { owners, sellers, printer, partners: [...owners, ...sellers, ...printer], customers: [], everyone: [...owners, ...sellers, ...printer] }[key] || [];
+      const customers = ['customers', 'everyone'].includes(key) ? admin.customers().length : 0;
+      return { accounts: ids, customers };
+    },
+    broadcast({ audience, level = '', title, body, link = '', when = '' }) {
+      me();
+      const e = {};
+      if (!admin.AUDIENCES[audience]) e.audience = 'Choose who gets it.';
+      if (!title || title.trim().length < 3) e.title = 'Write a title (3+ characters).';
+      if (!body || body.trim().length < 5) e.body = 'Write the message.';
+      if (link && !/^#\/|^\//.test(link)) e.link = 'Use a link inside Super App, like #/shop or #/fantasy.';
+      const at = when ? new Date(when).getTime() : 0;
+      if (when && !(at > Date.now())) e.when = 'Pick a time in the future, or leave it empty to send now.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const b = db().insert('broadcasts', { audience, level, title: title.trim(), body: body.trim(), link: link.trim(), status: at ? 'scheduled' : 'sending', sendAt: at || Date.now(), by: me().name, reach: 0 }, 'bc');
+      log(at ? 'broadcast.scheduled' : 'broadcast.sent', `${at ? 'Scheduled' : 'Sent'} “${b.title}” to ${admin.AUDIENCES[audience].toLowerCase()}${level ? ` (${level})` : ''}`, b.id);
+      if (!at) admin._deliver(b);
+      return b;
+    },
+    _deliver(b) {
+      const { accounts, customers } = admin.audience(b.audience, b.level);
+      const link = b.link ? (b.link.startsWith('#') ? b.link : `#${b.link}`) : '';
+      accounts.forEach((a) => N()?.toAccount(a.id, { cat: 'account', tone: 'info', icon: 'megaphone', title: b.title, body: b.body, link: link.startsWith('#/dash') ? link : '' }));
+      if (customers && deviceUser() && !admin.isBlocked(deviceUser().id)) SA.services.user.notify({ kind: 'shop', title: b.title, body: b.body, link: link ? link.slice(1) : '' });
+      db().update('broadcasts', b.id, { status: 'sent', sentAt: Date.now(), reach: accounts.length + customers });
+    },
+    cancelBroadcast(id) { me(); const b = db().find('broadcasts', id); if (b?.status !== 'scheduled') throw new ApiError('Only scheduled messages can be cancelled.', 'invalid'); db().update('broadcasts', id, { status: 'cancelled' }); log('broadcast.cancelled', `Cancelled scheduled message “${b.title}”`, id); },
+    /** Send scheduled broadcasts that are due (runs on start-up and every minute; a server job with the backend) */
+    sweepBroadcasts() { (db().all('broadcasts') || []).filter((b) => b.status === 'scheduled' && b.sendAt <= Date.now()).forEach((b) => admin._deliver(b)); },
+
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,
@@ -408,4 +472,7 @@
   };
 
   SA.services.admin = admin;
+  // Scheduled broadcasts go out when they are due
+  const tick = () => { try { admin.sweepBroadcasts(); } catch (e) { console.warn(e); } };
+  setTimeout(tick, 1500); setInterval(tick, 60000);
 })(window.SA);

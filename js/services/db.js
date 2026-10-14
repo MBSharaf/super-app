@@ -139,6 +139,17 @@
     ensure('notifications', () => seedNotifications(now0()));
     // Admin console (release 5): Fantasy Pass sales ledger, refunds/adjustments, platform promo uses, support, content, samples, level reviews
     ['passSales', 'refunds', 'adjustments', 'promoUses', 'broadcasts', 'samples', 'levelReviews'].forEach((k) => ensure(k, () => []));
+    if (!data.codes.some((c) => c.kind === 'platform')) {
+      const t = Date.now(), d = (n) => SA.core.utils.isoDate(new Date(t + n * DAY));
+      const base = { kind: 'platform', ownerId: 'acc-admin', storeId: null, pitchIds: [], min: 0, maxUses: 0, perCustomer: 0, from: d(-60), to: '', status: 'active', usedBy: [], createdAt: t - 60 * DAY, updatedAt: t - 60 * DAY };
+      data.codes.push(
+        { ...base, id: 'cd-kickoff10', code: 'KICKOFF10', scope: 'shop', type: 'percent', value: 10, label: '10% off your order', note: 'Welcome code', uses: 412, discountGiven: 51870, revenue: 466830 },
+        { ...base, id: 'cd-pitch50', code: 'PITCH50', scope: 'shop', type: 'fixed', value: 50, min: 500, label: '50 EGP off', note: '', uses: 188, discountGiven: 9400, revenue: 151200 },
+        { ...base, id: 'cd-freeship', code: 'FREESHIP', scope: 'shop', type: 'shipping', value: 0, label: 'Free delivery', note: '', uses: 265, discountGiven: 15900, revenue: 198750 },
+        { ...base, id: 'cd-firstgame', code: 'FIRSTGAME', scope: 'bookings', type: 'percent', value: 15, label: '15% off your first booking', perCustomer: 1, note: 'New players — Super App pays, venues get the full price', uses: 96, discountGiven: 9120, revenue: 51680, from: d(-20) },
+      );
+      changed = true;
+    }
     if (!data.settings.adminSeed) {
       // A few withdrawal requests so the admin console has something to approve (demo)
       const H = 36e5, t = Date.now();

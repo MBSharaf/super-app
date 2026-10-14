@@ -47,11 +47,13 @@
       for (let h = hour; h < hour + duration; h += 0.5) hours.push(h);
       const list = Math.round(hours.reduce((sum, h) => sum + PS().priceAt(p, date, Math.floor(h)) / 2, 0));
       const off = Math.round(list * discount);
-      // Venue's own discount code (throws a friendly error if it doesn't apply)
-      const promo = code ? SA.services.codes.forBooking(code, { pitchId, amount: list - off }) : null;
-      const pitchTotal = list - off - (promo?.amount || 0);
+      // A Super App code (Super App pays: the venue still earns the full price) or the venue's own code (throws a friendly error if it doesn't apply)
+      const sa = code ? SA.services.codes.platform(code, { scope: 'bookings', amount: list - off }) : null;
+      const promo = sa || (code ? SA.services.codes.forBooking(code, { pitchId, amount: list - off }) : null);
+      const pitchTotal = list - off - (promo && !promo.platform ? promo.amount : 0);
       const serviceFee = Math.round(pitchTotal * SA.services.db.settings().serviceFee);
-      return { listPrice: list, discountAmount: off, discount, promo, pitchTotal, serviceFee, total: pitchTotal + serviceFee, perPlayer: Math.ceil((pitchTotal + serviceFee) / p.players) };
+      const total = pitchTotal + serviceFee - (sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0);
+      return { listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players) };
     },
 
     /** Weekly booking: every session's availability and price, using the pitch's weekly discount */
@@ -80,6 +82,7 @@
       return request(() => {
         const booking = bookingService._record(p, { date, hour, duration, players, q, paid });
         if (q.promo) SA.services.codes.use(q.promo.id, { discount: q.promo.amount, revenue: q.pitchTotal });
+        if (q.promo?.platform) db().insert('promoUses', { codeId: q.promo.id, code: q.promo.code, amount: q.platformOff, scope: 'bookings', ref: booking.id, at: Date.now() }, 'pu');
         store.set((s) => ({ bookings: [booking, ...s.bookings] }), 'booking:new');
         bookingService._toLedger(booking);
         db().log('customer', 'booking.created', `New app booking ${booking.id} at ${p.name}`, booking.id);

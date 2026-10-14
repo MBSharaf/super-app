@@ -74,12 +74,14 @@
     const lines = s.cart.map((l) => { const p = find(l.productId); return { ...l, product: p && { ...p, price: unitPrice(p, l.variant), was: Math.max(p.was, unitPrice(p, l.variant)) } }; }).filter((l) => l.product);
     const subtotal = lines.reduce((a, l) => a + l.product.price * l.qty, 0);
     const savings = lines.reduce((a, l) => a + Math.max(0, l.product.was - l.product.price) * l.qty, 0);
-    let c = s.coupon && P.coupons[s.coupon];
+    let c = null;
     let couponOff = 0, freeShip = false, partner = null;
-    if (c) {
-      if (c.type === 'percent') couponOff = Math.round(subtotal * c.value / 100);
-      if (c.type === 'fixed' && subtotal >= (c.min || 0)) couponOff = c.value;
-      if (c.type === 'shipping') freeShip = true;
+    // Super App code (made in the admin console, paid by Super App)
+    let pc = null;
+    if (s.coupon && SA.services.codes) { try { pc = SA.services.codes.platform(s.coupon, { scope: 'shop', amount: subtotal }); } catch { pc = null; } }
+    if (pc) {
+      couponOff = pc.amount; freeShip = pc.freeShip;
+      c = { label: pc.label, platform: true, id: pc.id };
     } else if (s.coupon && SA.services.codes) {
       // A store's own code: only that store's items are discounted
       try { partner = SA.services.codes.forCart(s.coupon, lines); } catch { partner = null; }
@@ -185,7 +187,7 @@
     totals,
     applyCoupon: (code) => request(() => {
       const c = code.trim().toUpperCase();
-      const def = P.coupons[c];
+      const def = SA.services.codes?.platform(c, { scope: 'shop', amount: totals().subtotal });
       if (!def) {
         // Partner store code?
         const pc = SA.services.codes?.forCart(c, totals().lines);
@@ -193,7 +195,6 @@
         store.set({ coupon: c }, 'cart');
         return { label: pc.label };
       }
-      if (def.min && totals().subtotal < def.min) throw new ApiError(`${c} needs an order of at least ${def.min} EGP.`, 'min_not_met');
       store.set({ coupon: c }, 'cart');
       return def;
     }, { latency: 300 }),
@@ -250,6 +251,12 @@
             variant: l.variant, customer: { name: u.name || 'Customer', city: address?.city || '', phone: address?.phone || u.phone || '' }, payment: paid.method === 'cod' ? 'Cash on delivery' : paid.method === 'wallet' ? 'Wallet' : 'Card',
             address: address ? { label: address.label || '', line1: address.line1 || '', line2: address.line2 || '', city: address.city || '', phone: address.phone || u.phone || '' } : null, delivery, fulfil: null });
         });
+        // Super App code: Super App pays the discount (recorded for the revenue report)
+        if (t.coupon?.platform) {
+          const saved = t.couponOff || (t.shipping === 0 && t.subtotal < P.shipping.freeOver ? P.shipping.standard : 0);
+          SA.services.codes.use(t.coupon.id, { discount: saved, revenue: t.subtotal - t.couponOff });
+          db.insert('promoUses', { codeId: t.coupon.id, code: t.coupon.code, amount: saved, scope: 'shop', ref: order.id, at: Date.now() }, 'pu');
+        }
         // Store code: the store funds it, so its sale lines carry the discount
         if (t.partnerCode) {
           const pc = t.partnerCode;

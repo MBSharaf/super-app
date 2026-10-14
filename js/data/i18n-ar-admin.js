@@ -109,6 +109,30 @@
     'Payouts, your account, the shop, the print queue — anything you need from the Super App team.': 'التحويلات، حسابك، المتجر، طابور الطباعة — أي حاجة محتاجها من فريق Super App.',
     'A booking': 'حجز', 'A shop order': 'طلب من المتجر', 'A printed item': 'قطعة مطبوعة', 'Payments & wallet': 'الدفع والمحفظة', 'My account': 'حسابي', 'Something else': 'حاجة تانية', 'Choose what it’s about.': 'اختار الموضوع.',
     'Write a short subject.': 'اكتب موضوع قصير.', 'Tell us a bit more (at least 10 characters).': 'احكيلنا أكتر شوية (10 حروف على الأقل).', 'Write a message first.': 'اكتب رسالة الأول.', 'Your request was resolved': 'طلبك اتحل', 'Resolved.': 'اتحلت.',
+    /* ---------- Broadcasts ---------- */
+    'New message': 'رسالة جديدة', 'Goes to the notification bell of everyone you choose. Customers see it in the site bell.': 'بتوصل لجرس الإشعارات عند كل اللي تختارهم. العملاء بيشوفوها في جرس الموقع.',
+    'Send to': 'ابعت لـ', 'Seller level': 'مستوى البايع', 'All levels': 'كل المستويات', 'Title': 'العنوان', 'e.g. New: free delivery on printed hoodies this weekend': 'مثلاً جديد: شحن مجاني للهوديز المطبوعة الويك إند ده',
+    'Link (optional)': 'لينك (اختياري)', 'Send later (optional)': 'ابعت بعدين (اختياري)', 'Send now': 'ابعت دلوقتي', 'Schedule': 'جدول', 'Preview': 'معاينة', 'Your title': 'العنوان بتاعك', 'Your message shows here.': 'رسالتك هتظهر هنا.',
+    'Demo: on this device, partners get it in their dashboard bell and the shopper in the site bell. With the backend it also goes out as push, email or SMS.': 'تجريبي: على الجهاز ده، الشركاء بيستلموها في جرس لوحتهم والعميل في جرس الموقع. مع الباك إند هتتبعت كمان push وإيميل وSMS.',
+    'History': 'السجل', 'Audience': 'الجمهور', 'Reached': 'وصلت لـ', 'Scheduled': 'متجدولة', 'Sending': 'بتتبعت', 'No messages sent yet.': 'مفيش رسايل اتبعتت لسه.',
+    'Send a message to partners, sellers, the print partner or customers — now or later': 'ابعت رسالة للشركاء أو البايعين أو شريك الطباعة أو العملاء — دلوقتي أو بعدين',
+    'Send this message now?': 'تبعت الرسالة دي دلوقتي؟', 'Message scheduled': 'الرسالة اتجدولت', 'Scheduled message cancelled': 'الرسالة المجدولة اتلغت',
+    'All pitch owners': 'كل أصحاب الملاعب', 'All sellers': 'كل البايعين', 'The print partner': 'شريك الطباعة', 'Every partner (owners, sellers, print partner)': 'كل الشركاء (أصحاب ملاعب، بايعين، شريك طباعة)', 'Customers on the site': 'عملاء الموقع',
+    'Choose who gets it.': 'اختار مين يستلمها.', 'Write a title (3+ characters).': 'اكتب عنوان (3 حروف أو أكتر).', 'Write the message.': 'اكتب الرسالة.', 'Use a link inside Super App, like #/shop or #/fantasy.': 'استخدم لينك جوه Super App، زي #/shop أو #/fantasy.',
+    'Pick a time in the future, or leave it empty to send now.': 'اختار وقت في المستقبل، أو سيبها فاضية عشان تتبعت دلوقتي.',
+    /* ---------- Promo codes ---------- */
+    'New Super App code': 'كود Super App جديد', 'Super App pays the discount — venues and stores still earn on the full price.': 'Super App بتدفع الخصم — الملاعب والمتاجر بياخدوا السعر كامل.', 'Code': 'الكود', 'e.g. RAMADAN20': 'مثلاً RAMADAN20',
+    'Works on': 'شغال على', 'Discount': 'الخصم', 'Percentage': 'نسبة', 'Fixed amount (EGP)': 'مبلغ ثابت (جنيه)', 'Free delivery (shop)': 'شحن مجاني (المتجر)', 'Value': 'القيمة', 'Minimum spend (EGP)': 'أقل مبلغ (جنيه)',
+    'Total uses (0 = unlimited)': 'عدد الاستخدامات (0 = مفتوح)', 'Starts': 'يبدأ', 'Ends (optional)': 'ينتهي (اختياري)', 'Label customers see (optional)': 'الوصف اللي العملاء هيشوفوه (اختياري)', 'e.g. 20% off for Ramadan nights': 'مثلاً خصم 20% لليالي رمضان',
+    'Internal note (optional)': 'ملاحظة داخلية (اختياري)', 'Once per customer': 'مرة واحدة لكل عميل', 'Save code': 'احفظ الكود', 'Create code': 'اعمل الكود', 'Code saved': 'الكود اتحفظ', 'Code created': 'الكود اتعمل',
+    'Shop': 'المتجر', 'Pitch bookings': 'حجوزات الملاعب', 'Shop + bookings': 'المتجر + الحجوزات', 'Valid': 'صالح', 'Uses': 'الاستخدامات', 'Discount given': 'الخصم اللي اتدى', 'Sales with it': 'مبيعات بيه', 'Ended': 'خلص',
+    'Edit': 'تعديل', 'Pause': 'إيقاف مؤقت', 'Resume': 'كمّل', 'No Super App codes yet.': 'مفيش أكواد Super App لسه.', 'Partner': 'الشريك', 'Their pitches': 'ملاعبهم', 'Their store': 'متجرهم', 'No partner codes.': 'مفيش أكواد شركاء.',
+    'Active Super App codes': 'أكواد Super App النشطة', 'Uses (all time)': 'الاستخدامات (كل الوقت)', 'Discount paid this month': 'الخصم المدفوع الشهر ده', 'Counted as a cost in Revenue': 'بيتحسب تكلفة في الإيرادات', 'Partner codes': 'أكواد الشركاء',
+    'Super App codes': 'أكواد Super App', 'Partner & seller codes': 'أكواد الشركاء والبايعين', 'Codes Super App pays for, in the shop and on pitch bookings — and the codes partners run': 'أكواد Super App بتدفعها في المتجر وحجوزات الملاعب — وأكواد الشركاء',
+    'New code': 'كود جديد', 'Code resumed': 'الكود رجع', 'Code paused': 'الكود اتوقف', 'Customers can’t use it any more. Its history stays in the revenue report.': 'العملاء مش هيقدروا يستخدموه تاني. سجله هيفضل في تقرير الإيرادات.', 'Code deleted': 'الكود اتمسح',
+    'Promo code': 'كود خصم', 'This code works on pitch bookings, not in the shop.': 'الكود ده شغال على حجز الملاعب، مش المتجر.', 'This code works in the shop, not on pitch bookings.': 'الكود ده شغال في المتجر، مش على حجز الملاعب.',
+    'This code is paused.': 'الكود ده متوقف.', 'This code is for free delivery in the shop.': 'الكود ده للشحن المجاني في المتجر.', 'Free delivery': 'شحن مجاني', '10% off your order': 'خصم 10% على طلبك', '50 EGP off': 'خصم 50 جنيه', '15% off your first booking': 'خصم 15% على أول حجز',
+    'Welcome code': 'كود ترحيب', 'New players — Super App pays, venues get the full price': 'لاعيبة جداد — Super App بتدفع، والملاعب بتاخد السعر كامل',
     /* Shared */
     'Reason': 'السبب', 'Write a short reason (it’s saved in the audit log).': 'اكتب سبب قصير (بيتسجل في سجل العمليات).', 'Open their dashboard': 'افتح لوحتهم',
   });
@@ -133,5 +157,7 @@
     ['^(.+) refunded (.+) — paid by (.+)\\.$', 'اترجّع {1} {2} — دفعه {3}.'], ['^Support: (.+)$', 'دعم: {1}'], ['^Dispute: (.+)$', 'نزاع: {1}'], ['^New reply on (TK-\\d+)$', 'رد جديد على {1}'],
     ['^Super App replied · (TK-\\d+)$', 'Super App ردت · {1}'], ['^Your request was resolved · (TK-\\d+)$', 'طلبك اتحل · {1}'], ['^(.+) EGP refund sent · (TK-\\d+)$', 'اترجّع {1} جنيه · {2}'],
     ['^Refund of (.+) EGP sent to the customer(.*)\\.$', 'اترجّع {1} جنيه للعميل{2}.'],
+    ['^Reaches (\\d+) partner accounts?\\.$', 'بتوصل لـ{1} حساب شريك.'], ['^Reaches (\\d+) partner accounts? and (\\d+) customers\\.$', 'بتوصل لـ{1} حساب شريك و{2} عميل.'], ['^It goes to (\\d+) people right away\\.$', 'هتوصل لـ{1} شخص حالاً.'],
+    ['^Edit (.+)$', 'تعديل {1}'], ['^Delete (.+)\\?$', 'تمسح {1}؟'], ['^min (.+)$', 'أقل حاجة {1}'], ['^(.+) – no end$', '{1} – مفتوح'], ['^(\\d+) active$', '{1} نشط'],
   );
 })(window.SA);

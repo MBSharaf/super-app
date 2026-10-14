@@ -118,3 +118,4 @@
 .sup-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 22px; margin-top: 20px; align-items: start; }
 .sup-form { margin-top: 14px; }
 @media (max-width: 900px) { .sup-grid { grid-template-columns: minmax(0, 1fr); } }
+.adm-preview { display: flex; gap: 12px; align-items: flex-start; margin-top: 14px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line-2); box-shadow: var(--shadow-1); }

@@ -90,6 +90,8 @@
     .add('/admin/partners', P.adminPartners)
     .add('/admin/customers', P.adminCustomers)
     .add('/admin/orders', P.adminOrders)
+    .add('/admin/broadcast', P.adminBroadcast)
+    .add('/admin/promos', P.adminPromos)
     .add('/admin/support', P.adminSupport)
     .add('/admin/support/:id', P.adminTicket)
     .add('/admin/sellers', P.adminSellers)
