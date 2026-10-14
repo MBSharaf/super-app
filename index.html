@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Super App — Book, play, compete</title>
+  <meta name="description" content="Book football pitches near you, find players for your match, play Egyptian Premier League fantasy and shop sports gear — in one app." />
+  <meta name="theme-color" content="#F1F2EE" />
+  <script>
+    /* Theme + language before first paint (no flash). js/core/theme.js and js/core/i18n.js take over. */
+    (function () { try {
+      var t = localStorage.getItem('superapp.theme') || 'auto';
+      var dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      if (localStorage.getItem('superapp.lang') === 'ar') { document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl'; }
+    } catch (e) {} })();
+  </script>
+  <link rel="preload" href="vendor/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="vendor/fonts/archivo.css" />
+  <link rel="stylesheet" href="vendor/fonts/cairo.css" />
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230D1411'/%3E%3Cpath d='M9 20.5c1.6 1.4 3.6 2.1 6 2.1 3.3 0 5.4-1.6 5.4-4 0-2.2-1.5-3.1-4.6-3.8-2-.5-2.6-.8-2.6-1.6 0-.7.7-1.2 1.9-1.2 1.4 0 2.6.5 3.7 1.4l1.7-2.3C19.1 9.9 17.4 9.3 15.2 9.3c-3.1 0-5.2 1.7-5.2 4 0 2.4 1.7 3.3 4.7 4 1.9.4 2.5.8 2.5 1.6 0 .8-.8 1.3-2.1 1.3-1.7 0-3.1-.6-4.4-1.8z' fill='%23fff'/%3E%3Ccircle cx='23.5' cy='9' r='2.5' fill='%23FF5B14'/%3E%3C/svg%3E" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/pages/home.css" />
+  <link rel="stylesheet" href="css/pages/pitches.css" />
+  <link rel="stylesheet" href="css/pages/players.css" />
+  <link rel="stylesheet" href="css/pages/fantasy.css" />
+  <link rel="stylesheet" href="css/pages/shop.css" />
+  <link rel="stylesheet" href="css/pages/account.css" />
+  <link rel="stylesheet" href="css/pages/media.css" />
+  <link rel="stylesheet" href="css/dash.css" />
+  <link rel="stylesheet" href="css/pages/ops.css" />
+  <link rel="stylesheet" href="css/pages/engage.css" />
+  <link rel="stylesheet" href="css/pages/seller.css" />
+  <link rel="stylesheet" href="css/motion.css" />
+  <link rel="stylesheet" href="css/dark.css" />
+  <link rel="stylesheet" href="css/rtl.css" />
+</head>
+<body>
+  <button class="skip-link" type="button" onclick="document.getElementById('app').focus()">Skip to content</button>
+  <header id="site-header" class="site-header"></header>
+  <main id="app" class="app" tabindex="-1" aria-live="polite"></main>
+  <footer id="site-footer" class="site-footer"></footer>
+  <nav id="tabbar" class="tabbar" aria-label="Primary"></nav>
+  <div id="overlay-root"></div>
+  <div id="toast-root" class="toast-root" role="status" aria-live="polite"></div>
+
+  <noscript><p style="padding:24px">Super App needs JavaScript to run.</p></noscript>
+
+  <!-- Leaflet 1.9.4 (BSD-2), self-hosted -->
+  <script src="vendor/leaflet/leaflet.js" defer></script>
+
+  <!-- Core: namespace, utilities, state, routing -->
+  <script src="js/core/namespace.js" defer></script>
+  <script src="js/core/utils.js" defer></script>
+  <script src="js/core/store.js" defer></script>
+  <script src="js/core/router.js" defer></script>
+  <script src="js/core/motion.js" defer></script>
+  <script src="js/core/xlsx.js" defer></script>
+  <script src="js/core/theme.js" defer></script>
+  <script src="js/core/qr.js" defer></script>
+  <script src="js/core/pdf.js" defer></script>
+
+  <!-- Data: seed/mock datasets (replace with API responses later) -->
+  <script src="js/data/media.js" defer></script>
+  <script src="js/data/pitches.js" defer></script>
+  <script src="js/data/matches.js" defer></script>
+  <script src="js/data/fantasy.js" defer></script>
+  <script src="js/data/products.js" defer></script>
+  <script src="js/data/user.js" defer></script>
+  <script src="js/data/pod.js" defer></script>
+  <script src="js/data/news.js" defer></script>
+  <script src="js/data/competitions.js" defer></script>
+  <script src="js/data/i18n-ar.js" defer></script>
+  <script src="js/data/i18n-ar-dash.js" defer></script>
+  <script src="js/data/i18n-ar-content.js" defer></script>
+  <script src="js/data/i18n-ar-extra.js" defer></script>
+  <script src="js/data/i18n-ar-sellers.js" defer></script>
+  <script src="js/core/i18n.js" defer></script>
+
+  <!-- Services: the only layer that touches data. Swap mock* for real API clients. -->
+  <script src="js/services/http.js" defer></script>
+  <script src="js/services/db.js" defer></script>
+  <script src="js/services/locationService.js" defer></script>
+  <script src="js/services/paymentService.js" defer></script>
+  <script src="js/services/pitchService.js" defer></script>
+  <script src="js/services/bookingService.js" defer></script>
+  <script src="js/services/matchService.js" defer></script>
+  <script src="js/services/fantasyService.js" defer></script>
+  <script src="js/services/shopService.js" defer></script>
+  <script src="js/services/userService.js" defer></script>
+  <script src="js/services/newsService.js" defer></script>
+  <script src="js/services/scheduleService.js" defer></script>
+  <script src="js/services/dashService.js" defer></script>
+  <script src="js/services/codeService.js" defer></script>
+  <script src="js/services/waitlistService.js" defer></script>
+  <script src="js/services/loyaltyService.js" defer></script>
+  <script src="js/services/tournamentService.js" defer></script>
+  <script src="js/services/sellerService.js" defer></script>
+  <script src="js/services/podService.js" defer></script>
+  <script src="js/services/notifyService.js" defer></script>
+
+  <!-- UI components (pure render functions + small controllers) -->
+  <script src="js/components/icons.js" defer></script>
+  <script src="js/components/ui.js" defer></script>
+  <script src="js/components/overlay.js" defer></script>
+  <script src="js/components/cards.js" defer></script>
+  <script src="js/components/payment.js" defer></script>
+  <script src="js/components/garment.js" defer></script>
+  <script src="js/components/photoMock.js" defer></script>
+  <script src="js/components/imagePick.js" defer></script>
+  <script src="js/components/docs.js" defer></script>
+  <script src="js/components/map.js" defer></script>
+  <script src="js/components/shell.js" defer></script>
+  <script src="js/components/ball3d.js" defer></script>
+  <script src="js/components/whatsapp.js" defer></script>
+  <script src="js/components/social.js" defer></script>
+  <script src="js/components/sports.js" defer></script>
+
+  <!-- Pages -->
+  <script src="js/pages/home.js" defer></script>
+  <script src="js/pages/pitches.js" defer></script>
+  <script src="js/pages/pitchDetail.js" defer></script>
+  <script src="js/pages/bookingCheckout.js" defer></script>
+  <script src="js/pages/bookings.js" defer></script>
+  <script src="js/pages/players.js" defer></script>
+  <script src="js/pages/matchDetail.js" defer></script>
+  <script src="js/pages/publishMatch.js" defer></script>
+  <script src="js/pages/fantasy.js" defer></script>
+  <script src="js/pages/fantasySquad.js" defer></script>
+  <script src="js/pages/fantasyLeagues.js" defer></script>
+  <script src="js/pages/shop.js" defer></script>
+  <script src="js/pages/product.js" defer></script>
+  <script src="js/pages/cart.js" defer></script>
+  <script src="js/pages/account.js" defer></script>
+  <script src="js/pages/news.js" defer></script>
+  <script src="js/pages/matches.js" defer></script>
+  <script src="js/pages/tournaments.js" defer></script>
+  <script src="js/pages/sell.js" defer></script>
+  <script src="js/pages/studio.js" defer></script>
+  <script src="js/pages/sellerStore.js" defer></script>
+  <!-- Partner dashboard -->
+  <script src="js/pages/dash/common.js" defer></script>
+  <script src="js/pages/dash/overview.js" defer></script>
+  <script src="js/pages/dash/pitches.js" defer></script>
+  <script src="js/pages/dash/availability.js" defer></script>
+  <script src="js/pages/dash/bookings.js" defer></script>
+  <script src="js/pages/dash/finance.js" defer></script>
+  <script src="js/pages/dash/store.js" defer></script>
+  <script src="js/pages/dash/checkin.js" defer></script>
+  <script src="js/pages/dash/teams.js" defer></script>
+  <script src="js/pages/dash/reviews.js" defer></script>
+  <script src="js/pages/dash/orders.js" defer></script>
+  <script src="js/pages/dash/insights.js" defer></script>
+  <script src="js/pages/dash/codes.js" defer></script>
+  <script src="js/pages/dash/tournaments.js" defer></script>
+  <script src="js/pages/dash/podCatalog.js" defer></script>
+  <script src="js/pages/dash/podReview.js" defer></script>
+  <script src="js/pages/dash/print.js" defer></script>
+  <script src="js/pages/dash/seller.js" defer></script>
+  <script src="js/pages/dash/notifications.js" defer></script>
+  <script src="js/pages/dash/marketing.js" defer></script>
+  <script src="js/pages/dash/admin.js" defer></script>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Reports exported while testing (Excel / PDF downloads)
+*.xlsx
+*.pdf
+
+# Local editor / tool settings
+.claude/settings.local.json
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Future backend secrets (never commit these)
+.env
+.env.*
+!.env.example
+
+# Dependencies and builds (when a build step is added)
+node_modules/
+dist/

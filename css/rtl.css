@@ -1,0 +1,57 @@
+/* ==========================================================================
+   Arabic / RTL. Layout mirrors through logical properties (margin-inline-*, inset-inline-*);
+   this file handles what logical properties can't: transforms, keyframes, accent shadows,
+   directional icons, charts (kept left-to-right) and Arabic typography.
+   ========================================================================== */
+[lang="ar"] body { line-height: 1.65; }
+/* Arabic letters must join: no letter-spacing, no uppercase transforms */
+[lang="ar"] *, [lang="ar"] *::before, [lang="ar"] *::after { letter-spacing: normal !important; }
+[lang="ar"] .display, [lang="ar"] .h1, [lang="ar"] .h2 { line-height: 1.25; font-weight: 800; }
+[lang="ar"] .eyebrow, [lang="ar"] .br-name, [lang="ar"] .pc-tier { text-transform: none; }
+
+/* Directional icons point the other way */
+[dir="rtl"] .ic-chevronRight, [dir="rtl"] .ic-chevronLeft, [dir="rtl"] .ic-arrowRight, [dir="rtl"] .ic-arrowUpRight, [dir="rtl"] .ic-logout, [dir="rtl"] .ic-trend { transform: scaleX(-1); }
+[dir="rtl"] .btn-cta:hover .btn-disc { transform: translateX(-3px) rotate(8deg); }
+[dir="rtl"] .link:hover svg, [dir="rtl"] .service-tile:hover .link svg { transform: scaleX(-1) translateX(4px); }
+
+/* Charts, maps, brackets and 3D scenes keep a left-to-right axis */
+[dir="rtl"] .bar-chart, [dir="rtl"] .heatmap, [dir="rtl"] .fc-chart, [dir="rtl"] .leaflet-container, [dir="rtl"] .tb-strip, [dir="rtl"] .pitch3d, [dir="rtl"] .hero-stage, [dir="rtl"] .ticket-code, [dir="rtl"] .qr, [dir="rtl"] .ms-bar, [dir="rtl"] .pol-line { direction: ltr; }
+[dir="rtl"] .num, [dir="rtl"] input[type="number"], [dir="rtl"] input[type="tel"], [dir="rtl"] input[inputmode="tel"] { unicode-bidi: plaintext; }
+
+/* Drawers slide in from their own side */
+[dir="rtl"] .drawer { animation-name: drawerInRtl; }
+[dir="rtl"] .drawer.left { animation-name: drawerInLRtl; }
+@keyframes drawerInRtl { from { transform: translateX(-100%); } }
+@keyframes drawerInLRtl { from { transform: translateX(100%); } }
+
+/* Switch knob travels the other way */
+[dir="rtl"] .switch.is-on .switch-knob { transform: translateX(-18px); }
+[dir="rtl"] .switch.sm.is-on .switch-knob { transform: translateX(-16px); }
+
+/* Hover nudges */
+[dir="rtl"] .dash-nav a:hover, [dir="rtl"] .wa-topic:hover { transform: translateX(-3px); }
+[dir="rtl"] .menu-item:hover, [dir="rtl"] .pl-row:hover { transform: translateX(-4px); }
+[dir="rtl"] .derby-item:hover, [dir="rtl"] .dl-acc:hover { transform: translateX(-6px); }
+[dir="rtl"] .rv-slide { transform: translateX(46px); }
+[dir="rtl"] .rv-fade-left { transform: translateX(-28px); }
+
+/* Accent bars sit on the start edge */
+[dir="rtl"] .fx.is-mine, [dir="rtl"] .wl-row.is-free { box-shadow: inset -4px 0 0 var(--turf); }
+[dir="rtl"] .tm-dates li, [dir="rtl"] .series-list li { box-shadow: inset -3px 0 0 var(--turf); }
+[dir="rtl"] .tm-dates li.is-off, [dir="rtl"] .series-list li.is-off { box-shadow: inset -3px 0 0 var(--danger); }
+[dir="rtl"] .rv-card.is-low { box-shadow: inset -4px 0 0 var(--gold), var(--shadow-1); }
+[dir="rtl"] .league-table tr.zone-cl td:first-child { box-shadow: inset -3px 0 0 var(--turf); }
+[dir="rtl"] .league-table tr.zone-rel td:first-child { box-shadow: inset -3px 0 0 var(--danger); }
+
+/* Brackets flow right-to-left like the reading direction; connectors follow */
+[dir="rtl"] .br-match::after { inset-inline-end: -19px; }
+
+/* Language + theme buttons */
+.lang-btn { font-weight: 800; font-size: 15px; min-width: 40px; }
+[lang="ar"] .lang-btn { font-family: "Archivo", sans-serif; }
+
+.menu-prefs { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 6px; }
+.dl-prefs { display: flex; gap: 6px; justify-content: flex-end; margin-bottom: 6px; }
+.dash-prefs { display: inline-flex; gap: 4px; }
+@media (max-width: 860px) { .hdr-pref { display: none; } }
+@media (max-width: 980px) { .dash-prefs { display: none; } }

@@ -1,0 +1,305 @@
+/* =====================================================================
+   MOTION SYSTEM
+   Everything animated lives here, so it can be tuned or switched off in one place.
+   html.reduce-motion (footer → "Animations") turns it down for people who prefer less movement.
+   ===================================================================== */
+
+/* ---------- Scroll reveal variants (motion.js assigns .reveal + .rv-*) ---------- */
+.reveal { opacity: 0; transition: opacity 800ms var(--ease), transform 900ms var(--ease), filter 800ms var(--ease), clip-path 1000ms var(--ease); transition-delay: var(--d, 0ms); will-change: transform, opacity; }
+.reveal.is-in { opacity: 1; transform: none; filter: none; }
+.rv-up { transform: translateY(36px); }
+.rv-rise { transform: translateY(60px) scale(.94); filter: blur(6px); }
+.rv-slide { transform: translateX(-46px); }
+.rv-fade-left { transform: translateX(28px); }
+.rv-fade { transform: none; }
+.rv-pop { transform: scale(.6) translateY(20px); transition-timing-function: var(--ease-spring); }
+.rv-zoom { transform: scale(.92); clip-path: inset(8% 8% 8% 8% round 32px); }
+.rv-zoom.is-in { clip-path: inset(0 0 0 0 round 0); }
+.rv-flip { transform: perspective(900px) rotateX(24deg) translateY(50px); transform-origin: 50% 100%; }
+.rv-drop { transform: translateY(-70px) scale(.5) rotate(-12deg); transition-timing-function: var(--ease-spring); transition-duration: 700ms; }
+.rv-ticket { transform: perspective(1000px) rotateX(-32deg) translateY(60px); transform-origin: 50% 0; }
+.no-motion .reveal { opacity: 1; transform: none; filter: none; clip-path: none; transition: none; }
+
+/* ---------- Word-by-word headings ---------- */
+.split .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+.split .wi { display: inline-block; transform: translateY(110%) rotate(6deg); transform-origin: 0 100%; transition: transform 900ms var(--ease); transition-delay: calc(var(--i) * 55ms + 80ms); }
+.split.is-in .wi { transform: none; }
+
+/* ---------- Growing meters, bars and pips ---------- */
+.grow-in .meter > span, .grow-in.meter > span { animation: none; }
+.meter.grow-in > span, .grow-in .meter > span { transform-origin: 0 50%; transform: scaleX(0); transition: transform 1300ms var(--ease) 200ms; }
+.meter.grow-in.is-in > span, .grow-in.is-in .meter > span { transform: scaleX(1); }
+.gw-bars.grow-in .gw-bar span, .gw-compare.grow-in .gwc-bars span { transform: scaleY(0); transform-origin: 50% 100%; transition: transform 900ms var(--ease-spring); }
+.gw-bars.grow-in .gw-bar:nth-child(n) span { transition-delay: calc(var(--n, 0) * 1ms); }
+.gw-bars.grow-in.is-in .gw-bar span, .gw-compare.grow-in.is-in .gwc-bars span { transform: none; }
+.gw-bars.grow-in .gw-bar:nth-child(1) span { transition-delay: 60ms } .gw-bars.grow-in .gw-bar:nth-child(2) span { transition-delay: 120ms }
+.gw-bars.grow-in .gw-bar:nth-child(3) span { transition-delay: 180ms } .gw-bars.grow-in .gw-bar:nth-child(4) span { transition-delay: 240ms }
+.gw-bars.grow-in .gw-bar:nth-child(5) span { transition-delay: 300ms } .gw-bars.grow-in .gw-bar:nth-child(6) span { transition-delay: 360ms }
+.gw-bars.grow-in .gw-bar:nth-child(7) span { transition-delay: 420ms } .gw-bars.grow-in .gw-bar:nth-child(n+8) span { transition-delay: 480ms }
+.spots.grow-in i { transform: scale(0); transition: transform 500ms var(--ease-spring); }
+.spots.grow-in.is-in i { transform: none; }
+.spots.grow-in i:nth-child(1) { transition-delay: 40ms } .spots.grow-in i:nth-child(2) { transition-delay: 80ms } .spots.grow-in i:nth-child(3) { transition-delay: 120ms }
+.spots.grow-in i:nth-child(4) { transition-delay: 160ms } .spots.grow-in i:nth-child(5) { transition-delay: 200ms } .spots.grow-in i:nth-child(6) { transition-delay: 240ms }
+.spots.grow-in i:nth-child(7) { transition-delay: 280ms } .spots.grow-in i:nth-child(8) { transition-delay: 320ms } .spots.grow-in i:nth-child(9) { transition-delay: 360ms }
+.spots.grow-in i:nth-child(10) { transition-delay: 400ms } .spots.grow-in i:nth-child(n+11) { transition-delay: 440ms }
+.spots i.open { animation: pipPulse 2s ease-in-out infinite; }
+@keyframes pipPulse { 50% { box-shadow: inset 0 0 0 1.5px var(--blaze), 0 0 0 4px rgba(255,91,20,.18); } }
+.bars.grow-in .meter > span { transition-duration: 1100ms; }
+.ticket-code.grow-in i { transform: scaleY(0); transition: transform 600ms var(--ease); }
+.ticket-code.grow-in.is-in i { transform: none; }
+.ticket-code { position: relative; overflow: hidden; }
+.ticket-code::after { content: ""; position: absolute; inset-inline-start: 22px; inset-inline-end: 22px; height: 2px; top: 0; background: var(--blaze); box-shadow: 0 0 12px var(--blaze); animation: scan 2.4s ease-in-out infinite; }
+@keyframes scan { 0%, 100% { top: 0; } 50% { top: calc(100% - 24px); } }
+
+/* ---------- Page transitions (View Transitions API) ---------- */
+@keyframes vtOut { to { opacity: 0; transform: translateY(-24px) scale(.985); filter: blur(4px); } }
+@keyframes vtIn { from { opacity: 0; transform: translateY(40px) scale(.99); } }
+::view-transition-old(root) { animation: vtOut 280ms var(--ease) both; }
+::view-transition-new(root) { animation: vtIn 520ms var(--ease) both; }
+.site-header { view-transition-name: site-header; }
+.tabbar { view-transition-name: tabbar; }
+::view-transition-group(site-header), ::view-transition-group(tabbar) { animation: none; }
+/* Fallback when the API is missing */
+.app.is-entering > * { animation: pageIn 560ms var(--ease) backwards; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(30px); } }
+
+/* ---------- Scroll progress + header hide ---------- */
+.scroll-progress { position: fixed; top: 0; inset-inline-start: 0; inset-inline-end: 0; height: 3px; z-index: 150; background: linear-gradient(90deg, var(--turf), var(--blaze)); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none; }
+.site-header { transition: transform 420ms var(--ease), box-shadow var(--t-med), background var(--t-med); }
+.site-header.is-hidden { transform: translateY(-110%); }
+
+/* ---------- Sliding nav indicators ---------- */
+.main-nav { position: relative; } /* .tabbar is already position:fixed, which anchors its pill */
+.nav-pill { position: absolute; inset-inline-start: 0; top: 0; z-index: 0; border-radius: var(--r-pill); background: var(--surface); box-shadow: var(--shadow-1); transition: transform 520ms var(--ease-spring), width 420ms var(--ease), opacity 200ms; pointer-events: none; }
+.main-nav a { z-index: 1; }
+.main-nav:has(.nav-pill) a[aria-current="page"] { background: transparent !important; box-shadow: none !important; }
+.tabbar .nav-pill { background: var(--ink-bg); border-radius: 16px; box-shadow: 0 8px 18px -8px rgba(13,20,17,.6); }
+.tabbar a { z-index: 1; transition: color 300ms var(--ease); }
+.tabbar:has(.nav-pill) a[aria-current="page"] { color: #fff !important; }
+.tabbar a[aria-current="page"]::after { background: var(--blaze) !important; }
+.tabbar a[aria-current="page"] svg { animation: tabBounce 600ms var(--ease-spring); }
+@keyframes tabBounce { 0% { transform: scale(.6) translateY(4px); } 60% { transform: scale(1.18) translateY(-3px); } 100% { transform: translateY(-2px) scale(1.08); } }
+
+/* ---------- Buttons: lift, shine sweep, ripple, magnetic, arrow swap ---------- */
+.btn { overflow: hidden; isolation: isolate; transition: transform 380ms var(--ease-spring), background var(--t-med), box-shadow var(--t-med), color var(--t-med); }
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(.96); transition-duration: 90ms; }
+.btn-primary:hover { box-shadow: 0 14px 28px -12px rgba(13,20,17,.75); }
+.btn-blaze:hover { box-shadow: 0 16px 30px -10px rgba(255,91,20,.9); }
+.btn-primary::before, .btn-blaze::before, .btn-turf::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.28) 48%, transparent 66%);
+  transform: translateX(-120%); transition: transform 0s;
+}
+.btn-primary:hover::before, .btn-blaze:hover::before, .btn-turf:hover::before { transform: translateX(120%); transition: transform 900ms var(--ease); }
+.btn-blaze.is-glow, .match-card .btn-blaze { animation: glow 2.4s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(255,91,20,.16), 0 10px 22px -10px rgba(255,91,20,.85); } }
+.btn-cta .btn-disc { position: relative; overflow: hidden; }
+.btn-cta .btn-disc svg { transition: transform 450ms var(--ease); }
+.btn-cta:hover .btn-disc svg { animation: arrowSwap 600ms var(--ease); }
+@keyframes arrowSwap { 0% { transform: none; } 45% { transform: translateX(26px); } 46% { transform: translateX(-26px); } 100% { transform: none; } }
+.btn-cta:hover .btn-disc { transform: rotate(-12deg) scale(1.08); }
+.has-ripple { overflow: hidden; }
+.ripple { position: absolute; border-radius: 50%; background: currentColor; opacity: .22; transform: scale(0); animation: inkRipple 650ms var(--ease) forwards; pointer-events: none; z-index: 0; }
+@keyframes inkRipple { to { transform: scale(1); opacity: 0; } }
+.chip { transition: all 300ms var(--ease-spring); }
+.chip:hover { transform: translateY(-2px); }
+.chip[aria-pressed="true"], .chip.is-active { animation: chipOn 420ms var(--ease-spring); }
+@keyframes chipOn { 0% { transform: scale(.9); } 60% { transform: scale(1.06); } }
+.tab[aria-selected="true"] { animation: chipOn 420ms var(--ease-spring); }
+.icon-btn svg { transition: transform 420ms var(--ease-spring); }
+.icon-btn:hover svg { transform: rotate(-12deg) scale(1.12); }
+.icon-btn[data-action="open-notifications"]:hover svg { animation: ring 700ms ease; }
+@keyframes ring { 20% { transform: rotate(16deg); } 40% { transform: rotate(-14deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
+.dot-count { animation: bump .6s var(--ease-spring); }
+.cart-hit svg { animation: cartHit 600ms var(--ease-spring); }
+@keyframes cartHit { 30% { transform: scale(1.35) rotate(-12deg); } 60% { transform: scale(.9) rotate(6deg); } }
+.link { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat; border-bottom: 0; transition: background-size 420ms var(--ease); }
+.link:hover { background-size: 100% 1.5px; }
+.link svg { transition: transform 300ms var(--ease); }
+.link:hover svg { transform: translateX(4px); }
+
+/* ---------- 3D tilt with glare on cards ---------- */
+.pitch-card, .product-card .product-media, .service-tile, .league-card, .wallet-card, .ticket, .promo, .account-tile, .fb-league {
+  transform-style: preserve-3d; transition: transform 600ms var(--ease), box-shadow 600ms var(--ease);
+}
+.is-tilting { transform: perspective(900px) rotateX(var(--tx, 0)) rotateY(var(--ty, 0)) translateY(-6px) !important; transition: transform 120ms linear, box-shadow 300ms !important; box-shadow: var(--shadow-3) !important; }
+.is-tilting::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
+  background: radial-gradient(420px circle at var(--gx) var(--gy), rgba(255,255,255,.28), transparent 45%);
+  mix-blend-mode: soft-light;
+}
+.product-card .product-media.is-tilting::after { mix-blend-mode: normal; background: radial-gradient(300px circle at var(--gx) var(--gy), rgba(255,255,255,.35), transparent 50%); }
+
+/* ---------- Image parallax and Ken Burns ---------- */
+.px-img { transform: translateY(var(--py, 0)) scale(1.12); transition: transform 120ms linear; }
+.card-link:hover .media img.px-img, .service-tile:hover .media img.px-img, .promo:hover img.px-img { transform: translateY(var(--py, 0)) scale(1.18); transition: transform 900ms var(--ease); }
+.media img { transition: transform 1100ms var(--ease), opacity 500ms; }
+.pitch-card:hover .media img, .product-card:hover .product-media img:first-of-type { transform: scale(1.08); }
+
+/* ---------- Confetti + burst ---------- */
+.confetti-layer, .burst-layer { position: fixed; inset: 0; pointer-events: none; z-index: 600; overflow: hidden; }
+.confetti-layer i { position: absolute; width: var(--w); height: var(--h); animation: confetti var(--dur) cubic-bezier(.2,.6,.4,1) forwards; }
+@keyframes confetti { 0% { transform: translate(0,0) rotate(0); opacity: 1; } 70% { opacity: 1; } 100% { transform: translate(var(--tx), calc(var(--ty) + 520px)) rotate(var(--r)); opacity: 0; } }
+.burst-layer i { position: absolute; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%; animation: burst 650ms var(--ease) forwards; }
+@keyframes burst { to { transform: translate(var(--tx), var(--ty)) scale(.2); opacity: 0; } }
+.fav-btn.is-on svg { animation: heartPop 520ms var(--ease-spring); }
+@keyframes heartPop { 0% { transform: scale(.3); } 50% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+/* ---------- Football loader (replaces spinners in dialogs) ---------- */
+.ball-loader { position: relative; width: 64px; height: 76px; }
+.ball-loader .b { position: absolute; inset-inline-start: 14px; width: 36px; height: 36px; border-radius: 50%; background: #fff; box-shadow: inset -4px -5px 0 rgba(0,0,0,.08), 0 0 0 2px var(--ink); animation: ballBounce 720ms cubic-bezier(.5,0,.5,1) infinite alternate; }
+.ball-loader .b::before { content: ""; position: absolute; inset: 11px; background: var(--ink-bg); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); animation: spinBall 1.44s linear infinite; }
+.ball-loader .s { position: absolute; inset-inline-start: 12px; bottom: 0; width: 40px; height: 8px; border-radius: 50%; background: rgba(13,20,17,.2); animation: shadowSq 720ms cubic-bezier(.5,0,.5,1) infinite alternate; }
+@keyframes ballBounce { from { top: 0; } to { top: 34px; transform: scale(1.08, .92); } }
+@keyframes spinBall { to { transform: rotate(360deg); } }
+@keyframes shadowSq { from { transform: scaleX(.5); opacity: .4; } to { transform: scaleX(1); opacity: 1; } }
+
+/* ---------- Live ticker (home) ---------- */
+.ticker { display: flex; align-items: center; gap: 0; background: var(--ink-bg); color: #fff; border-radius: var(--r-pill); overflow: hidden; height: 48px; position: relative; }
+.ticker-label { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 100%; padding: 0 18px; background: var(--blaze); font-weight: 800; font-size: 13px; letter-spacing: .02em; position: relative; z-index: 2; }
+.ticker-label::after { content: ""; position: absolute; inset-inline-end: -14px; top: 0; border-inline-start: 14px solid var(--blaze); border-top: 24px solid transparent; border-bottom: 24px solid transparent; }
+.ticker-track { display: flex; gap: 44px; padding-inline-start: 36px; white-space: nowrap; animation: marquee 48s linear infinite; font-size: var(--fs-sm); }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker-track span { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,.86); }
+.ticker-track b { color: #fff; }
+.ticker-track i { width: 6px; height: 6px; border-radius: 50%; background: var(--blaze); display: inline-block; }
+.ticker-track .t-turf i { background: #3ddc97; } .ticker-track .t-gold i { background: #ffd23f; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* ---------- Hero: floodlight beams, word carousel ---------- */
+.hero-stage::before, .hero-stage::after {
+  content: ""; position: absolute; top: -12%; width: 46%; height: 120%; z-index: 0; pointer-events: none; filter: blur(14px);
+  background: conic-gradient(from 180deg at 50% 0%, transparent 0 172deg, rgba(255,240,200,.55) 180deg, transparent 188deg 360deg);
+  animation: beam 7s ease-in-out infinite alternate;
+}
+.hero-stage::before { inset-inline-start: 2%; transform-origin: 50% 0; }
+.hero-stage::after { inset-inline-end: 2%; transform-origin: 50% 0; animation-delay: -3.5s; }
+@keyframes beam { from { transform: rotate(-16deg); opacity: .5; } to { transform: rotate(14deg); opacity: .9; } }
+.pitch3d, .float-card { z-index: 1; }
+.rotator { display: inline-grid; justify-items: start; vertical-align: bottom; overflow: hidden; clip-path: inset(0); line-height: 1; padding-bottom: .12em; margin-bottom: -.12em; }
+.rotator > span { grid-area: 1 / 1; transform: translateY(110%); opacity: 0; transition: transform 800ms var(--ease), opacity 400ms; white-space: nowrap; }
+.rotator > span.is-on { transform: none; opacity: 1; }
+.rotator > span.is-out { transform: translateY(-110%); opacity: 0; }
+.hero-title > span:nth-child(3) { white-space: nowrap; }
+.pitch3d::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%); background-size: 250% 100%; animation: sheen 6s ease-in-out infinite; pointer-events: none; }
+@keyframes sheen { from { background-position: 150% 0; } to { background-position: -100% 0; } }
+
+/* Big type watermark that drifts with scroll */
+.watermark { position: absolute; z-index: 0; pointer-events: none; font-weight: 900; font-variation-settings: "wdth" 125; letter-spacing: -0.05em; line-height: .8; color: transparent; -webkit-text-stroke: 1.5px rgba(13,20,17,.07); font-size: clamp(6rem, 20vw, 18rem); white-space: nowrap; transform: translateX(var(--py, 0)); }
+
+/* ---------- Home: flow strip that lights up step by step ---------- */
+.flow-strip .flow-n { transition: background 400ms, transform 500ms var(--ease-spring); }
+.flow-strip.is-lit .flow-step .flow-n { animation: lightUp 3.6s infinite; }
+.flow-strip.is-lit .flow-step:nth-of-type(2) .flow-n { animation-delay: .6s } .flow-strip.is-lit .flow-step:nth-of-type(3) .flow-n { animation-delay: 1.2s }
+.flow-strip.is-lit .flow-step:nth-of-type(4) .flow-n { animation-delay: 1.8s } .flow-strip.is-lit .flow-step:nth-of-type(5) .flow-n { animation-delay: 2.4s }
+@keyframes lightUp { 0%, 30%, 100% { transform: none; } 10% { transform: scale(1.25); background: var(--blaze); box-shadow: 0 0 0 6px rgba(255,91,20,.2); } }
+.flow-arrow svg { animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateX(4px); } }
+
+/* Fantasy band spotlight following the pointer */
+.fantasy-band::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(500px circle at var(--sx, 70%) var(--sy, 20%), rgba(61,220,151,.22), transparent 60%); transition: background 200ms; }
+.fb-prize { background: linear-gradient(90deg, #ffd27a, #fff3cf, #ffd27a); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: goldShine 3s linear infinite; }
+@keyframes goldShine { to { background-position: -200% 0; } }
+
+/* Service tile icon spin */
+.service-tile:hover .service-ico { transform: rotate(-12deg) scale(1.1); }
+.service-tile .service-ico { transition: transform 500ms var(--ease-spring), background 300ms; }
+.service-tile .link svg { transition: transform 400ms var(--ease); }
+.service-tile:hover .link svg { transform: translateX(6px); }
+
+/* ---------- Pitches ---------- */
+.price-marker-wrap .price-marker { animation: markerDrop 700ms var(--ease-spring) backwards; }
+@keyframes markerDrop { from { transform: translate(-50%, -260%) scale(.4); opacity: 0; } }
+.me-marker span { animation: meBeat 2s ease-in-out infinite; }
+@keyframes meBeat { 50% { box-shadow: 0 0 0 14px rgba(36,89,214,.12), 0 4px 10px rgba(0,0,0,.3); } }
+.slot-grid.animate .slot { animation: slotIn 520ms var(--ease-spring) backwards; animation-delay: calc(var(--i) * 28ms); }
+@keyframes slotIn { from { opacity: 0; transform: translateY(14px) scale(.85); } }
+.date-chip { transition: transform 420ms var(--ease-spring), background 250ms, box-shadow 250ms, color 250ms; }
+.date-chip:hover { transform: translateY(-3px); }
+.date-chip.is-active { transform: translateY(-4px) scale(1.04); box-shadow: 0 10px 20px -10px rgba(13,20,17,.6); }
+.sel-card { animation: summaryIn 560ms var(--ease-spring); }
+@keyframes summaryIn { from { opacity: 0; transform: translateY(16px) scale(.96); } }
+.avail i { animation: pulse 1.6s infinite; }
+
+/* ---------- Players ---------- */
+.roster li.is-open { background-image: linear-gradient(90deg, var(--blaze) 50%, transparent 50%), linear-gradient(90deg, var(--blaze) 50%, transparent 50%), linear-gradient(0deg, var(--blaze) 50%, transparent 50%), linear-gradient(0deg, var(--blaze) 50%, transparent 50%);
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y; background-size: 12px 1.5px, 12px 1.5px, 1.5px 12px, 1.5px 12px; background-position: 0 0, 0 100%, 0 0, 100% 0; border-color: transparent; animation: ants 1s linear infinite; }
+@keyframes ants { to { background-position: 12px 0, -12px 100%, 0 -12px, 100% 12px; } }
+.match-when { transition: transform 500ms var(--ease-spring), background 300ms; }
+.match-card:hover .match-when { transform: rotate(-4deg) scale(1.05); background: var(--blaze-tint); }
+.need-callout b { display: inline-block; animation: bump .6s var(--ease-spring); }
+.publish-preview [data-preview] > * { animation: previewFlip 500ms var(--ease); }
+@keyframes previewFlip { from { transform: perspective(800px) rotateX(-14deg); opacity: .4; } }
+
+/* ---------- Fantasy ---------- */
+.ptoken .cap { animation: capPulse 2.2s ease-in-out infinite; }
+@keyframes capPulse { 50% { box-shadow: 0 0 0 2px #fff, 0 0 0 7px rgba(255,255,255,.25); } }
+.ptoken-kit { transition: transform 500ms var(--ease-spring); }
+.ptoken:hover .ptoken-kit { transform: translateY(-4px) rotate(-6deg) scale(1.08); }
+.fx-pitch::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 40% at 50% 0%, rgba(255,255,255,.18), transparent 70%); animation: floodlight 5s ease-in-out infinite alternate; }
+@keyframes floodlight { from { opacity: .4; } to { opacity: 1; } }
+.fx-head::after { content: ""; position: absolute; width: 520px; height: 520px; inset-inline-end: -140px; top: -260px; border-radius: 50%; border: 60px solid rgba(255,255,255,.035); animation: orbit 30s linear infinite; pointer-events: none; }
+@keyframes orbit { to { transform: rotate(360deg) translateX(20px); } }
+.sq-slot.just-added { animation: slotAdd 650ms var(--ease-spring); }
+@keyframes slotAdd { 0% { transform: scale(.3) rotate(-14deg); opacity: 0; } 70% { transform: scale(1.1); } }
+.pl-row { transition: background 300ms, transform 300ms var(--ease); }
+.pl-row:hover { transform: translateX(4px); }
+.league-card::after { animation: orbit 24s linear infinite; }
+.medal.m1 { animation: medal 2.6s ease-in-out infinite; }
+@keyframes medal { 50% { box-shadow: 0 0 0 5px rgba(201,146,15,.25); transform: rotate(-8deg); } }
+.gw-result .gw-big { animation: bump .8s var(--ease-spring); }
+
+/* ---------- Shop ---------- */
+.cat-tile .media { transition: transform 500ms var(--ease-spring), box-shadow 300ms; }
+.cat-tile:hover .media { transform: translateY(-6px) rotate(-4deg) scale(1.06); }
+.quick-add { transition: all 420ms var(--ease-spring); }
+.btn.is-added { background: var(--turf-fill) !important; animation: chipOn 420ms var(--ease-spring); }
+.size-btn, .swatch { transition: all 300ms var(--ease-spring); }
+.size-btn:hover { transform: translateY(-2px); }
+.size-btn.is-active, .swatch.is-active { animation: chipOn 420ms var(--ease-spring); }
+.cart-line.is-leaving { animation: lineOut 380ms var(--ease) forwards; }
+@keyframes lineOut { to { opacity: 0; transform: translateX(60px); height: 0; padding: 0; margin: 0; } }
+.coupon-on { animation: couponIn 700ms var(--ease-spring); }
+@keyframes couponIn { 0% { transform: scale(.8); opacity: 0; } 60% { transform: scale(1.04); } }
+.pdp-main img { transition: transform 300ms var(--ease), opacity 300ms; }
+.pdp-main.is-swapping img { opacity: 0; transform: scale(1.04); }
+.track li.is-current > span { animation: meBeat 2s ease-in-out infinite; }
+
+/* ---------- Confirmation pages ---------- */
+.confirm-hero .h1, .confirm-hero .lead { animation: vtIn 700ms var(--ease) .25s backwards; }
+.success-mark { animation: pop .8s var(--ease-spring); }
+
+/* ---------- Wallet ---------- */
+.wallet-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.16) 50%, transparent 65%); background-size: 260% 100%; animation: sheen 5s ease-in-out infinite; pointer-events: none; }
+
+/* ---------- Toasts & modals: springier ---------- */
+.modal { animation: modalIn 620ms var(--ease-spring); }
+@keyframes modalIn { from { opacity: 0; transform: translateY(40px) scale(.92); } }
+.notif-list li { animation: vtIn 500ms var(--ease) backwards; }
+.notif-list li:nth-child(2) { animation-delay: 60ms } .notif-list li:nth-child(3) { animation-delay: 120ms } .notif-list li:nth-child(4) { animation-delay: 180ms } .notif-list li:nth-child(n+5) { animation-delay: 240ms }
+
+/* ---------- Reduced motion (user setting) ---------- */
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; transition-delay: 0ms !important; scroll-behavior: auto !important; }
+html.reduce-motion .reveal, html.reduce-motion .split .wi { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; }
+html.reduce-motion .px-img { transform: none !important; }
+html.reduce-motion .ticker-track { animation: none !important; }
+
+/* ---------- 3D soccer ball (home page) ---------- */
+.ball3d { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
+.ball3d-body { position: absolute; inset-inline-start: 0; top: 0; transform-origin: 50% 100%; will-change: transform; pointer-events: auto; cursor: grab; border-radius: 50%; filter: drop-shadow(0 6px 10px rgba(13,20,17,.28)); }
+.ball3d-body:active { cursor: grabbing; }
+.ball3d-body canvas { display: block; border-radius: 50%; }
+.ball3d-gloss { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 34% 26%, rgba(255,255,255,.35), transparent 32%); mix-blend-mode: screen; }
+.ball3d-shadow { position: absolute; inset-inline-start: 0; top: 0; width: 2.2em; height: .44em; font-size: 46px; border-radius: 50%; background: radial-gradient(closest-side, rgba(13,20,17,.55), rgba(13,20,17,0)); transform-origin: 50% 50%; will-change: transform, opacity; }
+@media (max-width: 1099px) { .ball3d-shadow { font-size: 38px; } }
+@media (max-width: 639px) { .ball3d-shadow { font-size: 30px; } }
+.ball3d-impact { position: fixed; z-index: 94; width: 0; height: 0; pointer-events: none; }
+.ball3d-impact::before { content: ""; position: absolute; inset-inline-start: -40px; top: -8px; width: 80px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,91,20,.7); animation: impactRing 600ms var(--ease) forwards; }
+.ball3d-impact i { position: absolute; inset-inline-start: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--turf-2); animation: dust 620ms var(--ease) forwards; }
+.ball3d-impact i:nth-child(odd) { background: var(--blaze); width: 4px; height: 4px; }
+@keyframes impactRing { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+@keyframes dust { to { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
+.ball3d-hit { animation: ballHit 600ms var(--ease-spring); }
+@keyframes ballHit { 0% { transform: none; } 25% { transform: translateY(6px) scale(.995); } 60% { transform: translateY(-2px); } 100% { transform: none; } }
+html.reduce-motion .ball3d { display: none; }

@@ -1,0 +1,112 @@
+/* ==========================================================================
+   Dark theme. Applied with <html data-theme="dark"> (js/core/theme.js — Light / Dark / Auto).
+   Tokens flip; the rules below fix the few places that hard-code light colors.
+   ========================================================================== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #0A0F0D;
+  --surface: #121A16;
+  --surface-2: #17211C;
+  --surface-3: #212C26;
+  --ink: #EDF2EE;
+  --ink-2: #B7C2BB;
+  --ink-3: #8A968F;
+  --line: #2A3630;
+  --line-2: #1F2924;
+  --ink-bg: #25322B;
+  --turf-fill: #178360;
+  --danger-fill: #C8233A;
+  --info-fill: #2F62DD;
+  --glass: rgba(10,15,13,.82);
+  --glass-2: rgba(18,26,22,.94);
+
+  --turf: #34C88E;
+  --turf-2: #4FD8A1;
+  --turf-deep: #A8EBCF;
+  --turf-tint: rgba(52,200,142,.14);
+  --blaze: #FF5B14;
+  --blaze-2: #FF7A3D;
+  --blaze-tint: rgba(255,106,43,.15);
+  --gold: #E9B53A;
+  --gold-tint: rgba(233,181,58,.14);
+  --danger: #FF6178;
+  --danger-tint: rgba(255,97,120,.14);
+  --info: #7DA2FF;
+  --info-tint: rgba(125,162,255,.15);
+
+  --shadow-1: 0 1px 1px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.25);
+  --shadow-2: 0 2px 4px rgba(0,0,0,.3), 0 14px 32px -14px rgba(0,0,0,.7);
+  --shadow-3: 0 4px 10px rgba(0,0,0,.35), 0 36px 70px -24px rgba(0,0,0,.85);
+}
+html[data-theme="dark"] body { background: var(--paper); color: var(--ink); }
+
+/* Glass bars */
+[data-theme="dark"] .site-header, [data-theme="dark"] .site-header.is-scrolled, [data-theme="dark"] .dash-top { background: var(--glass); }
+[data-theme="dark"] .tabbar, [data-theme="dark"] .save-bar, [data-theme="dark"] .action-bar { background: var(--glass-2); }
+
+/* Primary buttons and selected states: light-on-dark inverted for emphasis */
+[data-theme="dark"] .btn-primary { background: #EDF2EE; color: #0D1411; box-shadow: 0 8px 20px -10px rgba(0,0,0,.8); }
+[data-theme="dark"] .btn-primary:hover { background: #fff; }
+[data-theme="dark"] .btn-primary .btn-disc { color: #fff; }
+[data-theme="dark"] .btn-ghost:hover, [data-theme="dark"] .icon-btn:hover { background: rgba(255,255,255,.07); }
+[data-theme="dark"] .chip[aria-pressed="true"], [data-theme="dark"] .chip.is-active,
+[data-theme="dark"] .date-chip.is-active, [data-theme="dark"] .slot.is-selected,
+[data-theme="dark"] .seg-opt input:checked + span, [data-theme="dark"] .chip-check input:checked + span,
+[data-theme="dark"] .facet button.is-active, [data-theme="dark"] .size-btn.is-active,
+[data-theme="dark"] .menu-item.is-active, [data-theme="dark"] .steps li.is-current .step-n { background: #17795A; border-color: #17795A; color: #fff; }
+[data-theme="dark"] .tabs { background: #18221D; }
+[data-theme="dark"] .tab[aria-selected="true"] { background: #2E3D35; color: #fff; }
+[data-theme="dark"] .tabbar .nav-pill { background: #17795A; }
+
+/* Notices with fixed dark text colours */
+[data-theme="dark"] .notice.blaze { color: #FFC4A6; }
+[data-theme="dark"] .notice.gold { color: #F3D98B; }
+[data-theme="dark"] .badge-gold { color: #F3D98B; }
+[data-theme="dark"] .points-earn { background: linear-gradient(100deg, rgba(233,181,58,.16), transparent); color: #F3D98B; }
+[data-theme="dark"] .tour-strip { background: linear-gradient(100deg, rgba(233,181,58,.14), var(--surface)); border-color: rgba(233,181,58,.35); }
+
+/* Surfaces that hard-code light greys */
+[data-theme="dark"] .product-media, [data-theme="dark"] .pdp-main, [data-theme="dark"] .cart-thumb { background: var(--surface-3); }
+[data-theme="dark"] .skeleton { background: linear-gradient(90deg, var(--surface-3) 0%, #2b3731 50%, var(--surface-3) 100%); background-size: 200% 100%; }
+[data-theme="dark"] .overlay-scrim { background: rgba(0,0,0,.6); }
+[data-theme="dark"] .float-card:not(.fc-fantasy) { background: rgba(18,26,22,.92); border-color: rgba(255,255,255,.08); }
+[data-theme="dark"] .derby-side.zamalek { background: linear-gradient(210deg, #2a2f2d, #1c2120 70%); color: var(--ink); }
+[data-theme="dark"] .sq-slot, [data-theme="dark"] .pl-kit { background: rgba(18,26,22,.92); }
+[data-theme="dark"] .pm-btn { background: rgba(18,26,22,.92); color: var(--ink); }
+[data-theme="dark"] .input, [data-theme="dark"] .select, [data-theme="dark"] .textarea { background: var(--surface-2); color: var(--ink); border-color: var(--line); }
+[data-theme="dark"] .input::placeholder, [data-theme="dark"] .textarea::placeholder { color: var(--ink-3); }
+[data-theme="dark"] .select option { background: var(--surface); color: var(--ink); }
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85); }
+
+/* Footer and dark panels stay darker than the page */
+[data-theme="dark"] .site-footer { background: #060a08; border-top: 1px solid var(--line-2); }
+[data-theme="dark"] .dash-side { background: radial-gradient(140% 80% at 0% 0%, #13241e, #060a08 55%); border-right: 1px solid var(--line-2); }
+[data-theme="dark"] .dash-nav a[aria-current="page"] { background: #EDF2EE; }
+[data-theme="dark"] .kpi.k-ink, [data-theme="dark"] .bk-when, [data-theme="dark"] .av-booked, [data-theme="dark"] .av-yours { background: #1d2a24; border: 1px solid var(--line); }
+[data-theme="dark"] .toast { background: #23302A; border: 1px solid rgba(255,255,255,.08); }
+[data-theme="dark"] .bc-tip { background: #23302A; border: 1px solid rgba(255,255,255,.1); }
+[data-theme="dark"] .fc-chart .bc-c { background: #EDF2EE; }
+[data-theme="dark"] .code-big { background: #EDF2EE; color: #0D1411; }
+[data-theme="dark"] .code-big:hover { background: var(--blaze); color: #fff; }
+[data-theme="dark"] .ticket-code i { background: var(--ink); }
+[data-theme="dark"] .tcc-cut { background: var(--surface); }
+
+/* Maps: dark tiles */
+[data-theme="dark"] .leaflet-tile-pane { filter: invert(.92) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.55); }
+[data-theme="dark"] .leaflet-container { background: #1a211e; }
+[data-theme="dark"] .leaflet-control-attribution, [data-theme="dark"] .leaflet-bar a { background: var(--surface); color: var(--ink-2); border-color: var(--line); }
+
+/* Photos a touch softer so they don't glare */
+[data-theme="dark"] .media img:not(.qr) { filter: brightness(.92); }
+
+/* Status colours that are text on tints */
+[data-theme="dark"] .low-stock { color: #F3D98B; }
+[data-theme="dark"] .standings tr.is-top td:first-child { color: var(--gold); }
+[data-theme="dark"] .owner-reply b { color: var(--turf); }
+
+/* Smooth theme switch */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color 380ms var(--ease), border-color 380ms var(--ease), color 300ms var(--ease) !important; }
+[data-theme="dark"] .egy-chip { color: #F3D98B; }
+[data-theme="dark"] .av-blocked { background: repeating-linear-gradient(135deg, rgba(255,106,43,.14) 0 8px, rgba(255,106,43,.22) 8px 16px); color: #FFC4A6; }
+[data-theme="dark"] .swap-hint { color: #F3D98B; }
+[data-theme="dark"] .need-callout { color: #FFC4A6; }

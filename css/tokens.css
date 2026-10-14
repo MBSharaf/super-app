@@ -1,0 +1,77 @@
+/* Design tokens — single source of truth for color, type, space, radius, depth and motion.
+   Mirrors a future theme object (e.g. tokens.ts) in a React build. */
+:root {
+  /* Color */
+  --paper: #F1F2EE;        /* chalk: app background */
+  --surface: #FFFFFF;
+  --surface-2: #F7F8F5;
+  --surface-3: #E9EBE6;
+  --ink: #0D1411;          /* primary text, primary buttons */
+  --ink-2: #46514B;
+  --ink-3: #7A847E;
+  --line: #DCE0D9;
+  --line-2: #EAECE7;
+  --turf-fill: #0B6E4F;     /* backgrounds behind white text */
+  --danger-fill: #D2283F;
+  --info-fill: #2459D6;
+  --ink-bg: #0D1411;       /* dark fills (primary buttons, chips, toasts) — stays dark in dark mode */
+  --ink-fixed: #0D1411;    /* text on always-white chips */
+  --glass: rgba(241,242,238,.84);   /* sticky header / bars */
+  --glass-2: rgba(255,255,255,.94);
+  color-scheme: light;
+
+  --turf: #0B6E4F;         /* availability, pitch graphics, success */
+  --turf-2: #128A63;
+  --turf-deep: #0A3D2D;
+  --turf-tint: #E1F0E8;
+
+  --blaze: #FF5B14;        /* the one action accent */
+  --blaze-2: #E54A07;
+  --blaze-tint: #FFEBDF;
+
+  --gold: #C9920F;         /* prizes and premium leagues only */
+  --gold-tint: #FBF1D6;
+  --danger: #D2283F;
+  --danger-tint: #FCE7EA;
+  --info: #2459D6;
+  --info-tint: #E5ECFC;
+
+  /* Type */
+  --font: "Archivo", "Cairo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --fs-xs: .75rem;
+  --fs-sm: .875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: clamp(1.6rem, 1.2rem + 1.4vw, 2.1rem);
+  --fs-3xl: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  --fs-display: clamp(2.5rem, 1.1rem + 3.9vw, 4.6rem);
+
+  /* Space (4pt scale) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px; --s-20: 80px; --s-24: 96px;
+
+  /* Radius hierarchy: pills for actions, large for panels, medium for cards, small inside cards */
+  --r-xs: 6px; --r-sm: 10px; --r-md: 16px; --r-lg: 24px; --r-xl: 32px; --r-pill: 999px;
+
+  /* Depth */
+  --shadow-1: 0 1px 1px rgba(13,20,17,.04), 0 2px 6px rgba(13,20,17,.05);
+  --shadow-2: 0 2px 4px rgba(13,20,17,.04), 0 14px 32px -14px rgba(13,20,17,.28);
+  --shadow-3: 0 4px 10px rgba(13,20,17,.05), 0 36px 70px -24px rgba(13,20,17,.42);
+  --ring: 0 0 0 3px rgba(255,91,20,.35);
+
+  /* Motion */
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --t-fast: 140ms; --t-med: 260ms; --t-slow: 520ms;
+
+  /* Layout */
+  --maxw: 1260px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --header-h: 72px;
+  --tabbar-h: 0px;
+}
+
+@media (max-width: 860px) {
+  :root { --header-h: 60px; --tabbar-h: 68px; }
+}
