@@ -13,6 +13,9 @@
       store.set({ user: seed.profile, wallet: seed.wallet, savedCards: seed.savedCards, notifications: seed.notifications, loyalty: seed.loyalty }, 'seed');
     },
     me: () => store.get().user,
+    /** Customers the Super App team put on hold can browse but not book, order or join */
+    blocked: () => { const id = store.get().user?.id; return !!(id && SA.services.db?.raw().podCustomers?.[id]?.blocked); },
+    assertActive() { if (userService.blocked()) throw new SA.services.http.ApiError('Your account is on hold, so you can’t book or order right now. Contact Super App support from your profile.', 'blocked'); },
     update: (patch) => request(() => { store.set((s) => ({ user: { ...s.user, ...patch } })); return store.get().user; }),
     notify(n) {
       store.set((s) => ({ notifications: [{ id: uid('n'), at: Date.now(), read: false, ...n }, ...s.notifications].slice(0, 40) }), 'notify');

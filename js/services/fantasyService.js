@@ -166,6 +166,7 @@
     async buyPass(planId, payment) {
       const plan = passPlans().find((x) => x.id === planId);
       if (!plan) throw new ApiError('Choose a plan.', 'validation');
+      SA.services.user.assertActive();
       let paid = null;
       if (plan.price > 0) paid = await SA.services.payment.charge({ ...payment, amount: plan.price, label: `Fantasy Pass — ${plan.label} (1 month)` });
       // Each league in the plan gets 30 more days (renewing early keeps the remaining days)

@@ -134,6 +134,7 @@
     forPitch: (pitchId) => db.all('tournaments').filter((t) => t.pitchId === pitchId && ['open', 'full', 'running'].includes(t.status)).map(view),
     teamName,
     async register(id, { team, captain, phone, players, payment }) {
+      SA.services.user.assertActive();
       const t0 = db.find('tournaments', id);
       if (!t0) throw new ApiError('Tournament not found.', 'not_found');
       const v = view(t0);

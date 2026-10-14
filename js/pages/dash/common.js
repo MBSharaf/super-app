@@ -368,7 +368,7 @@
           <p class="lead">One place for pitch owners and the Super App team: bookings, availability, money, payouts and your own shop on Super App.</p>
           <h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
-          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}">${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span><span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>${icon('arrowRight', 16)}</button>`).join('')}</div>
+          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>
         </section>
         <section class="dl-visual" aria-hidden="true">
           <div class="hero-stage dl-stage" data-tilt>
@@ -385,7 +385,7 @@
     mount(el) {
       const off = SA.core.motion.tilt(el.querySelector('[data-tilt]'), { max: 7 });
       el.querySelectorAll('[data-signin]').forEach((b) => b.addEventListener('click', () => {
-        D().auth.signIn(b.dataset.signin);
+        try { D().auth.signIn(b.dataset.signin); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
         setOwnerFilter('');
         SA.ui.overlay.toast(`Welcome, ${esc(D().me().name.split(' ')[0])}`);
         SA.core.router.go(location.hash.replace(/^#/, '').startsWith('/dash/') ? location.hash.slice(1) : '/dash', { replace: true });

@@ -56,6 +56,7 @@
 
     /** Join a match: pays the per-player share, then adds the user to the participant list. */
     async join(id, payment) {
+      SA.services.user.assertActive();
       const m = all().find((x) => x.id === id);
       if (!m) throw new ApiError('This match is no longer listed.', 'not_found');
       if (m.joined) throw new ApiError('You’re already in this match.', 'already_joined');
@@ -78,6 +79,7 @@
 
     /** Publish a booking as "Looking for players". */
     publish: (data) => request(() => {
+      SA.services.user.assertActive();
       const b = SA.services.bookings.getSync(data.bookingId);
       if (!b) throw new ApiError('Pick one of your upcoming bookings first.', 'no_booking');
       const total = +data.total, have = +data.have;

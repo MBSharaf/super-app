@@ -44,7 +44,7 @@ Agreed with the user on 2026-10-15.
   - adjustments;
   - platform revenue report with export;
   - Fantasy Pass sales ledger.
-- [ ] 3. People:
+- [x] 3. People:
   - customers (block, pay-upfront, notes);
   - partners (suspend, open dashboard);
   - sellers (suspend, strikes, ID, levels).

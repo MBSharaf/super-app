@@ -75,3 +75,25 @@
 .adm-counts .adm-count { display: grid; gap: 2px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line-2); }
 @media (max-width: 720px) { .adm-counts[style] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 .adm-checks .badge { margin: 2px 0; }
+
+/* Details drawer */
+.adm-drawer { display: grid; gap: 4px; padding-bottom: 24px; }
+.adm-dh { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--line-2); }
+.adm-dh p { margin-top: 4px; }
+.adm-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.adm-stats > div { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--line-2); min-width: 0; }
+.adm-stats b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 520px) { .adm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.adm-ds { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-2); }
+.adm-ds > .h4 { margin-bottom: 10px; }
+.adm-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.adm-list { display: grid; gap: 6px; }
+.adm-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-2); }
+.adm-notes { display: grid; gap: 8px; }
+.adm-notes li { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--gold-tint); }
+.adm-alert { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); font-size: var(--fs-sm); }
+.adm-alert.danger { background: var(--danger-tint); color: var(--danger); }
+.adm-alert.info { background: var(--info-tint); color: var(--info); }
+.adm-rows tbody tr[data-open] { cursor: pointer; transition: background 160ms; }
+.adm-rows tbody tr[data-open]:hover, .adm-rows tbody tr[data-open]:focus-visible { background: var(--surface-2); outline: none; }
+.dl-acc:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }

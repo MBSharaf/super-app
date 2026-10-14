@@ -25,7 +25,7 @@
     const colors = x.colors.filter((k) => d.colors.includes(k.name));
     // Search ranking: sales, views and rating, lifted by the seller's level (Rising ×1.25 … Elite ×1.75 + a head start)
     const lvl = s ? SA.services.sellers.levelOf(s) : null, boost = lvl?.boost || 0;
-    const rank = ((d.sales || 0) * 6 + (d.views || 0) / 60 + (h.rating || 4) * 8 + (s?.featured === d.id ? 15 : 0)) * (1 + boost * 0.25) + boost * 30;
+    const rank = ((d.sales || 0) * 6 + (d.views || 0) / 60 + (h.rating || 4) * 8 + (s?.featured === d.id ? 15 : 0) + (s?.featuredByAdmin ? 25 : 0)) * (1 + boost * 0.25) + boost * 30;
     const levelBadge = lvl?.id === 'elite' ? 'Elite creator' : lvl?.id === 'pro' ? 'Pro creator' : '';
     const images = colors.map((k) => `pod:${d.id}:${k.name}`);
     if (d.placement?.back) images.splice(1, 0, `pod:${d.id}:${colors[0].name}:back`);
@@ -201,6 +201,7 @@
 
     // Orders
     async placeOrder({ address, delivery, payment }) {
+      SA.services.user.assertActive();
       const t = totals();
       if (!t.lines.length) throw new ApiError('Your cart is empty.', 'empty_cart');
       // Re-check stock right before taking payment

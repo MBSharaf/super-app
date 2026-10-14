@@ -16,7 +16,7 @@
     { key: 'revenue', page: 'adminRevenue', label: 'Revenue', href: '#/admin/revenue', icon: 'percent' },
     { group: 'People' },
     { key: 'customers', page: 'adminCustomers', label: 'Customers', href: '#/admin/customers', icon: 'user' },
-    { key: 'partners', page: 'dashPartners', label: 'Partners', href: '#/admin/partners', icon: 'pitch' },
+    { key: 'partners', page: 'adminPartners', label: 'Partners', href: '#/admin/partners', icon: 'pitch' },
     { key: 'sellers', page: 'adminSellers', label: 'Sellers', href: '#/admin/sellers', icon: 'users', badge: 'kyc' },
     { group: 'Operations' },
     { key: 'orders', page: 'adminOrders', label: 'Orders & bookings', href: '#/admin/orders', icon: 'ticket' },

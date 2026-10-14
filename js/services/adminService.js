@@ -156,8 +156,136 @@
     return { account: pr, items: done.length, earned: Math.round(earned), paid: Math.round(paid), owed: Math.max(0, Math.round(earned - paid)), orders: done };
   };
 
+  /* ======================= Customers ======================= */
+  // Customer records (refusals, block, pay-upfront mode, notes, credits) live in db.podCustomers, keyed by customer id
+  const recs = () => db().raw().podCustomers;
+  const rec = (id) => recs()[id] || {};
+  const saveRec = (id, patch) => { recs()[id] = { ...rec(id), ...patch }; db().touch('podCustomers'); return recs()[id]; };
+  const deviceUser = () => SA.core.store.get().user;
+  /** Everyone who booked or ordered: this device's shopper, app bookings and print-on-demand customers */
+  const customers = () => {
+    const map = new Map();
+    const get = (id, base) => { if (!map.has(id)) map.set(id, { id, name: base.name || 'Customer', city: base.city || '', phone: base.phone || '', bookings: 0, orders: 0, items: 0, spent: 0, last: 0, first: Infinity }); const c = map.get(id); ['city', 'phone'].forEach((k) => { if (!c[k] && base[k]) c[k] = base[k]; }); return c; };
+    const touch = (c, t) => { c.last = Math.max(c.last, t || 0); c.first = Math.min(c.first, t || Date.now()); };
+    const u = deviceUser();
+    if (u) {
+      const c = get(u.id, { name: u.name, city: u.city || 'Cairo', phone: u.phone });
+      const st = SA.core.store.get();
+      c.device = true; c.email = u.email; c.avatar = u.avatar;
+      (st.orders || []).forEach((o) => { c.orders++; c.spent += o.total; touch(c, o.createdAt); });
+      c.joined = u.memberSince || null;
+    }
+    db().all('bookings').forEach((b) => { if (!b.customer?.id || b.source !== 'app') return; const c = get(b.customer.id, b.customer); c.bookings++; if (b.status !== 'cancelled') c.spent += (b.amount || 0) + (b.fee || 0); touch(c, b.createdAt); });
+    (db().all('podOrders') || []).forEach((o) => { if (!o.customer?.id || o.sample) return; const c = get(o.customer.id, o.customer); if (!c.device) { c.items += o.qty || 1; c.spent += o.price * (o.qty || 1); } else c.items += o.qty || 1; touch(c, o.placedAt); });
+    return [...map.values()].map((c) => { const r = rec(c.id); const limit = SA.services.pod?.cfg().refuseLimit ?? 2; return { ...c, first: c.first === Infinity ? 0 : c.first, refused: r.refused || 0, blocked: !!r.blocked, blockedReason: r.blockedReason || '', prepay: r.prepay || 'auto', needsPrepay: SA.services.pod ? SA.services.pod.needsPrepay(c.id) : false, notes: r.notes || [], credits: r.credits || [], limit }; })
+      .sort((a, b) => b.last - a.last);
+  };
+  const customer = (id) => {
+    const c = customers().find((x) => x.id === id);
+    if (!c) throw new ApiError('Customer not found.', 'not_found');
+    const bookings = db().all('bookings').filter((b) => b.customer?.id === id).map((b) => D().findBooking(b.id) || b).sort((a, b) => b.createdAt - a.createdAt);
+    const pod = (db().all('podOrders') || []).filter((o) => o.customer?.id === id && !o.sample).sort((a, b) => b.placedAt - a.placedAt);
+    const orders = c.device ? (SA.core.store.get().orders || []) : [];
+    const tickets = (db().all('tickets') || []).filter((t) => t.from?.id === id);
+    return { ...c, bookingList: bookings, podList: pod, orderList: orders, tickets };
+  };
+
+  /* ======================= Partners & sellers ======================= */
+  const partners = () => {
+    const base = D().partners();
+    return base.map((p) => ({ ...p, status: db().find('accounts', p.id)?.status || 'active', suspendedReason: db().find('accounts', p.id)?.suspendedReason || '', balance: (() => { try { return D().wallet({ ownerId: p.id }).balance; } catch { return 0; } })() }));
+  };
+
   const admin = {
     me, log, alerts, revenue, passSales, audit, actorKind, STREAMS, COSTS,
+    customers, customer, partners,
+    /** Blocked customers can't book, order, join games or buy a Fantasy Pass */
+    isBlocked: (id) => !!rec(id).blocked,
+    blockCustomer(id, reason) {
+      me(); const c = customer(id);
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      saveRec(id, { blocked: true, blockedReason: reason.trim(), blockedAt: Date.now() });
+      log('customer.blocked', `Blocked customer ${c.name}: ${reason.trim()}`, id);
+      if (c.device) SA.services.user.notify({ kind: 'shop', title: 'Your account is on hold', body: 'You can’t book or order for now. Contact Super App support if you think this is a mistake.', link: '/profile' });
+    },
+    unblockCustomer(id) {
+      me(); const c = customer(id);
+      saveRec(id, { blocked: false, blockedReason: '', blockedAt: 0 });
+      log('customer.unblocked', `Unblocked customer ${c.name}`, id);
+      if (c.device) SA.services.user.notify({ kind: 'shop', title: 'Your account is active again', body: 'You can book pitches and order from the shop again.', link: '/' });
+    },
+    /** Pay-upfront for printed items: auto (refusal limit), always, never */
+    setPrepay(id, mode) {
+      me(); const c = customer(id);
+      if (!['auto', 'always', 'never'].includes(mode)) throw new ApiError('Unknown mode.', 'invalid');
+      saveRec(id, { prepay: mode });
+      log('customer.prepay', `Pay upfront for printed items for ${c.name}: ${{ auto: 'automatic', always: 'always required', never: 'never required' }[mode]}`, id);
+    },
+    resetRefusals(id) { me(); const c = customer(id); saveRec(id, { refused: 0 }); log('customer.refusals-reset', `Reset ${c.name}’s refused deliveries (was ${c.refused})`, id); },
+    noteCustomer(id, text) {
+      me(); const c = customer(id);
+      const t = String(text || '').trim();
+      if (t.length < 2) throw new ApiError('Write a note first.', 'invalid');
+      saveRec(id, { notes: [{ text: t.slice(0, 400), at: Date.now(), by: me().name }, ...(rec(id).notes || [])] });
+      log('customer.note', `Note on ${c.name}: ${t.slice(0, 80)}`, id);
+    },
+    /** Goodwill credit to the customer's Super App wallet (paid by Super App) */
+    async creditCustomer(id, amount, reason) {
+      me(); const c = customer(id);
+      const amt = Math.round(+amount);
+      if (!(amt >= 5 && amt <= 5000)) throw new ApiError('Credit between 5 and 5,000 EGP.', 'invalid');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      if (c.device) await SA.services.payment.refund(amt, `Credit from Super App — ${reason.trim()}`);
+      saveRec(id, { credits: [{ amount: amt, reason: reason.trim(), at: Date.now() }, ...(rec(id).credits || [])] });
+      db().insert('refunds', { customerId: id, amount: amt, bearer: 'platform', kind: 'credit', reason: reason.trim(), at: Date.now() }, 'rf');
+      log('customer.credit', `Credited ${amt.toLocaleString()} EGP to ${c.name}’s wallet: ${reason.trim()}`, id);
+      if (c.device) SA.services.user.notify({ kind: 'shop', title: `${amt.toLocaleString()} EGP added to your wallet`, body: reason.trim(), link: '/wallet' });
+    },
+
+    /** Suspend or reactivate a pitch owner: no sign-in, pitches and store hidden from the site */
+    setPartnerStatus(accountId, status, reason = '') {
+      me();
+      const a = db().find('accounts', accountId);
+      if (!a || a.role !== 'owner') throw new ApiError('Partner not found.', 'not_found');
+      if (!['active', 'suspended'].includes(status)) throw new ApiError('Unknown status.', 'invalid');
+      if (status === 'suspended' && reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      db().update('accounts', accountId, { status, suspendedReason: status === 'suspended' ? reason.trim() : '', suspendedAt: status === 'suspended' ? Date.now() : 0 });
+      db().all('stores').filter((s) => s.ownerId === accountId && !s.official).forEach((s) => db().update('stores', s.id, { status: status === 'active' ? 'active' : 'suspended' }));
+      log(`partner.${status}`, `${status === 'active' ? 'Reactivated' : 'Suspended'} ${a.company} (${a.name})${reason ? `: ${reason.trim()}` : ''}`, accountId);
+      N()?.toAccount(accountId, status === 'active'
+        ? { cat: 'account', tone: 'turf', title: 'Your account is active again', body: 'Your pitches and store are back on Super App.', link: '#/dash' }
+        : { cat: 'account', tone: 'danger', title: 'Your account is suspended', body: `${reason.trim()} Your pitches and store are hidden until this is resolved.`, link: '#/dash' });
+    },
+    /** Close or reopen a single pitch from the admin side */
+    setPitchStatus(pitchId, status, reason = '') {
+      me();
+      const p = db().find('pitches', pitchId); if (!p) throw new ApiError('Pitch not found.', 'not_found');
+      db().update('pitches', pitchId, { status, closedReason: status === 'closed' ? (reason.trim() || 'Closed by Super App') : '' });
+      log(`pitch.${status}`, `${status === 'active' ? 'Reopened' : 'Closed'} ${p.name}${reason ? `: ${reason.trim()}` : ''}`, pitchId);
+      N()?.toAccount(p.ownerId, { cat: 'account', tone: status === 'active' ? 'turf' : 'danger', title: `${p.name} ${status === 'active' ? 'is open again' : 'was closed by Super App'}`, body: status === 'active' ? 'Players can book it again.' : reason.trim(), link: '#/dash/pitches' });
+    },
+    setSellerStatus(sellerId, status, reason = '') {
+      me();
+      const s = db().find('sellers', sellerId); if (!s) throw new ApiError('Seller not found.', 'not_found');
+      if (status === 'suspended' && reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      SA.services.sellers.setStatus(sellerId, status);
+      db().update('sellers', sellerId, { suspendedReason: status === 'suspended' ? reason.trim() : '' });
+      log(`seller.${status}`, `${status === 'active' ? 'Reactivated' : 'Suspended'} seller ${s.name}${reason ? `: ${reason.trim()}` : ''}`, sellerId);
+    },
+    removeStrike(sellerId, index, reason) {
+      me();
+      const s = db().find('sellers', sellerId); if (!s) throw new ApiError('Seller not found.', 'not_found');
+      const st = (s.strikes || []).slice(); const [gone] = st.splice(index, 1);
+      if (!gone) throw new ApiError('Strike not found.', 'not_found');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      const active = st.filter((x) => Date.now() - x.at < 90 * DAY);
+      db().update('sellers', sellerId, { strikes: st, frozenUntil: active.length ? Math.max(...active.map((x) => x.at)) + 90 * DAY : 0 });
+      log('seller.strike-removed', `Removed a copyright strike from ${s.name}: ${reason.trim()}`, sellerId);
+      N()?.toSeller(sellerId, { cat: 'account', tone: 'turf', title: 'A copyright strike was removed', body: reason.trim(), link: '#/dash/seller' });
+    },
+    verifyKyc(sellerId, ok) { me(); const s = SA.services.sellers.verifyKyc(sellerId, ok); log(`seller.kyc-${ok ? 'verified' : 'rejected'}`, `${ok ? 'Verified' : 'Rejected'} ${s.name}’s ID`, sellerId); return s; },
+    /** Feature a seller on the shop (or remove the badge) */
+    featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,
     pendingPayouts: () => allPayouts().filter((p) => p.status === 'processing'),
     approvePayout(id, { ref = '' } = {}) {

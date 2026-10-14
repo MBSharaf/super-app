@@ -221,7 +221,11 @@
     /* ---------- Orders ---------- */
     refusals: (customerId) => db().raw().podCustomers[customerId]?.refused || 0,
     /** Customers who refused delivery too often must pay online for print-on-demand items */
-    needsPrepay: (customerId) => pod.refusals(customerId) >= cfg().refuseLimit,
+    needsPrepay: (customerId) => {
+      // The admin can force it on or off for a customer; otherwise it follows the refusal limit
+      const mode = db().raw().podCustomers[customerId]?.prepay;
+      return mode === 'always' ? true : mode === 'never' ? false : pod.refusals(customerId) >= cfg().refuseLimit;
+    },
 
     /** Called by checkout for each print-on-demand cart line */
     place({ orderId, customer, lines, payment }) {

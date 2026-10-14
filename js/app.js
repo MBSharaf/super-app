@@ -83,7 +83,9 @@
     .add('/admin/catalog', P.dashPodCatalog)
     .add('/admin/print', P.dashPrint)
     .add('/admin/reviews', P.dashReviews)
-    .add('/admin/partners', P.dashPartners)
+    .add('/admin/partners', P.adminPartners)
+    .add('/admin/customers', P.adminCustomers)
+    .add('/admin/sellers', P.adminSellers)
     .add('/admin/settings', P.dashSettings)
     .add('*', P.notFound);
 
