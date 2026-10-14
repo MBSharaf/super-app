@@ -26,7 +26,7 @@
           ${list.map((p) => `<tr><td><span class="row">${SA.ui.c.avatar({ name: p.name, avatar: p.avatar }, 'sm')}<span><b class="small">${esc(p.company)}</b><span class="xs muted" style="display:block">${esc(p.name)} · ${esc(p.email)}</span></span></span></td>
             <td class="r num">${p.pitches}${p.closed ? `<span class="xs" style="display:block;color:var(--danger)">${p.closed} closed</span>` : ''}</td><td class="r num">${(p.occupancy * 100).toFixed(1)}%</td><td class="r num">${money(Math.round(p.gross30))}</td><td class="r num strong">${money(Math.round(p.commission30))}</td>
             <td>${p.store ? `<span class="small">${esc(p.store.name)}</span> <span class="badge ${p.store.status === 'active' ? 'badge-turf' : 'badge-danger'}">${p.store.status === 'active' ? 'Live' : 'Suspended'}</span>` : '<span class="xs muted">No store</span>'}</td>
-            <td class="r"><button class="btn btn-outline btn-sm" data-view-as="${p.id}">View dashboard</button></td></tr>`).join('')}
+            <td class="r"><button class="btn btn-outline btn-sm" data-view-as="${p.id}">Open their dashboard ${icon('arrowUpRight', 14)}</button></td></tr>`).join('')}
           </tbody></table></div></section>
         <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Stores</h2>
           <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Store</th><th>Owner</th><th class="r">Products</th><th>Opened</th><th>Status</th><th></th></tr></thead><tbody>
@@ -39,7 +39,7 @@
     mount(el) {
       el.addEventListener('click', async (e) => {
         const v = e.target.closest('[data-view-as]');
-        if (v) { sessionStorage.setItem('dash.owner', v.dataset.viewAs); SA.core.router.go('/dash'); return; }
+        if (v) { SA.services.admin.openDashboard(v.dataset.viewAs); window.open(`${location.pathname}#/dash`, '_blank', 'noopener'); return; }
         const st = e.target.closest('[data-store-status]');
         if (st) {
           const s = db().find('stores', st.dataset.storeStatus);

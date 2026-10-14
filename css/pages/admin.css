@@ -1,0 +1,74 @@
+/* ============================================================
+   Admin console (#/admin) — a separate system for the Super App team.
+   Reuses the dashboard shell; the sidebar is darker with the blaze accent so it never looks like a partner's dashboard.
+   ============================================================ */
+.dash.is-admin .dash-side, .dash-drawer.is-admin { background: radial-gradient(130% 70% at 0% 0%, #3a1a0b, #120d0b 55%, #0b0908); }
+.dash.is-admin .dash-acct { background: rgba(255,91,20,.1); border-color: rgba(255,91,20,.25); }
+.dash.is-admin .dash-nav a[aria-current="page"] { background: var(--blaze); color: #fff; }
+.dash.is-admin .dash-nav a[aria-current="page"] svg { color: #fff; }
+.dash.is-admin .dash-nav-label { color: rgba(255,186,150,.55); }
+.dash.is-admin .dash-brand .xs { color: #ffb48f; font-weight: 700; letter-spacing: .02em; }
+
+/* Sign-in */
+.adm-login { background: radial-gradient(70% 60% at 100% 0%, var(--blaze-tint), transparent 60%), var(--paper); }
+.adm-tag { margin-top: 26px; display: inline-flex; gap: 6px; align-items: center; }
+.adm-login .dl-title { margin-top: 14px; }
+.adm-visual { display: grid; place-items: center; min-height: clamp(320px, 42vw, 520px); }
+.adm-orbit { position: relative; width: min(100%, 460px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 50%, rgba(255,91,20,.16), transparent 62%); border: 1px dashed rgba(255,91,20,.35); }
+.adm-orbit::before { content: ""; position: absolute; inset: 16%; border-radius: 50%; border: 1px dashed var(--line); animation: admSpin 40s linear infinite; }
+.adm-core { position: absolute; inset: 36%; border-radius: 28%; display: grid; place-items: center; background: linear-gradient(145deg, #2a130a, var(--ink-bg)); color: var(--blaze); box-shadow: var(--shadow-3); animation: admFloat 6s ease-in-out infinite; }
+.adm-orbit .float-card { position: absolute; }
+.adm-f1 { top: 2%; inset-inline-start: -4%; display: grid; gap: 4px; min-width: 210px; }
+.adm-f1 b { font-size: 1.35rem; }
+.adm-f2 { inset-inline-end: -6%; top: 46%; display: flex; gap: 10px; align-items: center; }
+.adm-f2 b { font-size: 1.4rem; display: block; }
+.adm-f3 { inset-inline-start: 4%; bottom: 2%; display: flex; gap: 10px; align-items: center; background: var(--ink-bg); color: #fff; }
+.adm-f3 b { color: #fff; display: block; }
+.adm-login .dl-spark i:nth-child(7) { background: var(--blaze); }
+@keyframes admSpin { to { transform: rotate(360deg); } }
+@keyframes admFloat { 50% { transform: translateY(-8px); } }
+@media (max-width: 980px) { .adm-visual { min-height: 0; } .adm-orbit { width: min(100%, 340px); } .adm-f1, .adm-f2 { min-width: 0; } .adm-f2 { inset-inline-end: 0; } .adm-f1 { inset-inline-start: 0; } }
+@media (prefers-reduced-motion: reduce) { .adm-orbit::before, .adm-core { animation: none; } }
+
+/* KPI trend */
+.adm-delta { font-weight: 750; }
+.adm-delta.up { color: var(--turf); }
+.adm-delta.down { color: var(--danger); }
+
+/* Stacked revenue columns */
+.adm-chart { position: relative; height: 220px; margin: 6px 0 30px 44px; }
+.adm-cols { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 2px; }
+.adm-col { position: relative; flex: 1; height: 100%; display: flex; flex-direction: column-reverse; justify-content: flex-start; cursor: crosshair; }
+.adm-col i { display: block; width: 100%; max-width: 22px; margin-inline: auto; border-top: 1.5px solid var(--surface); transform-origin: 50% 100%; animation: admGrow 900ms var(--ease-spring) backwards; animation-delay: calc(var(--i) * 12ms); }
+.adm-col i:last-of-type { border-radius: 3px 3px 0 0; }
+.adm-col:hover i { filter: brightness(1.12); }
+.adm-col .bc-x { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-weight: 400; }
+@keyframes admGrow { from { transform: scaleY(0); } }
+@media (prefers-reduced-motion: reduce) { .adm-col i { animation: none; } }
+
+/* To-do list */
+.adm-todo { display: grid; gap: 6px; margin-top: 12px; }
+.adm-todo a { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--line-2); transition: transform 250ms var(--ease), border-color 200ms; }
+.adm-todo a:hover { transform: translateX(4px); border-color: var(--ink-3); }
+[dir="rtl"] .adm-todo a:hover { transform: translateX(-4px); }
+.adm-clear { display: grid; justify-items: center; gap: 6px; padding: 32px 10px; text-align: center; color: var(--turf); }
+
+/* Revenue mix */
+.adm-mix { display: grid; gap: 14px; margin-top: 16px; }
+.adm-mix .meter { margin-top: 6px; }
+.adm-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 8px; vertical-align: -1px; }
+
+/* Platform counts */
+.adm-counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.adm-counts a { display: grid; gap: 2px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line-2); transition: border-color 200ms, transform 250ms var(--ease); }
+.adm-counts a:hover { border-color: var(--ink-3); transform: translateY(-2px); }
+.adm-counts .kpi-ico { margin-bottom: 6px; }
+@media (max-width: 560px) { .adm-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Filters bar */
+.adm-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.adm-filters .field { min-width: 150px; margin: 0; }
+.adm-filters .field.grow { flex: 1 1 220px; }
+.adm-audit td { vertical-align: top; }
+.nowrap { white-space: nowrap; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }

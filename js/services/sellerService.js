@@ -77,7 +77,7 @@
       if (!front || !back) throw new ApiError('Add photos of the front and back of your ID.', 'validation');
       const s = db().update('sellers', id, { kyc: 'pending', kycInfo: { fullName: String(fullName).trim(), idLast4: String(nationalId).slice(-4), submittedAt: Date.now() } });
       db().log(s.accountId, 'seller.kyc', `${s.name} sent ID documents for verification`, id);
-      SA.services.notify?.toAdmins({ cat: 'account', title: `ID check: ${s.name}`, body: 'Verify before their first withdrawal.', link: '#/dash/pod-review?tab=sellers' });
+      SA.services.notify?.toAdmins({ cat: 'account', title: `ID check: ${s.name}`, body: 'Verify before their first withdrawal.', link: '#/admin/designs?tab=sellers' });
       SA.services.notify?.toSeller(id, { cat: 'account', title: 'ID documents received', body: 'We’re checking them — usually within one working day.', link: '#/dash/seller/wallet' });
       return s;
     },

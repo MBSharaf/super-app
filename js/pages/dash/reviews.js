@@ -78,7 +78,7 @@
       return C.layout('reviews', { title: 'Reviews', subtitle: 'What players say about your pitches — reply publicly from here', body });
     },
     mount(el, ctx) {
-      el.querySelector('[data-pitch]')?.addEventListener('change', (e) => SA.core.router.go(SA.core.router.href('/dash/reviews', { ...ctx.query, pitch: e.target.value || undefined }).slice(1)));
+      el.querySelector('[data-pitch]')?.addEventListener('change', (e) => SA.core.router.go(SA.core.router.href(SA.services.dash.adminMode() ? '/admin/reviews' : '/dash/reviews', { ...ctx.query, pitch: e.target.value || undefined }).slice(1)));
       el.addEventListener('click', async (e) => {
         const art = e.target.closest('[data-review]'); if (!art) return;
         const id = art.dataset.review;

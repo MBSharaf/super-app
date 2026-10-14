@@ -13,13 +13,32 @@
   const PS = SA.services.pitches;
   const DAY = 864e5;
   const SESSION = 'superapp.dash.session';
+  // The admin console (#/admin) is a separate system with its own session; admins can't sign in to the partner dashboard
+  const ADMIN_SESSION = 'superapp.admin.session';
+  const adminMode = () => /^#\/admin(?:[/?]|$)/.test(location.hash);
 
   /* ======================= Auth & permissions ======================= */
   const auth = {
     accounts: () => db.all('accounts'),
-    current: () => { try { const id = localStorage.getItem(SESSION); return id ? db.find('accounts', id) : null; } catch { return null; } },
-    signIn(id) { if (!db.find('accounts', id)) throw new ApiError('Account not found.', 'not_found'); localStorage.setItem(SESSION, id); db.log(id, 'auth.signin', `${db.find('accounts', id).name} signed in`); },
-    signOut() { localStorage.removeItem(SESSION); },
+    current: () => {
+      try {
+        const admin = adminMode();
+        const id = localStorage.getItem(admin ? ADMIN_SESSION : SESSION);
+        const a = id ? db.find('accounts', id) : null;
+        if (!a || (a.role === 'admin') !== admin) return null;
+        return !admin && a.status === 'suspended' ? null : a;
+      } catch { return null; }
+    },
+    signIn(id) {
+      const a = db.find('accounts', id);
+      if (!a) throw new ApiError('Account not found.', 'not_found');
+      if (a.status === 'suspended') throw new ApiError('This account is suspended. Contact the Super App team.', 'suspended');
+      localStorage.setItem(a.role === 'admin' ? ADMIN_SESSION : SESSION, id);
+      db.log(id, 'auth.signin', `${a.name} signed in${a.role === 'admin' ? ' to the admin console' : ''}`);
+    },
+    signOut() { localStorage.removeItem(adminMode() ? ADMIN_SESSION : SESSION); },
+    /** Admin opens a partner's dashboard (logged) */
+    openAs(id) { localStorage.setItem(SESSION, id); },
   };
   const me = () => { const a = auth.current(); if (!a) throw new ApiError('Sign in to the partner dashboard first.', 'unauthenticated'); return a; };
   const isAdmin = (a = auth.current()) => a?.role === 'admin';
@@ -510,6 +529,7 @@
   const vatPart = (gross) => gross - gross / (1 + (db.settings().vat || 0));
 
   const dash = {
+    adminMode,
     auth, isAdmin, me: () => auth.current(),
     myPitches, myStores, ledger, findBooking, summary, daily: series, heatmap, wallet, salesFor, statusOf, bookingMoney, lastSettlement, sourceLabel, saleState, FLOW, renewMemberships,
     commission: () => db.settings().commission,

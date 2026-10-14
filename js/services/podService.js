@@ -168,7 +168,7 @@
       N()?.toSeller(s.id, instant
         ? { cat: 'designs', tone: 'turf', title: `“${d.title}” is live`, body: 'Elite sellers publish straight away. We may spot-check it later.', link: `#/shop/pod-${id}` }
         : { cat: 'designs', title: `“${d.title}” is in review`, body: S().levelOf(s).review === 'priority' ? 'Pro sellers are reviewed first — usually within a few hours.' : 'We review every design, usually within 24 hours.', link: '#/dash/seller/designs' });
-      if (!instant) N()?.toAdmins({ cat: 'designs', title: `New design to review: “${d.title}”`, body: `${s.name} · ${S().levelOf(s).name}${S().levelOf(s).review === 'priority' ? ' · priority' : ''}`, link: '#/dash/pod-review' });
+      if (!instant) N()?.toAdmins({ cat: 'designs', title: `New design to review: “${d.title}”`, body: `${s.name} · ${S().levelOf(s).name}${S().levelOf(s).review === 'priority' ? ' · priority' : ''}`, link: '#/admin/designs' });
       return out;
     },
     setPaused(id, paused) {
@@ -208,7 +208,7 @@
       if (!['copyright', 'trademark', 'offensive', 'other'].includes(reason)) throw new ApiError('Choose a reason.', 'validation');
       const d = db().find('designs', designId); if (!d) throw new ApiError('Design not found.', 'not_found');
       const r = db().insert('reports', { designId, sellerId: d.sellerId, reason, detail: String(detail).slice(0, 600), contact: String(contact).slice(0, 120), status: 'open' }, 'rp');
-      N()?.toAdmins({ cat: 'account', tone: 'danger', title: `${reason[0].toUpperCase()}${reason.slice(1)} report: “${d.title}”`, body: String(detail || 'No details given').slice(0, 120), link: '#/dash/pod-review?tab=reports' });
+      N()?.toAdmins({ cat: 'account', tone: 'danger', title: `${reason[0].toUpperCase()}${reason.slice(1)} report: “${d.title}”`, body: String(detail || 'No details given').slice(0, 120), link: '#/admin/designs?tab=reports' });
       return r;
     },
     reports: ({ status } = {}) => db().all('reports').filter((r) => !status || r.status === status).map((r) => ({ ...r, design: pod.get(r.designId) })),

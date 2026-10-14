@@ -73,6 +73,16 @@
     .add('/dash/partners', P.dashPartners)
     .add('/dash/settings', P.dashSettings)
     .add('/dash/activity', P.dashActivity)
+    // Admin console (separate system for the Super App team)
+    .add('/admin', P.adminOverview)
+    .add('/admin/audit', P.adminAudit)
+    .add('/admin/notifications', P.dashNotifications)
+    .add('/admin/designs', P.dashPodReview)
+    .add('/admin/catalog', P.dashPodCatalog)
+    .add('/admin/print', P.dashPrint)
+    .add('/admin/reviews', P.dashReviews)
+    .add('/admin/partners', P.dashPartners)
+    .add('/admin/settings', P.dashSettings)
     .add('*', P.notFound);
 
   const render = async (match, { keepScroll = false } = {}) => {

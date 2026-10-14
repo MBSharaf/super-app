@@ -172,6 +172,7 @@
       const next = { ...passRaw() };
       plan.leagues.forEach((k) => { next[k] = Math.max(next[k] || 0, Date.now()) + PASS_DAYS * 864e5; });
       store.set({ fantasyPass: next }, 'fantasy');
+      SA.services.admin?.recordPass({ plan: plan.id, amount: plan.price, customer: store.get().user?.name || 'Customer' });
       const until = Math.max(...plan.leagues.map((k) => next[k]));
       SA.services.user.notify({ kind: 'fantasy', title: 'Fantasy Pass active', body: `${plan.label} · prize leagues open until ${new Date(until).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, link: '/fantasy/leagues' });
       return { pass: pass(), paid };

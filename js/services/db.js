@@ -137,6 +137,8 @@
     if (!data.settings.sellerLevels) { data.settings.sellerLevels = structuredClone(SA.data.pod.levels); changed = true; }
     data.settings.sellerLevels.forEach((l) => { if (l.id === 'new' && l.name === 'New') { l.name = 'Starter'; changed = true; } });
     ensure('notifications', () => seedNotifications(now0()));
+    // Admin console (release 5): Fantasy Pass sales ledger, refunds/adjustments, platform promo uses, support, content, samples, level reviews
+    ['passSales', 'refunds', 'adjustments', 'promoUses', 'broadcasts', 'samples', 'levelReviews'].forEach((k) => ensure(k, () => []));
     if (!data.settings.fantasySubs) { data.settings.fantasySubs = { one: 50, both: 80 }; changed = true; }
     if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.2, minRedeem: 500 }; changed = true; }
     if (data.settings.vat == null) { data.settings.vat = 0.14; changed = true; }
@@ -242,7 +244,7 @@
     },
     remove(col, id) { const before = data[col]; data[col] = before.filter((x) => x.id !== id); if (!persist()) { data[col] = before; throw new Error('storage_full'); } emit(col); },
     override(bookingId, patch) { data.bookingOverrides[bookingId] = { ...(data.bookingOverrides[bookingId] || {}), ...patch, at: Date.now() }; persist(); emit('bookings'); },
-    log(actor, action, text, ref) { data.activity.unshift({ id: uid('act'), at: Date.now(), actor, action, text, ref }); data.activity = data.activity.slice(0, 300); persist(); },
+    log(actor, action, text, ref) { data.activity.unshift({ id: uid('act'), at: Date.now(), actor, action, text, ref }); data.activity = data.activity.slice(0, 1000); persist(); },
     overrideSale(saleId, patch) { data.saleOverrides[saleId] = { ...(data.saleOverrides[saleId] || {}), ...patch, at: Date.now() }; if (!persist()) throw new Error('storage_full'); emit('sales'); },
     /** Save in-place changes to a collection and tell subscribers */
     touch(col) { if (!persist()) throw new Error('storage_full'); emit(col); },

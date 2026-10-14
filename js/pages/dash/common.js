@@ -26,15 +26,14 @@
     { group: '' },
     { key: 'activity', label: 'Activity', href: '#/dash/activity', icon: 'clock' },
   ];
-  const ADMIN = [
-    { key: 'partners', label: 'Partners', href: '#/dash/partners', icon: 'users' },
-    { key: 'pod-review', label: 'Design review', href: '#/dash/pod-review', icon: 'image', badge: 'pod-review' },
-    { key: 'print', label: 'Print orders', href: '#/dash/print', icon: 'package' },
-    { key: 'pod-catalog', label: 'Print catalogue', href: '#/dash/pod-catalog', icon: 'shirt' },
-    { key: 'settings', label: 'Platform settings', href: '#/dash/settings', icon: 'settings' },
-  ];
-  // Roles that can sign in to this dashboard (the seller view is added in chunk 8)
-  const SIGNIN_ROLES = ['admin', 'owner', 'seller', 'printer'];
+  // Roles that can sign in to the partner dashboard (admins use the separate admin console at #/admin)
+  const SIGNIN_ROLES = ['owner', 'seller', 'printer'];
+  const isAdminUI = () => D().adminMode();
+  const A = () => SA.pages.adminCommon;
+  /** Pages shared with the admin console keep working there: their dashboard links point to the admin routes */
+  const ADMIN_LINKS = [['#/dash/notifications', '#/admin/notifications'], ['#/dash/pod-review', '#/admin/designs'], ['#/dash/pod-catalog', '#/admin/catalog'], ['#/dash/print', '#/admin/print'],
+    ['#/dash/settings', '#/admin/settings'], ['#/dash/partners', '#/admin/partners'], ['#/dash/reviews', '#/admin/reviews'], ['#/dash/activity', '#/admin/audit']];
+  const adminLinks = (html) => ADMIN_LINKS.reduce((h, [a, b]) => h.split(a).join(b), html);
   const ROLE_LABEL = { admin: ['badge-blaze', 'Admin'], owner: ['badge-turf', 'Owner'], printer: ['badge-gold', 'Print partner'], seller: ['badge-turf', 'Seller'] };
   /** Navigation per role; pages outside it send the user to the role's home page */
   const ROLE_NAV = {
@@ -52,12 +51,12 @@
     },
   };
   const ROLE_HOME = { printer: () => SA.pages.dashPrint, seller: () => SA.pages.dashSeller };
-  const navFor = (a) => { const n = ROLE_NAV[a.role]; return typeof n === 'function' ? n(a) : n || NAV; };
+  const navFor = (a) => { if (isAdminUI()) return A().live(); const n = ROLE_NAV[a.role]; return typeof n === 'function' ? n(a) : n || NAV; };
 
   /* ---------- Admin owner filter (persists for the session) ---------- */
   const ownerFilter = () => { try { return sessionStorage.getItem('dash.owner') || ''; } catch { return ''; } };
   const setOwnerFilter = (v) => { try { sessionStorage.setItem('dash.owner', v); } catch { /* ignore */ } };
-  const scope = () => (D().isAdmin() ? { ownerId: ownerFilter() || undefined } : {});
+  const scope = () => (D().isAdmin() && !isAdminUI() ? { ownerId: ownerFilter() || undefined } : {});
 
   /* ---------- Date ranges ---------- */
   const PRESETS = [['7', 'Last 7 days'], ['30', 'Last 30 days'], ['90', 'Last 90 days'], ['month', 'This month'], ['lastmonth', 'Last month']];
@@ -84,25 +83,24 @@
 
   /* ---------- Layout ---------- */
   /** Action items for the bell and sidebar badges */
-  const alertsNow = () => { try { return D().alerts(scope()); } catch (e) { console.warn(e); return []; } };
+  const alertsNow = () => { try { return isAdminUI() ? SA.services.admin.alerts() : D().alerts(scope()); } catch (e) { console.warn(e); return []; } };
   const navLink = (n, i, active, al) => {
     const b = n.badge && al.find((x) => x.key === n.badge);
     return `<a href="${n.href}" style="--i:${i}" ${n.key === active ? 'aria-current="page"' : ''}>${icon(n.icon, 18)}<span class="grow">${n.label}</span><span class="nav-badge ${b ? `nb-${b.tone}` : ''}" data-badge="${n.badge || ''}" ${b ? '' : 'hidden'}>${b ? b.count : ''}</span></a>`;
   };
-  const sideNav = (active, a, al = alertsNow()) => `
-    <a class="dash-brand" href="#/dash"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Partner dashboard</span></span></a>
+  const sideNav = (active, a, al = alertsNow()) => { const adm = isAdminUI(), home = adm ? '#/admin' : '#/dash'; return `
+    <a class="dash-brand" href="${home}"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">${adm ? 'Admin console' : 'Partner dashboard'}</span></span></a>
     <div class="dash-acct">${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b class="small truncate">${esc(a.name)}</b><span class="xs truncate">${esc(a.company)}</span></span><span class="badge ${(ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${(ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span></div>
     <nav class="dash-nav" aria-label="Dashboard">
       ${navFor(a).map((n, i) => (n.group !== undefined ? (n.group ? `<span class="dash-nav-label xs">${n.group}</span>` : '<span class="dash-nav-sep"></span>') : navLink(n, i, active, al))).join('')}
-      ${a.role === 'admin' ? `<span class="dash-nav-label xs">Super App admin</span>${ADMIN.map((n, i) => navLink(n, i + NAV.length, active, al)).join('')}` : ''}
     </nav>
-    ${(() => { const u = unreadNow(); return `<nav class="dash-nav dash-nav-notes" aria-label="Notifications"><a href="#/dash/notifications" ${active === 'notifications' ? 'aria-current="page"' : ''}>${icon('bell', 18)}<span class="grow">Notifications</span><span class="nav-badge ${u ? 'nb-blaze' : ''}" data-badge="notifications" ${u ? '' : 'hidden'}>${u || ''}</span></a></nav>`; })()}
+    ${(() => { const u = unreadNow(); return `<nav class="dash-nav dash-nav-notes" aria-label="Notifications"><a href="${home}/notifications" ${active === 'notifications' ? 'aria-current="page"' : ''}>${icon('bell', 18)}<span class="grow">Notifications</span><span class="nav-badge ${u ? 'nb-blaze' : ''}" data-badge="notifications" ${u ? '' : 'hidden'}>${u || ''}</span></a></nav>`; })()}
     <div class="dash-side-foot">
       <a href="#/" class="dash-foot-link">${icon('home', 16)} View the site</a>
       <button class="dash-foot-link" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button>
       <button class="dash-foot-link" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button>
       <button class="dash-foot-link" data-dash-signout>${icon('logout', 16)} Sign out</button>
-    </div>`;
+    </div>`; };
 
   // Bell = unread notifications (SA.services.notify) + to-do items (dashService.alerts)
   const N = () => SA.services.notify;
@@ -117,15 +115,16 @@
       <ul>${notes.map(notifItem).join('') || `<li class="bp-empty">${icon('bell', 18)}<span class="small">No notifications yet.</span></li>`}</ul>
       ${al.length ? `<div class="row-between bp-sec"><b>To do</b><span class="xs muted">${al.reduce((t, x) => t + x.count, 0)}</span></div>
       <ul>${al.map((x) => `<li><a href="${x.href}" class="bp-item"><span class="bp-ico t-${x.tone}">${icon(x.icon, 16)}</span><span class="grow"><b class="small">${esc(x.title)}</b><span class="xs muted" style="display:block">${esc(x.text)}</span></span>${icon('chevronRight', 14)}</a></li>`).join('')}</ul>` : ''}
-      <a class="btn btn-ghost btn-sm btn-block bp-all" href="#/dash/notifications">See all notifications</a>`;
+      <a class="btn btn-ghost btn-sm btn-block bp-all" href="${isAdminUI() ? '#/admin' : '#/dash'}/notifications">See all notifications</a>`;
   };
   const bell = (al) => `<div class="bell-wrap"><button class="icon-btn dash-bell" data-bell aria-expanded="false" aria-haspopup="true" aria-label="Notifications">${icon('bell', 19)}<span class="bell-dot" ${bellCount(al) ? '' : 'hidden'}>${bellCount(al)}</span></button>
       <div class="bell-pop" data-bell-pop hidden>${bellPop(al)}</div></div>`;
   const layout = (active, { title, subtitle = '', actions = '', body }) => {
     const a = D().me();
     const al = alertsNow();
-    const owners = D().isAdmin() ? SA.services.db.all('accounts').filter((x) => x.role === 'owner') : [];
-    return `<div class="dash" data-dash-active="${active}">
+    const adm = isAdminUI();
+    const owners = D().isAdmin() && !adm ? SA.services.db.all('accounts').filter((x) => x.role === 'owner') : [];
+    const out = `<div class="dash ${adm ? 'is-admin' : ''}" data-dash-active="${active}">
       <aside class="dash-side">${sideNav(active, a, al)}</aside>
       <section class="dash-main">
         <header class="dash-top">
@@ -137,16 +136,18 @@
         <div class="dash-body">${body}</div>
       </section>
     </div>`;
+    return adm ? adminLinks(out) : out;
   };
 
   /** Wire the common layout behaviours; returns cleanup */
   const bindLayout = (el) => {
-    el.querySelector('[data-dash-signout]')?.addEventListener('click', () => { D().auth.signOut(); SA.ui.overlay.toast('Signed out of the partner dashboard', { type: 'info' }); SA.core.router.go('/dash'); });
+    const home = isAdminUI() ? '/admin' : '/dash';
+    el.querySelector('[data-dash-signout]')?.addEventListener('click', () => { const adm = isAdminUI(); D().auth.signOut(); SA.ui.overlay.toast(adm ? 'Signed out of the admin console' : 'Signed out of the partner dashboard', { type: 'info' }); SA.core.router.go(home); });
     el.querySelector('[data-owner-filter]')?.addEventListener('change', (e) => { setOwnerFilter(e.target.value); SA.app.rerender(); });
     el.querySelector('[data-dash-menu]')?.addEventListener('click', () => {
       const a = D().me();
-      SA.ui.overlay.open({ drawer: true, side: 'left', label: 'Dashboard menu', body: `<div class="dash-drawer">${sideNav(el.querySelector('.dash')?.dataset.dashActive, a)}</div>`,
-        onMount(m, close) { m.querySelectorAll('a').forEach((x) => x.addEventListener('click', close)); m.querySelector('[data-dash-signout]')?.addEventListener('click', () => { close(); D().auth.signOut(); SA.core.router.go('/dash'); }); } });
+      SA.ui.overlay.open({ drawer: true, side: 'left', label: 'Dashboard menu', body: `<div class="dash-drawer ${isAdminUI() ? 'is-admin' : ''}">${(isAdminUI() ? adminLinks : (x) => x)(sideNav(el.querySelector('.dash')?.dataset.dashActive, a))}</div>`,
+        onMount(m, close) { m.querySelectorAll('a').forEach((x) => x.addEventListener('click', close)); m.querySelector('[data-dash-signout]')?.addEventListener('click', () => { close(); D().auth.signOut(); SA.core.router.go(home); }); } });
     });
     // Bell dropdown
     const btn = el.querySelector('[data-bell]'), pop = el.querySelector('[data-bell-pop]');
@@ -187,7 +188,7 @@
         document.querySelectorAll('[data-badge]').forEach((n) => { const k = n.dataset.badge; const b = k && al.find((x) => x.key === k); n.hidden = !b; n.textContent = b ? b.count : ''; n.className = `nav-badge ${b ? `nb-${b.tone}` : ''}`; });
         const dot = el.querySelector('.bell-dot'); const total = bellCount(al);
         if (dot) { dot.hidden = !total; dot.textContent = total; }
-        if (pop) pop.innerHTML = bellPop(al);
+        if (pop) pop.innerHTML = isAdminUI() ? adminLinks(bellPop(al)) : bellPop(al);
         document.querySelectorAll('[data-badge="notifications"]').forEach((n) => { const u = unreadNow(); n.hidden = !u; n.textContent = u || ''; n.className = `nav-badge ${u ? 'nb-blaze' : ''}`; });
       }, 120);
     });
@@ -199,7 +200,7 @@
     ...page,
     title: page.title || 'Partner dashboard — Super App',
     async render(ctx) {
-      if (!D().me()) return SA.pages.dashLogin.render(ctx);
+      if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : SA.pages.dashLogin).render(ctx);
       // Roles with their own area (print partner, seller) only see their pages; activity is shared
       const home = ROLE_HOME[D().me().role]?.();
       const allow = this.roles || page.roles || [];
@@ -209,11 +210,11 @@
       catch (err) {
         if (!['forbidden', 'not_found'].includes(err.code)) throw err;
         this._failed = true;
-        return layout(ctx.path.split('/')[2] || 'overview', { title: err.code === 'forbidden' ? 'No access' : 'Not found', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: err.code === 'forbidden' ? 'This belongs to another partner' : 'We couldn’t find that', text: SA.core.utils.esc(err.message), action: '<a class="btn btn-primary" href="#/dash">Back to overview</a>' })}</div>` });
+        return layout(ctx.path.split('/')[2] || 'overview', { title: err.code === 'forbidden' ? 'No access' : 'Not found', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: err.code === 'forbidden' ? 'This belongs to another partner' : 'We couldn’t find that', text: SA.core.utils.esc(err.message), action: `<a class="btn btn-primary" href="${isAdminUI() ? '#/admin' : '#/dash'}">Back to overview</a>` })}</div>` });
       }
     },
     mount(el, ctx) {
-      if (!D().me()) return SA.pages.dashLogin.mount(el, ctx);
+      if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : SA.pages.dashLogin).mount(el, ctx);
       if (this._as) { const as = this._as; this._as = null; return as.mount(el, ctx); }
       if (this._failed) { this._failed = false; return bindLayout(el); }
       const offs = [bindLayout(el), page.mount?.call(page, el, ctx)];
@@ -393,5 +394,5 @@
     },
   };
 
-  SA.pages.dashCommon = { layout, guard, kpi, barChart, bindChart, heatmap, statusBadge, range, rangeLabel, rangePicker, bindRange, scope, ownerFilter, showErrors, readImage, photoManager, xlsx, STATUS };
+  SA.pages.dashCommon = { SIGNIN_ROLES, ROLE_LABEL, layout, guard, bindLayout, adminLinks, isAdminUI, kpi, barChart, bindChart, heatmap, statusBadge, range, rangeLabel, rangePicker, bindRange, scope, ownerFilter, showErrors, readImage, photoManager, xlsx, STATUS };
 })(window.SA);
