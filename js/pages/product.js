@@ -27,6 +27,7 @@
             <button type="button" data-to-reviews class="row small" style="margin-top:12px;--gap:8px">${c.stars(p.rating, 15)}<b>${p.rating.toFixed(1)}</b><span class="muted">${p.reviews} reviews</span></button>
             <div class="pdp-price">${c.price(p.price, p.was)}${p.discount ? `<span class="small" style="color:var(--turf)">You save ${money(p.was - p.price)}</span>` : ''}</div>
             <p class="soft" style="margin-top:14px">${esc(p.desc)}</p>
+            ${[...new Set([...(p.tags || []), ...(p.seller?.tags || [])].map((t) => String(t).toLowerCase()))].length ? `<div class="tag-row">${[...new Set([...(p.tags || []), ...(p.seller?.tags || [])].map((t) => String(t).toLowerCase()))].slice(0, 8).map((t) => `<a class="tag-chip" href="#/shop?tag=${encodeURIComponent(t)}" data-tag="${esc(t)}">#${esc(t)}</a>`).join('')}</div>` : ''}
             ${p.pod && p.bigSizeExtra ? `<p class="xs muted" style="margin-top:6px">${p.bigSizes.join('/')} +${money(p.bigSizeExtra)}</p>` : ''}
 
             ${p.colors.length ? `<div class="pdp-opt"><span class="field-label">Colour: <span class="soft" data-color-name>${esc(p.colors[0].name)}</span></span>

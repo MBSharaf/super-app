@@ -57,12 +57,12 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 
 ## Partner dashboard (seller)
 - [x] P1 "Back to the site": highlighted and animated.
-- [ ] P2 Store link: add a copy button.
-- [ ] P3 Tagline → "Tags", with a working tag system across the site (search, filters, tracking).
-- [ ] P4 Analytics: give basic analytics at every level; Pro and Elite get more.
-- [ ] P5 "Print orders" → "Orders" (POD + own store), and in the overview too.
-- [ ] P6 Wallet/withdraw: "Print-on-demand profit" → their orders (POD or own store), with a PDF.
-- [ ] P7 Notifications section: explain it, then keep or change it.
+- [x] P2 Store link: add a copy button.
+- [x] P3 Tagline → "Tags", with a working tag system across the site (search, filters, tracking).
+- [x] P4 Analytics: give basic analytics at every level; Pro and Elite get more.
+- [x] P5 "Print orders" → "Orders" (POD + own store), and in the overview too.
+- [x] P6 Wallet/withdraw: "Print-on-demand profit" → their orders (POD or own store), with a PDF.
+- [x] P7 Notifications section: explain it, then keep or change it.
 
 ## Admin
 - [ ] A1 Sign-in screen: 3D animation (it is static now).

@@ -132,6 +132,7 @@
   const bindGlobal = () => {
     document.addEventListener('click', async (e) => {
       if (e.target.closest('[data-announce-x]')) { const an = SA.services.content?.announcement(); if (an) SA.services.content.dismiss(an); render(); return; }
+      const tg = e.target.closest('[data-tag]'); if (tg) SA.services.shop?.trackTag(tg.dataset.tag, 'tap');
       const dd = e.target.closest('[data-nav-dd]');
       document.querySelectorAll('.nav-dd.is-open').forEach((x) => { if (!dd || x !== dd.parentElement) { x.classList.remove('is-open'); x.querySelector('[data-nav-dd]').setAttribute('aria-expanded', 'false'); } });
       if (dd) { const open = dd.parentElement.classList.toggle('is-open'); dd.setAttribute('aria-expanded', String(open)); return; }

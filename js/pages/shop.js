@@ -24,7 +24,7 @@
       const f = { ...ctx.query };
       const items = await S.shop.list(f);
       const cat = S.shop.categories().find((x) => x.id === f.cat);
-      const designs = !f.cat && !f.q && !f.sale && !f.brand && !f.max && !f.store ? (await S.shop.list({ cat: 'designs' })).slice(0, 4) : [];
+      const designs = !f.cat && !f.q && !f.sale && !f.brand && !f.max && !f.store && !f.tag ? (await S.shop.list({ cat: 'designs' })).slice(0, 4) : [];
       const dcats = f.cat === 'designs' ? S.shop.designCategories().filter((x) => x.count) : [];
       const designStrip = designs.length ? `<section class="container section-tight shop-designs">
         <div class="sec-head"><div><p class="eyebrow">${icon('sparkle', 13)} Made to order</p><h2 class="h2">Designs by Egyptian creators</h2><p class="soft">Original tees, hoodies and caps — printed after you order.</p></div>
@@ -32,7 +32,8 @@
         <div class="product-grid">${designs.map((p) => cards.product(p)).join('')}</div></section>` : '';
       const dcatBar = f.cat === 'designs' ? `<div class="container"><div class="chips dcat-bar" role="group" aria-label="Design sections">${[{ id: '', name: 'All designs' }, ...dcats].map((x) => `<a class="chip" href="${SA.core.router.href('/shop', { ...f, dcat: x.id || undefined })}" aria-pressed="${(f.dcat || '') === x.id}">${esc(x.name)}${x.count != null ? ` <span class="chip-count">${x.count}</span>` : ''}</a>`).join('')}</div>
         <div class="sell-banner"><span>${icon('sparkle', 18)}</span><p class="small"><b>Got a design?</b> Put it on a hoodie or tee and earn on every sale — no stock, no upfront cost.</p><a class="btn btn-sm btn-blaze" href="#/sell">Start selling</a></div></div>` : '';
-      const isLanding = !f.cat && !f.q && !f.sale && !f.brand && !f.max && !f.store;
+      const isLanding = !f.cat && !f.q && !f.sale && !f.brand && !f.max && !f.store && !f.tag;
+      if (f.tag) S.shop.trackTag(f.tag, 'view');
       const shopStore = f.store ? S.shop.storeInfo(f.store) : null;
       return `
       ${isLanding ? `<section class="container shop-hero">
@@ -43,7 +44,7 @@
       </section>
       <section class="container"><div class="cat-strip">${S.shop.categories().map((cc) => `<a class="cat-tile" href="#/shop?cat=${cc.id}"><span class="media"><img src="${media.u(catImg[cc.id], 300, 300)}" alt="" loading="lazy" /></span><span class="small strong">${esc(cc.name)}</span></a>`).join('')}</div></section>`
       : shopStore ? `<section class="container storefront"><div class="sf-cover" style="background-image:url('${media.u(shopStore.cover, 1600, 560)}')"></div><div class="sf-info"><span class="sf-logo">${shopStore.logo ? `<img src="${shopStore.logo}" alt="" />` : icon('bag', 26)}</span><div class="grow"><span class="xs muted">Store on Super App${shopStore.official ? ' · Official' : ''}</span><h1 class="h1">${esc(shopStore.name)}</h1><p class="soft">${esc(shopStore.description)}</p></div></div></section>`
-      : c.pageHead({ crumbs: [['Shop', '#/shop'], [cat ? cat.name : f.q ? `Search “${f.q}”` : f.sale ? 'Sale' : 'All products']], title: cat ? esc(cat.name) : f.q ? `Results for “${esc(f.q)}”` : f.sale ? 'Sale' : 'All products' })}
+      : c.pageHead({ crumbs: [['Shop', '#/shop'], [cat ? cat.name : f.tag ? `#${f.tag}` : f.q ? `Search “${f.q}”` : f.sale ? 'Sale' : 'All products']], title: cat ? esc(cat.name) : f.tag ? `#${esc(f.tag)}` : f.q ? `Results for “${esc(f.q)}”` : f.sale ? 'Sale' : 'All products' })}
       ${designStrip}${dcatBar}
 
       <div class="container">

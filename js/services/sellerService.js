@@ -94,6 +94,8 @@
       return s;
     },
 
+    /** Store tags: up to 5, lower case, letters/numbers (Arabic too) */
+    cleanTags: (v) => [...new Set((Array.isArray(v) ? v : String(v || '').split(/[,،#\n]/)).map((t) => String(t).trim().toLowerCase().replace(/\s+/g, '-')).filter((t) => t.length >= 2 && t.length <= 24))].slice(0, 5),
     handleFree(h) { h = String(h || '').toLowerCase(); return HANDLE.test(h) && !RESERVED.has(h) && !sellers.byHandle(h) && !db().all('stores').some((x) => x.slug === h); },
 
     /** A free store link made from the store name (the seller can change it later in Store settings) */
@@ -150,7 +152,8 @@
 
     update(id, patch) {
       const s = sellers.get(id); if (!s) throw new ApiError('Seller not found.', 'not_found');
-      const allowed = ['name', 'bio', 'tagline', 'cover', 'logo', 'mode', 'handle', 'accent', 'featured', 'vacation', 'vacationNote', 'vacationUntil'];
+      if (patch.tags != null) patch = { ...patch, tags: sellers.cleanTags(patch.tags) };
+      const allowed = ['name', 'bio', 'tags', 'cover', 'logo', 'mode', 'handle', 'accent', 'featured', 'vacation', 'vacationNote', 'vacationUntil'];
       const p = Object.fromEntries(Object.entries(patch).filter(([k]) => allowed.includes(k)));
       if (p.name != null) { p.name = String(p.name).trim(); if (p.name.length < 2 || p.name.length > 40) throw new ApiError('Store name must be 2–40 characters.', 'validation'); }
       if (p.bio != null) p.bio = String(p.bio).trim().slice(0, 280);

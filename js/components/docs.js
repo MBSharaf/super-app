@@ -137,6 +137,24 @@
     await finish(doc, [p], `super-app-invoice-${o.id}.pdf`);
   };
 
+  /* ---------------- Seller earnings statement: every order (printed or own product) + withdrawals ---------------- */
+  const sellerStatement = async ({ seller: s, account, pod, store, payouts, earnings }) => {
+    const doc = SA.core.pdf.create({ title: `Statement ${s.name}` });
+    const p = doc.page();
+    let y = header(p, { title: 'EARNINGS STATEMENT', subtitle: s.name, number: invNo('SST', s.id, Date.now()), date: fmtDate(new Date(), 'long') });
+    y = Math.max(party(p, 40, y + 6, 'Seller', [s.name, account?.name || '', account?.email || '', `superapp.eg/s/${s.handle}`]), party(p, 300, y + 6, 'Paid by', [HQ()?.company || 'Super App Egypt', 'Super App platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 18;
+    const rows = [
+      ...pod.map((o) => ({ at: o.placedAt, cells: ['Printed', o.id, `${o.qty} × ${o.title} (${o.color}, ${o.size})`.slice(0, 44), o.status, m0(o.price * o.qty), ['refused', 'cancelled'].includes(o.status) ? m0(0) : m0(o.profit)] })),
+      ...store.map((o) => ({ at: o.createdAt, cells: ['My product', o.orderId, `${o.units} item${o.units > 1 ? 's' : ''}`, o.status, m0(o.gross), m0(o.net)] })),
+    ].sort((a, b) => b.at - a.at).slice(0, 26);
+    y = p.table(40, y, [{ label: 'Type', w: 66 }, { label: 'Order', w: 74 }, { label: 'Item', w: 170 }, { label: 'Status', w: 64 }, { label: 'Price', w: 70, align: 'right' }, { label: 'You earn', w: 71, align: 'right' }], rows.map((r) => r.cells), { rowH: 18 });
+    y += 14;
+    const storeNet = store.filter((o) => !['cancelled', 'returned'].includes(o.status)).reduce((t, o) => t + o.net, 0);
+    totalsBox(p, y, [['Printed designs — available', m0(earnings.available)], ['Printed designs — on hold', m0(earnings.pending)], ...(store.length ? [['Your products (net)', m0(storeNet)]] : []), ['Withdrawn so far', `−${m0(earnings.paidOut)}`], ['Earned so far (printed)', m0(earnings.lifetime), true]]);
+    if (payouts.length) { p.text('Withdrawals', 40, y + 14, { size: 9, weight: 700, color: TURF }); payouts.slice(0, 6).forEach((w, i) => p.text(`${fmtDate(new Date(w.createdAt))} · ${m0(w.amount)} · ${w.method || ''} · ${w.status}`, 40, y + 30 + i * 13, { size: 8.5, color: SOFT })); }
+    await finish(doc, [p], `super-app-statement-${s.handle}.pdf`);
+  };
+
   /* ---------------- Receipt: any payment, refund, top-up or voucher ---------------- */
   const RECEIPT = { payment: ['RECEIPT', 'Payment received'], refund: ['REFUND NOTE', 'Money returned to your wallet'], topup: ['RECEIPT', 'Wallet top-up'], voucher: ['VOUCHER', 'Super Points voucher'] };
   const receipt = async (r) => {
@@ -284,5 +302,5 @@
       `All amounts include VAT at ${Math.round(rate * 100)}% where applicable. Booking line details are in the Excel finance report. Demo document.`);
   };
 
-  SA.ui.docs = { bookingInvoice, packageInvoice, receipt, orderInvoice, storeOrderDoc, statement, vatIn };
+  SA.ui.docs = { bookingInvoice, packageInvoice, receipt, sellerStatement, orderInvoice, storeOrderDoc, statement, vatIn };
 })(window.SA);

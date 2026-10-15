@@ -294,3 +294,9 @@
 .countdown { display: inline-flex; gap: 6px; font-variant-numeric: tabular-nums; }
 .countdown span { display: grid; justify-items: center; min-width: 44px; padding: 6px 4px; border-radius: var(--r-xs); background: rgba(255,255,255,.1); font-weight: 750; font-size: 1.1rem; line-height: 1.1; }
 .countdown small { font-size: 10px; font-weight: 600; opacity: .7; }
+
+/* Tags (stores, products) — each opens the shop filtered by it */
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.tag-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 650; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); transition: background 150ms, color 150ms; }
+.tag-chip:hover { background: var(--blaze); color: #fff; border-color: transparent; }
+.ss-url { padding: 6px 10px; border-radius: var(--r-sm); background: var(--surface-2); font-size: 12.5px; word-break: break-all; }

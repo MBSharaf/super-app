@@ -32,7 +32,7 @@
         <div class="sf-info">
           <span class="sf-logo ${mine ? 'is-mine' : ''}">${s.logo ? `<img src="${esc(s.logo)}" alt="" />` : `<span class="sf-initials">${esc(SA.core.utils.initials(s.name))}</span>`}${mine ? `<button class="sf-logo-edit" data-quick="logo" aria-label="Change logo">${icon('camera', 14)}</button>` : ''}</span>
           <div class="grow">
-            <span class="xs muted">${s.tagline ? `${esc(s.tagline)} · ` : 'Creator on Super App · '}<span class="lvl-chip lvl-${lvl.id}">${esc(lvl.name)}</span></span>
+            <span class="xs muted">${(s.tags || []).length ? '' : 'Creator on Super App · '}<span class="lvl-chip lvl-${lvl.id}">${esc(lvl.name)}</span></span>${(s.tags || []).length ? `<span class="tag-row">${s.tags.map((t) => `<a class="tag-chip" href="#/shop?tag=${encodeURIComponent(t)}" data-tag="${esc(t)}">#${esc(t)}</a>`).join('')}</span>` : ''}
             <h1 class="h1">${esc(s.name)}</h1>
             <p class="soft">${esc(s.bio || '')}</p>
             <div class="sf-stats small"><span><b class="num">${fmtNum(lvl.stats.sales)}</b> sold</span>${lvl.stats.rating ? `<span>${icon('star', 13)} <b class="num">${lvl.stats.rating.toFixed(1)}</b></span>` : ''}<span><b class="num" data-followers>${fmtNum(s.followers || 0)}</b> followers</span></div>

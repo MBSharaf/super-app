@@ -60,12 +60,12 @@
     if (p.pod) {
       const s = SA.services.sellers.get(p.sellerId);
       return { ...p, discount: 0, wished: store.get().wishlist.includes(p.id), category: DESIGNS_CAT, soldOut: false,
-        seller: s ? { id: s.id, name: s.name, handle: s.handle, href: `#/s/${s.handle}`, pod: true } : null };
+        seller: s ? { id: s.id, name: s.name, handle: s.handle, href: `#/s/${s.handle}`, pod: true, tags: s.tags || [] } : null };
     }
     const st = storeOf(p);
     const sl = st && SA.services.sellers?.byAccount(st.ownerId);
     return { ...p, discount: discount(p), wished: store.get().wishlist.includes(p.id), category: P.categories.find((c) => c.id === p.cat),
-      soldOut: (p.stock ?? 1) <= 0, seller: st ? { id: st.id, name: st.name, official: !!st.official, href: sl ? `#/s/${sl.handle}` : `#/shop?store=${st.id}` } : null };
+      soldOut: (p.stock ?? 1) <= 0, seller: st ? { id: st.id, name: st.name, official: !!st.official, href: sl ? `#/s/${sl.handle}` : `#/shop?store=${st.id}`, tags: sl?.tags || [] } : null };
   };
   const cartKey = (productId, v) => `${productId}|${v.size || ''}|${v.color || ''}`;
   const inCart = (productId) => store.get().cart.filter((l) => l.productId === productId).reduce((a, l) => a + l.qty, 0);
@@ -101,12 +101,21 @@
     brands: () => [...new Set(catalogue().map((p) => p.brand))].sort(),
     stores: () => db.all('stores').filter((s) => s.status === 'active'),
     storeInfo: (id) => db.find('stores', id),
+    /** Tag tracking: how often shoppers open a tag (search or tap) — sellers see it in Analytics */
+    trackTag(tag, kind = 'view') {
+      const t = String(tag || '').trim().toLowerCase(); if (!t) return;
+      const d = db.raw(); d.tagStats = d.tagStats || {};
+      const x = d.tagStats[t] || { views: 0, taps: 0, last: 0 }; if (kind === 'tap') x.taps++; else x.views++; x.last = Date.now();
+      d.tagStats[t] = x; try { db.touch('tagStats'); } catch { /* storage full */ }
+    },
+    tagStats: (t) => db.raw().tagStats?.[String(t).toLowerCase()] || { views: 0, taps: 0, last: 0 },
     list: (f = {}) => request(() => {
       let out = catalogue().map(decorate);
       if (f.store) out = out.filter((p) => p.storeId === f.store);
       if (f.seller) out = out.filter((p) => p.sellerId === f.seller || (p.storeId && p.storeId === SA.services.sellers?.get(f.seller)?.storeId));
       if (f.cat) out = out.filter((p) => p.cat === f.cat);
       if (f.dcat) out = out.filter((p) => p.designCat === f.dcat);
+      if (f.tag) { const t = String(f.tag).toLowerCase(); out = out.filter((p) => (p.tags || []).map((x) => String(x).toLowerCase()).includes(t) || (p.seller?.tags || []).includes(t)); }
       if (f.q) { const q = f.q.toLowerCase(); out = out.filter((p) => `${p.name} ${p.brand} ${p.category?.name} ${p.seller?.name || ''} ${(p.tags || []).join(' ')}`.toLowerCase().includes(q)); }
       if (f.brand) { const set = String(f.brand).split(','); out = out.filter((p) => set.includes(p.brand)); }
       if (f.max) out = out.filter((p) => p.price <= +f.max);
