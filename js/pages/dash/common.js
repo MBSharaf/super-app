@@ -19,6 +19,7 @@
     { key: 'finance', label: 'Finance', href: '#/dash/finance', icon: 'percent' },
     { key: 'wallet', label: 'Wallet', href: '#/dash/wallet', icon: 'wallet' },
     { key: 'insights', label: 'Forecast & offers', href: '#/dash/insights', icon: 'trend' },
+    { key: 'slots', label: 'Free slots', href: '#/dash/slots', icon: 'megaphone' },
     { key: 'codes', label: 'Discount codes', href: '#/dash/codes', icon: 'tag' },
     { group: 'Store' },
     { key: 'store', label: 'My store', href: '#/dash/store', icon: 'bag', badge: 'stock' },

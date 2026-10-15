@@ -184,7 +184,7 @@
     /** Called when a free slot is posted: notify the shopper if one of their alerts matches */
     matchAlerts(slot) {
       const p = SA.services.pitches.getSync(slot.pitchId); if (!p) return 0;
-      const hits = games.alerts().filter((a) => (a.pitchId ? a.pitchId === p.id : a.area === p.area || a.area === p.city) && slot.hour >= a.from && slot.hour < a.to);
+      const hits = games.alerts().filter((a) => (a.pitchId ? a.pitchId === p.id : a.area === p.area || a.area === p.city) && slot.hour >= a.from && slot.hour < (a.to >= 24 ? 99 : a.to)); // "until midnight" also covers late hours after 12 AM
       if (hits.length) notifyMe({ title: `Free slot: ${p.name}`, body: `${relDay(slot.date)} at ${fmtHour(slot.hour)}${slot.pct ? ` · ${Math.round(slot.pct * 100)}% off` : ''}. Book it before someone else does.`, link: `/book/${p.id}?date=${slot.date}&hour=${slot.hour}&dur=1` });
       return hits.length;
     },

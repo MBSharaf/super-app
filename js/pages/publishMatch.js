@@ -42,6 +42,15 @@
                 <div class="field span-2"><label for="pm-notes">Notes for players <span class="muted">(optional)</span></label><textarea class="textarea" id="pm-notes" name="notes" maxlength="280" placeholder="E.g. Friendly game, bring a dark and a white shirt. Rolling subs."></textarea><span class="field-hint" data-count>0 / 280</span></div>
               </div>
             </section>
+            <section class="panel panel-pad">
+              <h2 class="h4">4. Who gets in?</h2>
+              <p class="small soft" style="margin-top:6px">Players pay their share online when they ask to join. Super App holds it until they’re in — declined players get it back.</p>
+              <div class="stack" style="--gap:10px;margin-top:14px">
+                <label class="choice"><input type="radio" name="accept" value="manual" checked /><span class="radio-dot"></span><span class="grow"><b>I decide each request</b><span class="xs muted" style="display:block">See each player’s level, position, attendance and rating, then accept or decline.</span></span></label>
+                <label class="choice"><input type="radio" name="accept" value="auto" /><span class="radio-dot"></span><span class="grow"><b>Accept automatically</b><span class="xs muted" style="display:block">The first players to ask get the spots. You can still remove someone.</span></span></label>
+                <label class="choice"><input type="checkbox" name="share" checked /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Share it in “Pitches & free slots”</b><span class="xs muted" style="display:block">Posts a card in the community so more players see it.</span></span></label>
+              </div>
+            </section>
           </form>
           <aside class="publish-preview">
             <p class="small muted" style="margin-bottom:10px">${icon('eye', 14)} Preview — how players will see it</p>
@@ -49,7 +58,7 @@
             <div class="panel panel-pad" style="margin-top:16px">
               <dl class="kv"><div><dt>Each new player pays</dt><dd class="num" data-share></dd></div><div><dt>You’ll get back up to</dt><dd class="num" data-back></dd></div></dl>
               <button class="btn btn-blaze btn-lg btn-block" style="margin-top:16px" form="publish-form" type="submit">${icon('users', 18)} Publish match</button>
-              <p class="xs muted" style="margin-top:10px;text-align:center">Players’ payments go to your wallet after the game.</p>
+              <p class="xs muted" style="margin-top:10px;text-align:center">Players pay online; their shares go to your wallet after the game.</p>
             </div>
           </aside>
         </div>
@@ -97,7 +106,10 @@
         const btn = el.querySelector('button[form="publish-form"]');
         btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Publishing…';
         try {
-          const { id } = await S.matches.publish({ bookingId: booking().id, total: out('total').value, have: out('have').value, level: form.level.value, type: form.type.value, gender, needsGK: form.needsGK.checked, notes: notes.value });
+          const { id } = await S.matches.publish({ bookingId: booking().id, total: out('total').value, have: out('have').value, level: form.level.value, type: form.type.value, gender, needsGK: form.needsGK.checked, notes: notes.value, autoAccept: form.accept.value === 'auto' });
+          if (form.share.checked) { try { S.community.shareGame(id); } catch (err) { console.warn(err); } }
+          // Demo: players nearby ask to join a few seconds later
+          setTimeout(() => { try { S.games.simulateApplicants(id, 3); if (location.hash.includes(id)) SA.app.rerender(); } catch (err) { console.warn(err); } }, 4000);
           SA.core.router.go(`/players/${id}?published=1`);
         } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); btn.disabled = false; btn.innerHTML = 'Publish match'; }
       });

@@ -107,3 +107,27 @@
 @media (max-width: 520px) { .lk-card { flex-wrap: wrap; } .lk-cta { width: 100%; justify-content: center; } }
 .cm-badge.t-venue { background: var(--turf-fill); color: #fff; }
 .cm-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line-2); } .cm-filters .field { margin: 0; min-width: 160px; }
+
+/* Game page: host panel, player records, ratings */
+.host-panel { margin-top: 18px; display: grid; gap: 6px; }
+.host-opt { padding: 6px 10px; gap: 8px; }
+.sub-mini { margin-top: 14px; }
+.pl-list { display: grid; gap: 8px; margin-top: 8px; }
+.pl-req { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line-2); flex-wrap: wrap; }
+.pl-req > .grow { min-width: 180px; flex: 1; display: grid; gap: 4px; }
+.pl-act { display: flex; gap: 6px; align-items: center; margin-inline-start: auto; }
+.pl-rec { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: var(--fs-xs); color: var(--ink-2); }
+.pl-att.is-high { color: var(--turf); font-weight: 700; } .pl-att.is-ok { color: var(--gold); font-weight: 700; } .pl-att.is-low { color: var(--danger); font-weight: 700; } .pl-att.is-new { color: var(--info); font-weight: 700; }
+.rate-form { display: grid; gap: 8px; margin-top: 6px; }
+.rate-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-2); }
+.stars-in { display: inline-flex; flex-direction: row-reverse; gap: 2px; }
+.stars-in input { position: absolute; opacity: 0; }
+.stars-in span { font-size: 20px; color: var(--line); cursor: pointer; transition: color 150ms; }
+.stars-in label:has(input:checked) span, .stars-in label:has(input:checked) ~ label span, .stars-in label:hover span, .stars-in label:hover ~ label span { color: var(--gold); }
+/* Partner: free slot picker */
+.slot-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.slot-opt { position: relative; cursor: pointer; }
+.slot-opt input { position: absolute; opacity: 0; }
+.slot-opt > span { display: grid; gap: 2px; padding: 10px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--surface-2); text-align: center; transition: border-color 150ms, background 150ms; }
+.slot-opt input:checked + span { border-color: var(--turf); background: var(--turf-tint); }
+.slot-opt input:focus-visible + span { box-shadow: var(--ring); }

@@ -161,6 +161,9 @@
       store.set((s) => ({ bookings: s.bookings.map((x) => (x.id === id ? { ...x, status: 'cancelled', refund, cancelledAt: Date.now() } : x)) }));
       if (db().find('bookings', id)) db().update('bookings', id, { status: 'cancelled', refund, refundShare: share, cancelledBy: 'customer', cancelledAt: Date.now() });
       db().log('customer', 'booking.cancelled', `Customer cancelled ${id} at ${b.pitchName} (${Math.round(share * 100)}% refund)`, id);
+      // Tell the venue the hour is free again and offer to post it in "Pitches & free slots"
+      const p = db().find('pitches', b.pitchId);
+      if (p && new Date(`${b.date}T00:00`).getTime() + b.hour * 36e5 > Date.now()) SA.services.notify?.toAccount(p.ownerId, { cat: 'store', tone: 'gold', title: `An hour just freed up at ${p.name}`, body: `${b.date} at ${SA.core.utils.fmtHour(b.hour)} — post it to players in the community in one tap.`, link: `#/dash/slots?pitch=${p.id}&date=${b.date}&hour=${b.hour}` });
       return { refund, share };
     },
     /** Cancel every future session of a weekly booking; each follows the cancellation policy */

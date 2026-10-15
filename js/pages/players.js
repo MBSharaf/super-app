@@ -18,9 +18,11 @@
   /** Join flow modal (also used from cards anywhere in the app). */
   const openJoin = async (id) => {
     const m = await S.matches.get(id);
-    if (m.joined) return SA.core.router.go(`/players/${id}`);
+    if (m.joined || m.isMine || S.games.myRequest(id)) return SA.core.router.go(`/players/${id}`);
+    const rec = S.games.record(S.games.meAsPlayer());
+    const hs = S.games.hostSettings(m);
     SA.ui.overlay.open({
-      title: 'Join this match', subtitle: `${esc(m.pitch.name)} · ${relDay(m.date)}, ${fmtRange(m.hour, m.duration)}`,
+      title: m.spotsLeft ? 'Ask to join this game' : 'Join the waitlist', subtitle: `${esc(m.pitch.name)} · ${relDay(m.date)}, ${fmtRange(m.hour, m.duration)}`,
       body: `<div class="join-summary">
           <div class="media join-thumb"><img src="${media.photo(m.pitch.image, 300, 220)}" alt="" /></div>
           <div class="grow"><div class="row wrap" style="--gap:6px"><span class="badge badge-info">${m.level}</span><span class="badge">${m.type}</span><span class="badge">${m.gender}</span></div>
@@ -29,10 +31,13 @@
         </div>
         ${m.notes ? `<blockquote class="host-note">“${esc(m.notes)}”</blockquote>` : ''}
         <form id="join-form" class="stack" style="--gap:14px;margin-top:16px">
-          ${SA.ui.payment.render({ amount: m.pricePerPlayer, allowCash: true, name: 'joinpay' })}
+          <div class="form-grid"><div class="field"><label for="jn-pos">Your position</label><select class="select" id="jn-pos" name="position">${S.games.POSITIONS.map((p) => `<option ${p === (m.needsGK ? 'Goalkeeper' : S.user.me().position) ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+            <div class="field"><label for="jn-msg">Message to the host <span class="muted">(optional)</span></label><input class="input" id="jn-msg" name="message" maxlength="200" placeholder="e.g. I can be there 15 minutes early" /></div></div>
+          <div class="notice ${hs.autoAccept ? 'turf' : ''}">${icon(hs.autoAccept ? 'bolt' : 'shield', 18)}<span>${hs.autoAccept ? '<b>Instant:</b> this host accepts automatically — you’re in as soon as you pay.' : `<b>${esc(m.hostName)} decides.</b> Your share is held by Super App and comes back in full if you’re not accepted.`} The host sees your record: ${rec.games} games${rec.attendance != null ? `, ${Math.round(rec.attendance * 100)}% attendance` : ''}${rec.rating ? `, ${rec.rating.toFixed(1)}★` : ''}.</span></div>
+          ${SA.ui.payment.render({ amount: m.pricePerPlayer, allowCash: false, name: 'joinpay' })}
           <label class="row small" style="--gap:10px;align-items:flex-start"><input type="checkbox" required name="agree" style="margin-top:3px" /> <span>I’ll arrive 10 minutes early and tell the host if I can’t make it.</span></label>
         </form>`,
-      footer: `<div class="grow"><b class="num">${money(m.pricePerPlayer)}</b><span class="xs muted" style="display:block">your share of the pitch</span></div><button class="btn btn-blaze" form="join-form" type="submit">Join match</button>`,
+      footer: `<div class="grow"><b class="num">${money(m.pricePerPlayer)}</b><span class="xs muted" style="display:block">your share of the pitch</span></div><button class="btn btn-blaze" form="join-form" type="submit">${m.spotsLeft ? "Pay &amp; ask to join" : "Pay &amp; join waitlist"}</button>`,
       onMount(el, close) {
         const form = el.querySelector('#join-form');
         SA.ui.payment.bind(form, { name: 'joinpay' });
@@ -41,10 +46,10 @@
           if (!form.agree.checked) { SA.ui.overlay.toast('Tick the box to confirm you’ll show up on time.', { type: 'error' }); return; }
           const payment = SA.ui.payment.read(form, { name: 'joinpay' });
           try {
-            await SA.ui.payment.process(() => S.matches.join(id, payment), { root: form, label: 'Saving your spot', methodHint: payment.method });
+            const r = await SA.ui.payment.process(() => S.games.request(id, { position: form.position.value, message: form.message.value, payment }), { root: form, label: 'Sending your request', methodHint: payment.method });
             close();
-            SA.core.motion.confetti();
-            SA.ui.overlay.toast(`You’re in! See you ${relDay(m.date).toLowerCase()} at ${fmtHour(m.hour)}.`, { action: 'View match', onAction: () => SA.core.router.go(`/players/${id}`) });
+            if (r?.status === 'accepted') { SA.core.motion.confetti(); SA.ui.overlay.toast(`You’re in! See you ${relDay(m.date).toLowerCase()} at ${fmtHour(m.hour)}.`, { action: 'View game', onAction: () => SA.core.router.go(`/players/${id}`) }); }
+            else SA.ui.overlay.toast(r?.status === 'waitlist' ? 'You’re on the waitlist — we’ll tell you if a spot opens' : 'Request sent — the host will accept or decline', { type: 'info', action: 'View game', onAction: () => SA.core.router.go(`/players/${id}`) });
             SA.app.rerender();
           } catch { /* shown by process() */ }
         });

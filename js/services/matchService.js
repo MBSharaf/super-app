@@ -55,7 +55,8 @@
     allSync: all,
 
     /** Join a match: pays the per-player share, then adds the user to the participant list. */
-    async join(id, payment) {
+    async join(id, payment, { position = 'Any position', message = '' } = {}) {
+      if (SA.services.games) return SA.services.games.request(id, { position, message, payment });
       SA.services.user.assertActive();
       const m = all().find((x) => x.id === id);
       if (!m) throw new ApiError('This match is no longer listed.', 'not_found');
@@ -92,6 +93,7 @@
         id, pitchId: b.pitchId, date: b.date, hour: b.hour, duration: b.duration, total, filled: have, participants,
         level: data.level, gender: data.gender, type: data.type, pricePerPlayer: Math.ceil(b.total / total), notes: data.notes?.trim() || '',
         needsGK: data.needsGK === 'on' || data.needsGK === true, isMine: true, hostName: user.name, bookingId: b.id, postedAt: Date.now(), postedHoursAgo: 0,
+        autoAccept: !!data.autoAccept, closed: false,
       };
       store.set((s) => ({ publishedMatches: [match, ...s.publishedMatches], bookings: s.bookings.map((x) => (x.id === b.id ? { ...x, publishedMatchId: id } : x)) }), 'match:publish');
       SA.services.user.notify({ kind: 'match', title: 'Your match is live', body: `Players nearby can now join your game at ${b.pitchName}.`, link: `/players/${id}` });
