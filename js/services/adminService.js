@@ -101,6 +101,7 @@
     add('support', 'message', 'blaze', tk, `${tk} support ticket${tk > 1 ? 's' : ''} waiting`, 'Customers, partners and sellers waiting for a reply.', '#/admin/support');
     const sm = (db().all('samples') || []).filter((x) => x.status === 'requested').length;
     add('samples', 'shirt', 'info', sm, `${sm} sample request${sm > 1 ? 's' : ''}`, 'Approve to send them to the print partner.', '#/admin/samples');
+    try { const low = D().lowStock(); add('stock', 'alert', 'gold', low.length, `${low.length} Super App Store product${low.length > 1 ? 's' : ''} low on stock`, low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), '#/admin/store?low=1'); } catch { /* no official store */ }
     if (admin.levelReviewDue && admin.levelReviewDue()) add('levels', 'trend', 'gold', 1, 'Monthly level review is due', 'Check seller levels for this month.', '#/admin/levels');
     return out;
   };

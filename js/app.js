@@ -102,6 +102,10 @@
     .add('/admin/support/:id', P.adminTicket)
     .add('/admin/sellers', P.adminSellers)
     .add('/admin/settings', P.dashSettings)
+    .add('/admin/store', P.dashStore)
+    .add('/admin/store/product/new', P.dashProductEdit)
+    .add('/admin/store/product/:id', P.dashProductEdit)
+    .add('/admin/store-orders', P.dashOrders)
     .add('*', P.notFound);
 
   const render = async (match, { keepScroll = false } = {}) => {

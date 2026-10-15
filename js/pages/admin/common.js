@@ -21,6 +21,7 @@
     { group: 'Operations' },
     { key: 'orders', page: 'adminOrders', label: 'Orders & bookings', href: '#/admin/orders', icon: 'ticket' },
     { key: 'support', page: 'adminSupport', label: 'Support & disputes', href: '#/admin/support', icon: 'message', badge: 'support' },
+    { key: 'store', page: 'dashStore', label: 'Super App Store', href: '#/admin/store', icon: 'bag', badge: 'stock' },
     { key: 'reviews', page: 'dashReviews', label: 'Reviews', href: '#/admin/reviews', icon: 'star', badge: 'reviews' },
     { group: 'Print on demand' },
     { key: 'pod-review', page: 'dashPodReview', label: 'Design review', href: '#/admin/designs', icon: 'image', badge: 'designs' },

@@ -227,7 +227,7 @@
           const out = ctx.params.id ? D().updateProduct(p.id, read()) : D().createProduct(store.id, read());
           SA.core.motion.confetti({ count: 50, spread: 0.6 });
           SA.ui.overlay.toast(out.status === 'active' ? `${out.name} is live in the Super App shop` : `${out.name} saved as a draft`, out.status === 'active' ? { action: 'View', onAction: () => window.open(`#/shop/${out.id}`, '_blank') } : {});
-          SA.core.router.go('/dash/store');
+          SA.core.router.go(D().adminMode() ? '/admin/store' : '/dash/store');
         } catch (err) {
           if (err.details) C.showErrors(form, err.details);
           SA.ui.overlay.toast(err.message === 'storage_full' ? 'Not enough storage on this device — use fewer or smaller photos.' : err.message, { type: 'error' });

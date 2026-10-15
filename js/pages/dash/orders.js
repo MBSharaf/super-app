@@ -106,7 +106,7 @@
       return C.layout('orders', { title: 'Orders', subtitle: `${all.length} order${all.length === 1 ? '' : 's'} · ${C.rangeLabel(r)}`, body });
     },
     mount(el, ctx) {
-      C.bindRange(el, '/dash/orders', { status: ctx.query.status });
+      C.bindRange(el, D().adminMode() ? '/admin/store-orders' : '/dash/orders', { status: ctx.query.status });
       el.addEventListener('click', async (e) => {
         const row = e.target.closest('[data-order]'); if (!row) return;
         const quick = e.target.closest('[data-quick]');
