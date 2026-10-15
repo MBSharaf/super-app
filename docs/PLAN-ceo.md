@@ -70,4 +70,6 @@ The user's decisions (2026-10-15):
 - [x] Company audit log
 
 ### Chunk 3 — finish
-- [ ] Arabic, Sharaf links, README, tests (desktop/mobile, Arabic, light/dark), commit and push
+- [x] Arabic, Sharaf links, README, tests (desktop/mobile, Arabic, light/dark), commit and push
+
+**Status (2026-10-16): all done.** Two humans besides the CEO: the admin manager (HQ, acc-admin) and the CFO (acc-cfo, PIN 7777 for the second approval). AI agents are acc-ag-<role>.

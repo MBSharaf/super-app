@@ -42,6 +42,12 @@
       ['Profile (grow cards)', '#/profile'], ['Apply to sell', '#/sell'], ['Apply as a pitch partner', '#/partner/apply'], ['Pitch partner: apply to sell', '#/dash/sell'], ['Karim’s shop (seller dashboard)', '#/seller/products'],
       ['Admin: pitch partner applications', '#/admin/approvals?tab=partners'], ['Admin: seller applications', '#/admin/approvals?tab=sellers'],
     ] },
+    { title: 'CEO system (Command Center)', icon: 'crown', ceo: true, links: [
+      ['CEO sign-in (PIN 2026)', '#/ceo'], ['Command overview', '#/ceo'], ['Morning briefing', '#/ceo/briefing'], ['Approvals inbox', '#/ceo/approvals'], ['Departments', '#/ceo/departments'], ['Org chart', '#/ceo/departments?view=chart'],
+      ['A department (Finance)', '#/ceo/department/finance'], ['AI workforce', '#/ceo/agents'], ['An agent (Payables)', '#/ceo/agent/payables'], ['Goals (OKRs)', '#/ceo/goals'], ['Budgets', '#/ceo/budgets'], ['Compliance calendar', '#/ceo/calendar'],
+      ['Reports', '#/ceo/reports'], ['AI agents report', '#/ceo/reports?kind=agents'], ['What-if simulator', '#/ceo/whatif'], ['Control room (kill switches)', '#/ceo/control'], ['All systems (open as anyone)', '#/ceo/systems'], ['Company audit log', '#/ceo/audit'],
+      ['Admin console sign-in (agents list)', '#/admin'],
+    ] },
     { title: 'Factory (print-on-demand)', icon: 'truck', factory: [['fs-owner', '1111', 'Owner · Hany'], ['fs-sup', '2222', 'Supervisor · Reem'], ['fs-pr1', '3333', 'Printer · Mahmoud'], ['fs-qc', '4444', 'Quality · Nour'], ['fs-pack', '5555', 'Packing · Islam']], links: [
       ['Factory sign-in', '#/factory'], ['Overview', '#/factory'], ['Production', '#/factory/jobs'], ['New jobs & batches', '#/factory/jobs?tab=new'], ['Quality check', '#/factory/jobs?tab=qc'], ['Packing', '#/factory/jobs?tab=packing'], ['Late', '#/factory/jobs?tab=late'], ['Problems', '#/factory/jobs?tab=issues'],
       ['A job (with a problem)', '#/factory/job/PO-F706'], ['Scan a job', '#/factory/scan?code=PO-F708'], ['Shipping & courier', '#/factory/shipping'], ['Partly packed orders', '#/factory/shipping?tab=partial'], ['Team', '#/factory/team'], ['Money', '#/factory/money'], ['Reports', '#/factory/reports'], ['Settings & prices', '#/factory/settings'], ['Activity', '#/factory/activity'],
@@ -60,6 +66,7 @@
     ${GROUPS.map((g, i) => `<details class="dev-group" ${i === 0 ? 'open' : ''}><summary>${icon(g.icon, 18)}<b class="grow">${g.title}</b><span class="xs muted">${g.links.length}</span>${icon('chevronDown', 16)}</summary>
       ${g.games ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-as="acc-o1" data-dev-go="#/dash/slots">Sign in as Karim (owner)</button><button class="chip" data-dev-game>Create a finished game to rate</button></div>` : ''}
       ${g.seller ? `<div class="dev-as"><span class="xs muted">Seller-only communities need a seller account:</span><button class="chip" data-dev-seller>Make me a test seller</button><button class="chip" data-dev-as="acc-admin" data-dev-go="#/admin/community">Sign in as admin</button></div>` : ''}
+      ${g.ceo ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-ceo>Sign in as the CEO</button><button class="chip" data-dev-agent="acc-ag-payables">Admin console as the Payables agent</button><button class="chip" data-dev-agent="acc-ag-support-agent">Admin console as Echo (support)</button><button class="chip" data-dev-big>Send a 60,000 EGP test request (two approvals)</button></div>` : ''}
       ${g.factory ? `<div class="dev-as"><span class="xs muted">Sign in to the factory as:</span>${g.factory.map(([id, pin, l]) => `<button class="chip" data-dev-fac="${id}" data-pin="${pin}">${l}</button>`).join('')}<button class="chip" data-dev-job>Send a test order to the factory</button></div>` : ''}
       ${g.as ? `<div class="dev-as"><span class="xs muted">Sign in as:</span>${g.as.map(([id, l]) => `<button class="chip" data-dev-as="${id}" data-dev-go="${g.links[0][1]}">${l}</button>`).join('')}</div>` : ''}
       <div class="dev-grid">${g.links.map(([l, h]) => `<a class="dev-link" href="${h}"><span>${l}</span><span class="xs muted">${h.replace('#', '')}</span></a>`).join('')}</div></details>`).join('')}
@@ -89,6 +96,19 @@
         db.update('sellers', s.id, { status: 'active' }); if (s.storeId) db.update('stores', s.storeId, { status: 'active' });
         SA.ui.overlay.toast(`You’re a seller now: ${s.name}`); SA.core.router.go('/community/creators');
       } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
+      return;
+    }
+    if (e.target.closest('[data-dev-ceo]')) { try { SA.services.ceo.auth.signIn('2026'); SA.core.router.go('/ceo'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+    const ag = e.target.closest('[data-dev-agent]');
+    if (ag) { try { localStorage.setItem('superapp.admin.session', ag.dataset.devAgent); SA.core.router.go('/admin'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+    if (e.target.closest('[data-dev-big]')) {
+      // A big balance credit asked by the admin manager: it waits for the CEO and the CFO (test only)
+      const prev = localStorage.getItem('superapp.admin.session');
+      SA.core.router.go('/admin', { replace: true });
+      try { localStorage.setItem('superapp.admin.session', 'acc-admin'); SA.services.admin.adjust({ accountId: 'acc-o1', amount: 60000, reason: 'Test: tournament prize money' }); }
+      catch (err) { SA.ui.overlay.toast(err.message, { type: err.code === 'needs_approval' ? 'info' : 'error' }); }
+      finally { if (prev) localStorage.setItem('superapp.admin.session', prev); }
+      setTimeout(() => SA.core.router.go('/ceo/approvals'), 300);
       return;
     }
     const fb = e.target.closest('[data-dev-fac]');

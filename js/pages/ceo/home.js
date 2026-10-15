@@ -132,8 +132,9 @@
         try {
           const r = await CE().approve(id);
           if (r.waiting) {
-            C.pinPad({ title: 'Laila Mansour — CFO', subtitle: 'Second approval: the CFO enters their PIN (demo: 7777)', check: (pin) => CE().approve(id, { cfoPin: pin }), done: () => { SA.ui.overlay.toast('Approved by you and the CFO — money sent'); SA.app.rerender(); } });
+            // Show the first approval, then the CFO confirms on the same screen
             SA.app.rerender();
+            setTimeout(() => C.pinPad({ title: 'Laila Mansour — CFO', subtitle: 'Second approval: the CFO enters their PIN (demo: 7777)', check: (pin) => CE().approve(id, { cfoPin: pin }), done: () => { SA.ui.overlay.toast('Approved by you and the CFO — money sent'); SA.app.rerender(); } }), 120);
             return;
           }
           SA.ui.overlay.toast('Approved — done');

@@ -188,7 +188,7 @@
     return `<div class="ceo-cols" style="--h:${height}px" role="img" aria-label="${esc(`${label} per day: ${egp(tot)} in total`)}">${rows.map((r, i) => `<i style="--v:${Math.max(2, (Math.abs(r[key]) / max) * 100)}%;--i:${i}" class="${r[key] < 0 ? 'neg' : ''}" title="${SA.core.utils.fmtDate(r.date)} — ${egp(r[key])}"></i>`).join('')}</div>`;
   };
   /** People get their photo; AI agents get a gold tile with their initial (they aren't people) */
-  const face = (r, size = '') => (r.holder === 'ai' ? `<span class="ceo-av ${size}" aria-hidden="true">${esc(r.name[0])}${icon('bolt', 10)}</span>` : c.avatar({ name: r.name, avatar: SA.services.db.find('accounts', r.accountId || '')?.avatar ?? 4 }, size));
+  const face = (r, size = '') => (r.holder === 'ai' ? `<span class="ceo-av ${size}" aria-hidden="true" data-i18n-skip>${esc(r.name[0])}${icon('bolt', 10)}</span>` : c.avatar({ name: r.name, avatar: SA.services.db.find('accounts', r.accountId || '')?.avatar ?? 4 }, size));
   const roleChip = (r) => `<span class="ceo-chip ${r.holder === 'ai' ? 'is-ai' : ''}">${icon(r.holder === 'ai' ? 'bolt' : 'user', 12)} ${r.holder === 'ai' ? 'AI agent' : 'Human'}</span>`;
   const statusChip = (r) => (r.status === 'paused' ? '<span class="badge badge-danger">Paused</span>' : '<span class="badge badge-turf">Working</span>');
   const run = async (fn, msg) => { try { const r = await fn(); if (msg) SA.ui.overlay.toast(typeof msg === 'function' ? msg(r) : msg); SA.app.rerender(); return r ?? true; } catch (e) { SA.ui.overlay.toast(e.message, { type: 'error' }); return false; } };

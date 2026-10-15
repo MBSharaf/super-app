@@ -60,7 +60,7 @@
         <div class="ceo-reps">${CE().REPORTS.map(([k, l, t, ic]) => `<a class="ceo-rep ${k === def[0] ? 'is-on' : ''}" href="${SA.core.router.href('/ceo/reports', { kind: k, range: ctx.query.range, from: ctx.query.from, to: ctx.query.to })}" ${k === def[0] ? 'aria-current="page"' : ''}>${icon(ic, 18)}<span><b class="small">${l}</b><span class="xs muted" style="display:block">${t}</span></span></a>`).join('')}</div>
         <section class="dash-card">
           <div class="row-between" style="flex-wrap:wrap;gap:10px"><h2 class="h4">${def[1]} · ${D.rangeLabel(r)}</h2>
-            <div class="row" style="--gap:8px">${D.rangePicker(r, '/ceo/reports', { kind: def[0] })}<button class="btn btn-primary btn-sm" data-xlsx>${icon('file', 14)} Excel</button><button class="btn btn-outline btn-sm" data-pdf>${icon('file', 14)} PDF</button></div></div>
+            <div class="row ceo-rtools" style="--gap:8px">${D.rangePicker(r, '/ceo/reports', { kind: def[0] })}<button class="btn btn-primary btn-sm" data-xlsx>${icon('file', 14)} Excel</button><button class="btn btn-outline btn-sm" data-pdf>${icon('file', 14)} PDF</button></div></div>
           <div class="ceo-rkpis">${(rep.kpis || []).map(([l, v, t]) => `<div class="ceo-stat"><span class="grow xs muted">${l}</span><b class="num">${t === 'money' ? C.egp(v) : (+v).toLocaleString()}</b></div>`).join('')}</div>
           ${rep.chart ? C.columns(rep.rows.slice().reverse().length ? rep.rows : [], { key: rep.chart, label: def[1] }) : ''}
           <div class="table-wrap" style="margin-top:12px"><table class="table ceo-table"><thead><tr>${rep.columns.map(([, h, t]) => `<th ${t === 'money' || t === 'n' ? 'class="num"' : ''}>${h}</th>`).join('')}</tr></thead>

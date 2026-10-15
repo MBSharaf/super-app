@@ -189,3 +189,6 @@
 .ceo-av { position: relative; width: 40px; height: 40px; flex: none; border-radius: 12px; display: grid; place-items: center; font-weight: 800; color: #fff; background: linear-gradient(135deg, #f0b43c, #b06b00); }
 .ceo-av svg { position: absolute; right: -4px; bottom: -4px; width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--ink-bg); color: #FFD892; }
 .ceo-av.lg { width: 64px; height: 64px; border-radius: 18px; font-size: var(--fs-xl); }
+.ceo-rtools { flex-wrap: wrap; min-width: 0; max-width: 100%; }
+.ceo-rtools .dr { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+.ceo-rtools .dr-custom { min-width: 0; max-width: 100%; flex-wrap: wrap; }
