@@ -12,7 +12,8 @@
   const all = () => db.all('pitches').filter((p) => !p.deleted);
   // A pitch is listed when it is open and its owner's account isn't suspended by Super App
   const ownerOk = (p) => db.find('accounts', p.ownerId)?.status !== 'suspended';
-  const live = () => all().filter((p) => p.status === 'active' && ownerOk(p));
+  const reviewed = (p) => !p.review || p.review === 'approved';
+  const live = () => all().filter((p) => p.status === 'active' && ownerOk(p) && reviewed(p));
   const byId = (id) => all().find((x) => x.id === id);
 
   const origin = () => store.get().location || SA.config.fallbackLocation;
@@ -143,7 +144,7 @@
       return withDistance(p);
     }),
     getSync: (id) => byId(id),
-    bookable: (p) => !!p && p.status === 'active' && ownerOk(p),
+    bookable: (p) => !!p && p.status === 'active' && ownerOk(p) && reviewed(p),
     slots: (id, dateISO) => request(() => slotsFor(byId(id), dateISO), { latency: 160 }),
     slotsSync: (id, dateISO) => slotsFor(byId(id), dateISO),
     /** Latest reviews (with the owner's reply) — written by players after a played booking */

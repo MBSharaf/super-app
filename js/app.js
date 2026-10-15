@@ -98,6 +98,7 @@
     .add('/admin/levels', P.adminLevels)
     .add('/admin/samples', P.adminSamples)
     .add('/admin/analytics', P.adminAnalytics)
+    .add('/admin/approvals', P.adminApprovals)
     .add('/admin/support', P.adminSupport)
     .add('/admin/support/:id', P.adminTicket)
     .add('/admin/sellers', P.adminSellers)

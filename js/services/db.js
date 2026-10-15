@@ -163,6 +163,7 @@
     ]);
     ensure('fantasyWinners', () => []);
     if (!data.settings.fantasyLeagues) { data.settings.fantasyLeagues = { 'ol-grand': { sponsorId: 'sp-nilefuel' }, 'ol-derby': { sponsorId: 'sp-nilefuel' }, 'ol-weekly': { sponsorId: 'sp-deltakits' } }; changed = true; }
+    if (data.settings.sellerApproval == null) { data.settings.sellerApproval = true; changed = true; }
     if (!data.settings.announcement) { data.settings.announcement = { on: false, text: '', link: '', cta: '', tone: 'info', until: '', v: 0 }; changed = true; }
     if (!data.settings.adminSeed) {
       // A few withdrawal requests so the admin console has something to approve (demo)

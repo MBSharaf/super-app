@@ -1,0 +1,56 @@
+/** Admin console: approvals — new pitches (before they go live) and new sellers (when approval is switched on). */
+(function (SA) {
+  const { esc, money, timeAgo } = SA.core.utils;
+  const { icon } = SA.ui;
+  const C = SA.pages.dashCommon;
+  const A = SA.pages.adminCommon;
+  const AD = () => SA.services.admin;
+  const db = () => SA.services.db;
+  const media = SA.data.media;
+  const toast = (m, type = 'success') => SA.ui.overlay.toast(m, { type });
+  const RV = { pending: ['badge-gold', 'Waiting'], rejected: ['badge-danger', 'Not approved'] };
+
+  SA.pages.adminApprovals = A.guard({
+    title: 'Approvals — Super App Admin',
+    render(ctx) {
+      const tab = ctx.query.tab || '';
+      const pitches = AD().pendingPitches(), sellers = AD().pendingSellers();
+      const on = !!db().settings().sellerApproval;
+      let section;
+      if (!tab) {
+        section = pitches.length ? `<div class="adm-approve-grid">${pitches.map((p) => { const o = db().find('accounts', p.ownerId); return `<article class="dash-card adm-approve">
+            <div class="adm-approve-img">${(p.images || []).slice(0, 3).map((im) => `<img src="${media.photo(im, 360, 240)}" alt="" loading="lazy" />`).join('')}</div>
+            <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(p.name)}</h2><span class="badge ${RV[p.review][0]}">${RV[p.review][1]}</span></div>
+            <p class="small soft">${esc(p.address)}, ${esc(p.area)}, ${esc(p.city)} · ${esc(p.format)} · ${p.indoor ? 'Indoor' : 'Outdoor'} · ${esc(p.surface)}</p>
+            <dl class="kv"><div><dt>Owner</dt><dd>${esc(o?.company || '')} · ${esc(o?.name || '')}</dd></div><div><dt>Price</dt><dd class="num">${money(p.price)} · peak ${money(p.peakPrice)}</dd></div><div><dt>Hours</dt><dd class="num">${p.open[0]}:00 – ${p.open[1] % 24}:00</dd></div><div><dt>Sent</dt><dd>${timeAgo(p.submittedAt || p.createdAt)}</dd></div></dl>
+            <p class="small">${esc(p.about)}</p>
+            ${p.review === 'rejected' ? `<p class="xs" style="color:var(--danger)">${icon('alert', 12)} ${esc(p.reviewReason || '')}</p>` : ''}
+            <div class="row wrap" style="--gap:8px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener">${icon('map', 14)} Map</a>${p.review === 'pending' ? `<button class="btn btn-outline btn-sm" data-reject-pitch="${p.id}">Don’t approve</button>` : ''}<button class="btn btn-primary btn-sm" data-approve-pitch="${p.id}">${icon('check', 14, 2.6)} Approve and publish</button></div>
+          </article>`; }).join('')}</div>`
+          : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No pitches waiting', text: 'New pitches partners add wait here until you approve them.' })}</div>`;
+      } else {
+        section = `<section class="dash-card"><label class="choice"><input type="checkbox" data-seller-approval ${on ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>New sellers need approval</b><span class="xs muted" style="display:block">When on, a new seller’s store and designs stay hidden until you approve them. Sellers already approved aren’t affected.</span></span></label></section>
+          <section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Seller</th><th>Sells</th><th>Owner</th><th>Started</th><th>Status</th><th></th></tr></thead><tbody>
+          ${sellers.map((s) => { const a = db().find('accounts', s.accountId); return `<tr><td class="small"><b>${esc(s.name)}</b><span class="xs muted" style="display:block">@${esc(s.handle)}${s.bio ? ` · ${esc(s.bio.slice(0, 60))}` : ''}</span></td><td class="small">${{ pod: 'Print on demand', store: 'Own store', both: 'Both' }[s.mode]}</td><td class="small">${esc(a?.name || '')}<span class="xs muted" style="display:block">${esc(a?.email || '')}</span></td><td class="small">${timeAgo(s.createdAt)}</td>
+            <td><span class="badge ${RV[s.status][0]}">${RV[s.status][1]}</span>${s.reviewReason ? `<span class="xs muted" style="display:block">${esc(s.reviewReason)}</span>` : ''}</td>
+            <td class="r"><div class="row" style="--gap:6px;justify-content:flex-end">${s.status === 'pending' ? `<button class="btn btn-ghost btn-sm" data-reject-seller="${s.id}">Don’t approve</button>` : ''}<button class="btn btn-primary btn-sm" data-approve-seller="${s.id}">Approve</button></div></td></tr>`; }).join('')
+            || `<tr><td colspan="6">${SA.ui.c.empty({ icon: 'users', title: 'No sellers waiting', text: on ? 'New sellers wait here until you approve them.' : 'Approval is off — new sellers go live straight away.' })}</td></tr>`}
+          </tbody></table></div></section>`;
+      }
+      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', pitches.filter((p) => p.review === 'pending').length], ['sellers', 'New sellers', sellers.filter((s) => s.status === 'pending').length]], tab)}${section}`;
+      return C.layout('approvals', { title: 'Approvals', subtitle: 'Check new pitches and sellers before they go live on Super App', body });
+    },
+    mount(el) {
+      el.querySelector('[data-seller-approval]')?.addEventListener('change', (e) => { AD().setSellerApproval(e.target.checked); toast(e.target.checked ? 'New sellers now need approval' : 'New sellers go live straight away', 'info'); });
+      el.addEventListener('click', async (e) => {
+        const t = (s) => e.target.closest(s);
+        try {
+          if (t('[data-approve-pitch]')) { AD().approvePitch(t('[data-approve-pitch]').dataset.approvePitch); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
+          if (t('[data-reject-pitch]')) { const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; AD().rejectPitch(t('[data-reject-pitch]').dataset.rejectPitch, r.reason); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
+          if (t('[data-approve-seller]')) { AD().approveSeller(t('[data-approve-seller]').dataset.approveSeller); toast('Seller approved — the store is live'); SA.app.rerender(); return; }
+          if (t('[data-reject-seller]')) { const r = await A.reason({ title: 'Don’t approve this seller?', label: 'Reason the seller sees', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; AD().rejectSeller(t('[data-reject-seller]').dataset.rejectSeller, r.reason); toast('Seller not approved', 'info'); SA.app.rerender(); }
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    },
+  });
+})(window.SA);

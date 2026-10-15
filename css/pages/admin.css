@@ -142,3 +142,13 @@ tr.is-dim td { opacity: .55; }
 .adm-lock { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 36px 20px; }
 .adm-lock > svg { color: var(--gold); }
 .adm-lock .soft { max-width: 52ch; }
+
+/* Approvals */
+.adm-approve-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+@media (max-width: 400px) { .adm-approve-grid { grid-template-columns: minmax(0, 1fr); } }
+.adm-approve { display: grid; gap: 10px; align-content: start; }
+.adm-approve-img { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; height: 170px; border-radius: var(--r-md); overflow: hidden; background: var(--surface-2); }
+.adm-approve-img img { width: 100%; height: 100%; object-fit: cover; }
+.adm-approve-img img:first-child { grid-row: span 2; }
+.adm-approve-img img:only-child { grid-column: span 2; }
+.dp-review { background: rgba(160,110,8,.72); }

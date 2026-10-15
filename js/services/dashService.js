@@ -543,13 +543,18 @@
     createPitch(d, ownerId) {
       const a = me(); const e = validatePitch(d); if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
       const owner = isAdmin(a) && ownerId ? ownerId : a.id;
-      const p = db.insert('pitches', { id: `p-${d.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${Math.random().toString(36).slice(2, 5)}`, ...cleanPitch(d), ownerId: owner, status: d.status === 'closed' ? 'closed' : 'active', closedReason: '', rating: 0, reviews: 0, seed: false });
-      db.log(a.id, 'pitch.created', `Added pitch “${p.name}”`, p.id);
+      // New pitches go live after the Super App team checks them (admins' own pitches are live straight away)
+      const review = isAdmin(a) ? 'approved' : 'pending';
+      const p = db.insert('pitches', { id: `p-${d.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${Math.random().toString(36).slice(2, 5)}`, ...cleanPitch(d), ownerId: owner, status: d.status === 'closed' ? 'closed' : 'active', closedReason: '', rating: 0, reviews: 0, seed: false, review, submittedAt: Date.now() });
+      db.log(a.id, 'pitch.created', `Added pitch “${p.name}”${review === 'pending' ? ' — waiting for Super App review' : ''}`, p.id);
+      if (review === 'pending') SA.services.notify?.toAdmins({ cat: 'store', title: `New pitch to approve: ${p.name}`, body: `${a.company} · ${p.area}, ${p.city}`, link: '#/admin/approvals' });
       return p;
     },
     updatePitch(id, d) {
       const p = dash.pitch(id); const e = validatePitch(d); if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
-      const out = db.update('pitches', id, cleanPitch(d));
+      // A rejected pitch goes back to review when the owner fixes it
+      const out = db.update('pitches', id, { ...cleanPitch(d), ...(p.review === 'rejected' ? { review: 'pending', submittedAt: Date.now() } : {}) });
+      if (p.review === 'rejected') SA.services.notify?.toAdmins({ cat: 'store', title: `Pitch sent again: ${out.name}`, body: me().company, link: '#/admin/approvals' });
       db.log(me().id, 'pitch.updated', `Updated pitch “${out.name}”`, id);
       return out;
     },

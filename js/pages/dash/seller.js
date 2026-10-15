@@ -67,7 +67,8 @@
             ${orders.length ? `<ul class="sl-orders">${orders.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.title)}</b><span class="xs muted" style="display:block">${esc(o.color)} · ${esc(o.size)} · ${timeAgo(o.placedAt)} · ${esc(o.customer.city || '')}</span></span><span class="sl-o-r">${status(o.status)}<b class="num xs">${o.status === 'refused' ? '—' : `+${money(o.profit)}`}</b></span></li>`).join('')}</ul>` : `<p class="small soft" style="margin-top:10px">No orders yet. Share your store link to get the first one.</p>`}</section>
         </div>
         <section class="dash-card"><h2 class="h4">Seller levels</h2><div style="margin-top:12px">${SA.ui.seller.ladder(l.index)}</div></section>`;
-      return C.layout('seller', { title: `Hi, ${esc(D().me().name.split(' ')[0])}`, subtitle: `${esc(s.name)} · superapp.eg/s/${esc(s.handle)}`, actions: `<a class="btn btn-outline" href="#/s/${esc(s.handle)}" target="_blank" rel="noopener">${icon('eye', 15)} View store</a>`, body });
+      const gate = s.status === 'pending' ? `<div class="notice gold">${icon('clock', 18)}<span><b>Waiting for approval.</b> The Super App team checks new sellers within one working day. Your designs and products go live once you’re approved.</span></div>` : s.status === 'rejected' ? `<div class="notice blaze">${icon('alert', 18)}<span><b>Not approved.</b> ${esc(s.reviewReason || '')} Contact Help & support to appeal.</span></div>` : '';
+      return C.layout('seller', { title: `Hi, ${esc(D().me().name.split(' ')[0])}`, subtitle: `${esc(s.name)} · superapp.eg/s/${esc(s.handle)}`, actions: `<a class="btn btn-outline" href="#/s/${esc(s.handle)}" target="_blank" rel="noopener">${icon('eye', 15)} View store</a>`, body: gate + body });
     },
     mount(el) {
       const bars = el.querySelector('.sl-bars'), tip = el.querySelector('.sl-tip');

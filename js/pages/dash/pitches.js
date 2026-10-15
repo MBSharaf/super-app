@@ -28,6 +28,7 @@
         return `<article class="dp-card ${p.status === 'closed' ? 'is-closed' : ''}">
           <div class="dp-media media"><img src="${media.photo(p.images[0], 640, 400)}" alt="" loading="lazy" />
             <span class="badge badge-glass dp-format">${esc(p.format)}${p.indoor ? ' · Indoor' : ''}</span>
+            ${p.review === 'pending' ? '<span class="dp-closed dp-review"><b>Waiting for Super App review</b><span class="xs">We check new pitches within one working day. It goes live when approved.</span></span>' : p.review === 'rejected' ? `<span class="dp-closed"><b>Not approved</b><span class="xs">${esc(p.reviewReason || '')} — edit the pitch to send it again.</span></span>` : ''}
             ${p.status === 'closed' ? `<span class="dp-closed"><b>Closed for booking</b>${p.closedReason ? `<span class="xs">${esc(p.closedReason)}</span>` : ''}</span>` : ''}</div>
           <div class="dp-body">
             <div class="row-between" style="align-items:flex-start"><div class="grow"><h3 class="h4 truncate">${esc(p.name)}</h3><p class="xs muted truncate">${esc(p.area)}, ${esc(p.city)}${D().isAdmin() ? ` · ${esc(owners[p.ownerId]?.company || '')}` : ''}</p></div><span class="price">${money(p.price)}</span></div>

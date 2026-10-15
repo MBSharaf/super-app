@@ -101,6 +101,8 @@
     add('support', 'message', 'blaze', tk, `${tk} support ticket${tk > 1 ? 's' : ''} waiting`, 'Customers, partners and sellers waiting for a reply.', '#/admin/support');
     const sm = (db().all('samples') || []).filter((x) => x.status === 'requested').length;
     add('samples', 'shirt', 'info', sm, `${sm} sample request${sm > 1 ? 's' : ''}`, 'Approve to send them to the print partner.', '#/admin/samples');
+    const ap = admin.pendingPitches ? admin.pendingPitches().filter((p) => p.review === 'pending').length + admin.pendingSellers().filter((s) => s.status === 'pending').length : 0;
+    add('approvals', 'check', 'blaze', ap, `${ap} new pitch${ap > 1 ? 'es and sellers' : ' or seller'} to approve`, 'They go live on Super App once you approve them.', '#/admin/approvals');
     try { const low = D().lowStock(); add('stock', 'alert', 'gold', low.length, `${low.length} Super App Store product${low.length > 1 ? 's' : ''} low on stock`, low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), '#/admin/store?low=1'); } catch { /* no official store */ }
     if (admin.levelReviewDue && admin.levelReviewDue()) add('levels', 'trend', 'gold', 1, 'Monthly level review is due', 'Check seller levels for this month.', '#/admin/levels');
     return out;
@@ -608,6 +610,42 @@
       log('levels.reviewed', `Ran the ${month} level review: ${results.filter((x) => x.action === 'grace').length} grace, ${results.filter((x) => x.action === 'down').length} down, ${results.filter((x) => x.action === 'up').length} up`, rv.id);
       return rv;
     },
+    /* ---------- Approvals: new pitches and new sellers ---------- */
+    pendingPitches: () => db().all('pitches').filter((p) => !p.deleted && ['pending', 'rejected'].includes(p.review)).sort((a, b) => (a.review === b.review ? b.submittedAt - a.submittedAt : a.review === 'pending' ? -1 : 1)),
+    approvePitch(id) {
+      me();
+      const p = db().find('pitches', id); if (!p) throw new ApiError('Pitch not found.', 'not_found');
+      db().update('pitches', id, { review: 'approved', reviewReason: '', reviewedAt: Date.now() });
+      log('pitch.approved', `Approved new pitch ${p.name} (${db().find('accounts', p.ownerId)?.company || ''})`, id);
+      N()?.toAccount(p.ownerId, { cat: 'store', tone: 'turf', title: `${p.name} is live on Super App`, body: 'Players can find and book it now.', link: '#/dash/pitches' });
+    },
+    rejectPitch(id, reason) {
+      me();
+      const p = db().find('pitches', id); if (!p) throw new ApiError('Pitch not found.', 'not_found');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      db().update('pitches', id, { review: 'rejected', reviewReason: reason.trim(), reviewedAt: Date.now() });
+      log('pitch.rejected', `Didn’t approve pitch ${p.name}: ${reason.trim()}`, id);
+      N()?.toAccount(p.ownerId, { cat: 'store', tone: 'danger', title: `${p.name} wasn’t approved`, body: `${reason.trim()} Edit the pitch to send it again.`, link: `#/dash/pitches/${id}` });
+    },
+    pendingSellers: () => db().all('sellers').filter((s) => ['pending', 'rejected'].includes(s.status)).sort((a, b) => b.createdAt - a.createdAt),
+    approveSeller(id) {
+      me();
+      const s = db().find('sellers', id); if (!s) throw new ApiError('Seller not found.', 'not_found');
+      db().update('sellers', id, { status: 'active', reviewReason: '' });
+      if (s.storeId) db().update('stores', s.storeId, { status: 'active' });
+      log('seller.approved', `Approved new seller ${s.name}`, id);
+      N()?.toSeller(id, { cat: 'account', tone: 'turf', title: 'You’re approved — your store is live', body: 'Share your store link and send your designs for review.', link: '#/dash/seller' });
+    },
+    rejectSeller(id, reason) {
+      me();
+      const s = db().find('sellers', id); if (!s) throw new ApiError('Seller not found.', 'not_found');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      db().update('sellers', id, { status: 'rejected', reviewReason: reason.trim() });
+      if (s.storeId) db().update('stores', s.storeId, { status: 'suspended' });
+      log('seller.rejected', `Didn’t approve seller ${s.name}: ${reason.trim()}`, id);
+      N()?.toSeller(id, { cat: 'account', tone: 'danger', title: 'Your store wasn’t approved', body: `${reason.trim()} Contact Help & support to appeal.`, link: '#/dash/seller' });
+    },
+    setSellerApproval(on) { me(); db().setSettings({ sellerApproval: !!on }); log('settings.seller-approval', `New sellers ${on ? 'need approval' : 'go live straight away'}`); },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,

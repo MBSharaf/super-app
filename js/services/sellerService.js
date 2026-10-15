@@ -108,15 +108,21 @@
       if (!sellers.handleFree(handle)) throw new ApiError('That link is taken — try another.', 'taken');
       if (!agree) throw new ApiError('Please accept the seller rules.', 'validation');
       const now = Date.now();
+      // When the admin switched on "approve new sellers", the store and designs go live after approval
+      const pending = !!db().settings().sellerApproval;
       const accountId = `acc-sl-${handle}`;
       db().insert('accounts', { id: accountId, role: 'seller', name: u.name, company: name, email: u.email, phone: u.phone, avatar: u.avatar || 0, joinedAt: now, payout: payoutDetail ? { method: payoutMethod, detail: payoutDetail } : null });
       let storeId = null;
       if (mode !== 'pod') {
         storeId = `st-${handle}`;
-        db().insert('stores', { id: storeId, ownerId: accountId, name, slug: handle, tagline: '', description: bio, logo: null, cover: null, phone: u.phone, status: 'active' });
+        db().insert('stores', { id: storeId, ownerId: accountId, name, slug: handle, tagline: '', description: bio, logo: null, cover: null, phone: u.phone, status: pending ? 'suspended' : 'active' });
       }
       const s = db().insert('sellers', { id: `sl-${handle}`, accountId, userId: u.id, handle, name, bio: String(bio).slice(0, 280), cover: null, logo: null, avatar: u.avatar || 0, mode, storeId,
-        status: 'active', strikes: [], frozenUntil: 0, kyc: 'none', followers: 0, history: { sales: 0, revenue: 0, profit: 0, rating: 0, reviews: 0 } });
+        status: pending ? 'pending' : 'active', strikes: [], frozenUntil: 0, kyc: 'none', followers: 0, history: { sales: 0, revenue: 0, profit: 0, rating: 0, reviews: 0 } });
+      if (pending) {
+        SA.services.notify?.toAdmins({ cat: 'account', title: `New seller to approve: ${name}`, body: `@${handle} · ${mode === 'pod' ? 'print on demand' : mode === 'store' ? 'own store' : 'both'}`, link: '#/admin/approvals?tab=sellers' });
+        SA.services.notify?.toAccount(accountId, { cat: 'account', title: 'Your store is waiting for approval', body: 'The Super App team checks new sellers within one working day. You can prepare designs and products meanwhile.', link: '#/dash/seller' });
+      }
       db().log(accountId, 'seller.started', `${name} started selling (${mode === 'pod' ? 'print on demand' : mode === 'store' ? 'own store' : 'print on demand + own store'})`, s.id);
       SA.services.notify?.toAccount(accountId, { cat: 'account', tone: 'turf', title: `Welcome to Super App, ${name}!`, body: mode === 'store' ? 'Add your first products, then share your store link.' : 'Create your first design in the studio — it takes a few minutes.', link: mode === 'store' ? '#/dash/store' : '#/sell/studio' });
       SA.services.notify?.toAccount(accountId, { cat: 'store', title: 'Make your store yours', body: 'Add a logo, a cover photo and a short description in Store settings.', link: '#/dash/seller/store' });
