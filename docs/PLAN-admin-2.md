@@ -12,6 +12,6 @@ Agreed with the user on 2026-10-15: build the 5 "important" items and the 4 "med
 - [x] 5. **Tournament oversight** in the admin console: see all tournaments, open them, cancel one with refunds.
 - [x] 6. **Adjust a customer's loyalty points** (credit or debit, with a reason) from the customer drawer.
 - [x] 7. **Maintenance mode:** pause bookings and/or shop checkout with a message. Shown on the site and enforced at checkout.
-- [ ] 8. **Shop categories:** rename, hide, reorder and add categories.
+- [x] 8. **Shop categories:** rename, hide, reorder and add categories.
 - [x] 9. **Approve new sellers** (a switch in settings): new sellers wait for approval before their store and designs go live. This is a tab on `#/admin/approvals`.
 - [ ] 10. Arabic strings, check every page, README, push.

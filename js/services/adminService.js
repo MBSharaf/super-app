@@ -312,6 +312,20 @@
         ? { cat: 'store', tone: 'danger', title: `Hidden by Super App: ${p.name}`, body: `${reason.trim()} Fix the listing, then contact Help & support to bring it back.`, link: '#/dash/store' }
         : { cat: 'store', tone: 'turf', title: `Back in the shop: ${p.name}`, body: 'Super App restored this product.', link: '#/dash/store' });
     },
+    /** Save the whole shop category list (order = array order) */
+    saveCategories(list) {
+      me();
+      const seen = new Set();
+      const clean = list.map((c) => ({ id: c.id || String(c.name || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''), name: String(c.name || '').trim(), icon: c.icon || 'bag', hidden: !!c.hidden }));
+      if (clean.some((c) => c.name.length < 2 || !c.id)) throw new ApiError('Every category needs a name (2+ characters, English letters for new ones).', 'invalid');
+      if (clean.some((c) => (seen.has(c.id) ? true : (seen.add(c.id), false)))) throw new ApiError('Two categories have the same name.', 'invalid');
+      const used = new Set(db().all('products').filter((p) => !p.deleted).map((p) => p.cat));
+      const old = SA.data.products.categories.map((c) => c.id);
+      const removed = old.filter((id) => !clean.some((c) => c.id === id) && used.has(id));
+      if (removed.length) throw new ApiError('A category with products can’t be removed — hide it instead.', 'invalid');
+      db().setSettings({ shopCategories: clean });
+      log('shop.categories', `Updated shop categories: ${clean.filter((c) => !c.hidden).map((c) => c.name).join(', ')}${clean.some((c) => c.hidden) ? ` (hidden: ${clean.filter((c) => c.hidden).map((c) => c.name).join(', ')})` : ''}`);
+    },
     /** Close or reopen a single pitch from the admin side */
     setPitchStatus(pitchId, status, reason = '') {
       me();

@@ -153,3 +153,10 @@ tr.is-dim td { opacity: .55; }
 .adm-approve-img img:only-child { grid-column: span 2; }
 .dp-review { background: rgba(160,110,8,.72); }
 .adm-list li.is-dim { opacity: .6; }
+.adm-cats { display: grid; gap: 8px; }
+.adm-cats li { display: grid; grid-template-columns: 36px minmax(0, 1fr) 130px auto auto auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--line-2); }
+.adm-cats li.is-dim { opacity: .6; }
+.adm-cat-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--surface); }
+.adm-cat-hide { padding: 0; border: 0; background: none; gap: 6px; }
+.adm-cats [data-cat-move="-1"] svg { transform: rotate(180deg); }
+@media (max-width: 640px) { .adm-cats li { grid-template-columns: 36px minmax(0, 1fr); } .adm-cats li > :nth-child(n+3) { grid-column: 2; } }

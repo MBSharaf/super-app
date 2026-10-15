@@ -43,6 +43,15 @@
   SA.services.content = content;
   // Delivery prices set in the admin console replace the defaults everywhere the shop reads them
   const syncShipping = () => Object.assign(SA.data.products.shipping, settings().shipping || {});
-  syncShipping();
-  db().subscribe((col) => { if (col === 'settings' || col === '*') syncShipping(); });
+  // Shop categories edited in the admin console (names, order, hidden, new ones) replace the default list in place
+  const DEFAULT_CATS = SA.data.products.categories.map((c) => ({ ...c }));
+  const syncCategories = () => {
+    const list = settings().shopCategories;
+    const arr = SA.data.products.categories;
+    arr.length = 0;
+    (list && list.length ? list : DEFAULT_CATS).forEach((c) => arr.push({ ...c }));
+  };
+  content.defaultCategories = () => DEFAULT_CATS.map((c) => ({ ...c }));
+  syncShipping(); syncCategories();
+  db().subscribe((col) => { if (col === 'settings' || col === '*') { syncShipping(); syncCategories(); } });
 })(window.SA);

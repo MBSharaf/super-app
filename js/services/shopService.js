@@ -12,7 +12,8 @@
 
   const storeOf = (p) => db.find('stores', p.storeId);
   const onBreak = (st) => { const sl = st && SA.services.sellers?.byAccount(st.ownerId); return !!sl && SA.services.sellers.onBreak(sl); };
-  const isLive = (p) => p && !p.deleted && p.status === 'active' && !p.hiddenByAdmin && storeOf(p)?.status === 'active' && !onBreak(storeOf(p));
+  const catHidden = (p) => !p.pod && !!P.categories.find((c) => c.id === p.cat)?.hidden;
+  const isLive = (p) => p && !p.deleted && p.status === 'active' && !p.hiddenByAdmin && !catHidden(p) && storeOf(p)?.status === 'active' && !onBreak(storeOf(p));
 
   /* Print-on-demand designs are sold as products made to order. Their images are "pod:<designId>:<colour>[:back]"
      references that SA.data.media turns into garment mockups. */
@@ -93,7 +94,7 @@
   };
 
   const shopService = {
-    categories: () => [...P.categories, DESIGNS_CAT].map((c) => ({ ...c, count: catalogue().filter((p) => p.cat === c.id).length })).filter((c) => c.id !== 'designs' || c.count),
+    categories: () => [...P.categories.filter((c) => !c.hidden), DESIGNS_CAT].map((c) => ({ ...c, count: catalogue().filter((p) => p.cat === c.id).length })).filter((c) => c.id !== 'designs' || c.count),
     /** Design sections (sellers' print-on-demand categories) with live counts */
     designCategories: () => (SA.services.pod ? SA.services.pod.categories().map((c) => ({ ...c, count: podLive().filter((p) => p.designCat === c.id).length })) : []),
     podProduct, unitPrice, POD_PREFIX,

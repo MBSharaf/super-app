@@ -87,6 +87,19 @@
             <td>${s.hidden ? '<span class="badge badge-danger">Hidden</span>' : s.breaking ? '<span class="badge badge-blaze">Breaking</span>' : '<span class="badge badge-turf">Live</span>'}</td>
             <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="#/news/${s.id}" target="_blank" rel="noopener">View</a>${s.own ? `<button class="btn btn-ghost btn-sm" data-edit-news="${s.id}">Edit</button>` : ''}<button class="btn btn-ghost btn-sm" data-break="${s.id}" data-on="${s.breaking ? '' : '1'}">${s.breaking ? 'Not breaking' : 'Breaking'}</button><button class="btn btn-ghost btn-sm" data-hide-news="${s.id}" data-on="${s.hidden ? '' : '1'}">${s.hidden ? 'Show' : 'Hide'}</button>${s.own ? `<button class="icon-btn" data-del-news="${s.id}" aria-label="Delete">${icon('trash', 15)}</button>` : ''}</div></td></tr>`).join('')}
           </tbody></table></div></section>`;
+      } else if (tab === 'categories') {
+        const cats = SA.data.products.categories;
+        const count = (id) => db().all('products').filter((p) => p.cat === id && !p.deleted).length;
+        const ICONS = ['boot', 'ball', 'shirt', 'glove', 'shoe', 'cone', 'racket', 'bag', 'whistle', 'trophy', 'tag', 'sparkle', 'heart', 'water', 'firstaid', 'camera'];
+        section = `<section class="dash-card"><div class="row-between wrap" style="--gap:8px"><div><h2 class="h4">Shop categories</h2><p class="xs muted" style="margin-top:4px">Rename, reorder, hide or add the categories of the shop. Hiding one hides its products too. “Designs” is managed by print on demand.</p></div><button class="btn btn-outline btn-sm" data-cat-add>${icon('plus', 14, 2.6)} Add category</button></div>
+          <form data-cats novalidate style="margin-top:14px"><ul class="adm-cats">${cats.map((c, i) => `<li data-cat="${esc(c.id)}" class="${c.hidden ? 'is-dim' : ''}"><span class="adm-cat-ico">${icon(c.icon, 18)}</span>
+            <input class="input" name="name" value="${esc(c.name)}" aria-label="Name" maxlength="40" />
+            <select class="select" name="icon" aria-label="Icon">${ICONS.map((k) => `<option ${k === c.icon ? 'selected' : ''}>${k}</option>`).join('')}</select>
+            <span class="xs muted nowrap">${count(c.id)} products</span>
+            <label class="choice adm-cat-hide"><input type="checkbox" name="hidden" ${c.hidden ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="xs">Hidden</span></label>
+            <span class="adm-row-tools"><button type="button" class="icon-btn" data-cat-move="-1" ${i ? '' : 'disabled'} aria-label="Move up">${icon('chevronDown', 15)}</button><button type="button" class="icon-btn" data-cat-move="1" ${i < cats.length - 1 ? '' : 'disabled'} aria-label="Move down">${icon('chevronDown', 15)}</button>${count(c.id) ? '' : `<button type="button" class="icon-btn" data-cat-del aria-label="Remove">${icon('trash', 15)}</button>`}</span></li>`).join('')}</ul>
+            <p class="field-error" data-err="cats"></p>
+            <div class="row" style="--gap:8px;margin-top:12px"><button class="btn btn-primary" type="submit">Save categories</button>${SA.services.db.settings().shopCategories ? '<button type="button" class="btn btn-ghost" data-cat-reset>Back to the default list</button>' : ''}</div></form></section>`;
       } else {
         const st = SA.core.store.get();
         const raw = [...(st.publishedMatches || []), ...SA.data.matches.list];
@@ -99,13 +112,20 @@
             <td>${hidden[m.id] ? `<span class="badge badge-danger" title="${esc(hidden[m.id].reason || '')}">Hidden</span>` : '<span class="badge badge-turf">Live</span>'}</td><td class="r"><button class="btn btn-ghost btn-sm" data-hide-match="${m.id}" data-on="${hidden[m.id] ? '' : '1'}">${hidden[m.id] ? 'Restore' : 'Hide'}</button></td></tr>`).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">No upcoming games.</td></tr>'}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/content', [['', 'Home banners'], ['announce', 'Announcement bar'], ['news', 'News'], ['games', 'Pickup games']], tab)}${section}`;
+      const body = `${A.tabs('/admin/content', [['', 'Home banners'], ['announce', 'Announcement bar'], ['news', 'News'], ['games', 'Pickup games'], ['categories', 'Shop categories']], tab)}${section}`;
       return C.layout('content', { title: 'Site content', subtitle: 'What visitors see: home banners, the announcement bar, news and pickup games', actions: '<a class="btn btn-ghost btn-sm" href="#/" target="_blank" rel="noopener">Open the site ' + icon('arrowUpRight', 14) + '</a>', body });
     },
     mount(el) {
       el.querySelector('[data-announce]')?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().setAnnouncement(SA.core.utils.formData(e.target)); toast('Announcement saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.fields || {}); } });
+      const cf = el.querySelector('[data-cats]');
+      const readCats = () => [...cf.querySelectorAll('[data-cat]')].map((li) => ({ id: li.dataset.cat, name: li.querySelector('[name=name]').value, icon: li.querySelector('[name=icon]').value, hidden: li.querySelector('[name=hidden]').checked }));
+      cf?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveCategories(readCats()); toast('Categories saved'); SA.app.rerender(); } catch (err) { cf.querySelector('[data-err="cats"]').textContent = err.message; } });
       el.addEventListener('click', async (e) => {
         const t = (s) => e.target.closest(s);
+        if (t('[data-cat-move]')) { const li = t('[data-cat]'), dir = +t('[data-cat-move]').dataset.catMove; const sib = dir < 0 ? li.previousElementSibling : li.nextElementSibling; if (sib) (dir < 0 ? sib.before(li) : sib.after(li)); return; }
+        if (t('[data-cat-del]')) { t('[data-cat]').remove(); return; }
+        if (t('[data-cat-add]')) { const ul = cf.querySelector('.adm-cats'); const li = ul.lastElementChild.cloneNode(true); li.dataset.cat = ''; li.classList.remove('is-dim'); li.querySelector('[name=name]').value = ''; li.querySelector('[name=hidden]').checked = false; li.querySelector('.nowrap').textContent = 'new'; ul.appendChild(li); li.querySelector('[name=name]').focus(); return; }
+        if (t('[data-cat-reset]')) { SA.services.db.setSettings({ shopCategories: null }); AD().log('shop.categories', 'Restored the default shop categories'); toast('Default categories restored', 'info'); SA.app.rerender(); return; }
         if (t('[data-new-banner]')) return bannerDialog();
         if (t('[data-edit-banner]')) return bannerDialog(db().find('banners', t('[data-edit-banner]').dataset.editBanner));
         if (t('[data-toggle-banner]')) { AD().toggleBanner(t('[data-toggle-banner]').dataset.toggleBanner); SA.app.rerender(); return; }
