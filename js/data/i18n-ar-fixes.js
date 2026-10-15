@@ -60,6 +60,15 @@
     'Copy link': 'انسخ الرابط', 'Store link copied — share it anywhere': 'رابط المتجر اتنسخ — شاركه في أي مكان', 'Your tags': 'وسومك', 'Edit tags': 'عدّل الوسوم', 'Add tags': 'ضيف وسوم', 'Add tags to your store so shoppers find you when they search or tap a tag.': 'ضيف وسوم لمتجرك علشان المشترين يلاقوك لما يدوّروا أو يدوسوا على وسم.',
     'You already see your profit, designs and tags.': 'أنت شايف مكسبك وتصميماتك ووسومك.', 'Earnings from your orders': 'مكسبك من الطلبات', 'Statement (PDF)': 'كشف الحساب (PDF)',
     'Your own products.': 'منتجاتك.', 'Printed designs below; your own products are in “Store money”.': 'التصميمات المطبوعة تحت؛ منتجاتك في "فلوس المتجر".', 'Your printed designs.': 'تصميماتك المطبوعة.', 'The PDF lists every order — printed or your own product — and every withdrawal.': 'الـ PDF فيه كل طلب — مطبوع أو من منتجاتك — وكل سحب.',
+    /* ---------- A3–A6 admin: withdrawals, exports, search, pitch partners ---------- */
+    'Details': 'التفاصيل', 'Who': 'مين', 'Why they have this money': 'الفلوس دي جاية منين', 'Checks': 'التحقق', 'Earlier withdrawals': 'سحوبات قبل كده', 'This is their first withdrawal.': 'ده أول سحب ليهم.', 'No customer disputes about them.': 'مفيش شكاوى عملاء عنهم.',
+    'Balance now': 'الرصيد دلوقتي', 'Net from bookings (30 days)': 'صافي الحجوزات (30 يوم)', 'Available now': 'المتاح دلوقتي', 'On hold': 'محجوز', 'Earned so far': 'المكسب لحد دلوقتي', 'ID check': 'التحقق من الهوية', 'Level': 'المستوى', 'Sells': 'بيبيع', 'Joined': 'انضم', 'Send to': 'يتبعت لـ', 'Company': 'الشركة', 'Store': 'المتجر',
+    'When you approve: they get a notification and a payment advice PDF, and the money must arrive within 2 working days.': 'لما توافق: هيوصلهم إشعار وإيصال PDF، والفلوس لازم توصل خلال يومين شغل.', 'Reject': 'ارفض', 'Close': 'اقفل', 'Pitch partner': 'صاحب ملعب', 'Seller': 'بياع', 'Factory': 'المصنع',
+    'Printed designs': 'تصميمات مطبوعة', 'Own products': 'منتجاته', 'Printed designs + own products': 'تصميمات مطبوعة + منتجاته',
+    'Search': 'دوّر', 'Clear': 'امسح', 'Export Excel': 'صدّر Excel', 'Name, phone, city, ID…': 'الاسم أو التليفون أو المدينة أو الرقم…',
+    'Pitch partners — Super App Admin': 'أصحاب الملاعب — إدارة Super App', 'Pitch owners and their pitches — suspend, close pitches, set commission deals, open their dashboards. Sellers and factories have their own sections.': 'أصحاب الملاعب وملاعبهم — إيقاف، قفل ملاعب، اتفاقات العمولة، وفتح لوحاتهم. البياعين والمصانع ليهم أقسام لوحدهم.',
+    'Printed items need online payment': 'القطع المطبوعة لازم تتدفع أونلاين', 'Cash on delivery is available again': 'الدفع عند الاستلام رجع متاح', 'Payment rules updated': 'قواعد الدفع اتحدّثت', 'Your delivery record was cleared': 'سجل التوصيل بتاعك اتمسح',
+    'For printed designs on your account, pay by card or wallet. Contact support if you have questions.': 'التصميمات المطبوعة على حسابك ادفعها بالكارت أو المحفظة. كلّم الدعم لو عندك أسئلة.', 'You can choose cash on delivery for printed designs.': 'تقدر تختار الدفع عند الاستلام للتصميمات المطبوعة.', 'Cash on delivery is available again for printed designs.': 'الدفع عند الاستلام رجع متاح للتصميمات المطبوعة.',
     /* ---------- M9 / A8 support, email, disputes ---------- */
     'Customer disputes about you': 'شكاوى العملاء عنك', 'Super App may ask you for details. Your answers go to the Super App team, who update the customer.': 'Super App ممكن تسألك عن تفاصيل. ردودك بتروح لفريق Super App، وهما اللي بيبلّغوا العميل.',
     'A customer opened this about you. Only Super App sees your answers — they update the customer.': 'عميل فتح الطلب ده عنك. Super App بس اللي بتشوف ردودك — وهي اللي بتبلّغ العميل.',
@@ -67,6 +76,8 @@
     'Question sent — the customer was told you’re checking': 'السؤال اتبعت — والعميل اتبلّغ إنك بتتأكد', 'No pitch owner or seller is linked to this request.': 'مفيش صاحب ملعب أو بياع مربوط بالطلب ده.', 'Write your question first.': 'اكتب سؤالك الأول.',
   });
   D.patterns.push(
+    ['^To (.+)\\. It arrives by (.+) at the latest \\(2 working days\\)\\. The payment advice \\(PDF\\) is in your wallet\\.$', 'لـ {1}. هتوصل يوم {2} بالكتير (يومين شغل). إيصال الدفع (PDF) في محفظتك.'], ['^asked (.+)$', 'اتطلب {1}'],
+    ['^(Pitch partner|Seller|Factory) · asked (.+)$', '{t1} · اتطلب {2}'],
     ['^More at (.+): colours, sizes, cities and best days$', 'أكتر في {1}: الألوان والمقاسات والمدن وأحسن أيام'], ['^([\\d,]+) views · ([\\d,]+) taps$', '{1} مشاهدة · {2} ضغطة'],
     ['^(\\d+) printed · (\\d+) your products$', '{1} مطبوع · {2} من منتجاتك'], ['^(.+) printed · (.+) your products$', '{1} مطبوع · {2} من منتجاتك'], ['^(\\d+) orders? for your own products in 30 days · $', '{1} طلب على منتجاتك في 30 يوم · '],
     ['^At (.+) you also see the colours, sizes and cities that sell and the best days to post — and export it all at Elite\\.$', 'في {1} هتشوف كمان الألوان والمقاسات والمدن اللي بتبيع وأحسن أيام للنشر — وتصدّر كل حاجة في Elite.'],

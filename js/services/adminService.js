@@ -230,8 +230,9 @@
       if (!['auto', 'always', 'never'].includes(mode)) throw new ApiError('Unknown mode.', 'invalid');
       saveRec(id, { prepay: mode });
       log('customer.prepay', `Pay upfront for printed items for ${c.name}: ${{ auto: 'automatic', always: 'always required', never: 'never required' }[mode]}`, id);
+      if (c.device) SA.services.user.notify({ kind: 'shop', title: mode === 'always' ? 'Printed items need online payment' : mode === 'never' ? 'Cash on delivery is available again' : 'Payment rules updated', body: mode === 'always' ? 'For printed designs on your account, pay by card or wallet. Contact support if you have questions.' : 'You can choose cash on delivery for printed designs.', link: '/support' });
     },
-    resetRefusals(id) { me(); const c = customer(id); saveRec(id, { refused: 0 }); log('customer.refusals-reset', `Reset ${c.name}’s refused deliveries (was ${c.refused})`, id); },
+    resetRefusals(id) { me(); const c = customer(id); saveRec(id, { refused: 0 }); log('customer.refusals-reset', `Reset ${c.name}’s refused deliveries (was ${c.refused})`, id); if (c.device) SA.services.user.notify({ kind: 'shop', title: 'Your delivery record was cleared', body: 'Cash on delivery is available again for printed designs.', link: '/shop' }); },
     noteCustomer(id, text) {
       me(); const c = customer(id);
       const t = String(text || '').trim();
@@ -947,9 +948,26 @@
       if (p.status !== 'processing') throw new ApiError('This withdrawal was already handled.', 'invalid');
       const hard = checks(p).filter(([t]) => t === 'danger');
       if (hard.length) throw new ApiError(`Can’t send it yet: ${hard.map(([, l]) => l.toLowerCase()).join(', ')}.`, 'invalid');
-      setPayout(p, { status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id });
+      const by = admin.slaDate(Date.now());
+      setPayout(p, { status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id, arrivesBy: by });
       log('payout.approved', `Approved ${p.amount.toLocaleString()} EGP withdrawal for ${p.company || p.name} via ${p.method}`, p.id);
-      N()?.toAccount(p.accountId, { cat: 'money', tone: 'turf', title: `${p.amount.toLocaleString()} EGP sent`, body: `To ${p.method} ${p.detail}. It usually arrives within 1–2 working days.`, link: p.kind === 'seller' ? '#/dash/seller/wallet' : '#/dash/wallet' });
+      N()?.toAccount(p.accountId, { cat: 'money', tone: 'turf', title: `${p.amount.toLocaleString()} EGP sent`, body: `To ${p.method} ${p.detail}. It arrives by ${fmtDate(new Date(by), 'long')} at the latest (2 working days). The payment advice (PDF) is in your wallet.`, link: p.kind === 'seller' ? '#/dash/seller/wallet' : '#/dash/wallet' });
+    },
+    /** Transfer time: 2 working days (Friday and Saturday are off) */
+    slaDate(from) { const d = new Date(from); let n = 0; while (n < 2) { d.setDate(d.getDate() + 1); if (![5, 6].includes(d.getDay())) n++; } d.setHours(17, 0, 0, 0); return d.getTime(); },
+    /** Everything the admin needs before sending a withdrawal: who, why they have the money, history, risks */
+    payoutDetail(id) {
+      me();
+      const p = findPayout(id);
+      const a = p.account || {};
+      const hist = allPayouts().filter((x) => x.accountId === p.accountId && x.id !== p.id).slice(0, 8);
+      let money_ = {};
+      try {
+        if (p.kind === 'seller') { const e = SA.services.pod.earnings(p.seller.id); money_ = { kind: 'seller', available: e.available, pending: e.pending, lifetime: e.lifetime, paidOut: e.paidOut, level: SA.services.sellers.levelOf(p.seller).name, mode: p.seller.mode, kyc: p.seller.kyc }; }
+        else { const w = D().wallet({ ownerId: p.accountId }); money_ = { kind: 'partner', balance: w.balance, pitches: db().all('pitches').filter((x) => x.ownerId === p.accountId && !x.deleted).length, bookings30: (() => { try { return D().summary({ ownerId: p.accountId, from: isoDate(addDays(today(), -29)), to: isoDate(today()) }).net; } catch { return 0; } })() }; }
+      } catch { /* demo data */ }
+      const disputes = (db().all('tickets') || []).filter((t) => t.against === p.accountId).slice(0, 5);
+      return { p, account: a, history: hist, money: money_, disputes, checks: checks(p) };
     },
     rejectPayout(id, reason) {
       me();

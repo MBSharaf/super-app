@@ -16,7 +16,7 @@
     { key: 'revenue', page: 'adminRevenue', label: 'Revenue', href: '#/admin/revenue', icon: 'percent' },
     { group: 'People' },
     { key: 'customers', page: 'adminCustomers', label: 'Customers', href: '#/admin/customers', icon: 'user' },
-    { key: 'partners', page: 'adminPartners', label: 'Partners', href: '#/admin/partners', icon: 'pitch' },
+    { key: 'partners', page: 'adminPartners', label: 'Pitch partners', href: '#/admin/partners', icon: 'pitch' },
     { key: 'sellers', page: 'adminSellers', label: 'Sellers', href: '#/admin/sellers', icon: 'users', badge: 'kyc' },
     { group: 'Operations' },
     { key: 'approvals', page: 'adminApprovals', label: 'Approvals', href: '#/admin/approvals', icon: 'check', badge: 'approvals' },

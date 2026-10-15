@@ -185,3 +185,10 @@ tr.is-dim td { opacity: .55; }
 .dash-site-link::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.22) 50%, transparent 70%); transform: translateX(-100%); animation: siteShine 3.2s ease-in-out infinite; }
 @keyframes siteShine { 60%, 100% { transform: translateX(100%); } }
 @media (prefers-reduced-motion: reduce) { .dash-site-link::after { animation: none; } }
+
+/* Search bar (customers, pitch partners, sellers, reviews): one field with the button inside, then Clear / Export */
+.adm-search { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+.adm-search-box { flex: 1 1 320px; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 5px 0 16px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-3, #777); transition: border-color 150ms, box-shadow 150ms; }
+.adm-search-box:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(11,110,79,.15); }
+.adm-search-box input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); }
+.adm-search-box .btn { height: 36px; border-radius: 999px; }

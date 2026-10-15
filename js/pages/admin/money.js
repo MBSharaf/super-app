@@ -30,7 +30,7 @@
         section = `<section class="dash-card table-card"><div class="row-between" style="padding:18px 18px 0"><h2 class="h4">Waiting for approval</h2>${ready.length > 1 ? `<button class="btn btn-primary btn-sm" data-approve-all>${icon('check', 14, 2.6)} Approve ${ready.length} ready</button>` : ''}</div>
           <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Requested</th><th>Who</th><th>Send to</th><th>Checks</th><th class="r">Amount</th><th></th></tr></thead><tbody>
           ${waiting.map((p) => `<tr><td class="small nowrap">${fmtDate(new Date(p.createdAt))}<span class="xs muted" style="display:block">${timeAgo(p.createdAt)}</span></td><td>${who(p)}</td><td class="small">${esc(p.method)}<span class="xs muted" style="display:block">${esc(p.detail || '—')}</span></td><td class="adm-checks">${checkBadges(p)}</td><td class="r num strong">${money(p.amount)}</td>
-            <td class="r"><div class="row" style="--gap:6px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-reject="${p.id}">Reject</button><button class="btn btn-primary btn-sm" data-approve="${p.id}">Approve</button></div></td></tr>`).join('')
+            <td class="r"><div class="row" style="--gap:6px;justify-content:flex-end"><button class="btn btn-outline btn-sm" data-detail="${p.id}">${icon('eye', 13)} Details</button><button class="btn btn-ghost btn-sm" data-reject="${p.id}">Reject</button><button class="btn btn-primary btn-sm" data-approve="${p.id}">Approve</button></div></td></tr>`).join('')
             || `<tr><td colspan="6">${SA.ui.c.empty({ icon: 'wallet', title: 'No withdrawals waiting', text: 'Requests from pitch owners and sellers show up here. Money only leaves after you approve it.' })}</td></tr>`}
           </tbody></table></div></section>`;
       } else if (tab === 'paid' || tab === 'rejected') {
@@ -85,7 +85,25 @@
           onClose() { resolve(false); },
         });
       });
+      const detail = (id) => {
+        const d = AD().payoutDetail(id); const { p, account: a, money: m } = d;
+        SA.ui.overlay.open({ drawer: true, title: `${money(p.amount)} · ${esc(p.company || p.name)}`, subtitle: `${{ partner: 'Pitch partner', seller: 'Seller', printer: 'Factory' }[p.kind] || ''} · asked ${timeAgo(p.createdAt)}`,
+          body: `<div class="stack" style="--gap:16px">
+            <section><h3 class="h5">Who</h3><dl class="kv"><div><dt>Name</dt><dd>${esc(a.name || '')}</dd></div><div><dt>${p.kind === 'seller' ? 'Store' : 'Company'}</dt><dd>${esc(p.company || a.company || '')}</dd></div><div><dt>Contact</dt><dd class="num">${esc(a.phone || '')} · ${esc(a.email || '')}</dd></div><div><dt>Joined</dt><dd>${a.joinedAt ? fmtDate(new Date(a.joinedAt)) : '—'}</dd></div><div><dt>Send to</dt><dd>${esc(p.method)} · ${esc(p.detail || '—')}</dd></div></dl></section>
+            <section><h3 class="h5">Why they have this money</h3><dl class="kv">${m.kind === 'seller' ? `<div><dt>Level</dt><dd>${esc(m.level || '')}</dd></div><div><dt>Sells</dt><dd>${{ pod: 'Printed designs', store: 'Own products', both: 'Printed designs + own products' }[m.mode] || ''}</dd></div><div><dt>Available now</dt><dd class="num">${money(m.available || 0)}</dd></div><div><dt>On hold</dt><dd class="num">${money(m.pending || 0)}</dd></div><div><dt>Earned so far</dt><dd class="num">${money(m.lifetime || 0)}</dd></div><div><dt>ID check</dt><dd>${esc(m.kyc || 'none')}</dd></div>`
+              : `<div><dt>Balance now</dt><dd class="num">${money(m.balance || 0)}</dd></div><div><dt>Pitches</dt><dd class="num">${m.pitches ?? '—'}</dd></div><div><dt>Net from bookings (30 days)</dt><dd class="num">${money(Math.round(m.bookings30 || 0))}</dd></div>`}</dl></section>
+            <section><h3 class="h5">Checks</h3><p>${checkBadges(p)}</p>${d.disputes.length ? `<ul class="fac-list">${d.disputes.map((t) => `<li><a href="#/admin/support/${t.id}">${esc(t.id)} · ${esc(t.subject)} <span class="badge">${esc(t.status)}</span></a></li>`).join('')}</ul>` : '<p class="xs muted">No customer disputes about them.</p>'}</section>
+            <section><h3 class="h5">Earlier withdrawals</h3>${d.history.length ? `<ul class="fac-list">${d.history.map((x) => `<li class="row-between"><span class="small">${fmtDate(new Date(x.createdAt))} · ${esc(x.method)}</span><span class="small num">${money(x.amount)} · ${esc(x.status)}</span></li>`).join('')}</ul>` : '<p class="xs muted">This is their first withdrawal.</p>'}</section>
+            <p class="xs muted">${icon('clock', 12)} When you approve: they get a notification and a payment advice PDF, and the money must arrive within 2 working days.</p>
+          </div>`,
+          footer: `<button class="btn btn-ghost" data-close>Close</button><button class="btn btn-ghost" data-d-reject style="color:var(--danger)">Reject</button><button class="btn btn-primary" data-d-approve>${icon('check', 15, 2.6)} Approve</button>`,
+          onMount(mm, close) {
+            mm.querySelector('[data-d-approve]').addEventListener('click', async () => { close(); if (await approve(id)) SA.app.rerender(); });
+            mm.querySelector('[data-d-reject]').addEventListener('click', () => { close(); el.querySelector(`[data-reject="${id}"]`)?.click(); });
+          } });
+      };
       el.addEventListener('click', async (e) => {
+        const dt = e.target.closest('[data-detail]'); if (dt) { detail(dt.dataset.detail); return; }
         const ap = e.target.closest('[data-approve]'); if (ap) { if (await approve(ap.dataset.approve)) SA.app.rerender(); return; }
         const rj = e.target.closest('[data-reject]');
         if (rj) {
@@ -194,7 +212,16 @@
         const r = C.range(ctx.query, '30');
         const cur = AD().revenue(r), t = cur.total;
         const S = AD().STREAMS, K = AD().COSTS;
-        C.xlsx(`super-app-revenue-${r.from}-to-${r.to}.xlsx`, [
+        // Long format for the dashboard: one row per day × stream (income positive, costs negative)
+        const lines = [];
+        cur.daily.forEach((d) => { S.forEach(([k, l]) => { if (d[k]) lines.push([d.date, l, 'Income', Math.round(d[k])]); }); K.forEach(([k, l]) => { if (d[k]) lines.push([d.date, l, 'Cost', -Math.round(d[k])]); }); });
+        const dashSheets = SA.core.xlsx.dashboard({
+          title: 'Super App — Revenue', subtitle: `${r.from} to ${r.to}`,
+          data: { name: 'Revenue lines', columns: [{ header: 'Date', width: 12 }, { header: 'Stream', width: 34 }, { header: 'Kind', width: 10 }, { header: 'Amount', width: 14, type: 'money' }], rows: lines },
+          kpis: [{ label: 'Net platform revenue', col: 'Amount', type: 'money' }, { label: 'Income', f: 'SUMIF', col: 'Kind', match: 'Income', sum: 'Amount', type: 'money' }, { label: 'Costs', f: 'SUMIF', col: 'Kind', match: 'Cost', sum: 'Amount', type: 'money' }, { label: 'Money through Super App (GMV)', formula: `${t.gmv}`, type: 'money' }],
+          groups: [{ title: 'Revenue by stream', by: 'Stream', sum: 'Amount', chart: 'bar', type: 'money' }, { title: 'Net by day', by: 'Date', sum: 'Amount', chart: 'line', type: 'money', limit: 62 }],
+        });
+        C.xlsx(`super-app-revenue-${r.from}-to-${r.to}.xlsx`, [...dashSheets,
           { name: 'Summary', columns: [{ header: 'Line', width: 38 }, { header: 'Amount', width: 16, type: 'money' }],
             rows: [...S.map(([k, l]) => [l, t[k]]), ['Total income', t.income], ...K.map(([k, l]) => [l, -t[k]]), ['Total costs', -t.cost], ['Money through Super App (GMV)', t.gmv]], totals: ['Net platform revenue', t.net] },
           { name: 'Daily', columns: [{ header: 'Date', width: 12 }, ...S.map(([, l]) => ({ header: l, width: 16, type: 'money' })), ...K.map(([, l]) => ({ header: l, width: 16, type: 'money' })), { header: 'Net', width: 14, type: 'money' }, { header: 'GMV', width: 14, type: 'money' }],

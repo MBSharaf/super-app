@@ -52,7 +52,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - Send an email to test@gmail.com (placeholder).
   - The admin gets a notification.
   - The customer gets an email saying "we reply within 24 hours".
-- [~] M10 (customer side done: every payment/refund/top-up/voucher has a receipt PDF; partner side with A3/P6) A PDF invoice or receipt for every payment or transaction, even small ones.
+- [x] M10 (customer side done; partner/seller payment advice PDFs added with A3: every payment/refund/top-up/voucher has a receipt PDF; partner side with A3/P6) A PDF invoice or receipt for every payment or transaction, even small ones.
 - [x] M11 Profile: a "Partner dashboard" entry, animated and highlighted (today it is only in the footer).
 
 ## Partner dashboard (seller)
@@ -67,16 +67,16 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 ## Admin
 - [ ] A1 Sign-in screen: 3D animation (it is static now).
 - [ ] A2 Overview, "Where revenue comes from": the bar animation overflows the text.
-- [ ] A3 Withdrawals:
+- [x] A3 Withdrawals:
   - Show who is asking (player, pitch owner, seller, factory) with full details.
   - Approve: notification + PDF + transfer time (SLA).
   - Reject: a mandatory reason, and a notification with the reason.
-- [ ] A4 Revenue export: Excel with a dashboard sheet (formulas and charts that update automatically) plus full details.
-- [ ] A5 Customers:
+- [x] A4 Revenue export: Excel with a dashboard sheet (formulas and charts that update automatically) plus full details.
+- [x] A5 Customers:
   - The search UI looks bad; the filters must work.
   - Excel export with a dashboard.
   - Every admin action in the customer drawer notifies the customer.
-- [ ] A6 Partners:
+- [x] A6 Partners:
   - Separate pitch owners, sellers and factories, each with details and an overview.
   - The same search UI and export as A5.
   - Notifications.

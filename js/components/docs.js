@@ -137,6 +137,29 @@
     await finish(doc, [p], `super-app-invoice-${o.id}.pdf`);
   };
 
+  /* ---------------- Payment advice: a withdrawal Super App sent ---------------- */
+  const payoutAdvice = async (p) => {
+    const acc = db().find('accounts', p.accountId) || (p.sellerId && db().find('accounts', db().find('sellers', p.sellerId)?.accountId)) || {};
+    const seller = p.sellerId ? db().find('sellers', p.sellerId) : null;
+    const doc = SA.core.pdf.create({ title: `Payment advice ${p.id}` });
+    const pg = doc.page();
+    let y = header(pg, { title: 'PAYMENT ADVICE', subtitle: seller ? 'Seller withdrawal' : p.settlement ? 'Factory settlement' : p.auto ? 'Weekly settlement' : 'Partner withdrawal', number: p.ref || p.id, date: fmtDate(new Date(p.paidAt || p.createdAt), 'long') });
+    y = Math.max(party(pg, 40, y + 6, 'Paid to', [seller?.name || acc.company || acc.name || '', acc.name || '', `${p.method} · ${p.detail || ''}`]), party(pg, 300, y + 6, 'Paid by', [HQ()?.company || 'Super App Egypt', 'Super App platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 22;
+    y = pg.table(40, y, [{ label: 'Description', w: 250 }, { label: 'Requested', w: 85 }, { label: 'Sent', w: 85 }, { label: 'Amount', w: 95, align: 'right' }],
+      [[seller ? `Withdrawal of seller earnings — ${seller.name}` : p.settlement ? 'Settlement for printed and shipped items' : 'Withdrawal of booking and store earnings', fmtDate(new Date(p.createdAt)), fmtDate(new Date(p.paidAt || p.createdAt)), m2(p.amount)]], { rowH: 24 });
+    y += 16;
+    totalsBox(pg, y, [['Transfer reference', p.ref || '—'], ['Arrives by (latest)', p.arrivesBy ? fmtDate(new Date(p.arrivesBy), 'long') : '2 working days'], ['Amount sent', m2(p.amount), true]]);
+    pg.wrap('Super App sends withdrawals within 2 working days of approval (Friday and Saturday are not working days). If the money hasn’t arrived by the date above, contact Super App support with the transfer reference.', 40, y + 14, 250, { size: 8.5, color: SOFT });
+    stamp(pg, 'PAID', TURF, pg.W - 120, 160);
+    await finish(doc, [pg], `super-app-payment-${p.id}.pdf`);
+  };
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-payout-pdf]'); if (!b) return;
+    const id = b.dataset.payoutPdf;
+    const p = db().find('payouts', id) || (db().all('sellerPayouts') || []).find((x) => x.id === id);
+    if (p) payoutAdvice(p).catch((err) => SA.ui.overlay.toast(err.message, { type: 'error' }));
+  });
+
   /* ---------------- Seller earnings statement: every order (printed or own product) + withdrawals ---------------- */
   const sellerStatement = async ({ seller: s, account, pod, store, payouts, earnings }) => {
     const doc = SA.core.pdf.create({ title: `Statement ${s.name}` });
@@ -302,5 +325,5 @@
       `All amounts include VAT at ${Math.round(rate * 100)}% where applicable. Booking line details are in the Excel finance report. Demo document.`);
   };
 
-  SA.ui.docs = { bookingInvoice, packageInvoice, receipt, sellerStatement, orderInvoice, storeOrderDoc, statement, vatIn };
+  SA.ui.docs = { bookingInvoice, packageInvoice, receipt, sellerStatement, payoutAdvice, orderInvoice, storeOrderDoc, statement, vatIn };
 })(window.SA);

@@ -34,7 +34,11 @@
   };
   const head = (title, sub, badges = '') => `<div class="adm-dh"><div class="grow"><h2 class="h3">${title}</h2><p class="small muted">${sub}</p>${badges ? `<div class="row wrap" style="--gap:6px;margin-top:8px">${badges}</div>` : ''}</div><button class="icon-btn" data-x aria-label="Close">${icon('x')}</button></div>`;
   const stat = (n, l) => `<div><b class="h4 num">${n}</b><span class="xs muted">${l}</span></div>`;
-  const filterBar = (base, q, chips) => `<form class="adm-filters" data-search><label class="field grow"><span class="field-label">Search</span><input class="input" name="q" value="${esc(q.q || '')}" placeholder="Name, phone, city, ID…" /></label><button class="btn btn-primary" type="submit" style="align-self:end">Search</button></form>
+  const filterBar = (base, q, chips, { placeholder = 'Name, phone, city, ID…' } = {}) => `<form class="adm-search" data-search role="search">
+      <label class="adm-search-box"><span class="sr-only">Search</span>${icon('search', 18)}<input name="q" value="${esc(q.q || '')}" placeholder="${esc(placeholder)}" autocomplete="off" /><button class="btn btn-primary btn-sm" type="submit">Search</button></label>
+      ${q.q ? `<a class="btn btn-ghost btn-sm" href="${SA.core.router.href(base, { ...q, q: undefined })}">${icon('x', 14)} Clear</a>` : ''}
+      <button type="button" class="btn btn-outline btn-sm" data-export>${icon('file', 14)} Export Excel</button>
+    </form>
     ${A.tabs(base, chips, q.tab || '', { q: q.q || undefined })}`;
   const bindSearch = (el, base, q) => el.querySelector('[data-search]')?.addEventListener('submit', (e) => { e.preventDefault(); SA.core.router.go(SA.core.router.href(base, { ...q, q: e.target.q.value.trim() || undefined }).slice(1)); });
   const match = (q, ...fields) => !q || fields.some((f) => String(f || '').toLowerCase().includes(q.toLowerCase()));
@@ -109,6 +113,19 @@
     },
     mount(el, ctx) {
       bindSearch(el, '/admin/customers', ctx.query);
+      el.querySelector('[data-export]')?.addEventListener('click', () => {
+        const all = AD().customers();
+        const status = (c) => (c.blocked ? 'Blocked' : c.needsPrepay ? 'Pay upfront' : 'Active');
+        const iso = (t) => (t && isFinite(t) ? new Date(t).toISOString().slice(0, 10) : '');
+        C.xlsx(`super-app-customers-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
+          title: 'Super App — Customers', subtitle: `${all.length} customers`,
+          data: { name: 'Customers', columns: [{ header: 'ID', width: 16 }, { header: 'Name', width: 22 }, { header: 'Phone', width: 16 }, { header: 'City', width: 14 }, { header: 'Bookings', width: 10, type: 'number' }, { header: 'Orders', width: 10, type: 'number' }, { header: 'Printed items', width: 13, type: 'number' }, { header: 'Spent', width: 13, type: 'money' }, { header: 'Refused deliveries', width: 16, type: 'number' }, { header: 'Status', width: 13 }, { header: 'First seen', width: 12 }, { header: 'Last active', width: 12 }],
+            rows: all.map((c) => [c.id, c.name, c.phone || '', c.city || 'Unknown', c.bookings, c.orders, c.items, Math.round(c.spent), c.refused || 0, status(c), iso(c.first), iso(c.last)]) },
+          kpis: [{ label: 'Customers', f: 'COUNT', col: 'ID' }, { label: 'Spent through Super App', col: 'Spent', type: 'money' }, { label: 'Average spent', f: 'AVERAGE', col: 'Spent', type: 'money' }, { label: 'Bookings', col: 'Bookings' }, { label: 'Orders', col: 'Orders' }, { label: 'Blocked', f: 'COUNTIF', col: 'Status', match: 'Blocked' }],
+          groups: [{ title: 'Spent by city', by: 'City', sum: 'Spent', chart: 'bar', type: 'money' }, { title: 'Customers by city', by: 'City', chart: 'pie' }, { title: 'Customers by status', by: 'Status', chart: 'pie' }],
+        }));
+        AD().log('export', `Exported ${all.length} customers`);
+      });
       const open = (id) => drawer({ title: 'Customer', id, render: customerDrawer, onClick: customerClick,
         onChange: (e, id) => { if (!e.target.matches('[data-prepay]')) return false; try { AD().setPrepay(id, e.target.value); toast('Payment rule saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
       el.addEventListener('click', (e) => { const r = e.target.closest('[data-open]'); if (r) open(r.dataset.open); });
@@ -165,7 +182,7 @@
   };
 
   SA.pages.adminPartners = A.guard({
-    title: 'Partners — Super App Admin',
+    title: 'Pitch partners — Super App Admin',
     render(ctx) {
       const q = ctx.query;
       const all = AD().partners();
@@ -180,24 +197,26 @@
           ${C.kpi({ label: 'Commission earned (30d)', value: money(Math.round(tot.comm)), ic: 'wallet', tone: 'k-blaze' })}
         </div>
         <section class="dash-card">${filterBar('/admin/partners', q, [['', 'All', all.length], ['active', 'Active', all.filter((p) => p.status === 'active').length], ['suspended', 'Suspended', all.filter((p) => p.status === 'suspended').length]])}</section>
-        <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Pitch owners</h2><div class="table-wrap"><table class="table dash-table adm-rows"><thead><tr><th>Partner</th><th class="r">Pitches</th><th class="r">Occupancy</th><th class="r">Revenue (30d)</th><th class="r">Commission</th><th class="r">Balance</th><th>Status</th></tr></thead><tbody>
+        <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Pitch partners</h2><div class="table-wrap"><table class="table dash-table adm-rows"><thead><tr><th>Partner</th><th class="r">Pitches</th><th class="r">Occupancy</th><th class="r">Revenue (30d)</th><th class="r">Commission</th><th class="r">Balance</th><th>Status</th></tr></thead><tbody>
           ${list.map((p) => `<tr data-open="${p.id}" tabindex="0"><td><span class="row">${SA.ui.c.avatar({ name: p.name, avatar: p.avatar }, 'sm')}<span><b class="small">${esc(p.company)}</b><span class="xs muted" style="display:block">${esc(p.name)} · ${esc(p.email)}</span></span></span></td>
             <td class="r num">${p.pitches}${p.closed ? `<span class="xs" style="display:block;color:var(--danger)">${p.closed} closed</span>` : ''}</td><td class="r num">${(p.occupancy * 100).toFixed(1)}%</td><td class="r num">${money(Math.round(p.gross30))}</td><td class="r num strong">${money(Math.round(p.commission30))}</td><td class="r num">${money(p.balance)}</td>
             <td>${p.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : '<span class="badge badge-turf">Active</span>'}</td></tr>`).join('') || `<tr><td colspan="7" class="small muted" style="padding:18px">No partners found.</td></tr>`}
           </tbody></table></div></section>
-        <div class="dash-grid g-2-1">
-          <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Stores</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Store</th><th>Owner</th><th class="r">Products</th><th>Status</th><th></th></tr></thead><tbody>
-            ${stores.map((s) => `<tr><td><b class="small">${esc(s.name)}</b>${s.official ? ' <span class="badge badge-ink">Official</span>' : ''}</td><td class="small">${esc(db().find('accounts', s.ownerId)?.company || '')}</td><td class="r num">${db().all('products').filter((p) => p.storeId === s.id && !p.deleted).length}</td>
-              <td><span class="badge ${s.status === 'active' ? 'badge-turf' : 'badge-danger'}">${s.status === 'active' ? 'Live' : 'Suspended'}</span></td>
-              <td class="r"><div class="row" style="--gap:6px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="#/shop?store=${s.id}" target="_blank" rel="noopener">View</a>${s.official ? '' : `<button class="btn btn-outline btn-sm" data-store-status="${s.id}" data-to="${s.status === 'active' ? 'suspended' : 'active'}">${s.status === 'active' ? 'Suspend' : 'Reactivate'}</button>`}</div></td></tr>`).join('')}
-            </tbody></table></div></section>
-          <section class="dash-card"><h2 class="h4">${icon('package', 18)} Print partner</h2><p class="small soft" style="margin-top:6px">${esc(pr.account?.company || '—')} · ${esc(pr.account?.email || '')}</p>
-            <dl class="kv" style="margin-top:12px"><div><dt>In the print queue</dt><dd class="num">${SA.services.pod.orders({ status: ['received', 'printing'] }).length}</dd></div><div><dt>Owed now</dt><dd class="num">${money(pr.owed)}</dd></div></dl>
-            <div class="row wrap" style="--gap:8px;margin-top:12px"><a class="btn btn-outline btn-sm" href="#/admin/print">Print queue</a><a class="btn btn-outline btn-sm" href="#/admin/payouts?tab=print">Settlements</a></div></section>
-        </div>`;
-      return C.layout('partners', { title: 'Partners', subtitle: 'Pitch owners, stores and the print partner — suspend, close pitches, open their dashboards', body });
+`;
+      return C.layout('partners', { title: 'Pitch partners', subtitle: 'Pitch owners and their pitches — suspend, close pitches, set commission deals, open their dashboards. Sellers and factories have their own sections.', body });
     },
     mount(el, ctx) {
+      el.querySelector('[data-export]')?.addEventListener('click', () => {
+        const all = AD().partners();
+        C.xlsx(`super-app-pitch-partners-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
+          title: 'Super App — Pitch partners', subtitle: 'Last 30 days',
+          data: { name: 'Pitch partners', columns: [{ header: 'ID', width: 12 }, { header: 'Company', width: 24 }, { header: 'Owner', width: 20 }, { header: 'Email', width: 24 }, { header: 'Phone', width: 16 }, { header: 'Pitches', width: 9, type: 'number' }, { header: 'Closed pitches', width: 13, type: 'number' }, { header: 'Occupancy', width: 11, type: 'percent' }, { header: 'Revenue 30d', width: 14, type: 'money' }, { header: 'Commission 30d', width: 15, type: 'money' }, { header: 'Balance', width: 13, type: 'money' }, { header: 'Status', width: 12 }],
+            rows: all.map((x) => [x.id, x.company, x.name, x.email || '', x.phone || '', x.pitches, x.closed, +(x.occupancy || 0).toFixed(3), Math.round(x.gross30), Math.round(x.commission30), Math.round(x.balance || 0), x.status === 'suspended' ? 'Suspended' : 'Active']) },
+          kpis: [{ label: 'Pitch partners', f: 'COUNT', col: 'ID' }, { label: 'Pitches', col: 'Pitches' }, { label: 'Revenue (30 days)', col: 'Revenue 30d', type: 'money' }, { label: 'Commission (30 days)', col: 'Commission 30d', type: 'money' }, { label: 'Average occupancy', f: 'AVERAGE', col: 'Occupancy', type: 'percent' }],
+          groups: [{ title: 'Revenue by partner', by: 'Company', sum: 'Revenue 30d', chart: 'bar', type: 'money' }, { title: 'Partners by status', by: 'Status', chart: 'pie' }],
+        }));
+        AD().log('export', `Exported ${all.length} pitch partners`);
+      });
       bindSearch(el, '/admin/partners', ctx.query);
       const open = (id) => drawer({ title: 'Partner', id, render: partnerDrawer, onClick: partnerClick, onSubmit: (e, pid) => { if (!e.target.matches('[data-deal]')) return false; try { AD().setCommissionDeal(pid, SA.core.utils.formData(e.target)); toast('Commission deal saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
       el.addEventListener('click', async (e) => {
@@ -277,6 +296,17 @@
       return C.layout('sellers', { title: 'Sellers', subtitle: 'Levels, ID checks, strikes and status — feature, suspend or open a seller’s dashboard', body });
     },
     mount(el, ctx) {
+      el.querySelector('[data-export]')?.addEventListener('click', () => {
+        const all = SL().list().map((x) => ({ x, lv: SL().levelOf(x), acc: db().find('accounts', x.accountId) }));
+        C.xlsx(`super-app-sellers-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
+          title: 'Super App — Sellers', subtitle: `${all.length} sellers`,
+          data: { name: 'Sellers', columns: [{ header: 'ID', width: 16 }, { header: 'Store', width: 22 }, { header: 'Owner', width: 20 }, { header: 'Sells', width: 16 }, { header: 'Level', width: 10 }, { header: 'Live designs', width: 12, type: 'number' }, { header: 'Items sold', width: 11, type: 'number' }, { header: 'Profit', width: 13, type: 'money' }, { header: 'ID check', width: 11 }, { header: 'Status', width: 11 }],
+            rows: all.map(({ x, lv, acc }) => [x.id, x.name, acc?.name || '', { pod: 'Print on demand', store: 'Own products', both: 'Both' }[x.mode] || x.mode, lv.name, db().all('designs').filter((d) => d.sellerId === x.id && d.status === 'live').length, lv.stats?.sales || 0, Math.round(SA.services.pod.earnings(x.id).lifetime || 0), x.kyc || 'none', x.status]) },
+          kpis: [{ label: 'Sellers', f: 'COUNT', col: 'ID' }, { label: 'Live designs', col: 'Live designs' }, { label: 'Items sold', col: 'Items sold' }, { label: 'Paid to sellers (profit)', col: 'Profit', type: 'money' }],
+          groups: [{ title: 'Sellers by level', by: 'Level', chart: 'pie' }, { title: 'Items sold by level', by: 'Level', sum: 'Items sold', chart: 'bar' }, { title: 'Sellers by status', by: 'Status', chart: 'pie' }],
+        }));
+        AD().log('export', `Exported ${all.length} sellers`);
+      });
       bindSearch(el, '/admin/sellers', ctx.query);
       const open = (id) => drawer({ title: 'Seller', id, render: sellerDrawer, onClick: sellerClick });
       el.addEventListener('click', (e) => { const r = e.target.closest('[data-open]'); if (r) open(r.dataset.open); });
