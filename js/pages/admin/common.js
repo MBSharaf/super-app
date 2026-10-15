@@ -32,6 +32,7 @@
     { key: 'print', page: 'dashPrint', label: 'Print orders', href: '#/admin/print', icon: 'package' },
     { key: 'pod-catalog', page: 'dashPodCatalog', label: 'Print catalogue', href: '#/admin/catalog', icon: 'tag' },
     { group: 'Marketing & content' },
+    { key: 'community', page: 'adminCommunity', label: 'Communities', href: '#/admin/community', icon: 'users', badge: 'community' },
     { key: 'broadcast', page: 'adminBroadcast', label: 'Broadcasts', href: '#/admin/broadcast', icon: 'megaphone' },
     { key: 'promos', page: 'adminPromos', label: 'Promo codes', href: '#/admin/promos', icon: 'gift' },
     { key: 'content', page: 'adminContent', label: 'Site content', href: '#/admin/content', icon: 'news' },

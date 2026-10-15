@@ -77,7 +77,7 @@
   const ADMIN = { kind: 'admin', id: 'acc-admin', name: 'Super App Admin', avatar: 7, badge: { label: 'Official', tone: 'team' } };
 
   const community = {
-    AUDIENCE, REACTIONS, ADMIN, access, myBadge, clean,
+    AUDIENCE, REACTIONS, ADMIN, access, myBadge, clean, postView, view,
     list: () => db().all('communities').filter((c) => c.status !== 'archived').map(view).sort((a, b) => (b.joined - a.joined) || (a.order || 0) - (b.order || 0)),
     get(slug) { const c = db().all('communities').find((x) => x.slug === slug || x.id === slug); if (!c || c.status === 'archived') throw new ApiError('This community doesn’t exist.', 'not_found'); return view(c); },
     join(id) {

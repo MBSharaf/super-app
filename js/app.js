@@ -102,6 +102,7 @@
     .add('/admin/samples', P.adminSamples)
     .add('/admin/analytics', P.adminAnalytics)
     .add('/admin/approvals', P.adminApprovals)
+    .add('/admin/community', P.adminCommunity)
     .add('/admin/tournaments', P.dashTournaments)
     .add('/admin/tournaments/:id', P.dashTournament)
     .add('/admin/support', P.adminSupport)

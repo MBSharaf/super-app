@@ -195,3 +195,12 @@ A separate system for the Super App team at **`#/admin`**, with its own sign-in 
 | **Super Points**: add or remove a customer's points with a reason | Customers → customer drawer |
 | **Delivery & service fees** and **maintenance mode** (pause bookings and/or shop checkout) | Platform settings |
 | **Shop categories**: rename, icon, order, hide, add | Site content → Shop categories |
+
+### Communities (added in release 6)
+
+Forum-style communities on the site (no live chat yet), created only by the Super App team. Plan: `docs/PLAN-communities.md`.
+
+| Where | What |
+| --- | --- |
+| `#/community`, `#/community/:slug`, `#/community/:slug/:postId` | Communities with an audience (everyone, sellers, Pro & Elite sellers). Posts with text, photo or poll, comments with replies, reactions, pinned posts and announcements, real badges (seller level, **Super App Admin**). Report a post or comment. Banned words, phone numbers and outside links are blocked; slow mode; muted members can read but not post. |
+| Admin: `#/admin/community` | Reports queue (remove, keep, remove and mute); all posts (pin, close comments, hide, delete, mute the author, **reply as Super App Admin** to a post or a single comment); **post as Super App Admin** in one or more communities (announcement, pin, poll, photo); create, edit and archive communities (audience, slow mode, rules, look); banned words and muted members. |

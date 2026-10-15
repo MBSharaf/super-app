@@ -20,7 +20,7 @@ Agreed with the user on 2026-10-15:
   - `#/community/:slug` (community page, composer, feed, comments, report);
   - `#/community/:slug/:postId` (one post);
   - links in the menu, footer and profile.
-- [ ] 3. Admin (`#/admin/community`):
+- [x] 3. Admin (`#/admin/community`):
   - reports queue (hide / keep / mute author);
   - communities (create / edit / archive, slow mode, audience, rules);
   - all posts (search, hide, pin, announce, delete, close comments);
@@ -29,4 +29,4 @@ Agreed with the user on 2026-10-15:
   - **post as “Super App Admin”** (announcements to everyone in a community);
   - **reply to any post or comment as “Super App Admin”** (replies are tied to the comment they answer);
   - to-do badge.
-- [ ] 4. Sharaf test section links; Arabic strings; mobile, dark mode and error check; README; push.
+- [x] 4. Sharaf test section links; Arabic strings; mobile, dark mode and error check; README; push.

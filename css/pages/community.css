@@ -68,3 +68,7 @@
 .cm-reply-form .input { flex: 1 1 200px; }
 .cm-replying { flex-basis: 100%; color: var(--ink-2); }
 .cm-admin-bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px dashed var(--blaze); }
+/* Admin console */
+.adm-report { display: grid; gap: 12px; }
+.adm-report-body { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: var(--r-sm); background: var(--surface-2); border-inline-start: 3px solid var(--danger); }
+.adm-cm-feed .cm-post { box-shadow: none; }

@@ -99,6 +99,7 @@
               const w = document.createElement('span'); w.className = 'w';
               const inner = document.createElement('span'); inner.className = 'wi'; inner.style.setProperty('--i', i++);
               inner.textContent = part; w.appendChild(inner); frag.appendChild(w);
+              if (SA.i18n?.isAr) w.setAttribute('translate', 'no'); // already translated as a whole phrase
             });
             n.replaceWith(frag);
           } else if (n.nodeType === 1 && !n.matches('svg, img, .w')) walk(n);
