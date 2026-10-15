@@ -74,17 +74,17 @@ shop checkout → pod.place → routed to the factory (job, due in SLA hours)
 - [x] Activity log
 
 ### Chunk 4 — admin and links
-- [ ] Admin `#/admin/factories`:
+- [x] Admin `#/admin/factories`:
   - overview, late and problem jobs (reassign, cancel, send for reprint, resolve)
   - shipping provider settings (switch provider, test/live)
   - price list and change requests
   - money (settle, deductions)
   - status (pause or suspend), staff list
-- [ ] Admin alerts: late jobs, problems, price requests, factory paused
-- [ ] Remove the old "printer" partner role (`#/dash/print`); the print partner becomes the factory owner
-- [ ] Seller and customer see the factory stages through the existing statuses and tracking
+- [x] Admin alerts: late jobs, problems, price requests, factory paused
+- [x] Remove the old "printer" partner role (`#/dash/print`); the print partner becomes the factory owner
+- [x] Seller and customer see the factory stages through the existing statuses and tracking
 
 ### Chunk 5 — finish
-- [ ] Arabic (`js/data/i18n-ar-factory.js`)
-- [ ] Sharaf section: factory links + sign in as each staff member
-- [ ] README, browser tests (desktop, mobile, Arabic), commit and push
+- [x] Arabic (`js/data/i18n-ar-factory.js`)
+- [x] Sharaf section: factory links + sign in as each staff member
+- [x] README, browser tests (desktop, mobile, Arabic), commit and push

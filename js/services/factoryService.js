@@ -252,7 +252,7 @@
       const o = db().find('podOrders', id); if (!o?.factoryId) throw new ApiError('Job not found.', 'not_found');
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
       const f = factory.get(o.factoryId);
-      db().update('podOrders', id, { stage: 'printing', complaints: (o.complaints || 0) + 1, reprints: (o.reprints || 0) + 1, dueAt: Date.now() + f.slaHours * H, steps: addStep(o, 'complaint', null, reason.trim()) });
+      db().update('podOrders', id, { stage: 'printing', shipmentId: '', pastShipments: [...(o.pastShipments || []), o.shipmentId].filter(Boolean), complaints: (o.complaints || 0) + 1, reprints: (o.reprints || 0) + 1, dueAt: Date.now() + f.slaHours * H, steps: addStep(o, 'complaint', null, reason.trim()) });
       if (+deduct > 0) factory.addLedger(f.id, { type: 'deduction', amount: +deduct, reason: `Quality complaint on ${o.id}: ${reason.trim()}`, jobId: o.id });
       N()?.toAccount(f.accountId, { cat: 'orders', tone: 'danger', title: `Reprint requested: ${o.id}`, body: `Customer complaint — ${reason.trim()}`, link: `#/factory/job/${o.id}` });
       P().reprint?.(id, `Complaint: ${reason.trim()}`);

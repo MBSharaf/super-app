@@ -28,17 +28,16 @@
     { key: 'activity', label: 'Activity', href: '#/dash/activity', icon: 'clock' },
   ];
   // Roles that can sign in to the partner dashboard (admins use the separate admin console at #/admin)
-  const SIGNIN_ROLES = ['owner', 'seller', 'printer'];
+  const SIGNIN_ROLES = ['owner', 'seller'];
   const isAdminUI = () => D().adminMode();
   const A = () => SA.pages.adminCommon;
   /** Pages shared with the admin console keep working there: their dashboard links point to the admin routes */
-  const ADMIN_LINKS = [['#/dash/notifications', '#/admin/notifications'], ['#/dash/pod-review', '#/admin/designs'], ['#/dash/pod-catalog', '#/admin/catalog'], ['#/dash/print', '#/admin/print'],
+  const ADMIN_LINKS = [['#/dash/notifications', '#/admin/notifications'], ['#/dash/pod-review', '#/admin/designs'], ['#/dash/pod-catalog', '#/admin/catalog'],
     ['#/dash/settings', '#/admin/settings'], ['#/dash/partners', '#/admin/partners'], ['#/dash/reviews', '#/admin/reviews'], ['#/dash/activity', '#/admin/audit'], ['#/dash/store', '#/admin/store'], ['#/dash/orders', '#/admin/store-orders'], ['#/dash/tournaments', '#/admin/tournaments']];
   const adminLinks = (html) => ADMIN_LINKS.reduce((h, [a, b]) => h.split(a).join(b), html);
   const ROLE_LABEL = { admin: ['badge-blaze', 'Admin'], owner: ['badge-turf', 'Owner'], printer: ['badge-gold', 'Print partner'], seller: ['badge-turf', 'Seller'] };
   /** Navigation per role; pages outside it send the user to the role's home page */
   const ROLE_NAV = {
-    printer: [{ key: 'print', label: 'Print queue', href: '#/dash/print', icon: 'package', badge: 'print' }],
     seller: (a) => {
       const s = SA.services.sellers?.byAccount(a.id);
       return [
@@ -52,7 +51,7 @@
       ];
     },
   };
-  const ROLE_HOME = { printer: () => SA.pages.dashPrint, seller: () => SA.pages.dashSeller };
+  const ROLE_HOME = { seller: () => SA.pages.dashSeller };
   const navFor = (a) => { if (isAdminUI()) return A().live(); const n = ROLE_NAV[a.role]; return typeof n === 'function' ? n(a) : n || NAV; };
 
   /* ---------- Admin owner filter (persists for the session) ---------- */
@@ -371,6 +370,7 @@
           <h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
           <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>
+                  <p class="small muted" style="margin-top:22px">Factory team? <a class="link" href="#/factory">Go to the factory system</a></p>
         </section>
         <section class="dl-visual" aria-hidden="true">
           <div class="hero-stage dl-stage" data-tilt>

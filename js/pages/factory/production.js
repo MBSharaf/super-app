@@ -68,7 +68,7 @@
           ${list.length ? `<button class="btn btn-ghost btn-sm" data-ticket="${list.slice(0, 40).map((o) => o.id).join(',')}">${icon('qr', 14)} Print ${Math.min(40, list.length)} ticket${list.length > 1 ? 's' : ''}</button>` : ''}
         </div>
         ${batches.length ? `<section class="dash-card fac-batches"><h2 class="h4">${icon('bolt', 16)} Print in batches</h2><p class="xs muted">Same product and colour — load the press once and run them together.</p>
-          <div class="fac-batch-list">${batches.map((b) => `<div class="fac-batch"><span class="grow"><b class="small">${b.jobs.reduce((t, o) => t + o.qty, 0)} × ${esc(b.product?.name || '')}</b><span class="xs muted" style="display:block">${esc(b.color)} · sizes ${[...new Set(b.jobs.map((o) => o.size))].join(', ')}</span></span><button class="btn btn-primary btn-sm" data-batch="${b.jobs.map((o) => o.id).join(',')}">${icon('bolt', 13)} Start batch (${b.jobs.length})</button></div>`).join('')}</div></section>` : ''}
+          <div class="fac-batch-list">${batches.map((b) => `<div class="fac-batch"><span class="grow"><b class="small">${b.jobs.reduce((t, o) => t + o.qty, 0)} × ${esc(b.product?.name || '')}</b><span class="xs muted" style="display:block"><span>${esc(b.color)}</span> · <span>Sizes</span> ${[...new Set(b.jobs.map((o) => o.size))].join(', ')}</span></span><button class="btn btn-primary btn-sm" data-batch="${b.jobs.map((o) => o.id).join(',')}">${icon('bolt', 13)} Start batch (${b.jobs.length})</button></div>`).join('')}</div></section>` : ''}
         ${list.length ? `<div class="pr-list">${list.slice(0, 80).map((o) => FC().jobCard(o, s)).join('')}</div>${list.length > 80 ? `<p class="xs muted" style="text-align:center">Showing 80 of ${list.length}. Search to find others.</p>` : ''}`
           : `<div class="dash-card">${c.empty({ icon: 'check', title: tab === 'late' ? 'Nothing late' : tab === 'issues' ? 'No open problems' : 'Nothing here right now', text: 'New jobs arrive here as soon as a customer orders a printed item.' })}</div>`}`;
       return FC().layout('jobs', { title: 'Production', subtitle: `${F().jobs({ factoryId: s.factoryId, stage: F().ACTIVE }).length} jobs on the line · oldest deadline first`, body });
@@ -98,7 +98,7 @@
           <div class="stack" style="--gap:10px">
             <div class="row wrap" style="--gap:6px">${FC().stageBadge(o.stage)}${o.sample ? '<span class="badge badge-gold">Sample → seller</span>' : ''}${FC().dueChip(o)}</div>
             <h2 class="h2">${o.qty} × ${esc(o.product?.name || '')}</h2>
-            <p class="lead" style="margin:0">${esc(o.color)} · size <b>${esc(o.size)}</b> · DTF ${FC().sides(o).join(' + ')}</p>
+            <p class="lead" style="margin:0"><span>${esc(o.color)}</span> · <span>Size</span> <b>${esc(o.size)}</b> · DTF <span>${{ front: 'Front', back: 'Back', 'front+back': 'Front + back' }[FC().sides(o).join('+')] || ''}</span></p>
             <p class="small muted">“${esc(o.title)}”</p>
             ${o.issue && !o.issue.resolved ? `<div class="fac-banner is-danger">${icon('alert', 16)} <span class="grow"><b>${esc(o.issue.type)}</b>${o.issue.note ? ` — ${esc(o.issue.note)}` : ''} <span class="xs">· ${esc(o.issue.by)}, ${timeAgo(o.issue.at)}</span></span>${F().can('assign', s) ? '<button class="btn btn-outline btn-sm" data-resolve>Resolved</button>' : ''}</div>` : ''}
             ${o.status === 'cancelled' ? `<div class="fac-banner is-danger">${icon('x', 16)} Cancelled by Super App${o.reason ? ` — ${esc(o.reason)}` : ''}. Stop work on it.</div>` : ''}
@@ -124,11 +124,11 @@
               ${o.reprints ? `<dt>Reprints</dt><dd>${o.reprints}</dd>` : ''}
             </dl>
             ${siblings.length ? `<h3 class="h5" style="margin-top:14px">Same parcel</h3><ul class="fac-list">${siblings.map((x) => `<li><a href="#/factory/job/${x.id}" class="row-between"><span class="small"><b class="num">${x.id}</b> · ${x.qty} × ${esc(x.color)} ${esc(x.size)}</span>${FC().stageBadge(x.stage)}</a></li>`).join('')}</ul>` : ''}
-            ${sh ? `<h3 class="h5" style="margin-top:14px">Courier</h3><p class="small">${esc(sh.providerName)} · <b class="num">${esc(sh.awb)}</b> · ${SA.services.shipping.STATUS_LABEL[sh.status]}</p><button class="btn btn-ghost btn-sm" data-label="${sh.id}">${icon('file', 13)} Shipping label</button>` : ''}
+            ${sh ? `<h3 class="h5" style="margin-top:14px">Courier</h3><p class="small">${esc(sh.providerName)} · <b class="num">${esc(sh.awb)}</b> · <span>${SA.services.shipping.STATUS_LABEL[sh.status]}</span></p><button class="btn btn-ghost btn-sm" data-label="${sh.id}">${icon('file', 13)} Shipping label</button>` : ''}
           </section>
           <section class="dash-card"><h2 class="h4">Timeline</h2>
             <ol class="fac-timeline">${(o.steps || []).slice().reverse().map((x) => `<li class="${['qc-fail', 'issue', 'complaint'].includes(x.stage) ? 'is-bad' : ''}"><b class="small">${STEP_LABEL[x.stage] || x.stage}</b><span class="xs muted">${x.name ? `${esc(x.name)} · ` : ''}${new Date(x.at).toLocaleString()}</span>${x.note ? `<span class="xs">${esc(x.note)}</span>` : ''}</li>`).join('')}
-            ${sh ? sh.events.slice().reverse().map((ev) => `<li class="is-courier"><b class="small">${esc(sh.providerName)}: ${SA.services.shipping.STATUS_LABEL[ev.status]}</b><span class="xs muted">${new Date(ev.at).toLocaleString()}</span></li>`).join('') : ''}</ol>
+            ${sh ? sh.events.slice().reverse().map((ev) => `<li class="is-courier"><b class="small">${esc(sh.providerName)}: <span>${SA.services.shipping.STATUS_LABEL[ev.status]}</span></b><span class="xs muted">${new Date(ev.at).toLocaleString()}</span></li>`).join('') : ''}</ol>
           </section>
         </div></div>`;
       return FC().layout('jobs', { title: `Job ${o.id}`, subtitle: `<a class="link" href="#/factory/jobs">Production</a> · ${esc(o.orderId)}`, body });
@@ -166,7 +166,7 @@
           </form>
           ${err ? `<p class="field-error" role="alert">${esc(err)}</p>` : ''}
         </section>
-        ${found ? `<div class="fac-scan-result">${FC().jobCard(found, s)}<div class="fac-big-actions row wrap" style="--gap:8px">${FC().actions(found, s, { big: true }) || `<p class="small muted">${F().NEXT[found.stage] ? `The next step (“${F().NEXT[found.stage].label}”) is for another role.` : `This job is ${F().STAGE_LABEL[found.stage].toLowerCase()}.`}</p>`}<a class="btn btn-ghost" href="#/factory/job/${found.id}">Open the job</a></div></div>` : ''}
+        ${found ? `<div class="fac-scan-result">${FC().jobCard(found, s)}<div class="fac-big-actions row wrap" style="--gap:8px">${FC().actions(found, s, { big: true }) || `<p class="small muted">${F().NEXT[found.stage] ? `The next step (“${F().NEXT[found.stage].label}”) is for another role.` : `Current step: ${F().STAGE_LABEL[found.stage]}.`}</p>`}<a class="btn btn-ghost" href="#/factory/job/${found.id}">Open the job</a></div></div>` : ''}
       </div>`;
       return FC().layout('scan', { title: 'Scan a job', subtitle: 'Each step is saved with your name', body });
     },

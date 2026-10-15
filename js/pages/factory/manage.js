@@ -20,8 +20,8 @@
     const items = sh.items.map((id) => db().find('podOrders', id)).filter(Boolean);
     const open = !['delivered', 'refused', 'cancelled'].includes(sh.status);
     return `<article class="dash-card fac-ship">
-      <div class="row-between wrap" style="--gap:8px"><span><b class="num">${esc(sh.awb)}</b> <span class="xs muted">· ${esc(sh.providerName)}${sh.mode === 'test' ? ' (test)' : ''}</span></span><span class="badge ${SH_TONE[sh.status]}">${SH().STATUS_LABEL[sh.status]}</span></div>
-      <p class="small"><b>${esc(sh.customer?.name || '')}</b> · ${esc(sh.customer?.city || '')} · order <span class="num">${esc(sh.orderId)}</span></p>
+      <div class="row-between wrap" style="--gap:8px"><span><b class="num">${esc(sh.awb)}</b> <span class="xs muted">· ${esc(sh.providerName)}</span>${sh.mode === 'test' ? ' <span class="badge">Test</span>' : ''}</span><span class="badge ${SH_TONE[sh.status]}">${SH().STATUS_LABEL[sh.status]}</span></div>
+      <p class="small"><b>${esc(sh.customer?.name || '')}</b> · <span>${esc(sh.customer?.city || '')}</span> · <span>Order</span> <span class="num">${esc(sh.orderId)}</span></p>
       <p class="xs muted">${items.map((o) => `${o.id} (${o.qty} × ${esc(o.color)} ${esc(o.size)})`).join(' · ')}</p>
       <p class="xs">${sh.cod ? `${icon('wallet', 12)} Courier collects <b>${money(sh.cod)}</b>` : `${icon('check', 12)} Paid online — collect nothing`}</p>
       <ol class="fac-track">${SH().FLOW.concat(sh.status === 'refused' ? ['refused'] : []).filter((x) => !(sh.status === 'refused' && x === 'delivered')).map((st) => { const ev = sh.events.find((e) => e.status === st); return `<li class="${ev ? 'is-done' : ''}"><span class="xs">${SH().STATUS_LABEL[st]}</span>${ev ? `<span class="xs muted">${timeAgo(ev.at)}</span>` : ''}</li>`; }).join('')}</ol>
@@ -142,7 +142,7 @@
           ${st.people.sort((a, b) => b.printed + b.checked + b.packed - (a.printed + a.checked + a.packed)).map((p) => `<tr><td class="small"><b>${esc(p.name)}</b></td><td class="r num">${p.printed}</td><td class="r num">${p.checked}</td><td class="r num">${p.packed}</td><td class="r num">${p.failed}</td></tr>`).join('') || '<tr><td colspan="5" class="small muted">No signed steps in this period.</td></tr>'}
         </tbody></table></div></section>
         <section class="dash-card"><h2 class="h4">Quality problems</h2>
-          ${fails.length ? `<ul class="fac-list">${fails.slice(0, 12).map((x) => `<li><a href="#/factory/job/${x.job}"><b class="small">${x.stage === 'complaint' ? 'Customer complaint' : 'Failed QC'} · <span class="num">${x.job}</span></b><span class="xs muted" style="display:block">${esc(x.note || '')} · ${x.name ? `${esc(x.name)} · ` : ''}${timeAgo(x.at)}</span></a></li>`).join('')}</ul>` : c.empty({ icon: 'shield', title: 'No quality problems', text: 'Failed checks and customer complaints show up here.' })}
+          ${fails.length ? `<ul class="fac-list">${fails.slice(0, 12).map((x) => `<li><a href="#/factory/job/${x.job}"><b class="small"><span>${x.stage === 'complaint' ? 'Customer complaint' : 'Failed QC'}</span> · <span class="num">${x.job}</span></b><span class="xs muted" style="display:block">${esc(x.note || '')} · ${x.name ? `${esc(x.name)} · ` : ''}${timeAgo(x.at)}</span></a></li>`).join('')}</ul>` : c.empty({ icon: 'shield', title: 'No quality problems', text: 'Failed checks and customer complaints show up here.' })}
         </section>
       </div>`;
     return FC().layout('reports', { title: 'Reports', subtitle: `${esc(s.factory.name)} · last ${days} days`, body });
@@ -154,7 +154,7 @@
     const owner = F().can('settings', s);
     const list = F().priceList(s.factoryId);
     const body = `
-      <section class="dash-card"><div class="row-between wrap" style="--gap:10px"><div><h2 class="h4">New orders</h2><p class="small muted">${f.intake ? 'Taking new orders. Pause if the line can’t keep up (machine down, holiday) — printed products are hidden from the shop until you resume.' : `Paused${f.intakeNote ? ` — ${esc(f.intakeNote)}` : ''}. Printed products are hidden from the shop.`}</p></div>
+      <section class="dash-card"><div class="row-between wrap" style="--gap:10px"><div><h2 class="h4">New orders</h2><p class="small muted">${f.intake ? 'Taking new orders. Pause if the line can’t keep up (machine down, holiday) — printed products are hidden from the shop until you resume.' : `<span>Paused</span>${f.intakeNote ? ` — ${esc(f.intakeNote)}` : ''}. <span>Printed products are hidden from the shop.</span>`}</p></div>
         <button class="btn ${f.intake ? 'btn-outline' : 'btn-primary'}" data-intake="${f.intake ? '' : '1'}" ${f.intake ? 'style="color:var(--danger)"' : ''}>${f.intake ? 'Pause new orders' : 'Resume new orders'}</button></div></section>
       ${owner ? `
       <section class="dash-card"><h2 class="h4">Capacity & deadline</h2>
@@ -165,8 +165,8 @@
         </form></section>
       <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Products & prices</h2><p class="xs muted" style="padding:4px 18px 0">Your price per piece (DTF, front print; a back print adds a little). Pause a product you can’t make for now — its designs leave the shop until you turn it back on. Price changes need Super App’s approval.</p>
         <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Product</th><th class="r">Your price</th><th>Status</th><th></th></tr></thead><tbody>
-        ${list.map((p) => { const paused = (f.pausedProducts || []).includes(p.id); return `<tr class="${paused ? 'is-dim' : ''}"><td class="small"><b>${esc(p.name)}</b><span class="xs muted" style="display:block">${p.colors.length} colours · ${p.sizes.join(', ')}</span></td>
-          <td class="r num">${money(p.partnerCost)}${p.pending ? `<span class="xs" style="display:block;color:var(--gold-ink, #8a6100)">→ ${money(p.pending.to)} waiting</span>` : ''}</td>
+        ${list.map((p) => { const paused = (f.pausedProducts || []).includes(p.id); return `<tr class="${paused ? 'is-dim' : ''}"><td class="small"><b>${esc(p.name)}</b><span class="xs muted" style="display:block"><span>${p.colors.length} colours</span> · ${p.sizes.join(', ')}</span></td>
+          <td class="r num">${money(p.partnerCost)}${p.pending ? `<span class="xs" style="display:block;color:var(--gold-ink, #8a6100)"><span>Waiting for approval:</span> ${money(p.pending.to)}</span>` : ''}</td>
           <td>${p.status !== 'active' ? '<span class="badge">Off in catalogue</span>' : paused ? '<span class="badge badge-danger">Paused</span>' : '<span class="badge badge-turf">Making</span>'}</td>
           <td class="r"><button class="btn btn-ghost btn-sm" data-pause="${p.id}" data-on="${paused ? '' : '1'}">${paused ? 'Resume' : 'Pause'}</button><button class="btn btn-ghost btn-sm" data-price="${p.id}">Change price</button></td></tr>`; }).join('')}
         </tbody></table></div></section>

@@ -77,7 +77,7 @@
   });
 
   /* ======================= Audit log ======================= */
-  const WHO = [['', 'Everyone'], ['admin', 'Admins'], ['partner', 'Pitch owners'], ['seller', 'Sellers'], ['printer', 'Print partner'], ['customer', 'Customers'], ['system', 'System']];
+  const WHO = [['', 'Everyone'], ['admin', 'Admins'], ['partner', 'Pitch owners'], ['seller', 'Sellers'], ['printer', 'Factory'], ['customer', 'Customers'], ['system', 'System']];
   SA.pages.adminAudit = A.guard({
     title: 'Audit log — Super App Admin',
     render(ctx) {

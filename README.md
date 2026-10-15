@@ -216,3 +216,16 @@ Plan: `docs/PLAN-pitch-community.md`.
 | `#/players/:id` | Players **ask to join** (position and message) and pay their share online; Super App holds it until the host accepts. The host chooses auto-accept or manual, sees each player's record (games played, attendance, rating, no-shows), accepts, declines, removes or closes requests. Waitlist. Refunds in full for declined, withdrawn and removed players. After kick-off the host **rates** players (stars, showed up). |
 | `#/alerts` | Free-slot alerts by pitch or area, with a time window. A matching slot posted by a venue sends a notification with a direct booking link. |
 | Admin `#/admin/games` | Daily slot limit; stop a venue posting; hide slot cards; every game with its requests (remove a player with a refund); player records sorted by attendance; block players from joining games. |
+
+### Factory system and courier (added in release 8)
+
+Plan: `docs/PLAN-factory.md`. This is a separate system with its own link and session, `#/factory`. It replaces the old "print partner" role in the partner dashboard.
+
+| Where | What |
+| --- | --- |
+| `#/factory` | Staff sign in with their name and a **4-digit PIN**, so a shared tablet works on the floor. The demo PINs are shown on the sign-in screen. **Roles:** owner, production supervisor, DTF printer, quality check, packing & shipping. Each role sees only its own part of the line. Every step is saved with the person's name. |
+| `#/factory/jobs` | Every printed item becomes a **job** with a deadline (48 h by default). **Stages:** new → printing → quality check → packing → ready. **Batches** group items with the same product and colour. A **failed quality check** sends the item back to printing; reprints are at the factory's cost. Staff can **report a problem** (out of stock, machine down, …), which alerts the supervisor and Super App. Job tickets are printed as a PDF with a **QR code**. |
+| `#/factory/scan` | Opens a job from a USB/Bluetooth barcode scanner, from a typed code, or from the phone camera (BarcodeDetector), then shows one big "next step" button. |
+| `#/factory/shipping` | When **every item of an order is packed**, the courier is booked automatically: airway bill, cash to collect for COD, pickup request, and a label PDF. Courier updates move the items to shipped, delivered or refused, and the customer and seller are told. The courier sits behind one adapter (`js/services/shippingService.js`). Bosta is used now as a trial, and switching courier is one setting. |
+| `#/factory/team` · `money` · `reports` · `settings` | **Team:** the owner manages the team and PINs. **Money:** per-piece earnings, deductions and payments. **Reports:** on-time %, defect rate, hours to pack, output per person. **Settings:** capacity and deadline; pausing new orders hides printed products from the shop; pausing a product; asking Super App for a price change. |
+| Admin `#/admin/factories` | **Factories:** status, warnings, on-time and defect rates. **Production:** late jobs and problems; cancel an item, send it back for a reprint after a customer complaint (with an optional deduction), resolve. **Courier:** switch courier and test/live mode, see every parcel. **Prices:** approve or reject price requests. **Money:** pay the factory, deductions and bonuses. **Teams:** read-only. |

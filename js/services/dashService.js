@@ -25,7 +25,7 @@
         const admin = adminMode();
         const id = localStorage.getItem(admin ? ADMIN_SESSION : SESSION);
         const a = id ? db.find('accounts', id) : null;
-        if (!a || (a.role === 'admin') !== admin) return null;
+        if (!a || (a.role === 'admin') !== admin || a.role === 'printer') return null; // the factory signs in at #/factory
         return !admin && a.status === 'suspended' ? null : a;
       } catch { return null; }
     },
@@ -928,8 +928,8 @@
     // ---- Alerts (bell + sidebar badges) ----
     alerts({ ownerId } = {}) {
       const out = [];
-      if (auth.current()?.role === 'printer') {
-        const todo = SA.services.pod.orders({ status: ['received', 'printing'] }).length;
+      if (auth.current()?.role === 'printer') { // not used: the factory has its own system (#/factory)
+        const todo = 0;
         return todo ? [{ key: 'print', icon: 'package', tone: 'blaze', count: todo, title: `${todo} item${todo > 1 ? 's' : ''} to print`, text: 'New and in-progress print orders.', href: '#/dash/print' }] : [];
       }
       const st = dash.myStore(ownerId);

@@ -100,12 +100,16 @@
     const tk = (db().all('tickets') || []).filter((t) => t.status === 'open').length;
     add('support', 'message', 'blaze', tk, `${tk} support ticket${tk > 1 ? 's' : ''} waiting`, 'Customers, partners and sellers waiting for a reply.', '#/admin/support');
     const sm = (db().all('samples') || []).filter((x) => x.status === 'requested').length;
-    add('samples', 'shirt', 'info', sm, `${sm} sample request${sm > 1 ? 's' : ''}`, 'Approve to send them to the print partner.', '#/admin/samples');
+    add('samples', 'shirt', 'info', sm, `${sm} sample request${sm > 1 ? 's' : ''}`, 'Approve to send them to the factory.', '#/admin/samples');
     const cr = admin.communityReports ? admin.communityReports().length : 0;
     add('community', 'flag', 'danger', cr, `${cr} community report${cr > 1 ? 's' : ''}`, 'Posts and comments people reported.', '#/admin/community');
     const ap = admin.pendingPitches ? admin.pendingPitches().filter((p) => p.review === 'pending').length + admin.pendingSellers().filter((s) => s.status === 'pending').length : 0;
     add('approvals', 'check', 'blaze', ap, `${ap} new pitch${ap > 1 ? 'es and sellers' : ' or seller'} to approve`, 'They go live on Super App once you approve them.', '#/admin/approvals');
     try { const low = D().lowStock(); add('stock', 'alert', 'gold', low.length, `${low.length} Super App Store product${low.length > 1 ? 's' : ''} low on stock`, low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), '#/admin/store?low=1'); } catch { /* no official store */ }
+    if (SA.services.factory) {
+      const fa = SA.services.factory.alerts();
+      add('factories', 'truck', fa.late || fa.issues ? 'danger' : 'gold', fa.total, `${fa.total} factory item${fa.total > 1 ? 's' : ''} to check`, [fa.late && `${fa.late} late`, fa.issues && `${fa.issues} problem${fa.issues > 1 ? 's' : ''}`, fa.prices && `${fa.prices} price request${fa.prices > 1 ? 's' : ''}`, fa.stopped && 'new orders paused'].filter(Boolean).join(' · '), fa.prices && !fa.late && !fa.issues ? '#/admin/factories?tab=prices' : '#/admin/factories?tab=jobs');
+    }
     if (admin.levelReviewDue && admin.levelReviewDue()) add('levels', 'trend', 'gold', 1, 'Monthly level review is due', 'Check seller levels for this month.', '#/admin/levels');
     return out;
   };

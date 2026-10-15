@@ -38,7 +38,11 @@
       ['Overview', '#/dash/seller'], ['Store settings', '#/dash/seller/store'], ['Marketing calendar', '#/dash/seller/calendar'], ['Analytics', '#/dash/seller/analytics'], ['Designs & samples', '#/dash/seller/designs'],
       ['Print orders', '#/dash/seller/orders'], ['Wallet', '#/dash/seller/wallet'], ['Notifications', '#/dash/notifications'],
     ] },
-    { title: 'Print partner', icon: 'package', as: [['acc-print', 'Print partner']], links: [['Print queue', '#/dash/print'], ['Notifications', '#/dash/notifications']] },
+    { title: 'Factory (print-on-demand)', icon: 'truck', factory: [['fs-owner', '1111', 'Owner · Hany'], ['fs-sup', '2222', 'Supervisor · Reem'], ['fs-pr1', '3333', 'Printer · Mahmoud'], ['fs-qc', '4444', 'Quality · Nour'], ['fs-pack', '5555', 'Packing · Islam']], links: [
+      ['Factory sign-in', '#/factory'], ['Overview', '#/factory'], ['Production', '#/factory/jobs'], ['New jobs & batches', '#/factory/jobs?tab=new'], ['Quality check', '#/factory/jobs?tab=qc'], ['Packing', '#/factory/jobs?tab=packing'], ['Late', '#/factory/jobs?tab=late'], ['Problems', '#/factory/jobs?tab=issues'],
+      ['A job (with a problem)', '#/factory/job/PO-F706'], ['Scan a job', '#/factory/scan?code=PO-F708'], ['Shipping & courier', '#/factory/shipping'], ['Partly packed orders', '#/factory/shipping?tab=partial'], ['Team', '#/factory/team'], ['Money', '#/factory/money'], ['Reports', '#/factory/reports'], ['Settings & prices', '#/factory/settings'], ['Activity', '#/factory/activity'],
+      ['Admin: factories', '#/admin/factories'], ['Admin: late & problems', '#/admin/factories?tab=jobs'], ['Admin: courier', '#/admin/factories?tab=shipping'], ['Admin: price requests', '#/admin/factories?tab=prices'], ['Admin: factory money', '#/admin/factories?tab=money'],
+    ] },
     { title: 'Admin console', icon: 'shield', as: [['acc-admin', 'Super App HQ']], links: [
       ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['Revenue', '#/admin/revenue'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
       ['Approvals', '#/admin/approvals'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super App Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
@@ -52,6 +56,7 @@
     ${GROUPS.map((g, i) => `<details class="dev-group" ${i === 0 ? 'open' : ''}><summary>${icon(g.icon, 18)}<b class="grow">${g.title}</b><span class="xs muted">${g.links.length}</span>${icon('chevronDown', 16)}</summary>
       ${g.games ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-as="acc-o1" data-dev-go="#/dash/slots">Sign in as Karim (owner)</button><button class="chip" data-dev-game>Create a finished game to rate</button></div>` : ''}
       ${g.seller ? `<div class="dev-as"><span class="xs muted">Seller-only communities need a seller account:</span><button class="chip" data-dev-seller>Make me a test seller</button><button class="chip" data-dev-as="acc-admin" data-dev-go="#/admin/community">Sign in as admin</button></div>` : ''}
+      ${g.factory ? `<div class="dev-as"><span class="xs muted">Sign in to the factory as:</span>${g.factory.map(([id, pin, l]) => `<button class="chip" data-dev-fac="${id}" data-pin="${pin}">${l}</button>`).join('')}<button class="chip" data-dev-job>Send a test order to the factory</button></div>` : ''}
       ${g.as ? `<div class="dev-as"><span class="xs muted">Sign in as:</span>${g.as.map(([id, l]) => `<button class="chip" data-dev-as="${id}" data-dev-go="${g.links[0][1]}">${l}</button>`).join('')}</div>` : ''}
       <div class="dev-grid">${g.links.map(([l, h]) => `<a class="dev-link" href="${h}"><span>${l}</span><span class="xs muted">${h.replace('#', '')}</span></a>`).join('')}</div></details>`).join('')}
     <p class="xs muted" style="margin-top:10px">Data is stored on this device. Reset it from Admin → Platform settings → Reset platform data.</p>
@@ -79,6 +84,20 @@
         if (!s) s = S.start({ mode: 'both', name: 'Sharaf Test Store', handle: `sharaf-test-${Math.random().toString(36).slice(2, 5)}`, agree: true });
         db.update('sellers', s.id, { status: 'active' }); if (s.storeId) db.update('stores', s.storeId, { status: 'active' });
         SA.ui.overlay.toast(`You’re a seller now: ${s.name}`); location.hash = '#/community/creators';
+      } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
+      return;
+    }
+    const fb = e.target.closest('[data-dev-fac]');
+    if (fb) { try { SA.services.factory.auth.signIn(fb.dataset.devFac, fb.dataset.pin); SA.ui.overlay.toast(`Factory: ${fb.textContent}`); location.hash = '#/factory'; } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+    if (e.target.closest('[data-dev-job]')) {
+      // A two-item printed order from this device's shopper, straight to the factory (test only)
+      try {
+        const live = SA.services.pod.live({}).slice(0, 12), u = SA.core.store.get().user || {};
+        const pick = [live[Math.floor(Math.random() * live.length)], live[Math.floor(Math.random() * live.length)]];
+        const orderId = `ORD-T${Date.now().toString(36).toUpperCase().slice(-5)}`;
+        SA.services.pod.place({ orderId, customer: { id: u.id || 'u-001', name: u.name || 'Test customer', city: 'Cairo', phone: u.phone || '', address: '14 Test St., Nasr City' }, payment: 'cod',
+          lines: pick.map((d) => ({ designId: d.id, color: d.colors[0], size: d.product?.sizes?.[1] || 'M', qty: 1, title: d.title })) });
+        SA.ui.overlay.toast(`Test order ${orderId} sent to the factory`);
       } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
       return;
     }

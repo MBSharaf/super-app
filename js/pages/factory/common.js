@@ -122,8 +122,8 @@
   const layout = (active, { title, subtitle = '', actions = '', body }) => {
     const s = F().me();
     const f = s.factory;
-    const banner = f.status === 'paused' ? `<div class="fac-banner is-danger">${icon('alert', 16)} Super App paused this factory${f.statusReason ? `: ${esc(f.statusReason)}` : ''}. No new jobs arrive until it is active again.</div>`
-      : !f.intake ? `<div class="fac-banner is-gold">${icon('alert', 16)} New orders are paused${f.intakeNote ? ` — ${esc(f.intakeNote)}` : ''}. Printed products are hidden from the shop.${F().can('intake', s) ? ' <a class="link" href="#/factory/settings">Resume</a>' : ''}</div>` : '';
+    const banner = f.status === 'paused' ? `<div class="fac-banner is-danger">${icon('alert', 16)} <span><span>Super App paused this factory</span>${f.statusReason ? `: ${esc(f.statusReason)}` : ''}. <span>No new jobs arrive until it is active again.</span></span></div>`
+      : !f.intake ? `<div class="fac-banner is-gold">${icon('alert', 16)} <span><span>New orders are paused</span>${f.intakeNote ? ` — ${esc(f.intakeNote)}` : ''}. <span>Printed products are hidden from the shop.</span>${F().can('intake', s) ? ' <a class="link" href="#/factory/settings">Resume</a>' : ''}</span></div>` : '';
     return `<div class="dash is-factory" data-dash-active="${active}">
       <aside class="dash-side">${sideNav(active, s)}</aside>
       <section class="dash-main">
@@ -204,7 +204,7 @@
       <div class="pr-body">
         <div class="row-between" style="--gap:8px"><a class="num strong" href="#/factory/job/${o.id}">${esc(o.id)}</a><span class="row" style="--gap:6px">${o.sample ? '<span class="badge badge-gold">Sample</span>' : ''}${stageBadge(o.stage)}</span></div>
         <p class="small strong">${o.qty} × ${esc(o.product?.name || o.catalogId)} · ${esc(o.color)} · ${esc(o.size)}</p>
-        <p class="xs muted">“${esc(o.title)}” · ${esc(o.orderId)}${sameOrder.length > 1 ? ` (${sameOrder.length} items)` : ''} · ${esc(o.customer?.city || '')}${o.reprints ? ` · reprinted ${o.reprints}×` : ''}</p>
+        <p class="xs muted">“${esc(o.title)}” · <span class="num">${esc(o.orderId)}</span>${sameOrder.length > 1 ? ` · <span>${sameOrder.length} items</span>` : ''} · <span>${esc(o.customer?.city || '')}</span>${o.reprints ? ` · <span>reprinted ${o.reprints}×</span>` : ''}</p>
         <div class="row wrap" style="--gap:6px;margin-top:4px">${dueChip(o)}${o.assignee ? `<span class="fj-who">${icon('user', 12)} ${esc(o.assignee.name)}</span>` : ''}</div>
         ${o.issue && !o.issue.resolved ? `<p class="fj-issue xs">${icon('alert', 12)} <b>${esc(o.issue.type)}</b>${o.issue.note ? ` — ${esc(o.issue.note)}` : ''} <span class="muted">· ${esc(o.issue.by)}</span></p>` : ''}
         ${o.status === 'cancelled' ? `<p class="fj-issue xs">${icon('x', 12)} Cancelled by Super App — stop work on it.</p>` : ''}

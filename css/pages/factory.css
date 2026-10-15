@@ -116,3 +116,6 @@
 [data-theme="dark"] .fac-mywork { background: linear-gradient(120deg, var(--surface), rgba(255,186,73,.10)); }
 [data-theme="dark"] .fac-batches { background: linear-gradient(120deg, var(--surface), rgba(255,91,20,.10)); }
 [data-theme="dark"] .fac-belt { background: repeating-linear-gradient(90deg, transparent 0 38px, rgba(255,255,255,.04) 38px 40px), radial-gradient(circle at 50% 50%, rgba(255,186,73,.16), transparent 64%); }
+
+/* Admin console: factory jobs */
+tr.is-late td:first-child { box-shadow: inset 3px 0 var(--danger); }

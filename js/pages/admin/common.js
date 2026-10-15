@@ -29,7 +29,7 @@
     { key: 'pod-review', page: 'dashPodReview', label: 'Design review', href: '#/admin/designs', icon: 'image', badge: 'designs' },
     { key: 'levels', page: 'adminLevels', label: 'Level review', href: '#/admin/levels', icon: 'trend', badge: 'levels' },
     { key: 'samples', page: 'adminSamples', label: 'Samples', href: '#/admin/samples', icon: 'shirt', badge: 'samples' },
-    { key: 'print', page: 'dashPrint', label: 'Print orders', href: '#/admin/print', icon: 'package' },
+    { key: 'factories', page: 'adminFactories', label: 'Factories & shipping', href: '#/admin/factories', icon: 'truck', badge: 'factories' },
     { key: 'pod-catalog', page: 'dashPodCatalog', label: 'Print catalogue', href: '#/admin/catalog', icon: 'tag' },
     { group: 'Marketing & content' },
     { key: 'community', page: 'adminCommunity', label: 'Communities', href: '#/admin/community', icon: 'users', badge: 'community' },
@@ -64,7 +64,7 @@
           <h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo account — admin sign-in with email, password and two-step verification arrives with the backend.</p>
           <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}">${SA.ui.c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.email)}</span></span><span class="badge badge-blaze">Admin</span>${icon('arrowRight', 16)}</button>`).join('')}</div>
-          <p class="small muted" style="margin-top:22px">Pitch owner, seller or print partner? <a class="link" href="#/dash">Go to the partner dashboard</a></p>
+          <p class="small muted" style="margin-top:22px">Pitch owner or seller? <a class="link" href="#/dash">Go to the partner dashboard</a> · Factory team? <a class="link" href="#/factory">Factory system</a></p>
         </section>
         <section class="dl-visual adm-visual" aria-hidden="true">
           <div class="adm-orbit">

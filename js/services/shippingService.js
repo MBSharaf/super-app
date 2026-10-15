@@ -72,6 +72,8 @@
       db().update('shipments', id, { status, events: [...sh.events, { status, at: Date.now(), text }], nextAt: DEMO_STEP[status] ? Date.now() + DEMO_STEP[status] * 1000 : 0 });
       sh.items.forEach((itemId) => {
         const o = db().find('podOrders', itemId); if (!o || o.status === 'cancelled') return;
+        // A replacement for a quality complaint: the sale is already counted, only the factory stage moves
+        if (o.complaints && ['delivered', 'refused'].includes(o.status)) { db().update('podOrders', itemId, { stage: status === 'picked_up' ? 'shipped' : status === 'out_for_delivery' ? 'shipped' : status }); return; }
         try {
           if (status === 'picked_up') { db().update('podOrders', itemId, { stage: 'shipped' }); P().advance(itemId, 'shipped', { courier: sh.providerName, tracking: sh.awb }); }
           if (status === 'delivered') { db().update('podOrders', itemId, { stage: 'delivered' }); P().advance(itemId, 'delivered'); }
