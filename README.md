@@ -182,3 +182,16 @@ A separate system for the Super App team at **`#/admin`**, with its own sign-in 
 | **Print on demand** | `#/admin/designs`, `/levels`, `/samples`, `/print`, `/catalog` | Design review, monthly **level review with a grace month**, **samples** (Pro 30% off, Elite one free a month), print queue and catalogue. |
 | **Marketing & content** | `#/admin/broadcast`, `/promos`, `/content`, `/fantasy` | Broadcast messages (now or scheduled); Super App promo codes for the shop and/or bookings (Super App pays the discount); home banners, announcement bar, news and pickup-game moderation; fantasy prize leagues, sponsors, winners with voucher codes, Fantasy Pass sales. |
 | **Analytics & audit** | `#/admin/analytics`, `/audit` | Platform analytics (money by product and day, booking heatmap, pitches, best sellers, cities, payments) with a full multi-sheet Excel export; audit log with filters and export. Sellers get their own analytics by level (Pro: advanced, Elite: + export). |
+
+#### Admin console — round 2
+
+| Power | Where |
+| --- | --- |
+| **Approve new pitches** before they go live; decline with a reason, and the owner can fix it and resend. **Approve new sellers** (on by default, can be switched off). | `#/admin/approvals` |
+| **Commission deal per partner** (bookings and/or store %), used in every money calculation | Partners → partner drawer |
+| **Hide one product** from a partner's store, with a reason | Partners → partner drawer → Products |
+| **Tournaments** at every venue: details, results, cancel with refunds | `#/admin/tournaments` |
+| **Super App Store** (official store) products and orders | `#/admin/store` |
+| **Super Points**: add or remove a customer's points with a reason | Customers → customer drawer |
+| **Delivery & service fees** and **maintenance mode** (pause bookings and/or shop checkout) | Platform settings |
+| **Shop categories**: rename, icon, order, hide, add | Site content → Shop categories |
