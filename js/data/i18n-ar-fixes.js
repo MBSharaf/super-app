@@ -21,8 +21,17 @@
     'in vouchers': 'كقسايم', 'Get a voucher': 'اعمل قسيمة', 'Turn points into a voucher': 'حوّل النقاط لقسيمة', 'Points to use': 'النقاط اللي هتستخدمها', 'Create voucher': 'اعمل القسيمة', 'Your vouchers': 'قسايمك',
     'Ready': 'جاهزة', 'Super Points voucher': 'قسيمة نقاط سوبر', 'Don’t use a voucher': 'من غير قسيمة', 'It pays first; the rest is paid with the method above.': 'القسيمة بتدفع الأول، والباقي بطريقة الدفع اللي فوق.', 'Smallest voucher (points)': 'أقل قسيمة (نقاط)',
     'This voucher has no value left.': 'القسيمة دي خلص رصيدها.',
+    /* ---------- M9 / A8 support, email, disputes ---------- */
+    'Customer disputes about you': 'شكاوى العملاء عنك', 'Super App may ask you for details. Your answers go to the Super App team, who update the customer.': 'Super App ممكن تسألك عن تفاصيل. ردودك بتروح لفريق Super App، وهما اللي بيبلّغوا العميل.',
+    'A customer opened this about you. Only Super App sees your answers — they update the customer.': 'عميل فتح الطلب ده عنك. Super App بس اللي بتشوف ردودك — وهي اللي بتبلّغ العميل.',
+    'Opened by': 'فتحه', 'About': 'عن', 'Emails': 'الإيميلات', 'customer can’t see': 'العميل مش شايفها', 'We’re checking with them': 'بنتأكد منهم',
+    'Question sent — the customer was told you’re checking': 'السؤال اتبعت — والعميل اتبلّغ إنك بتتأكد', 'No pitch owner or seller is linked to this request.': 'مفيش صاحب ملعب أو بياع مربوط بالطلب ده.', 'Write your question first.': 'اكتب سؤالك الأول.',
   });
   D.patterns.push(
+    ['^We got your request (TK-\S+)$', 'طلبك {1} وصلنا'], ['^We reply within 24 hours( — we also emailed (.+))?\.$', 'هنرد خلال 24 ساعة.'], ['^A customer opened a dispute · (TK-\S+)$', 'عميل فتح شكوى · {1}'],
+    ['^Super App needs your answer · (TK-\S+)$', 'Super App محتاجة ردك · {1}'], ['^We’re checking with them · (TK-\S+)$', 'بنتأكد منهم · {1}'], ['^We asked (.+) about your request and will update you\.$', 'سألنا {1} عن طلبك وهنبلّغك.'],
+    ['^(Pitch owner|Seller|Factory|Partner) answered on (TK-\S+)$', '{t1} رد على {2}'], ['^Ask (.+)$', 'اسأل {1}'], ['^To (.+) · $', 'لـ {1} · '], ['^From (.+) · $', 'من {1} · '], ['^To (.+) · (.+) · (.+)$', 'لـ {1} · {2} · {3}'],
+    ['^Sending is simulated until the backend; the support inbox is (.+)\.$', 'الإرسال تجريبي لحد الـ backend؛ إيميل الدعم {1}.'], ['^Customer · (.+)$', 'العميل · {1}'],
     ['^(Payment|Refund|Top-up|Voucher) of (.+) recorded$', '{t1} {2} اتسجلت'], ['^Top-up$', 'شحن'], ['^Payment$', 'دفعة'], ['^Refund$', 'استرجاع'], ['^Voucher$', 'قسيمة'],
     ['^as a voucher, from ([\\d,]+) points \\((.+)\\)\\. Use it on bookings, games, the shop, printed designs, tournaments and the Fantasy Pass — points can’t be turned into cash\\.$', 'كقسيمة، من {1} نقطة ({2}). استخدمها في الحجوزات والماتشات والمتجر ومنتجات الطباعة والبطولات و Fantasy Pass — النقاط مبتتحولش لفلوس.'],
     ['^(.+) left of (.+)$', 'فاضل {1} من {2}'], ['^Used — (.+)$', 'اتستخدمت — {1}'], ['^(SPV-\\S+) — (.+) left$', '{1} — فاضل {2}'], ['^Voucher (SPV-\\S+) — (\\d+) EGP$', 'قسيمة {1} — {2} جنيه'],

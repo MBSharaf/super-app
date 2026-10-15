@@ -371,6 +371,18 @@
       log('support.replied', `Replied to ${tk.id}${resolve ? ' and resolved it' : ''}: ${t.slice(0, 80)}`, id);
       admin._tellTicket(tk, 'Super App replied', t.slice(0, 140));
     },
+    /** Ask the pitch owner / seller a dispute is about (private: the customer doesn't see it; Super App passes on the answer) */
+    askParty(id, text) {
+      me();
+      const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');
+      if (!tk.against) throw new ApiError('No pitch owner or seller is linked to this request.', 'invalid');
+      const t = String(text || '').trim(); if (t.length < 2) throw new ApiError('Write your question first.', 'invalid');
+      db().update('tickets', id, { messages: [...tk.messages, { by: 'admin', name: me().name, text: t.slice(0, 2000), at: Date.now(), private: true, to: 'party' }], waitingParty: Date.now() });
+      log('support.asked', `Asked ${db().find('accounts', tk.against)?.company || 'the partner'} about ${tk.id}: ${t.slice(0, 80)}`, id);
+      N()?.toAccount(tk.against, { cat: 'account', tone: 'gold', title: `Super App needs your answer · ${tk.id}`, body: t.slice(0, 140), link: `#/dash/support/${tk.id}` });
+      // The customer knows Super App is checking with the venue or seller
+      admin._tellTicket(tk, 'We’re checking with them', `We asked ${db().find('accounts', tk.against)?.company || 'the partner'} about your request and will update you.`);
+    },
     setTicket(id, patch) {
       me();
       const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');

@@ -20,6 +20,14 @@
   const STATUS = { open: 'Waiting for Super App', pending: 'Waiting for your reply', resolved: 'Resolved' };
 
   const me = () => SA.core.store.get().user || SA.data.user.profile;
+  /**
+   * Email (simulated until the backend): a copy of every new request goes to the support inbox, and the customer gets
+   * an automatic answer ("we reply within 24 hours"). Sent emails are kept in db.emails and shown on the ticket.
+   */
+  const inbox = () => db().settings().supportEmail || 'test@gmail.com';
+  const sendEmail = (mail) => { const d = db().raw(); if (!Array.isArray(d.emails)) d.emails = []; return db().insert('emails', { ...mail, status: 'sent (demo)' }, 'em'); };
+  const KIND_LABEL = { customer: 'Customer', partner: 'Pitch owner', seller: 'Seller', printer: 'Factory', admin: 'Super App' };
+  const accountKind = (id) => { const a = db().find('accounts', id); return a?.role === 'seller' ? 'seller' : a?.role === 'printer' ? 'printer' : 'partner'; };
   const nextId = () => `TK-${2042 + (db().all('tickets') || []).length + Math.floor(Math.random() * 9)}`;
 
   /** Who a booking / order / printed item involves (the partner or seller a dispute is "against") */
@@ -71,6 +79,15 @@
         messages: [{ by: who.kind, name: who.name, text: t.slice(0, 2000), at: now }], createdAt: now, updatedAt: now,
       });
       db().log(who.kind === 'customer' ? 'customer' : who.id, 'support.opened', `${who.name} opened ${tk.id}: ${tk.subject}`, tk.id);
+      // Email: to the support inbox, and an automatic answer to the person who wrote
+      const email = who.kind === 'customer' ? (u.email || '') : (db().find('accounts', who.id)?.email || '');
+      sendEmail({ to: inbox(), from: email || 'no-reply@superapp.example', subject: `[${tk.id}] ${tk.subject}`, body: `${KIND_LABEL[who.kind] || 'User'}: ${who.name}${who.phone ? ` · ${who.phone}` : ''}${email ? ` · ${email}` : ''}\nAbout: ${CATS[category].label}${r.label ? ` — ${r.label}` : ''}\n\n${t}`, ticketId: tk.id, kind: 'to-support' });
+      if (email) sendEmail({ to: email, from: inbox(), subject: `We got your request ${tk.id}`, body: `Hi ${who.name.split(' ')[0]},\n\nThanks for writing to Super App. We received your request “${tk.subject}” and we reply within 24 hours.\n\nRequest number: ${tk.id}\n\n— Super App support`, ticketId: tk.id, kind: 'auto-reply' });
+      const ack = { title: `We got your request ${tk.id}`, body: `We reply within 24 hours${email ? ` — we also emailed ${email}` : ''}.` };
+      if (who.kind === 'customer') SA.services.user.notify({ kind: 'account', ...ack, link: `/support/${tk.id}` });
+      else N()?.toAccount(who.id, { cat: 'account', ...ack, link: `#/dash/support/${tk.id}` });
+      // The pitch owner or seller the dispute is about hears about it straight away
+      if (r.against && r.against !== who.id) N()?.toAccount(r.against, { cat: 'account', tone: 'danger', title: `A customer opened a dispute · ${tk.id}`, body: `${r.label || tk.subject}. Super App is looking into it and may ask you for details.`, link: `#/dash/support/${tk.id}` });
       N()?.toAdmins({ cat: 'account', tone: CATS[category].dispute ? 'danger' : '', title: `${CATS[category].dispute ? 'Dispute' : 'Support'}: ${tk.subject}`, body: `${who.name} · ${tk.id}`, link: `#/admin/support/${tk.id}` });
       return tk;
     },
@@ -80,9 +97,15 @@
       const t = String(text || '').trim();
       if (t.length < 2) throw new ApiError('Write a message first.', 'invalid', { text: 'Write a message' });
       const who = from || { kind: 'customer', name: me().name };
-      db().update('tickets', id, { messages: [...tk.messages, { by: who.kind, name: who.name, text: t.slice(0, 2000), at: Date.now() }], status: 'open' });
-      N()?.toAdmins({ cat: 'account', title: `New reply on ${tk.id}`, body: `${who.name}: ${t.slice(0, 90)}`, link: `#/admin/support/${tk.id}` });
+      // The partner or seller a dispute is about answers Super App privately; Super App passes it on to the customer
+      const party = from && tk.against === from.id && tk.from?.id !== from.id;
+      db().update('tickets', id, { messages: [...tk.messages, { by: who.kind, name: who.name, text: t.slice(0, 2000), at: Date.now(), ...(party ? { private: true } : {}) }], status: 'open', ...(party ? { partyReplied: Date.now() } : {}) });
+      N()?.toAdmins({ cat: 'account', tone: party ? 'gold' : '', title: party ? `${KIND_LABEL[who.kind] || 'Partner'} answered on ${tk.id}` : `New reply on ${tk.id}`, body: `${who.name}: ${t.slice(0, 90)}`, link: `#/admin/support/${tk.id}` });
     },
+    /** Requests a partner or seller is involved in (a customer dispute about them) */
+    about: (accountId) => support.all().filter((t) => t.against === accountId && t.from?.id !== accountId),
+    emails: (ticketId) => (db().all('emails') || []).filter((e) => !ticketId || e.ticketId === ticketId),
+    inbox, KIND_LABEL, accountKind,
     /** Seed requests so the console has history (demo) */
     seed(now = Date.now()) {
       const H = 36e5;

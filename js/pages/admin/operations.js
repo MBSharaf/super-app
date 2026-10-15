@@ -94,7 +94,7 @@
   });
 
   /* ======================= Support & disputes ======================= */
-  const FROM = { customer: ['badge-info', 'Customer'], partner: ['badge-turf', 'Pitch owner'], seller: ['badge-gold', 'Seller'], printer: ['badge-gold', 'Print partner'] };
+  const FROM = { customer: ['badge-info', 'Customer'], partner: ['badge-turf', 'Pitch owner'], seller: ['badge-gold', 'Seller'], printer: ['badge-gold', 'Factory'] };
   const TST = { open: ['badge-blaze', 'Waiting for us'], pending: ['badge-info', 'Waiting for them'], resolved: ['badge-turf', 'Resolved'] };
 
   SA.pages.adminSupport = A.guard({
@@ -138,9 +138,10 @@
       const [sc, sl] = TST[t.status];
       const body = `<div class="dash-grid g-2-1">
         <section class="dash-card"><div class="row-between wrap" style="--gap:8px"><div class="row wrap" style="--gap:6px"><span class="badge ${sc}">${sl}</span>${t.priority === 'high' ? '<span class="badge badge-danger">High priority</span>' : ''}<span class="badge">${esc(cat?.label || t.category)}</span></div><span class="xs muted">Opened ${timeAgo(t.createdAt)}</span></div>
-          <ol class="adm-thread">${t.messages.map((m) => `<li class="by-${m.by}"><div class="adm-bubble"><span class="xs strong">${esc(m.name)}${m.by === 'admin' ? ' · Super App' : ''}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>
+          <div class="tk-parties"><span><span class="xs muted">Opened by</span><b class="small">${esc(t.from.name)}</b> <span class="badge ${FROM[t.from.kind]?.[0] || ''}">${FROM[t.from.kind]?.[1] || ''}</span></span>${icon('arrowRight', 14)}<span><span class="xs muted">About</span>${against ? `<b class="small">${esc(against.company)}</b> <span class="badge ${FROM[SUP().accountKind(against.id)]?.[0] || ''}">${FROM[SUP().accountKind(against.id)]?.[1] || ''}</span>` : '<b class="small">Super App</b>'}</span></div>
+          <ol class="adm-thread">${t.messages.map((m) => `<li class="by-${m.by}"><div class="adm-bubble"><span class="xs strong">${esc(m.name)}${m.by === 'admin' ? ' · Super App' : ''}${m.private ? ` <span class="badge badge-gold">${m.by === 'admin' ? `To ${esc(against?.company || 'the partner')}` : `From ${esc(against?.company || 'the partner')}`} · customer can’t see</span>` : ''}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>
           ${t.status !== 'resolved' ? `<form class="stack" style="--gap:10px;margin-top:16px" data-reply novalidate><label class="field-label" for="tk-r">Reply</label><textarea class="input" id="tk-r" name="text" rows="4" maxlength="2000" placeholder="Write to ${esc(t.from.name.split(' ')[0])}…"></textarea><p class="field-error" data-err="text"></p>
-            <div class="row wrap" style="--gap:8px;justify-content:flex-end"><button class="btn btn-outline" type="submit" name="act" value="send">Send reply</button><button class="btn btn-primary" type="submit" name="act" value="resolve">${icon('check', 15, 2.6)} Send and resolve</button></div></form>`
+            <div class="row wrap" style="--gap:8px;justify-content:flex-end">${against ? `<button class="btn btn-ghost" type="submit" name="act" value="ask" title="Only ${esc(against.company)} sees it">${icon('message', 15)} Ask ${esc(against.company)}</button>` : ''}<button class="btn btn-outline" type="submit" name="act" value="send">Send reply</button><button class="btn btn-primary" type="submit" name="act" value="resolve">${icon('check', 15, 2.6)} Send and resolve</button></div></form>`
             : `<div class="row-between wrap" style="margin-top:16px"><span class="small muted">${icon('check', 14, 2.4)} Resolved ${timeAgo(t.resolvedAt || t.updatedAt)}</span><button class="btn btn-outline btn-sm" data-reopen>Reopen</button></div>`}
         </section>
         <aside class="stack" style="--gap:18px">
@@ -152,6 +153,7 @@
               <div class="field"><label for="rf-n">Note (optional)</label><input class="input" id="rf-n" name="note" maxlength="140" /></div><p class="field-error" data-err="refund"></p>
               <button class="btn btn-blaze" type="submit">${icon('wallet', 15)} Send refund</button>
               <p class="xs muted">The customer gets it in their Super App wallet. If the partner or seller pays, it’s taken from their balance with this ticket as the reason.</p></form>`}</section>` : ''}
+          ${SUP().emails(t.id).length ? `<section class="dash-card"><h2 class="h4">${icon('message', 16)} Emails</h2><ul class="fac-list">${SUP().emails(t.id).map((m) => `<li><b class="small">${esc(m.subject)}</b><span class="xs muted" style="display:block">To ${esc(m.to)} · ${timeAgo(m.createdAt)} · ${esc(m.status)}</span></li>`).join('')}</ul><p class="xs muted">Sending is simulated until the backend; the support inbox is ${esc(SUP().inbox())}.</p></section>` : ''}
           <section class="dash-card"><h2 class="h4">Ticket</h2><div class="stack" style="--gap:10px;margin-top:10px">
             <label class="field"><span class="field-label">Priority</span><select class="select" data-priority><option value="normal" ${t.priority !== 'high' ? 'selected' : ''}>Normal</option><option value="high" ${t.priority === 'high' ? 'selected' : ''}>High</option></select></label>
             ${t.status !== 'resolved' ? '<button class="btn btn-outline btn-sm" data-resolve>Mark resolved without reply</button>' : ''}</div></section>
@@ -163,7 +165,10 @@
       el.querySelector('[data-reply]')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const act = e.submitter?.value || 'send';
-        try { AD().replyTicket(id, e.target.text.value, { resolve: act === 'resolve' }); toast(act === 'resolve' ? 'Reply sent and ticket resolved' : 'Reply sent'); SA.app.rerender(); }
+        try {
+          if (act === 'ask') { AD().askParty(id, e.target.text.value); toast('Question sent — the customer was told you’re checking'); SA.app.rerender(); return; }
+          AD().replyTicket(id, e.target.text.value, { resolve: act === 'resolve' }); toast(act === 'resolve' ? 'Reply sent and ticket resolved' : 'Reply sent'); SA.app.rerender();
+        }
         catch (err) { e.target.querySelector('[data-err="text"]').textContent = err.message; }
       });
       el.querySelector('[data-refund]')?.addEventListener('submit', async (e) => {

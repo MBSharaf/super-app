@@ -13,7 +13,7 @@
   const list = (tickets, base) => tickets.length ? `<ul class="adm-tickets sup-list">${tickets.map((t) => { const [c, l] = STATUS[t.status]; return `<li><a href="${base}/${t.id}"><span class="bp-ico t-info">${icon(SUP().CATS[t.category]?.icon || 'message', 16)}</span><span class="grow"><b class="small">${esc(t.subject)}</b><span class="xs muted" style="display:block">${esc(t.id)} · ${timeAgo(t.updatedAt)}${t.refund ? ` · refunded ${t.refund.amount.toLocaleString()} EGP` : ''}</span></span><span class="badge ${c}">${l}</span></a></li>`; }).join('')}</ul>`
     : `<div class="panel">${SA.ui.c.empty({ icon: 'message', title: 'No requests yet', text: 'Questions, problems with a booking or an order — we usually reply within a few hours.' })}</div>`;
 
-  const thread = (t) => `<ol class="adm-thread">${t.messages.map((m) => `<li class="by-${m.by === 'admin' || m.by === 'system' ? 'admin' : 'me'}"><div class="adm-bubble"><span class="xs strong">${m.by === 'admin' || m.by === 'system' ? 'Super App support' : 'You'}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>`;
+  const thread = (t, viewer = 'customer') => `<ol class="adm-thread">${t.messages.filter((m) => viewer !== 'customer' || !m.private).map((m) => `<li class="by-${m.by === 'admin' || m.by === 'system' ? 'admin' : 'me'}"><div class="adm-bubble"><span class="xs strong">${m.by === 'admin' || m.by === 'system' ? 'Super App support' : viewer === 'party' && m.by === 'customer' ? `Customer · ${esc(m.name)}` : 'You'}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>`;
 
   /** Choices the shopper can attach to a request */
   const refOptions = () => {
@@ -92,7 +92,9 @@
     title: 'Help & support — Super App Partner',
     render() {
       const mine = SUP().forAccount(D().me().id);
-      const body = `<div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">New request</h2><p class="small soft" style="margin-top:4px">Payouts, your account, the shop, the print queue — anything you need from the Super App team.</p>${form({ withRef: false })}</section>
+      const about = SUP().about(D().me().id);
+      const body = `${about.length ? `<section class="dash-card"><h2 class="h4">${icon('alert', 16)} Customer disputes about you</h2><p class="small soft" style="margin-top:4px">Super App may ask you for details. Your answers go to the Super App team, who update the customer.</p><div style="margin-top:12px">${list(about, '#/dash/support')}</div></section>` : ''}
+        <div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">New request</h2><p class="small soft" style="margin-top:4px">Payouts, your account, the shop, the print queue — anything you need from the Super App team.</p>${form({ withRef: false })}</section>
         <section class="dash-card"><h2 class="h4" style="margin-bottom:12px">Your requests</h2>${list(mine, '#/dash/support')}</section></div>`;
       return C().layout('support', { title: 'Help & support', subtitle: 'Talk to the Super App team', body });
     },
@@ -103,9 +105,11 @@
     title: 'Request — Super App Partner',
     render(ctx) {
       const t = SUP().get(ctx.params.id);
-      if (!t || t.from?.id !== D().me().id) return C().layout('support', { title: 'Not found', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'message', title: 'Request not found', action: '<a class="btn btn-primary" href="#/dash/support">Help & support</a>' })}</div>` });
+      const party = t && t.against === D().me().id && t.from?.id !== D().me().id;
+      if (!t || (t.from?.id !== D().me().id && !party)) return C().layout('support', { title: 'Not found', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'message', title: 'Request not found', action: '<a class="btn btn-primary" href="#/dash/support">Help & support</a>' })}</div>` });
       const [c, l] = STATUS[t.status];
-      const body = `<section class="dash-card"><p class="small muted">${esc(t.id)} · ${esc(SUP().CATS[t.category]?.label || '')} · <span class="badge ${c}">${l}</span></p>${thread(t)}
+      const body = `<section class="dash-card"><p class="small muted">${esc(t.id)} · ${esc(SUP().CATS[t.category]?.label || '')} · <span class="badge ${c}">${l}</span></p>
+        ${party ? `<div class="notice gold" style="margin:10px 0">${icon('info', 16)}<span>A customer opened this about you. Only Super App sees your answers — they update the customer.</span></div>` : ''}${thread(t, party ? 'party' : 'customer')}
         ${t.status !== 'resolved' ? `<form class="stack" style="--gap:10px;margin-top:16px" data-reply novalidate><label class="field-label" for="ds-rp">Reply</label><textarea class="input" id="ds-rp" name="text" rows="3" maxlength="2000"></textarea><p class="field-error" data-err="text"></p><div class="row" style="justify-content:flex-end"><button class="btn btn-primary" type="submit">Send</button></div></form>` : `<p class="small muted" style="margin-top:14px">${icon('check', 14, 2.4)} Resolved.</p>`}</section>`;
       return C().layout('support', { title: esc(t.subject), actions: '<a class="btn btn-ghost btn-sm" href="#/dash/support">All requests</a>', body });
     },

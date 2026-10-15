@@ -48,7 +48,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - 20 points = 1 EGP (it was 5 = 1).
   - No cash. Points can only become a voucher used in the app (store, tournaments, bookings, POD, Fantasy Pass, …).
   - Update every place that shows points.
-- [ ] M9 Help & support:
+- [x] M9 Help & support:
   - Send an email to test@gmail.com (placeholder).
   - The admin gets a notification.
   - The customer gets an email saying "we reply within 24 hours".
@@ -81,7 +81,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - The same search UI and export as A5.
   - Notifications.
 - [ ] A7 Tournaments: explain the admin's powers there.
-- [ ] A8 Support & disputes:
+- [x] A8 Support & disputes:
   - Every reply or action notifies the other side (pitch owner, seller or factory) and the customer.
   - Show clearly who opened the dispute and against whom.
   - The chat comes later.

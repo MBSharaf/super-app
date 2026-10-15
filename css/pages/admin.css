@@ -173,3 +173,7 @@ tr.is-dim td { opacity: .55; }
 .dev-link { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--line-2); font-weight: 650; font-size: var(--fs-sm); }
 .dev-link:active, .dev-link:hover { border-color: var(--blaze); }
 .dev-link .xs { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+
+/* Ticket: who opened it → who it is about */
+.tk-parties { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 4px; padding: 10px 12px; border-radius: var(--r-md); background: var(--surface-2); }
+.tk-parties > span { display: grid; gap: 2px; }
