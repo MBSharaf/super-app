@@ -39,7 +39,7 @@
     mount(el) {
       el.addEventListener('click', async (e) => {
         const v = e.target.closest('[data-view-as]');
-        if (v) { SA.services.admin.openDashboard(v.dataset.viewAs); window.open(`${location.pathname}#/dash`, '_blank', 'noopener'); return; }
+        if (v) { SA.services.admin.openDashboard(v.dataset.viewAs); window.open(SA.core.router.url('/dash'), '_blank', 'noopener'); return; }
         const st = e.target.closest('[data-store-status]');
         if (st) {
           const s = db().find('stores', st.dataset.storeStatus);

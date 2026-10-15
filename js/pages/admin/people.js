@@ -143,7 +143,7 @@
   const partnerClick = async (e, id) => {
     const act = e.target.closest('[data-act]')?.dataset.act;
     try {
-      if (act === 'open') { AD().openDashboard(id); window.open(`${location.pathname}#/dash`, '_blank', 'noopener'); return false; }
+      if (act === 'open') { AD().openDashboard(id); window.open(SA.core.router.url('/dash'), '_blank', 'noopener'); return false; }
       if (act === 'adjust') { A.adjustDialog(id); return false; }
       if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super App. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
       if (act === 'activate') { AD().setPartnerStatus(id, 'active'); toast('Partner reactivated'); return true; }
@@ -241,7 +241,7 @@
     const act = e.target.closest('[data-act]')?.dataset.act;
     const s = db().find('sellers', id);
     try {
-      if (act === 'open') { AD().openDashboard(s.accountId); window.open(`${location.pathname}#/dash/seller`, '_blank', 'noopener'); return false; }
+      if (act === 'open') { AD().openDashboard(s.accountId); window.open(SA.core.router.url('/dash/seller'), '_blank', 'noopener'); return false; }
       if (act === 'adjust') { A.adjustDialog(s.accountId); return false; }
       if (act === 'feature') { AD().featureSeller(id, !s.featuredByAdmin); toast(s.featuredByAdmin ? 'Removed from featured' : 'Featured in the shop'); return true; }
       if (act === 'suspend') { const r = await A.reason({ title: `Suspend ${esc(s.name)}?`, text: 'Their designs and products disappear from the shop. Orders already placed are still printed and delivered.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; AD().setSellerStatus(id, 'suspended', r.reason); toast('Seller suspended', 'info'); return true; }

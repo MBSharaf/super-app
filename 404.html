@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Super App</title>
+  <script>
+    /* GitHub Pages serves this for any path it has no file for (e.g. /super-app/factory/jobs).
+       Remember the path, open the app, and index.html puts the path back so the right page opens. */
+    (function () {
+      try { sessionStorage.setItem('superapp.redirect', location.pathname + location.search + location.hash); } catch (e) {}
+      location.replace('/super-app/');
+    })();
+  </script>
+</head>
+<body></body>
+</html>

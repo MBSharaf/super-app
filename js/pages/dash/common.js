@@ -177,7 +177,7 @@
       if (col === 'notifications' || col === '*') db.all('notifications').forEach((x) => {
         if (seen.notes.has(x.id)) return; seen.notes.add(x.id);
         if (x.to !== D().me().id || x.read) return;
-        SA.ui.overlay.toast(x.title, { action: x.link ? 'View' : '', onAction: () => { N()?.markRead(x.id); if (x.link) location.hash = x.link; } });
+        SA.ui.overlay.toast(x.title, { action: x.link ? 'View' : '', onAction: () => { N()?.markRead(x.id); if (x.link) SA.core.router.go(x.link); } });
         try { if (document.hidden && 'Notification' in window && Notification.permission === 'granted' && N()?.prefs(D().me().id).browser) new Notification(x.title, { body: x.body, tag: x.id }); } catch { /* not supported */ }
       });
       if (col === 'sales' || col === '*') db.all('sales').forEach((x) => { seen.sales.add(x.id); });
@@ -390,7 +390,7 @@
         try { D().auth.signIn(b.dataset.signin); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
         setOwnerFilter('');
         SA.ui.overlay.toast(`Welcome, ${esc(D().me().name.split(' ')[0])}`);
-        SA.core.router.go(location.hash.replace(/^#/, '').startsWith('/dash/') ? location.hash.slice(1) : '/dash', { replace: true });
+        SA.core.router.go(SA.core.router.location().startsWith('/dash/') ? SA.core.router.location() : '/dash', { replace: true });
       }));
       return off;
     },

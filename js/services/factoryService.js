@@ -112,7 +112,7 @@
   };
 
   /* ---------- Session (staff sign-in) ---------- */
-  const factoryMode = () => /^#\/factory(?:[/?]|$)/.test(location.hash);
+  const factoryMode = () => /^\/factory(?:[/?]|$)/.test(SA.core.router.location());
   const staffAll = (factoryId) => db().all('factoryStaff').filter((s) => !factoryId || s.factoryId === factoryId);
   const auth = {
     current() {

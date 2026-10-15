@@ -46,7 +46,7 @@
       swapFrom = null; st.team = ''; // these refer to the previous league's players and clubs
       SA.ui.overlay.toast(`Now playing: ${F().leagueInfo().label}`);
       // Pages that show one player or league from the other dataset go back to the team page
-      if (/^#\/fantasy\/(league|player)\//.test(location.hash)) SA.core.router.go('/fantasy'); else SA.app.rerender();
+      if (/^\/fantasy\/(league|player)\//.test(SA.core.router.location())) SA.core.router.go('/fantasy'); else SA.app.rerender();
     }));
     el.querySelector('[data-simulate]')?.addEventListener('click', async (e) => {
       const b = e.currentTarget; const gw = F().meta().gw;

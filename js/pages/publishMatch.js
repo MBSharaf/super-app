@@ -109,7 +109,7 @@
           const { id } = await S.matches.publish({ bookingId: booking().id, total: out('total').value, have: out('have').value, level: form.level.value, type: form.type.value, gender, needsGK: form.needsGK.checked, notes: notes.value, autoAccept: form.accept.value === 'auto' });
           if (form.share.checked) { try { S.community.shareGame(id); } catch (err) { console.warn(err); } }
           // Demo: players nearby ask to join a few seconds later
-          setTimeout(() => { try { S.games.simulateApplicants(id, 3); if (location.hash.includes(id)) SA.app.rerender(); } catch (err) { console.warn(err); } }, 4000);
+          setTimeout(() => { try { S.games.simulateApplicants(id, 3); if (SA.core.router.location().includes(id)) SA.app.rerender(); } catch (err) { console.warn(err); } }, 4000);
           SA.core.router.go(`/players/${id}?published=1`);
         } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); btn.disabled = false; btn.innerHTML = 'Publish match'; }
       });

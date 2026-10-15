@@ -80,8 +80,11 @@
   /** Links to Super App pages (shown as cards); anything else counts as an outside link */
   const ROUTES = [['slot', /^#\/book\/([\w-]+)\?(.*)$/], ['pitch', /^#\/pitches\/([\w-]+)/], ['game', /^#\/players\/(m-[\w-]+)/], ['product', /^#\/shop\/([\w:-]+)/], ['store', /^#\/s\/([\w-]+)/],
     ['tournament', /^#\/tournaments\/([\w-]+)/], ['post', /^#\/community\/([\w-]+)\/([\w-]+)/], ['community', /^#\/community\/([\w-]+)$/]];
-  const hashOf = (u) => { const i = u.indexOf('#/'); return i < 0 ? '' : u.slice(i).replace(/[.,!?)]+$/, ''); };
-  const isInternal = (u) => { if (/^#\//.test(u)) return true; try { const x = new URL(u.startsWith('www.') ? `https://${u}` : u); return (x.host === location.host || /superapp/i.test(x.host) || /mbsharaf\.github\.io$/i.test(x.host)) && x.hash.startsWith('#/'); } catch { return false; } };
+  const hashOf = (u) => {
+    const i = u.indexOf('#/'); if (i >= 0) return u.slice(i).replace(/[.,!?)]+$/, '');
+    try { const x = new URL(u.startsWith('www.') ? `https://${u}` : u); return `#${(x.pathname.replace(/^\/super-app(?=\/|$)/, '') || '/') + x.search}`.replace(/[.,!?)]+$/, ''); } catch { return ''; }
+  };
+  const isInternal = (u) => { if (/^#\//.test(u)) return true; try { const x = new URL(u.startsWith('www.') ? `https://${u}` : u); return (x.host === location.host || /superapp/i.test(x.host) || /mbsharaf\.github\.io$/i.test(x.host)) && (x.hash.startsWith('#/') || x.pathname.replace(/^\/super-app(?=\/|$)/, '').length > 1); } catch { return false; } };
   /** Super App links found in a text → [{ type, id, hash }] (max 3) */
   const linksIn = (text) => {
     const found = String(text || '').match(/(?:https?:\/\/[^\s]+|www\.[^\s]+|#\/[^\s]+)/gi) || [];
@@ -91,7 +94,7 @@
   };
 
   const community = {
-    AUDIENCE, REACTIONS, ADMIN, access, myBadge, clean, postView, view, isInternal, linksIn,
+    AUDIENCE, REACTIONS, ADMIN, access, myBadge, clean, postView, view, isInternal, linksIn, hashOf,
     list: () => db().all('communities').filter((c) => c.status !== 'archived').map(view).sort((a, b) => (b.joined - a.joined) || (a.order || 0) - (b.order || 0)),
     get(slug) { const c = db().all('communities').find((x) => x.slug === slug || x.id === slug); if (!c || c.status === 'archived') throw new ApiError('This community doesn’t exist.', 'not_found'); return view(c); },
     join(id) {

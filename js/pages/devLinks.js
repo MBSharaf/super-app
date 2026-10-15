@@ -72,7 +72,7 @@
         st.set((s) => ({ publishedMatches: [{ id, pitchId: 'p-maadi-cage', date, hour, duration: 1, total: 10, filled: 7, participants: [{ name: u.name, avatar: u.avatar, role: 'Host', photo: true, isMine: true }, ...['Friend 1', 'Friend 2', 'Friend 3'].map((n, i) => ({ name: n, avatar: i + 4, role: 'Player', photo: false }))],
           level: 'Intermediate', gender: 'Men', type: '5 v 5', pricePerPlayer: 70, notes: 'Test game', needsGK: false, isMine: true, hostName: u.name, bookingId: '', postedAt: Date.now() - 864e5, autoAccept: true, closed: true }, ...s.publishedMatches] }), 'match');
         ['Ziad Khaled', 'Amr Sherif', 'Belal Ehab'].forEach((n, i) => { const p = SA.services.games.simPlayer(n); SA.services.db.insert('gameRequests', { matchId: id, hostName: u.name, pitchName: 'Maadi Cage', date, hour, player: p, position: p.position, message: '', status: 'accepted', by: 'auto', amount: 70, paid: true, at: Date.now() - (5 - i) * 36e5 }, 'gr'); });
-        SA.ui.overlay.toast('Test game created — rate the players'); location.hash = `#/players/${id}`;
+        SA.ui.overlay.toast('Test game created — rate the players'); SA.core.router.go(`/players/${id}`);
       } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
       return;
     }
@@ -83,12 +83,12 @@
         let s = S.mine();
         if (!s) s = S.start({ mode: 'both', name: 'Sharaf Test Store', handle: `sharaf-test-${Math.random().toString(36).slice(2, 5)}`, agree: true });
         db.update('sellers', s.id, { status: 'active' }); if (s.storeId) db.update('stores', s.storeId, { status: 'active' });
-        SA.ui.overlay.toast(`You’re a seller now: ${s.name}`); location.hash = '#/community/creators';
+        SA.ui.overlay.toast(`You’re a seller now: ${s.name}`); SA.core.router.go('/community/creators');
       } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
       return;
     }
     const fb = e.target.closest('[data-dev-fac]');
-    if (fb) { try { SA.services.factory.auth.signIn(fb.dataset.devFac, fb.dataset.pin); SA.ui.overlay.toast(`Factory: ${fb.textContent}`); location.hash = '#/factory'; } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+    if (fb) { try { SA.services.factory.auth.signIn(fb.dataset.devFac, fb.dataset.pin); SA.ui.overlay.toast(`Factory: ${fb.textContent}`); SA.core.router.go('/factory'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
     if (e.target.closest('[data-dev-job]')) {
       // A two-item printed order from this device's shopper, straight to the factory (test only)
       try {
@@ -102,7 +102,7 @@
       return;
     }
     const b = e.target.closest('[data-dev-as]'); if (!b) return;
-    try { SA.services.dash.auth.signIn(b.dataset.devAs); SA.ui.overlay.toast(`Signed in as ${b.textContent}`); location.hash = b.dataset.devGo; }
+    try { SA.services.dash.auth.signIn(b.dataset.devAs); SA.ui.overlay.toast(`Signed in as ${b.textContent}`); SA.core.router.go(b.dataset.devGo); }
     catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
   });
 })(window.SA);

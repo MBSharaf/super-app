@@ -65,7 +65,7 @@
     el.querySelector('[data-wa-open]').addEventListener('click', (e) => { if (!cfg.url) e.preventDefault(); });
 
     // Close when navigating between pages
-    window.addEventListener('hashchange', () => open(false));
+    SA.core.router.onChange(() => open(false));
   };
 
   SA.ui.whatsapp = { init };

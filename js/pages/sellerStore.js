@@ -75,7 +75,7 @@
         } catch (err) { SA.ui.overlay.toast(err.code === 'storage_full' || /storage/.test(err.message) ? 'That image is too big for this device — try a smaller one.' : err.message, { type: 'error' }); }
       }));
       el.querySelector('[data-share]')?.addEventListener('click', async () => {
-        const url = `${location.origin}${location.pathname}#/s/${s.handle}`;
+        const url = SA.core.router.url(`/s/${s.handle}`);
         try { await navigator.clipboard.writeText(url); SA.ui.overlay.toast('Store link copied'); } catch { SA.ui.overlay.toast(url); }
       });
     },

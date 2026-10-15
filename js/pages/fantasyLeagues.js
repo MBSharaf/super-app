@@ -126,7 +126,7 @@
       el.addEventListener('click', (e) => {
         const j = e.target.closest('[data-join]'); if (j) return openJoinLeague(j.dataset.join);
         if (e.target.closest('[data-pass]')) return openPass();
-        const r = e.target.closest('[data-href]'); if (r) return (location.hash = r.dataset.href);
+        const r = e.target.closest('[data-href]'); if (r) return SA.core.router.go(r.dataset.href);
         if (e.target.closest('[data-create]')) {
           SA.ui.overlay.open({
             title: 'Create a private group', subtitle: 'You’ll get an invite code to share.',
@@ -169,7 +169,7 @@
       if (!g) return `${SA.pages.fantasy.header('leagues')}<div class="container">${c.empty({ icon: 'users', title: 'League not found', text: 'You may have left this group.', action: '<a class="btn btn-primary" href="#/fantasy/leagues">All leagues</a>' })}</div>`;
       const isPrivate = !!g.members;
       const official = !isPrivate ? f.officialLeagues().find((l) => l.id === g.id) : null;
-      const link = `${location.origin}${location.pathname}#/fantasy/leagues?code=${g.code}`;
+      const link = SA.core.router.url(`/fantasy/leagues?code=${g.code}`);
       return `${SA.pages.fantasy.header('leagues')}
       <div class="container fx-body">
         <a class="back-link" href="#/fantasy/leagues">${icon('chevronLeft', 16)} All leagues</a>

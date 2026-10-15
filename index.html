@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <!-- Clean URLs (no "#"): the site lives in /super-app/ (GitHub Pages; tools/serve.ps1 does the same locally).
+       Every relative file and route is under this folder. On a custom domain at the root, change it to "/". -->
+  <base href="/super-app/" />
+  <script>
+    /* 404.html sends deep links (/super-app/factory/jobs) here and remembers the path: put it back before the app starts */
+    (function () { try { var r = sessionStorage.getItem('superapp.redirect'); if (r) { sessionStorage.removeItem('superapp.redirect'); history.replaceState(null, '', r); } } catch (e) {} })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Super App — Book, play, compete</title>
   <meta name="description" content="Book football pitches near you, find players for your match, play Egyptian Premier League fantasy and shop sports gear — in one app." />

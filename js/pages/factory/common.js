@@ -86,7 +86,7 @@
           if (k === '⌫') pin = pin.slice(0, -1); else if (pin.length < 4 && /\d/.test(k)) pin += k;
           err.textContent = ''; paint();
           if (pin.length === 4) {
-            try { F().auth.signIn(staffId, pin); close(); SA.ui.overlay.toast(`Welcome, ${esc(x.name.split(' ')[0])}`); const h = location.hash.slice(1); SA.core.router.go(h.startsWith('/factory/') ? h : '/factory', { replace: true }); SA.app.rerender(); }
+            try { F().auth.signIn(staffId, pin); close(); SA.ui.overlay.toast(`Welcome, ${esc(x.name.split(' ')[0])}`); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/factory/') ? h : '/factory', { replace: true }); SA.app.rerender(); }
             catch (e) { err.textContent = e.message; dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake'); pin = ''; setTimeout(paint, 250); }
           }
         };

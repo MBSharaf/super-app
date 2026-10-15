@@ -106,7 +106,7 @@
         m.addEventListener('click', async (e) => {
           const a = e.target.closest('[data-m]')?.dataset.m; if (!a) return; close();
           if (a === 'report') report(postId);
-          if (a === 'copy') { navigator.clipboard?.writeText(`${location.origin}${location.pathname}#/community/${SA.services.db.find('communities', p.communityId)?.slug}/${postId}`); toast('Link copied'); }
+          if (a === 'copy') { navigator.clipboard?.writeText(`${SA.core.router.url('/community/')}${SA.services.db.find('communities', p.communityId)?.slug}/${postId}`); toast('Link copied'); }
           if (a === 'delete' && (await SA.ui.overlay.confirm({ title: 'Delete your post?', text: 'It disappears for everyone, with its comments.', confirmLabel: 'Delete', danger: true }))) { CS().deleteOwn(postId); toast('Post deleted', 'info'); SA.app.rerender(); }
         });
       } });

@@ -109,7 +109,7 @@
         this._map = map;
       });
       el.querySelectorAll('[data-share]').forEach((b) => b.addEventListener('click', async () => {
-        const url = `${location.origin}${location.pathname}#/players/${id}`;
+        const url = SA.core.router.url(`/players/${id}`);
         if (navigator.share) { try { await navigator.share({ title: 'Join my football match', url }); return; } catch { /* cancelled */ } }
         navigator.clipboard?.writeText(url);
         SA.ui.overlay.toast('Invite link copied — paste it in your WhatsApp group');

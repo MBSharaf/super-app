@@ -80,7 +80,7 @@
       el.querySelectorAll('[data-signin]').forEach((b) => b.addEventListener('click', () => {
         D().auth.signIn(b.dataset.signin);
         SA.ui.overlay.toast(`Welcome, ${esc(D().me().name.split(' ')[0])}`);
-        const h = location.hash.replace(/^#/, '');
+        const h = SA.core.router.location();
         SA.core.router.go(h.startsWith('/admin/') ? h : '/admin', { replace: true });
       }));
     },

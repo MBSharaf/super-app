@@ -15,7 +15,7 @@
   const SESSION = 'superapp.dash.session';
   // The admin console (#/admin) is a separate system with its own session; admins can't sign in to the partner dashboard
   const ADMIN_SESSION = 'superapp.admin.session';
-  const adminMode = () => /^#\/admin(?:[/?]|$)/.test(location.hash);
+  const adminMode = () => /^\/admin(?:[/?]|$)/.test(SA.core.router.location());
 
   /* ======================= Auth & permissions ======================= */
   const auth = {

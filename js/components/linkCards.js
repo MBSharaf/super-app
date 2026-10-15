@@ -61,7 +61,7 @@
       }).join('');
     },
     /** Links in a text made clickable (Super App links only) */
-    linkify(html) { return html.replace(/((?:https?:\/\/[^\s<]+|#\/[^\s<]+))/g, (u) => (S.community?.isInternal(u.replace(/&amp;/g, '&')) ? `<a class="link" href="${u.slice(u.indexOf('#/'))}">${u.length > 48 ? `${u.slice(0, 46)}…` : u}</a>` : u)); },
+    linkify(html) { return html.replace(/((?:https?:\/\/[^\s<]+|#\/[^\s<]+))/g, (u) => (S.community?.isInternal(u.replace(/&amp;/g, '&')) ? `<a class="link" href="${S.community.hashOf(u.replace(/&amp;/g, '&'))}">${u.length > 48 ? `${u.slice(0, 46)}…` : u}</a>` : u)); },
   };
   SA.ui.linkCards = cards;
 })(window.SA);
