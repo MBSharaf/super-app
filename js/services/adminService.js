@@ -817,6 +817,61 @@
       log(id ? 'community.updated' : 'community.created', `${id ? 'Updated' : 'Created'} community ${out.name} (${SA.services.community.AUDIENCE[out.audience]})`, out.id);
       return out;
     },
+    /* ---------- Free slots, games and player records ---------- */
+    setSlotLimit(perDay) {
+      me();
+      const n = Math.round(+perDay);
+      if (!(n >= 0 && n <= 50)) throw new ApiError('Between 0 and 50 a day.', 'invalid');
+      db().setSettings({ slotPosting: { ...(db().settings().slotPosting || {}), perDay: n } });
+      log('slots.limit', `Free slots: each venue can post ${n} a day`);
+    },
+    setSlotBlock(ownerId, reason = '') {
+      me();
+      const a = db().find('accounts', ownerId); if (!a) throw new ApiError('Partner not found.', 'not_found');
+      db().update('accounts', ownerId, { slotBlocked: reason ? reason.trim() : '' });
+      log(reason ? 'slots.blocked' : 'slots.unblocked', `${reason ? 'Stopped' : 'Allowed'} free-slot posting for ${a.company}${reason ? `: ${reason.trim()}` : ''}`, ownerId);
+      N()?.toAccount(ownerId, reason ? { cat: 'account', tone: 'danger', title: 'Free-slot posting is paused', body: reason.trim(), link: '#/dash/slots' } : { cat: 'account', tone: 'turf', title: 'You can post free slots again', body: 'Thanks for your patience.', link: '#/dash/slots' });
+    },
+    /** Every game with requests: who asked, who's in */
+    gamesOverview() {
+      const reqs = db().all('gameRequests') || [];
+      const ids = [...new Set(reqs.map((r) => r.matchId))];
+      return ids.map((id) => {
+        const m = SA.services.matches.allSync().find((x) => x.id === id) || SA.core.store.get().publishedMatches.find((x) => x.id === id);
+        const list = reqs.filter((r) => r.matchId === id).map((r) => ({ ...r, record: SA.services.games.record(r.player) }));
+        return { id, m, list, hostName: list[0]?.hostName, pitchName: list[0]?.pitchName, date: list[0]?.date, hour: list[0]?.hour };
+      }).sort((a, b) => Math.max(...b.list.map((x) => x.at)) - Math.max(...a.list.map((x) => x.at)));
+    },
+    async removeFromGame(requestId, reason) {
+      me();
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      const r = db().find('gameRequests', requestId); if (!r) throw new ApiError('Request not found.', 'not_found');
+      if (r.status === 'accepted') await SA.services.games.remove(requestId, reason, 'admin');
+      else { await SA.services.games.decline(requestId, reason); }
+      log('game.removed', `Removed ${r.player.name} from the game at ${r.pitchName} (${r.date}): ${reason.trim()} — refunded`, requestId);
+    },
+    /** Players' records (everyone who asked to join a game) */
+    playerRecords() {
+      const byId = new Map();
+      (db().all('gameRequests') || []).forEach((r) => { const x = byId.get(r.player.id) || { player: r.player, asked: 0, accepted: 0 }; x.asked++; if (r.status === 'accepted') x.accepted++; byId.set(r.player.id, x); });
+      (db().all('playerRatings') || []).forEach((x) => { if (!byId.has(x.playerId)) byId.set(x.playerId, { player: { id: x.playerId, name: x.name, sim: x.playerId.startsWith('sim-') }, asked: 0, accepted: 0 }); });
+      return [...byId.values()].map((x) => ({ ...x, record: SA.services.games.record(x.player), blocked: SA.services.games.blockedFor(x.player.id) })).sort((a, b) => (a.record.attendance ?? 1) - (b.record.attendance ?? 1));
+    },
+    blockPlayer({ playerId, name, days = 30, reason }) {
+      me();
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      const g = db().settings().games || {};
+      const blocked = [...(g.blocked || []).filter((b) => b.playerId !== playerId), { playerId, name, reason: reason.trim(), until: +days ? Date.now() + +days * 864e5 : 0, at: Date.now() }];
+      db().setSettings({ games: { ...g, blocked } });
+      log('game.player-blocked', `Blocked ${name} from joining games${+days ? ` for ${days} days` : ''}: ${reason.trim()}`, playerId);
+      if (deviceUser()?.id === playerId) SA.services.user.notify({ kind: 'match', title: 'You can’t join games for a while', body: reason.trim(), link: '/players' });
+    },
+    unblockPlayer(playerId) {
+      me();
+      const g = db().settings().games || {};
+      db().setSettings({ games: { ...g, blocked: (g.blocked || []).filter((b) => b.playerId !== playerId) } });
+      log('game.player-unblocked', `Allowed ${playerId} to join games again`, playerId);
+    },
     setCommunityStatus(id, status) { me(); const c = db().update('communities', id, { status }); log('community.status', `${status === 'archived' ? 'Archived' : 'Restored'} community ${c.name}`, id); },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },

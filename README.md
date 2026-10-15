@@ -204,3 +204,15 @@ Forum-style communities on the site (no live chat yet), created only by the Supe
 | --- | --- |
 | `#/community`, `#/community/:slug`, `#/community/:slug/:postId` | Communities with an audience (everyone, sellers, Pro & Elite sellers). Posts with text, photo or poll, comments with replies, reactions, pinned posts and announcements, real badges (seller level, **Super App Admin**). Report a post or comment. Banned words, phone numbers and outside links are blocked; slow mode; muted members can read but not post. |
 | Admin: `#/admin/community` | Reports queue (remove, keep, remove and mute); all posts (pin, close comments, hide, delete, mute the author, **reply as Super App Admin** to a post or a single comment); **post as Super App Admin** in one or more communities (announcement, pin, poll, photo); create, edit and archive communities (audience, slow mode, rules, look); banned words and muted members. |
+
+### Pitch community, join requests, ratings and alerts (added in release 7)
+
+Plan: `docs/PLAN-pitch-community.md`.
+
+| Where | What |
+| --- | --- |
+| `#/community/pitches` | One community, "Pitches & free slots", with area and time filters. Venues' **free-slot cards** are live: "Book now" opens checkout with the time selected, and the card shows Booked or Gone on its own. Games looking for players appear as cards too. **Any Super App link** in a post or comment becomes a card (slot, pitch, game, product or design, seller store, tournament, community post). Outside links stay blocked. |
+| Partner dashboard `#/dash/slots` | Post free hours, with an optional last-minute discount created as an offer for that hour. Daily limit. Posted vs booked stats. When a customer cancels, the owner is prompted to post the freed hour. |
+| `#/players/:id` | Players **ask to join** (position and message) and pay their share online; Super App holds it until the host accepts. The host chooses auto-accept or manual, sees each player's record (games played, attendance, rating, no-shows), accepts, declines, removes or closes requests. Waitlist. Refunds in full for declined, withdrawn and removed players. After kick-off the host **rates** players (stars, showed up). |
+| `#/alerts` | Free-slot alerts by pitch or area, with a time window. A matching slot posted by a venue sends a notification with a direct booking link. |
+| Admin `#/admin/games` | Daily slot limit; stop a venue posting; hide slot cards; every game with its requests (remove a player with a refund); player records sorted by attendance; block players from joining games. |

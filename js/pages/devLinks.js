@@ -16,6 +16,10 @@
       ['All communities', '#/community'], ['Players', '#/community/players'], ['Fantasy Talk', '#/community/fantasy'], ['Creators (sellers)', '#/community/creators'], ['Pro & Elite Lounge', '#/community/pro-lounge'],
       ['Admin: reports', '#/admin/community'], ['Admin: all posts', '#/admin/community?tab=posts'], ['Admin: post as Super App Admin', '#/admin/community?tab=new'], ['Admin: communities', '#/admin/community?tab=communities'], ['Admin: safety & muted', '#/admin/community?tab=safety'],
     ] },
+    { title: 'Pitch community & games', icon: 'pitch', games: true, links: [
+      ['Pitches & free slots', '#/community/pitches'], ['Free-slot alerts', '#/alerts'], ['Find players', '#/players'], ['Post your match', '#/players/new'], ['A game (auto-accept)', '#/players/m-1001'], ['A game (host decides)', '#/players/m-1002'],
+      ['Owner: post free slots', '#/dash/slots'], ['Admin: free slots', '#/admin/games'], ['Admin: games & requests', '#/admin/games?tab=games'], ['Admin: player records', '#/admin/games?tab=players'],
+    ] },
     { title: 'Shop', icon: 'bag', links: [
       ['Shop', '#/shop'], ['Designs', '#/shop?cat=designs'], ['Product', '#/shop/sh-predator'], ['Wishlist', '#/wishlist'], ['Cart', '#/cart'], ['Checkout', '#/checkout'], ['Orders', '#/orders'],
     ] },
@@ -46,6 +50,7 @@
   SA.ui.devLinks = () => `<section class="container section-tight dev-links" data-i18n-skip>
     <div class="dev-head"><span class="badge badge-blaze">Temporary · test only</span><h2 class="h2">Sharaf</h2><p class="small soft">Every page in one place for testing on the phone. Dashboards: tap an account first to sign in as it, then open the pages.</p></div>
     ${GROUPS.map((g, i) => `<details class="dev-group" ${i === 0 ? 'open' : ''}><summary>${icon(g.icon, 18)}<b class="grow">${g.title}</b><span class="xs muted">${g.links.length}</span>${icon('chevronDown', 16)}</summary>
+      ${g.games ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-as="acc-o1" data-dev-go="#/dash/slots">Sign in as Karim (owner)</button><button class="chip" data-dev-game>Create a finished game to rate</button></div>` : ''}
       ${g.seller ? `<div class="dev-as"><span class="xs muted">Seller-only communities need a seller account:</span><button class="chip" data-dev-seller>Make me a test seller</button><button class="chip" data-dev-as="acc-admin" data-dev-go="#/admin/community">Sign in as admin</button></div>` : ''}
       ${g.as ? `<div class="dev-as"><span class="xs muted">Sign in as:</span>${g.as.map(([id, l]) => `<button class="chip" data-dev-as="${id}" data-dev-go="${g.links[0][1]}">${l}</button>`).join('')}</div>` : ''}
       <div class="dev-grid">${g.links.map(([l, h]) => `<a class="dev-link" href="${h}"><span>${l}</span><span class="xs muted">${h.replace('#', '')}</span></a>`).join('')}</div></details>`).join('')}
@@ -54,6 +59,18 @@
 
   // One-tap sign-in for the demo accounts (partner dashboard and admin console have separate sessions)
   document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-dev-game]')) {
+      // A game you hosted that ended an hour ago, with 3 accepted players — so the rating step can be tried (test only)
+      try {
+        const st = SA.core.store, u = st.get().user, now = new Date();
+        const hour = Math.max(1, now.getHours() - 2), id = `m-test-${Date.now().toString(36).slice(-4)}`, date = SA.core.utils.isoDate(now);
+        st.set((s) => ({ publishedMatches: [{ id, pitchId: 'p-maadi-cage', date, hour, duration: 1, total: 10, filled: 7, participants: [{ name: u.name, avatar: u.avatar, role: 'Host', photo: true, isMine: true }, ...['Friend 1', 'Friend 2', 'Friend 3'].map((n, i) => ({ name: n, avatar: i + 4, role: 'Player', photo: false }))],
+          level: 'Intermediate', gender: 'Men', type: '5 v 5', pricePerPlayer: 70, notes: 'Test game', needsGK: false, isMine: true, hostName: u.name, bookingId: '', postedAt: Date.now() - 864e5, autoAccept: true, closed: true }, ...s.publishedMatches] }), 'match');
+        ['Ziad Khaled', 'Amr Sherif', 'Belal Ehab'].forEach((n, i) => { const p = SA.services.games.simPlayer(n); SA.services.db.insert('gameRequests', { matchId: id, hostName: u.name, pitchName: 'Maadi Cage', date, hour, player: p, position: p.position, message: '', status: 'accepted', by: 'auto', amount: 70, paid: true, at: Date.now() - (5 - i) * 36e5 }, 'gr'); });
+        SA.ui.overlay.toast('Test game created — rate the players'); location.hash = `#/players/${id}`;
+      } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
+      return;
+    }
     if (e.target.closest('[data-dev-seller]')) {
       // Turns this device's shopper into an approved seller (test only)
       try {

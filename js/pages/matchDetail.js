@@ -50,7 +50,7 @@
         : myReq && myReq.status !== 'accepted'
           ? `<div class="notice ${myReq.status === 'waitlist' ? '' : 'gold'}">${icon('clock', 18)}<span><b>${myReq.status === 'waitlist' ? 'You’re on the waitlist.' : 'Request sent.'}</b> ${money(myReq.amount)} is held by Super App and comes back in full if you don’t get in.</span></div><button class="btn btn-outline btn-block" style="margin-top:12px" data-withdraw="${myReq.id}">Withdraw request</button>`
           : m.joined
-          ? `<div class="notice turf">${icon('check', 18)}<span><b>You’re in this match.</b> ${req?.payment ? `Paid with ${esc(req.payment)}.` : ''}</span></div><button class="btn btn-outline btn-block" style="margin-top:12px" data-leave>Leave match</button>`
+          ? `<div class="notice turf">${icon('check', 18)}<span><b>You’re in this match.</b> ${req?.payment ? (req.payment === 'Paid online' ? 'Your share is paid online.' : `Paid with ${esc(req.payment)}.`) : ''}</span></div><button class="btn btn-outline btn-block" style="margin-top:12px" data-leave>Leave match</button>`
           : m.spotsLeft ? c.cta(`Join · ${money(m.pricePerPlayer)}`, { variant: 'blaze', size: 'lg', attrs: `data-action="join-match" data-id="${m.id}" style="width:100%;justify-content:space-between"` }) : `<button class="btn btn-outline btn-block" disabled>Match is full</button>`;
 
       return `<div class="container has-action-bar">

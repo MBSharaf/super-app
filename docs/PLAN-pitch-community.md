@@ -29,10 +29,10 @@ Agreed with the user on 2026-10-15.
   - Share the game to the community as a card.
 - [x] 4. **Player record and ratings.** After the game the host rates players (stars, showed up or no-show). The reliability score is shown on player cards; admins can block players with many no-shows.
 - [x] 5. **Alerts.** A player follows a pitch or an area, optionally with a time window, and is notified when a matching free slot is posted. Managed on `#/alerts`.
-- [ ] 6. **Admin.**
+- [x] 6. **Admin.**
   - Moderate slot cards and game posts; stop an owner from posting.
   - Daily limit setting.
   - Intervene in a game: remove a player, refund.
   - Block unreliable players.
   - Stats: slots posted vs booked, games filled.
-- [ ] 7. Sharaf test links, Arabic strings, check, README, push.
+- [x] 7. Sharaf test links, Arabic strings, check, README, push.
