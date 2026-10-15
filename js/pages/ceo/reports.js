@@ -74,7 +74,7 @@
       D.bindRange(el, '/ceo/reports', { kind: ctx.query.kind || 'finance' });
       const s = this._state;
       el.querySelector('[data-xlsx]')?.addEventListener('click', () => { try { excel(s.kind, s.label, s.rep, s.r); CE().log('report', `Downloaded the ${s.label} report (Excel), ${s.r.from} to ${s.r.to}`); } catch (e) { SA.ui.overlay.toast(e.message, { type: 'error' }); } });
-      el.querySelector('[data-pdf]')?.addEventListener('click', async (e) => { e.currentTarget.disabled = true; try { await pdf(s.kind, s.label, s.rep, s.r); CE().log('report', `Downloaded the ${s.label} report (PDF), ${s.r.from} to ${s.r.to}`); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } e.currentTarget.disabled = false; });
+      el.querySelector('[data-pdf]')?.addEventListener('click', async (e) => { const btn = e.currentTarget; btn.disabled = true; try { await pdf(s.kind, s.label, s.rep, s.r); CE().log('report', `Downloaded the ${s.label} report (PDF), ${s.r.from} to ${s.r.to}`); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } btn.disabled = false; });
     },
   });
 })(window.SA);
