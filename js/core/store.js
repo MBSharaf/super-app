@@ -31,6 +31,8 @@
     savedNews: [],
     loyalty: null,         // { entries: [] } Super Points bonuses and redemptions (earnings are derived)
     following: [],         // seller ids this shopper follows
+    payments: [],          // every payment, refund and top-up — each one has a PDF receipt
+    vouchers: [],          // Super Points vouchers: { code, amount, balance, uses: [] } — spent at checkout, never cash
   });
 
   let state;

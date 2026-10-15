@@ -13,8 +13,22 @@
     'One QR code per package: it works once per game, then it expires. A game the customer doesn’t come to counts as used. One missed game per package can be excused after you agree it with the pitch manager — the customer gets a make-up game.': 'QR واحد لكل باقة: بيشتغل مرة لكل ماتش، وبعدها بيخلص. الماتش اللي العميل ميجيش له بيتحسب. ماتش واحد بس في كل باقة ممكن يتسامح فيه بعد الاتفاق مع مدير الملعب — والعميل بياخد ماتش تعويضي.',
     'Package used up': 'الباقة خلصت', 'This package already used its one exception.': 'الباقة دي استخدمت الاستثناء بتاعها خلاص.', 'Choose a missed game.': 'اختار ماتش فات.', 'Write what you agreed with the pitch manager.': 'اكتب اتفقت على إيه مع مدير الملعب.',
     'A missed game was excused': 'اتسامح في ماتش فاتك',
+    /* ---------- M2 / M10 receipts ---------- */
+    'Tip: arrive 10 minutes early, and tell the host if you can’t make it.': 'نصيحة: تعالى قبلها بـ 10 دقايق، وبلّغ صاحب الماتش لو مش هتقدر تيجي.',
+    'Payments & receipts': 'المدفوعات والإيصالات', 'Every payment, refund and top-up — download a PDF for any of them': 'كل دفعة واسترجاع وشحن — نزّل PDF لأي واحدة فيهم',
+    'No payments yet': 'لسه مفيش مدفوعات', 'Your receipts appear here after your first payment.': 'إيصالاتك هتظهر هنا بعد أول دفعة.', 'Receipt (PDF)': 'الإيصال (PDF)', 'Download the receipt as PDF': 'نزّل الإيصال PDF',
+    /* ---------- M8 points → vouchers ---------- */
+    'in vouchers': 'كقسايم', 'Get a voucher': 'اعمل قسيمة', 'Turn points into a voucher': 'حوّل النقاط لقسيمة', 'Points to use': 'النقاط اللي هتستخدمها', 'Create voucher': 'اعمل القسيمة', 'Your vouchers': 'قسايمك',
+    'Ready': 'جاهزة', 'Super Points voucher': 'قسيمة نقاط سوبر', 'Don’t use a voucher': 'من غير قسيمة', 'It pays first; the rest is paid with the method above.': 'القسيمة بتدفع الأول، والباقي بطريقة الدفع اللي فوق.', 'Smallest voucher (points)': 'أقل قسيمة (نقاط)',
+    'This voucher has no value left.': 'القسيمة دي خلص رصيدها.',
   });
   D.patterns.push(
+    ['^(Payment|Refund|Top-up|Voucher) of (.+) recorded$', '{t1} {2} اتسجلت'], ['^Top-up$', 'شحن'], ['^Payment$', 'دفعة'], ['^Refund$', 'استرجاع'], ['^Voucher$', 'قسيمة'],
+    ['^as a voucher, from ([\\d,]+) points \\((.+)\\)\\. Use it on bookings, games, the shop, printed designs, tournaments and the Fantasy Pass — points can’t be turned into cash\\.$', 'كقسيمة، من {1} نقطة ({2}). استخدمها في الحجوزات والماتشات والمتجر ومنتجات الطباعة والبطولات و Fantasy Pass — النقاط مبتتحولش لفلوس.'],
+    ['^(.+) left of (.+)$', 'فاضل {1} من {2}'], ['^Used — (.+)$', 'اتستخدمت — {1}'], ['^(SPV-\\S+) — (.+) left$', '{1} — فاضل {2}'], ['^Voucher (SPV-\\S+) — (\\d+) EGP$', 'قسيمة {1} — {2} جنيه'],
+    ['^([\\d,]+) points available · (\\d+) points = 1 EGP · vouchers only, no cash$', '{1} نقطة متاحة · {2} نقطة = 1 جنيه · قسايم بس، مفيش كاش'], ['^= (.+) voucher$', '= قسيمة {1}'],
+    ['^Voucher (SPV-\\S+) — (.+) ready to use at checkout$', 'القسيمة {1} — {2} جاهزة تستخدمها وانت بتدفع'], ['^The smallest voucher is (\\d+) EGP \\(([\\d,]+) points\\)\\.$', 'أقل قسيمة {1} جنيه ({2} نقطة).'],
+    ['^Super Points voucher \\(([\\d,]+) points\\)$', 'قسيمة نقاط سوبر ({1} نقطة)'], ['^(\\d+) points = 1 EGP$', '{1} نقطة = 1 جنيه'],
     ['^Show it at reception every week\\. It works for (\\d+) games, then it expires\\. If the camera can’t read it, staff can type$', 'وريه في الاستقبال كل أسبوع. بيشتغل لـ {1} ماتش وبعدها بيخلص. لو الكاميرا مقرتهوش، الموظف يقدر يكتب'],
     ['^All (\\d+) games are used\\. The code has expired\\.$', 'كل الـ {1} ماتش اتستخدموا. الكود خلص.'], ['^(\\d+) games$', '{1} ماتش'], ['^(\\d+) games · (.+) weekly discount$', '{1} ماتش · خصم أسبوعي {2}'],
     ['^Weekly package (WK-\\S+)$', 'باقة أسبوعية {1}'], ['^(\\d+) played · (\\d+) missed · (\\d+) left of (\\d+) · scanned (\\d+)×$', '{1} اتلعب · {2} غاب · {3} فاضل من {4} · اتمسح {5} مرة'],

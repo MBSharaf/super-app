@@ -25,7 +25,7 @@
         { id: 'pt-s2', at: Date.now() - 150 * 864e5, points: 132, label: 'Played at Maadi Cage (5 games)', kind: 'earn' },
         { id: 'pt-s3', at: Date.now() - 96 * 864e5, points: 260, label: 'Played at Gezira Fives (4 games)', kind: 'earn' },
         { id: 'pt-s4', at: Date.now() - 70 * 864e5, points: 189, label: 'Order delivered — Predator boots', kind: 'earn' },
-        { id: 'pt-s5', at: Date.now() - 41 * 864e5, points: -500, label: 'Converted to 100 EGP wallet cash', kind: 'redeem' },
+        { id: 'pt-s5', at: Date.now() - 41 * 864e5, points: -500, label: 'Voucher SPV-WELC0M — 25 EGP', kind: 'redeem' },
         { id: 'pt-s6', at: Date.now() - 30 * 864e5, points: 214, label: 'Played at Fifth Settlement Arena (3 games)', kind: 'earn' },
         { id: 'pt-s7', at: Date.now() - 18 * 864e5, points: 20, label: 'Review bonus — Maadi Cage', kind: 'bonus' },
         { id: 'pt-s8', at: Date.now() - 9 * 864e5, points: 148, label: 'Played at Smouha Seven (2 games)', kind: 'earn' },

@@ -137,6 +137,26 @@
     await finish(doc, [p], `super-app-invoice-${o.id}.pdf`);
   };
 
+  /* ---------------- Receipt: any payment, refund, top-up or voucher ---------------- */
+  const RECEIPT = { payment: ['RECEIPT', 'Payment received'], refund: ['REFUND NOTE', 'Money returned to your wallet'], topup: ['RECEIPT', 'Wallet top-up'], voucher: ['VOUCHER', 'Super Points voucher'] };
+  const receipt = async (r) => {
+    const u = SA.core.store.get().user || {};
+    const [title, sub] = RECEIPT[r.kind] || RECEIPT.payment;
+    const doc = SA.core.pdf.create({ title: `${title} ${r.id}` });
+    const p = doc.page();
+    const rate = vatRate();
+    let y = header(p, { title, subtitle: sub, number: invNo(r.kind === 'refund' ? 'CRN' : 'RCP', r.id, r.at), date: fmtDate(new Date(r.at), 'long') });
+    p.text('Reference', 360, 122, { size: 8, color: SOFT }); p.text(r.id, 360, 136, { size: 10.5, weight: 700 });
+    y = Math.max(party(p, 40, y + 6, r.kind === 'refund' ? 'Refunded to' : 'Paid by', [u.name || 'Customer', u.phone || '', u.email || '']), party(p, 300, y + 6, 'Received by', [HQ()?.company || 'Super App Egypt', 'Super App platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 22;
+    y = p.table(40, y, [{ label: 'Description', w: 250 }, { label: 'Method', w: 140 }, { label: 'Date', w: 70 }, { label: 'Amount', w: 55, align: 'right' }],
+      [[r.label, r.method || '—', fmtDate(new Date(r.at)), m0(r.amount)]], { rowH: 24 });
+    y += 16;
+    totalsBox(p, y, [...(r.kind === 'payment' ? [[`VAT ${Math.round(rate * 100)}% included`, m2(vatIn(r.amount))]] : []), [r.kind === 'refund' ? 'Total refunded' : r.kind === 'voucher' ? 'Voucher value' : 'Total paid', m2(r.amount), true]]);
+    if (r.code) { p.text('Voucher code', 40, y + 20, { size: 8, color: SOFT }); p.text(r.code, 40, y + 40, { size: 18, weight: 800, color: TURF }); }
+    if (r.note) p.wrap(r.note, 40, y + (r.code ? 64 : 20), 260, { size: 8.5, color: SOFT });
+    await finish(doc, [p], `super-app-${r.kind}-${r.id}.pdf`);
+  };
+
   /* ---------------- Weekly package: one invoice for all its games ---------------- */
   const packageInvoice = async ({ seriesId, games, customer }) => {
     const b0 = games[0];
@@ -264,5 +284,5 @@
       `All amounts include VAT at ${Math.round(rate * 100)}% where applicable. Booking line details are in the Excel finance report. Demo document.`);
   };
 
-  SA.ui.docs = { bookingInvoice, packageInvoice, orderInvoice, storeOrderDoc, statement, vatIn };
+  SA.ui.docs = { bookingInvoice, packageInvoice, receipt, orderInvoice, storeOrderDoc, statement, vatIn };
 })(window.SA);

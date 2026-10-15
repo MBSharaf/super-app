@@ -177,7 +177,9 @@
       data.settings.adminSeed = 1; changed = true;
     }
     if (!data.settings.fantasySubs) { data.settings.fantasySubs = { one: 50, both: 80 }; changed = true; }
-    if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.2, minRedeem: 500 }; changed = true; }
+    if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.05, minRedeem: 2000 }; changed = true; }
+    // Rule (2026-10): 20 points = 1 EGP, the smallest voucher is 100 EGP (2,000 points), and points never become cash
+    if (!data.settings.loyaltyV2) { data.settings.loyalty = { ...data.settings.loyalty, pointValue: 0.05, minRedeem: 2000 }; data.settings.loyaltyV2 = 1; changed = true; }
     if (data.settings.vat == null) { data.settings.vat = 0.14; changed = true; }
     data.pitches.forEach((p) => {
       if (!p.cancelPolicy) { const r = seeded(`${p.id}|policy`); p.cancelPolicy = p.seed ? POLICIES[r < 0.45 ? 0 : r < 0.65 ? 1 : r < 0.88 ? 2 : 3] : 'standard'; changed = true; }

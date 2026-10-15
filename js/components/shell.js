@@ -222,6 +222,10 @@
     bindGlobal();
     let prevCart = 0;
     store.subscribe((s, meta) => {
+      if (meta === 'payment:new') {
+        const r = (s.payments || [])[0];
+        if (r) setTimeout(() => SA.ui.overlay.toast(`${r.kind === 'refund' ? 'Refund' : r.kind === 'topup' ? 'Top-up' : r.kind === 'voucher' ? 'Voucher' : 'Payment'} of ${money(r.amount)} recorded`, { action: 'Receipt (PDF)', onAction: () => SA.ui.docs.receipt(r) }), 900);
+      }
       render();
       const c = s.cart.reduce((a, l) => a + l.qty, 0);
       if (c > prevCart) document.querySelectorAll('[data-cart-count]').forEach((el) => el.classList.add('bump'));

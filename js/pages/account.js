@@ -81,10 +81,10 @@
       <div class="points-card tier-${L.tier.key}" data-tilt>
         <div class="row-between"><span class="pc-label">${icon('sparkle', 16)} Super Points</span><span class="pc-tier">${L.tier.name}</span></div>
         <b class="pc-bal num" data-countup="${L.balance}">${L.balance.toLocaleString()}</b>
-        <span class="small pc-sub">Worth <b>${money(Math.floor(L.value))}</b> in your wallet</span>
+        <span class="small pc-sub">Worth <b>${money(Math.floor(L.value))}</b> in vouchers</span>
         <div class="pc-prog"><span style="--w:${Math.round(L.progress * 100)}%"></span></div>
         <span class="xs pc-sub">${L.next ? `${(L.next.min - L.lifetime).toLocaleString()} points to ${L.next.name} — earn ×${L.next.mult} on everything` : 'Top tier — you earn ×1.5 on everything'}</span>
-        <button class="btn btn-sm pc-btn" data-redeem ${L.balance >= L.cfg.minRedeem ? '' : 'disabled'}>${icon('wallet', 14)} Convert to cash</button>
+        <button class="btn btn-sm pc-btn" data-redeem ${L.balance >= L.cfg.minRedeem ? '' : 'disabled'}>${icon('gift', 14)} Get a voucher</button>
         <span class="pc-coin" aria-hidden="true">S</span>
       </div>
       <div class="panel panel-pad points-how">
@@ -93,8 +93,9 @@
           <li>${icon('pitch', 18)}<span><b>1 point for every ${L.cfg.earnPer} EGP</b> on games you play, orders delivered and tournament entries</span></li>
           <li>${icon('star', 18)}<span><b>+20 points</b> for each review after a game</span></li>
           <li>${icon('trophy', 18)}<span><b>Silver ×1.25 · Gold ×1.5</b> — your tier rises with lifetime points (${L.lifetime.toLocaleString()} so far)</span></li>
-          <li>${icon('wallet', 18)}<span><b>${Math.round(1 / L.cfg.pointValue)} points = 1 EGP</b> · convert from ${L.cfg.minRedeem.toLocaleString()} points</span></li>
+          <li>${icon('gift', 18)}<span><b>${Math.round(1 / L.cfg.pointValue)} points = 1 EGP</b> as a voucher, from ${L.cfg.minRedeem.toLocaleString()} points (${money(Math.round(L.cfg.minRedeem * L.cfg.pointValue))}). Use it on bookings, games, the shop, printed designs, tournaments and the Fantasy Pass — points can’t be turned into cash.</span></li>
         </ul>
+        ${S.loyalty.vouchers().length ? `<h3 class="small strong" style="margin-top:16px">Your vouchers</h3><ul class="tx-list">${S.loyalty.vouchers().map((v) => `<li><span class="tx-ico credit">${icon('gift', 14, 2.2)}</span><span class="grow"><b class="small num">${esc(v.code)}</b><span class="xs muted" style="display:block">${v.balance ? `${money(v.balance)} left of ${money(v.amount)}` : `Used — ${money(v.amount)}`}</span></span>${v.balance ? '<span class="badge badge-turf">Ready</span>' : '<span class="badge">Used</span>'}</li>`).join('')}</ul>` : ''}
         <h3 class="small strong" style="margin-top:16px">Points history</h3>
         <ul class="tx-list">${L.history.slice(0, 8).map((h) => `<li><span class="tx-ico ${h.points >= 0 ? 'credit' : 'debit'}">${icon(h.kind === 'redeem' ? 'wallet' : h.kind === 'bonus' ? 'gift' : 'plus', 14, 2.2)}</span><span class="grow"><b class="small">${esc(h.label)}</b><span class="xs muted" style="display:block">${timeAgo(h.at)}</span></span><b class="num small" style="color:${h.points >= 0 ? 'var(--turf)' : 'var(--ink)'}">${h.points >= 0 ? '+' : ''}${h.points.toLocaleString()}</b></li>`).join('')}</ul>
       </div>
@@ -120,27 +121,35 @@
           </div>
         </div>
         ${pointsSection()}
+        <section class="panel panel-pad" id="receipts" style="margin-top:18px">
+          <div class="row-between wrap" style="--gap:8px"><h2 class="h4">${icon('file', 18)} Payments & receipts</h2><span class="xs muted">Every payment, refund and top-up — download a PDF for any of them</span></div>
+          ${S.payment.receipts().length ? `<ul class="tx-list rc-list">${S.payment.receipts().slice(0, 60).map((r) => `<li><span class="tx-ico ${r.kind === 'payment' ? 'debit' : 'credit'}">${icon(r.kind === 'payment' ? 'minus' : r.kind === 'voucher' ? 'gift' : 'plus', 14, 2.4)}</span>
+            <span class="grow"><b class="small">${esc(r.label)}</b><span class="xs muted" style="display:block">${new Date(r.at).toLocaleString()} · ${esc(r.method || '')}</span></span>
+            <b class="small num">${r.kind === 'payment' ? '−' : '+'}${money(r.amount)}</b><button class="btn btn-ghost btn-sm" data-receipt="${esc(r.id)}" aria-label="Download the receipt as PDF">${icon('file', 14)} PDF</button></li>`).join('')}</ul>`
+            : c.empty({ icon: 'file', title: 'No payments yet', text: 'Your receipts appear here after your first payment.' })}
+        </section>
       </div>`;
     },
     mount(el) {
+      el.addEventListener('click', (e) => { const b = e.target.closest('[data-receipt]'); if (b) SA.ui.docs.receipt(S.payment.receipts().find((r) => r.id === b.dataset.receipt)); });
       const off = SA.core.motion.tilt(el.querySelector('.points-card'), { max: 10 });
       el.querySelector('[data-redeem]')?.addEventListener('click', () => {
         const L = S.loyalty.summary();
         const max = Math.floor(L.balance / 100) * 100;
         SA.ui.overlay.open({
-          title: 'Convert points to wallet cash', subtitle: `${L.balance.toLocaleString()} points available · ${Math.round(1 / L.cfg.pointValue)} points = 1 EGP`,
-          body: `<form id="rd" class="stack" style="--gap:12px" novalidate><div class="field"><label for="rd-p">Points to convert</label><input class="input num" id="rd-p" name="points" type="number" min="${L.cfg.minRedeem}" max="${max}" step="100" value="${max}" />
+          title: 'Turn points into a voucher', subtitle: `${L.balance.toLocaleString()} points available · ${Math.round(1 / L.cfg.pointValue)} points = 1 EGP · vouchers only, no cash`,
+          body: `<form id="rd" class="stack" style="--gap:12px" novalidate><div class="field"><label for="rd-p">Points to use</label><input class="input num" id="rd-p" name="points" type="number" min="${L.cfg.minRedeem}" max="${max}" step="100" value="${max}" />
             <div class="chips" style="margin-top:8px">${[L.cfg.minRedeem, Math.floor(max / 200) * 100, max].filter((v, i, a) => v >= L.cfg.minRedeem && a.indexOf(v) === i).map((v) => `<button type="button" class="chip" data-pts="${v}">${v.toLocaleString()}</button>`).join('')}</div>
             <span class="field-error" data-err="points"></span></div><p class="h3 num" data-get></p></form>`,
-          footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-blaze" form="rd" type="submit">${icon('wallet', 15)} Convert</button>`,
+          footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-blaze" form="rd" type="submit">${icon('gift', 15)} Create voucher</button>`,
           onMount(m, close) {
             const f = m.querySelector('#rd');
-            const upd = () => { m.querySelector('[data-get]').textContent = `= ${money(Math.floor(Math.floor(+f.points.value / 100) * 100 * L.cfg.pointValue))}`; };
+            const upd = () => { m.querySelector('[data-get]').textContent = `= ${money(Math.floor(Math.floor(+f.points.value / 100) * 100 * L.cfg.pointValue))} voucher`; };
             m.querySelectorAll('[data-pts]').forEach((b) => b.addEventListener('click', () => { f.points.value = b.dataset.pts; upd(); }));
             f.addEventListener('input', upd); upd();
             f.addEventListener('submit', async (e) => {
               e.preventDefault();
-              try { const r = await S.loyalty.redeem(f.points.value); close(); SA.core.motion.confetti({ count: 70 }); SA.ui.overlay.toast(`${money(r.amount)} added to your wallet`, { type: 'success' }); SA.app.rerender(); }
+              try { const r = await S.loyalty.redeem(f.points.value); close(); SA.core.motion.confetti({ count: 70 }); SA.ui.overlay.toast(`Voucher ${r.code} — ${money(r.amount)} ready to use at checkout`, { type: 'success' }); SA.app.rerender(); }
               catch (err) { m.querySelector('[data-err="points"]').textContent = err.message; }
             });
           },

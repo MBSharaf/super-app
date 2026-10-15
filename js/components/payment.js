@@ -23,6 +23,7 @@
       ${opt('new', `<span class="pay-ico pay-ico-new">${icon('card', 18)}</span><span class="grow"><b>New Visa card</b><span class="xs muted" style="display:block">Debit or credit</span></span>`)}
       ${allowCash ? opt('cash', `<span class="pay-ico pay-ico-new">${icon('pitch', 18)}</span><span class="grow"><b>Pay the host at the pitch</b><span class="xs muted" style="display:block">Cash on arrival</span></span>`) : ''}
       ${allowCOD ? opt('cod', `<span class="pay-ico pay-ico-new">${icon('truck', 18)}</span><span class="grow"><b>Cash on delivery</b><span class="xs muted" style="display:block">Pay the courier</span></span>`) : ''}
+      ${(() => { const vs = SA.services.loyalty?.usable() || []; return vs.length ? `<label class="field pay-voucher"><span class="field-label">${icon('gift', 14)} Super Points voucher</span><select class="select" name="${name}-voucher"><option value="">Don’t use a voucher</option>${vs.map((v, i) => `<option value="${v.code}" ${i === 0 ? 'selected' : ''}>${v.code} — ${money(v.balance)} left</option>`).join('')}</select><span class="xs muted">It pays first; the rest is paid with the method above.</span></label>` : ''; })()}
       <div class="card-form" ${defaultMethod === 'new' ? '' : 'hidden'}>
         <div class="form-grid">
           <div class="field span-2"><label for="${name}-num">Card number</label>
@@ -54,7 +55,12 @@
 
   /** Returns the payload paymentService.charge expects. */
   const read = (root, { name = 'pay' } = {}) => {
+    const voucher = root.querySelector(`[name="${name}-voucher"]`)?.value || undefined;
     const v = root.querySelector(`input[name="${name}"]:checked`)?.value || 'wallet';
+    const out = readMethod(root, v, name);
+    return voucher && ['wallet', 'card'].includes(out.method) ? { ...out, voucher } : out;
+  };
+  const readMethod = (root, v, name) => {
     if (v === 'wallet') return { method: 'wallet' };
     if (v === 'cash') return { method: 'cash' };
     if (v === 'cod') return { method: 'cod' };

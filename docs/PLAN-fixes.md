@@ -29,12 +29,12 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 - [ ] G2 Profile → become a seller / become a pitch partner, each with an application form and requirements. Admin approval. A pitch partner can also become a seller from inside their dashboard. "Become a seller" must not open a store automatically.
 
 ## Main site
-- [ ] M1 Weekly booking (for example 12 games):
+- [x] M1 Weekly booking (for example 12 games):
   - The confirmation and invoice show only 1 game.
   - The QR code is valid for the booked number of games, then it expires.
   - The admin sees how many times it was scanned.
   - A missed game counts as used. The admin can make an exception once, after agreeing it with the pitch manager.
-- [ ] M2 Joining a game:
+- [x] M2 Joining a game:
   - The "I'll arrive 10 minutes early" checkbox should not be mandatory.
   - No PDF after paying. Every payment needs a PDF.
 - [ ] M3 Profile: "My games" — the matches I posted, to manage them easily.
@@ -44,7 +44,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - "Theme: Dark" and "العربية" have no space between them.
 - [ ] M6 Header: the profile picture is not aligned.
 - [ ] M7 Active/hover states are not aligned (site-wide).
-- [ ] M8 Points:
+- [x] M8 Points:
   - 20 points = 1 EGP (it was 5 = 1).
   - No cash. Points can only become a voucher used in the app (store, tournaments, bookings, POD, Fantasy Pass, …).
   - Update every place that shows points.
@@ -52,7 +52,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - Send an email to test@gmail.com (placeholder).
   - The admin gets a notification.
   - The customer gets an email saying "we reply within 24 hours".
-- [ ] M10 A PDF invoice or receipt for every payment or transaction, even small ones.
+- [~] M10 (customer side done: every payment/refund/top-up/voucher has a receipt PDF; partner side with A3/P6) A PDF invoice or receipt for every payment or transaction, even small ones.
 - [ ] M11 Profile: a "Partner dashboard" entry, animated and highlighted (today it is only in the footer).
 
 ## Partner dashboard (seller)

@@ -1,7 +1,9 @@
 /**
  * Super Points — loyalty for players. Points are earned when a booked game is played, when a
  * shop order is delivered and on tournament entries; bonuses for reviews. Tiers raise the earn
- * rate. Points convert to wallet cash. Rates come from Platform settings (admin).
+ * rate. Points become vouchers only (never cash): 20 points = 1 EGP, from 2,000 points (a 100 EGP voucher).
+ * A voucher is spent at checkout anywhere in the app — pitch bookings, games, the shop, printed designs,
+ * tournament entries and the Fantasy Pass. Rates come from Platform settings (admin).
  * Earned points are derived from the player's history, so they can never drift out of sync.
  * Future API: GET /me/points, POST /me/points/redeem
  */
@@ -16,7 +18,8 @@
     { key: 'silver', name: 'Silver', min: 1500, mult: 1.25, color: '#9AA5AE' },
     { key: 'gold', name: 'Gold', min: 4000, mult: 1.5, color: '#C9920F' },
   ];
-  const cfg = () => db().settings().loyalty || { earnPer: 10, pointValue: 0.2, minRedeem: 500 };
+  const cfg = () => db().settings().loyalty || { earnPer: 10, pointValue: 0.05, minRedeem: 2000 };
+  const vouchers = () => store.get().vouchers || [];
   const tierFor = (lifetime) => [...TIERS].reverse().find((t) => lifetime >= t.min);
   const stored = () => store.get().loyalty?.entries || [];
 
@@ -77,14 +80,31 @@
       if (p < 0 && compute().balance + p < 0) throw new ApiError(`They only have ${compute().balance.toLocaleString()} points.`, 'invalid');
       add({ points: p, label: `Super App: ${label}`, kind: p > 0 ? 'bonus' : 'adjust' });
     },
+    /** Points → a voucher code (no cash). Its value is spent at checkout, in one go or over several payments. */
     redeem(points) {
       const s = compute();
-      const p = Math.floor(+points / 100) * 100;
-      if (!(p >= s.cfg.minRedeem)) throw new ApiError(`Redeem at least ${s.cfg.minRedeem} points.`, 'invalid');
+      const step = Math.round(1 / s.cfg.pointValue) * 5; // 100 points = 5 EGP steps
+      const p = Math.floor(+points / step) * step;
+      if (!(p >= s.cfg.minRedeem)) throw new ApiError(`The smallest voucher is ${Math.round(s.cfg.minRedeem * s.cfg.pointValue)} EGP (${s.cfg.minRedeem.toLocaleString()} points).`, 'invalid');
       if (p > s.balance) throw new ApiError(`You have ${s.balance.toLocaleString()} points.`, 'invalid');
       const amount = Math.round(p * s.cfg.pointValue);
-      add({ points: -p, label: `Converted to ${amount} EGP wallet cash`, kind: 'redeem' });
-      return SA.services.payment.refund(amount, `Super Points cashback (${p.toLocaleString()} points)`).then(() => ({ points: p, amount }));
+      const code = `SPV-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      add({ points: -p, label: `Voucher ${code} — ${amount} EGP`, kind: 'redeem' });
+      const v = { code, amount, balance: amount, points: p, at: Date.now(), uses: [] };
+      store.set((st) => ({ vouchers: [v, ...(st.vouchers || [])] }), 'voucher');
+      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout anywhere in Super App: pitch bookings, games, the shop, printed designs, tournament entries and the Fantasy Pass. It can’t be exchanged for cash.' });
+      return Promise.resolve({ points: p, amount, code });
+    },
+    vouchers,
+    /** Vouchers with value left, biggest first (offered at checkout) */
+    usable: () => vouchers().filter((v) => v.balance > 0).sort((a, b) => b.balance - a.balance),
+    /** Spend up to `amount` from a voucher; returns what it covered */
+    spend(code, amount, label) {
+      const v = vouchers().find((x) => x.code === code);
+      if (!v || v.balance <= 0) throw new ApiError('This voucher has no value left.', 'invalid');
+      const take = Math.min(v.balance, Math.round(amount));
+      store.set((st) => ({ vouchers: (st.vouchers || []).map((x) => (x.code === code ? { ...x, balance: x.balance - take, uses: [...x.uses, { at: Date.now(), amount: take, label }] } : x)) }), 'voucher');
+      return take;
     },
   };
 

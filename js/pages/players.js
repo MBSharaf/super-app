@@ -35,7 +35,7 @@
             <div class="field"><label for="jn-msg">Message to the host <span class="muted">(optional)</span></label><input class="input" id="jn-msg" name="message" maxlength="200" placeholder="e.g. I can be there 15 minutes early" /></div></div>
           <div class="notice ${hs.autoAccept ? 'turf' : ''}">${icon(hs.autoAccept ? 'bolt' : 'shield', 18)}<span>${hs.autoAccept ? '<b>Instant:</b> this host accepts automatically — you’re in as soon as you pay.' : `<b>${esc(m.hostName)} decides.</b> Your share is held by Super App and comes back in full if you’re not accepted.`} The host sees your record: ${rec.games} games${rec.attendance != null ? `, ${Math.round(rec.attendance * 100)}% attendance` : ''}${rec.rating ? `, ${rec.rating.toFixed(1)}★` : ''}.</span></div>
           ${SA.ui.payment.render({ amount: m.pricePerPlayer, allowCash: false, name: 'joinpay' })}
-          <label class="row small" style="--gap:10px;align-items:flex-start"><input type="checkbox" required name="agree" style="margin-top:3px" /> <span>I’ll arrive 10 minutes early and tell the host if I can’t make it.</span></label>
+          <p class="xs muted">${icon('clock', 12)} Tip: arrive 10 minutes early, and tell the host if you can’t make it.</p>
         </form>`,
       footer: `<div class="grow"><b class="num">${money(m.pricePerPlayer)}</b><span class="xs muted" style="display:block">your share of the pitch</span></div><button class="btn btn-blaze" form="join-form" type="submit">${m.spotsLeft ? "Pay &amp; ask to join" : "Pay &amp; join waitlist"}</button>`,
       onMount(el, close) {
@@ -43,7 +43,6 @@
         SA.ui.payment.bind(form, { name: 'joinpay' });
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
-          if (!form.agree.checked) { SA.ui.overlay.toast('Tick the box to confirm you’ll show up on time.', { type: 'error' }); return; }
           const payment = SA.ui.payment.read(form, { name: 'joinpay' });
           try {
             const r = await SA.ui.payment.process(() => S.games.request(id, { position: form.position.value, message: form.message.value, payment }), { root: form, label: 'Sending your request', methodHint: payment.method });

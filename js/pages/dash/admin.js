@@ -71,7 +71,7 @@
           <form id="lty" novalidate class="form-grid" style="margin-top:16px">
             <div class="field"><label for="lt-e">EGP spent per point</label><input class="input num" id="lt-e" name="earnPer" type="number" min="1" max="100" value="${SA.services.db.settings().loyalty.earnPer}" /></div>
             <div class="field"><label for="lt-v">Value of 1 point (EGP)</label><input class="input num" id="lt-v" name="pointValue" type="number" min="0.01" max="5" step="0.01" value="${SA.services.db.settings().loyalty.pointValue}" /></div>
-            <div class="field"><label for="lt-m">Minimum to redeem (points)</label><input class="input num" id="lt-m" name="minRedeem" type="number" min="100" step="100" value="${SA.services.db.settings().loyalty.minRedeem}" /></div>
+            <div class="field"><label for="lt-m">Smallest voucher (points)</label><input class="input num" id="lt-m" name="minRedeem" type="number" min="100" step="100" value="${SA.services.db.settings().loyalty.minRedeem}" /></div>
             <div class="field"><span class="field-label">Cashback rate</span><b class="h4 num" data-lt-rate></b><span class="field-hint">Bronze · Silver ×1.25 · Gold ×1.5</span></div>
             <p class="field-error span-2" data-err="lty"></p>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save loyalty settings</button></div></form></section>
