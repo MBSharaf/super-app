@@ -23,7 +23,7 @@
         <div class="field span-2"><label for="lg-p">Prizes — one per line: <span class="mono">place | prize</span></label><textarea class="input mono" id="lg-p" name="prizes" rows="6">${esc(l.prizes.map(([a, b]) => `${a} | ${b}`).join('\n'))}</textarea>
           <span class="field-hint">Places: 1st, 2nd, 4th – 10th, Top 100. Vouchers like “500 EGP shop voucher” or “25% off one booking” become single-use codes when you announce winners. No cash prizes.</span><p class="field-error" data-err="prizes"></p></div>
         <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">Save league</button></div></form>`,
-      onMount(m, close) { m.querySelector('[data-league]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveLeague(l.id, SA.core.utils.formData(e.target)); close(); toast('League saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.fields || {}); } }); },
+      onMount(m, close) { m.querySelector('[data-league]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveLeague(l.id, SA.core.utils.formData(e.target)); close(); toast('League saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } }); },
     });
   };
   const sponsorDialog = (s = null) => SA.ui.overlay.open({
@@ -38,7 +38,7 @@
       <div class="field"><label for="sp-k">Colour</label><input class="input" id="sp-k" name="color" type="color" value="${esc(s?.color || '#0B6E4F')}" /></div>
       <div class="field span-2"><label for="sp-o">Note</label><input class="input" id="sp-o" name="note" maxlength="140" value="${esc(s?.note || '')}" /></div>
       <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">Save sponsor</button></div></form>`,
-    onMount(m, close) { m.querySelector('[data-sponsor]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveSponsor(SA.core.utils.formData(e.target), s?.id); close(); toast('Sponsor saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.fields || {}); } }); },
+    onMount(m, close) { m.querySelector('[data-sponsor]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveSponsor(SA.core.utils.formData(e.target), s?.id); close(); toast('Sponsor saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } }); },
   });
 
   SA.pages.adminFantasy = A.guard({

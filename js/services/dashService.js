@@ -16,29 +16,41 @@
   // The admin console (#/admin) is a separate system with its own session; admins can't sign in to the partner dashboard
   const ADMIN_SESSION = 'superapp.admin.session';
   const adminMode = () => /^\/admin(?:[/?]|$)/.test(SA.core.router.location());
+  // Sellers have their own dashboard (/seller) with its own session; pitch partners use /dash
+  const SELLER_SESSION = 'superapp.seller.session';
+  const sellerMode = () => /^\/seller(?:[/?]|$)/.test(SA.core.router.location());
+  /** A seller account, or a pitch partner who also sells (has a seller profile) */
+  const sellsOn = (a) => !!a && (a.role === 'seller' || db.all('sellers').some((s) => s.accountId === a.id && s.status !== 'rejected'));
 
   /* ======================= Auth & permissions ======================= */
   const auth = {
     accounts: () => db.all('accounts'),
     current: () => {
       try {
-        const admin = adminMode();
-        const id = localStorage.getItem(admin ? ADMIN_SESSION : SESSION);
+        const admin = adminMode(), seller = !admin && sellerMode();
+        const id = localStorage.getItem(admin ? ADMIN_SESSION : seller ? SELLER_SESSION : SESSION);
         const a = id ? db.find('accounts', id) : null;
-        if (!a || (a.role === 'admin') !== admin || a.role === 'printer') return null; // the factory signs in at #/factory
-        return !admin && a.status === 'suspended' ? null : a;
+        if (!a) return null;
+        if (admin) return a.role === 'admin' ? a : null;
+        if (a.role === 'admin' || a.role === 'printer' || a.status === 'suspended') return null;
+        // In the seller dashboard a pitch partner who also sells acts as a seller
+        if (seller) return sellsOn(a) ? (a.role === 'seller' ? a : { ...a, role: 'seller', baseRole: a.role }) : null;
+        return a.role === 'owner' ? a : null;
       } catch { return null; }
     },
-    signIn(id) {
+    signIn(id, { as = '' } = {}) {
       const a = db.find('accounts', id);
       if (!a) throw new ApiError('Account not found.', 'not_found');
       if (a.status === 'suspended') throw new ApiError('This account is suspended. Contact the Super App team.', 'suspended');
-      localStorage.setItem(a.role === 'admin' ? ADMIN_SESSION : SESSION, id);
-      db.log(id, 'auth.signin', `${a.name} signed in${a.role === 'admin' ? ' to the admin console' : ''}`);
+      const key = a.role === 'admin' ? ADMIN_SESSION : (as === 'seller' || a.role === 'seller' || (sellerMode() && sellsOn(a))) ? SELLER_SESSION : SESSION;
+      localStorage.setItem(key, id);
+      db.log(id, 'auth.signin', `${a.name} signed in${a.role === 'admin' ? ' to the admin console' : key === SELLER_SESSION ? ' to the seller dashboard' : ''}`);
     },
-    signOut() { localStorage.removeItem(adminMode() ? ADMIN_SESSION : SESSION); },
-    /** Admin opens a partner's dashboard (logged) */
-    openAs(id) { localStorage.setItem(SESSION, id); },
+    signOut() { localStorage.removeItem(adminMode() ? ADMIN_SESSION : sellerMode() ? SELLER_SESSION : SESSION); },
+    /** Admin opens a partner's or seller's dashboard (logged) */
+    openAs(id) { const a = db.find('accounts', id); localStorage.setItem(a?.role === 'seller' ? SELLER_SESSION : SESSION, id); },
+    /** A pitch partner who also sells switches between the two dashboards with the same account */
+    switchTo(kind) { const a = auth.current(); if (!a) return; localStorage.setItem(kind === 'seller' ? SELLER_SESSION : SESSION, a.id); },
   };
   const me = () => { const a = auth.current(); if (!a) throw new ApiError('Sign in to the partner dashboard first.', 'unauthenticated'); return a; };
   const isAdmin = (a = auth.current()) => a?.role === 'admin';
@@ -536,7 +548,7 @@
   const vatPart = (gross) => gross - gross / (1 + (db.settings().vat || 0));
 
   const dash = {
-    adminMode, bookingRate, storeRate, dealOf,
+    adminMode, sellerMode, sellsOn, bookingRate, storeRate, dealOf,
     auth, isAdmin, me: () => auth.current(),
     myPitches, myStores, ledger, findBooking, summary, daily: series, heatmap, wallet, salesFor, statusOf, bookingMoney, lastSettlement, sourceLabel, saleState, FLOW, renewMemberships,
     commission: () => db.settings().commission,

@@ -54,7 +54,7 @@
         const d = SA.core.utils.formData(f);
         const r = AD().audience(d.audience, d.level);
         if (!d.when && !(await SA.ui.overlay.confirm({ title: 'Send this message now?', text: `It goes to ${r.accounts.length + r.customers} people right away.`, confirmLabel: 'Send now' }))) return;
-        try { const b = AD().broadcast(d); toast(b.status === 'scheduled' ? 'Message scheduled' : 'Message sent'); SA.app.rerender(); } catch (err) { C.showErrors(f, err.fields || {}); if (!err.fields) toast(err.message, 'error'); }
+        try { const b = AD().broadcast(d); toast(b.status === 'scheduled' ? 'Message scheduled' : 'Message sent'); SA.app.rerender(); } catch (err) { C.showErrors(f, err.details || {}); if (!err.details) toast(err.message, 'error'); }
       });
       el.addEventListener('click', (e) => { const c = e.target.closest('[data-cancel-bc]'); if (c) { AD().cancelBroadcast(c.dataset.cancelBc); toast('Scheduled message cancelled', 'info'); SA.app.rerender(); } });
     },
@@ -82,7 +82,7 @@
       m.querySelector('[data-code]').addEventListener('submit', (e) => {
         e.preventDefault();
         try { AD().savePromo(SA.core.utils.formData(e.target), c?.id); close(); toast(c ? 'Code saved' : 'Code created'); SA.app.rerender(); }
-        catch (err) { C.showErrors(e.target, err.fields || { code: err.message }); }
+        catch (err) { C.showErrors(e.target, err.details || { code: err.message }); }
       });
     },
   });

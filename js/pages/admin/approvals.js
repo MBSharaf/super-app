@@ -15,6 +15,7 @@
     render(ctx) {
       const tab = ctx.query.tab || '';
       const pitches = AD().pendingPitches(), sellers = AD().pendingSellers();
+      const apps = SA.services.partners.list();
       const on = !!db().settings().sellerApproval;
       let section;
       if (!tab) {
@@ -28,16 +29,28 @@
             <div class="row wrap" style="--gap:8px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener">${icon('map', 14)} Map</a>${p.review === 'pending' ? `<button class="btn btn-outline btn-sm" data-reject-pitch="${p.id}">Don’t approve</button>` : ''}<button class="btn btn-primary btn-sm" data-approve-pitch="${p.id}">${icon('check', 14, 2.6)} Approve and publish</button></div>
           </article>`; }).join('')}</div>`
           : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No pitches waiting', text: 'New pitches partners add wait here until you approve them.' })}</div>`;
+      } else if (tab === 'partners') {
+        const AS = { pending: ['badge-gold', 'Waiting'], approved: ['badge-turf', 'Approved'], rejected: ['badge-danger', 'Not approved'] };
+        section = apps.length ? `<div class="adm-approve-grid">${apps.map((a) => `<article class="dash-card adm-approve">
+            <div class="adm-approve-img">${a.photos.slice(0, 3).map((im) => `<img src="${im}" alt="" loading="lazy" />`).join('')}</div>
+            <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(a.pitchName)}</h2><span class="badge ${AS[a.status][0]}">${AS[a.status][1]}</span></div>
+            <p class="small soft">${esc(a.address)}, ${esc(a.area)}, ${esc(a.city)} · ${a.count} pitch${a.count > 1 ? 'es' : ''} · ${a.formats.join(', ')} · ${money(a.price)}/hour</p>
+            <dl class="kv"><div><dt>Owner</dt><dd>${esc(a.ownerName)}</dd></div><div><dt>Contact</dt><dd class="num">${esc(a.phone)} · ${esc(a.email)}</dd></div><div><dt>National ID</dt><dd class="num">•••• ${esc(a.idLast4)}</dd></div><div><dt>Payout</dt><dd>${esc(a.payout.method)} · ${esc(a.payout.detail)}</dd></div><div><dt>Sent</dt><dd>${timeAgo(a.createdAt)}</dd></div></dl>
+            ${a.idPhoto ? `<details class="adm-id"><summary class="small">${icon('shield', 14)} ID photo</summary><img src="${a.idPhoto}" alt="ID photo" /></details>` : ''}
+            ${a.note ? `<p class="small">${esc(a.note)}</p>` : ''}${a.status === 'rejected' ? `<p class="xs" style="color:var(--danger)">${icon('alert', 12)} ${esc(a.reason || '')}</p>` : ''}
+            <div class="row wrap" style="--gap:8px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps?q=${a.lat},${a.lng}" target="_blank" rel="noopener">${icon('map', 14)} Map</a>${a.status === 'pending' ? `<button class="btn btn-ghost btn-sm" data-reject-app="${a.id}">Don’t approve</button><button class="btn btn-primary btn-sm" data-approve-app="${a.id}">${icon('check', 14)} Approve</button>` : ''}</div>
+          </article>`).join('')}</div>`
+          : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No applications', text: 'Customers apply to list their pitch from their profile. Applications wait here.' })}</div>`;
       } else {
         section = `<section class="dash-card"><label class="choice"><input type="checkbox" data-seller-approval ${on ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>New sellers need approval</b><span class="xs muted" style="display:block">When on, a new seller’s store and designs stay hidden until you approve them. Sellers already approved aren’t affected.</span></span></label></section>
           <section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Seller</th><th>Sells</th><th>Owner</th><th>Started</th><th>Status</th><th></th></tr></thead><tbody>
-          ${sellers.map((s) => { const a = db().find('accounts', s.accountId); return `<tr><td class="small"><b>${esc(s.name)}</b><span class="xs muted" style="display:block">@${esc(s.handle)}${s.bio ? ` · ${esc(s.bio.slice(0, 60))}` : ''}</span></td><td class="small">${{ pod: 'Print on demand', store: 'Own store', both: 'Both' }[s.mode]}</td><td class="small">${esc(a?.name || '')}<span class="xs muted" style="display:block">${esc(a?.email || '')}</span></td><td class="small">${timeAgo(s.createdAt)}</td>
+          ${sellers.map((s) => { const a = db().find('accounts', s.accountId); return `<tr><td class="small"><b>${esc(s.name)}</b><span class="xs muted" style="display:block">@${esc(s.handle)}${s.bio ? ` · ${esc(s.bio.slice(0, 60))}` : ''}</span>${s.kycInfo ? `<span class="xs" style="display:block">${icon('shield', 11)} ${esc(s.kycInfo.fullName)} · ID •••• ${esc(s.kycInfo.idLast4)}${s.payout ? ` · ${esc(s.payout.method)} ${esc(s.payout.detail)}` : ''}</span>${s.kycInfo.photo ? `<details class="adm-id"><summary class="xs">ID photo</summary><img src="${s.kycInfo.photo}" alt="ID photo" /></details>` : ''}` : ''}</td><td class="small">${{ pod: 'Print on demand', store: 'Own store', both: 'Both' }[s.mode]}</td><td class="small">${esc(a?.name || '')}<span class="xs muted" style="display:block">${esc(a?.email || '')}</span></td><td class="small">${timeAgo(s.createdAt)}</td>
             <td><span class="badge ${RV[s.status][0]}">${RV[s.status][1]}</span>${s.reviewReason ? `<span class="xs muted" style="display:block">${esc(s.reviewReason)}</span>` : ''}</td>
             <td class="r"><div class="row" style="--gap:6px;justify-content:flex-end">${s.status === 'pending' ? `<button class="btn btn-ghost btn-sm" data-reject-seller="${s.id}">Don’t approve</button>` : ''}<button class="btn btn-primary btn-sm" data-approve-seller="${s.id}">Approve</button></div></td></tr>`; }).join('')
             || `<tr><td colspan="6">${SA.ui.c.empty({ icon: 'users', title: 'No sellers waiting', text: on ? 'New sellers wait here until you approve them.' : 'Approval is off — new sellers go live straight away.' })}</td></tr>`}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', pitches.filter((p) => p.review === 'pending').length], ['sellers', 'New sellers', sellers.filter((s) => s.status === 'pending').length]], tab)}${section}`;
+      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', sellers.filter((s) => s.status === 'pending').length]], tab)}${section}`;
       return C.layout('approvals', { title: 'Approvals', subtitle: 'Check new pitches and sellers before they go live on Super App', body });
     },
     mount(el) {
@@ -47,6 +60,8 @@
         try {
           if (t('[data-approve-pitch]')) { AD().approvePitch(t('[data-approve-pitch]').dataset.approvePitch); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
           if (t('[data-reject-pitch]')) { const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; AD().rejectPitch(t('[data-reject-pitch]').dataset.rejectPitch, r.reason); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
+          if (t('[data-approve-app]')) { SA.services.partners.approve(t('[data-approve-app]').dataset.approveApp); toast('Approved — the pitch partner account and the pitch are live'); SA.app.rerender(); return; }
+          if (t('[data-reject-app]')) { const r = await A.reason({ title: 'Don’t approve this application?', text: 'The applicant sees the reason and can apply again.', label: 'Reason the applicant sees', placeholder: 'e.g. The ID photo isn’t clear', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; SA.services.partners.reject(t('[data-reject-app]').dataset.rejectApp, r.reason); toast('Applicant told', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-seller]')) { AD().approveSeller(t('[data-approve-seller]').dataset.approveSeller); toast('Seller approved — the store is live'); SA.app.rerender(); return; }
           if (t('[data-reject-seller]')) { const r = await A.reason({ title: 'Don’t approve this seller?', label: 'Reason the seller sees', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; AD().rejectSeller(t('[data-reject-seller]').dataset.rejectSeller, r.reason); toast('Seller not approved', 'info'); SA.app.rerender(); }
         } catch (err) { toast(err.message, 'error'); }

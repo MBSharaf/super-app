@@ -70,10 +70,10 @@
     /** The seller being worked on: the dashboard's signed-in seller account, else this shopper's own seller profile */
     current() {
       const a = SA.services.dash?.me();
-      return (a?.role === 'seller' && sellers.byAccount(a.id)) || sellers.mine();
+      return (a && sellers.byAccount(a.id)) || sellers.mine();
     },
     /** Open the seller dashboard as this shopper's seller account */
-    openDashboard() { const s = sellers.mine(); if (s) SA.services.dash.auth.signIn(s.accountId); },
+    openDashboard() { const s = sellers.mine(); if (s) SA.services.dash.auth.signIn(s.accountId, { as: 'seller' }); },
     /** Identity check before the first withdrawal (reviewed by the Super App team) */
     submitKyc(id, { fullName, nationalId, front, back }) {
       if (String(fullName || '').trim().split(/\s+/).length < 2) throw new ApiError('Enter your full name as it appears on your ID.', 'validation');
@@ -96,32 +96,51 @@
 
     handleFree(h) { h = String(h || '').toLowerCase(); return HANDLE.test(h) && !RESERVED.has(h) && !sellers.byHandle(h) && !db().all('stores').some((x) => x.slug === h); },
 
-    /** Switch on seller mode: mode = pod | store | both */
-    start({ mode, name, handle, bio = '', payoutMethod = 'InstaPay', payoutDetail = '', agree }) {
+    /** A free store link made from the store name (the seller can change it later in Store settings) */
+    freeHandle(name) { const base = (sellers.slug(name) || 'store').slice(0, 26).replace(/-+$/, '') || 'store'; let h = base.length >= 3 ? base : `${base}-store`; let i = 2; while (!sellers.handleFree(h)) h = `${base}-${i++}`; return h; },
+    /**
+     * Apply to sell: mode = pod | store | both. The application asks for the seller's ID and contact details; the
+     * store link is made from the store name. `accountId` = a pitch partner applying from their dashboard.
+     */
+    start({ mode, name, handle = '', bio = '', payoutMethod = 'InstaPay', payoutDetail = '', agree, fullName = '', phone = '', nationalId = '', idPhoto = '', accountId: ownerId = '', requireId = false }) {
       const u = me();
-      if (sellers.mine()) throw new ApiError('Seller mode is already on for this account.', 'exists');
+      const owner = ownerId ? db().find('accounts', ownerId) : null;
+      if (ownerId && (!owner || owner.role !== 'owner')) throw new ApiError('Only pitch partners can apply from their dashboard.', 'forbidden');
+      if (owner ? sellers.byAccount(owner.id) : sellers.mine()) throw new ApiError('Seller mode is already on for this account.', 'exists');
       if (!['pod', 'store', 'both'].includes(mode)) throw new ApiError('Choose how you want to sell.', 'validation');
       name = String(name || '').trim();
-      if (name.length < 2 || name.length > 40) throw new ApiError('Store name must be 2–40 characters.', 'validation');
-      handle = String(handle || '').trim().toLowerCase();
+      if (name.length < 2 || name.length > 40) throw new ApiError('Store name must be 2–40 characters.', 'validation', { name: '2–40 characters' });
+      const e = {};
+      if (requireId) {
+        if (String(fullName).trim().split(/\s+/).length < 2) e.fullName = 'Your full name, as on your ID.';
+        if (!/^\+?[\d\s]{10,16}$/.test(String(phone).trim())) e.phone = 'A mobile number, e.g. 010 1234 5678.';
+        if (!/^\d{14}$/.test(String(nationalId).trim())) e.nationalId = 'The national ID number has 14 digits.';
+        if (!idPhoto) e.idPhoto = 'Add a photo of your ID.';
+        if (String(payoutDetail).trim().length < 4) e.payoutDetail = 'Where we send your money.';
+      }
+      if (!agree) e.agree = 'Please accept the seller rules.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'validation', e);
+      handle = String(handle || '').trim().toLowerCase() || sellers.freeHandle(name);
       if (!HANDLE.test(handle)) throw new ApiError('Link name: 3–30 letters, numbers or dashes.', 'validation');
       if (!sellers.handleFree(handle)) throw new ApiError('That link is taken — try another.', 'taken');
-      if (!agree) throw new ApiError('Please accept the seller rules.', 'validation');
       const now = Date.now();
       // When the admin switched on "approve new sellers", the store and designs go live after approval
       const pending = !!db().settings().sellerApproval;
-      const accountId = `acc-sl-${handle}`;
-      db().insert('accounts', { id: accountId, role: 'seller', name: u.name, company: name, email: u.email, phone: u.phone, avatar: u.avatar || 0, joinedAt: now, payout: payoutDetail ? { method: payoutMethod, detail: payoutDetail } : null });
+      const accountId = owner ? owner.id : `acc-sl-${handle}`;
+      if (!owner) db().insert('accounts', { id: accountId, role: 'seller', name: String(fullName).trim() || u.name, company: name, email: u.email, phone: String(phone).trim() || u.phone, avatar: u.avatar || 0, joinedAt: now, payout: payoutDetail ? { method: payoutMethod, detail: payoutDetail } : null });
       let storeId = null;
       if (mode !== 'pod') {
         storeId = `st-${handle}`;
         db().insert('stores', { id: storeId, ownerId: accountId, name, slug: handle, tagline: '', description: bio, logo: null, cover: null, phone: u.phone, status: pending ? 'suspended' : 'active' });
       }
-      const s = db().insert('sellers', { id: `sl-${handle}`, accountId, userId: u.id, handle, name, bio: String(bio).slice(0, 280), cover: null, logo: null, avatar: u.avatar || 0, mode, storeId,
-        status: pending ? 'pending' : 'active', strikes: [], frozenUntil: 0, kyc: 'none', followers: 0, history: { sales: 0, revenue: 0, profit: 0, rating: 0, reviews: 0 } });
+      const s = db().insert('sellers', { id: `sl-${handle}`, accountId, userId: owner ? null : u.id, handle, name, bio: String(bio).slice(0, 280), cover: null, logo: null, avatar: u.avatar || 0, mode, storeId,
+        status: pending ? 'pending' : 'active', strikes: [], frozenUntil: 0, followers: 0, history: { sales: 0, revenue: 0, profit: 0, rating: 0, reviews: 0 },
+        ...(nationalId ? { kyc: 'pending', kycInfo: { fullName: String(fullName).trim(), idLast4: String(nationalId).trim().slice(-4), photo: idPhoto, submittedAt: now } } : { kyc: 'none' }),
+        payout: payoutDetail ? { method: payoutMethod, detail: String(payoutDetail).trim() } : null });
       if (pending) {
         SA.services.notify?.toAdmins({ cat: 'account', title: `New seller to approve: ${name}`, body: `@${handle} · ${mode === 'pod' ? 'print on demand' : mode === 'store' ? 'own store' : 'both'}`, link: '#/admin/approvals?tab=sellers' });
-        SA.services.notify?.toAccount(accountId, { cat: 'account', title: 'Your store is waiting for approval', body: 'The Super App team checks new sellers within one working day. You can prepare designs and products meanwhile.', link: '#/dash/seller' });
+        SA.services.notify?.toAccount(accountId, { cat: 'account', title: 'Your application is being reviewed', body: 'The Super App team checks new sellers within one working day. You can prepare designs and products meanwhile.', link: '#/dash/seller' });
+        if (!owner) SA.services.user.notify({ kind: 'account', title: 'We got your seller application', body: `“${name}” — we review it within one working day. You can prepare designs meanwhile.`, link: '/sell' });
       }
       db().log(accountId, 'seller.started', `${name} started selling (${mode === 'pod' ? 'print on demand' : mode === 'store' ? 'own store' : 'print on demand + own store'})`, s.id);
       SA.services.notify?.toAccount(accountId, { cat: 'account', tone: 'turf', title: `Welcome to Super App, ${name}!`, body: mode === 'store' ? 'Add your first products, then share your store link.' : 'Create your first design in the studio — it takes a few minutes.', link: mode === 'store' ? '#/dash/store' : '#/sell/studio' });

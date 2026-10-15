@@ -43,7 +43,7 @@
       const t = SUP().create({ category: f.category, subject: f.subject, text: f.text, ref: withRef && type ? { type, id: rest.join(':') } : null, from });
       toast(`Request ${t.id} sent — we’ll reply soon`);
       after(t);
-    } catch (err) { SA.pages.dashCommon.showErrors(e.target, err.fields || { text: err.message }); }
+    } catch (err) { SA.pages.dashCommon.showErrors(e.target, err.details || { text: err.message }); }
   });
 
   /* ======================= Site ======================= */

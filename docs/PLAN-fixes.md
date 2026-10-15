@@ -25,8 +25,8 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 - **Q7, F7.** Skipped for now.
 
 ## General
-- [ ] G1 Pitch partners and sellers are mixed in one "Partner dashboard". Make two separate dashboards with two separate buttons.
-- [ ] G2 Profile → become a seller / become a pitch partner, each with an application form and requirements. Admin approval. A pitch partner can also become a seller from inside their dashboard. "Become a seller" must not open a store automatically.
+- [x] G1 Pitch partners and sellers are mixed in one "Partner dashboard". Make two separate dashboards with two separate buttons.
+- [x] G2 Profile → become a seller / become a pitch partner, each with an application form and requirements. Admin approval. A pitch partner can also become a seller from inside their dashboard. "Become a seller" must not open a store automatically.
 
 ## Main site
 - [x] M1 Weekly booking (for example 12 games):
@@ -53,10 +53,10 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - The admin gets a notification.
   - The customer gets an email saying "we reply within 24 hours".
 - [~] M10 (customer side done: every payment/refund/top-up/voucher has a receipt PDF; partner side with A3/P6) A PDF invoice or receipt for every payment or transaction, even small ones.
-- [ ] M11 Profile: a "Partner dashboard" entry, animated and highlighted (today it is only in the footer).
+- [x] M11 Profile: a "Partner dashboard" entry, animated and highlighted (today it is only in the footer).
 
 ## Partner dashboard (seller)
-- [ ] P1 "Back to the site": highlighted and animated.
+- [x] P1 "Back to the site": highlighted and animated.
 - [ ] P2 Store link: add a copy button.
 - [ ] P3 Tagline → "Tags", with a working tag system across the site (search, filters, tracking).
 - [ ] P4 Analytics: give basic analytics at every level; Pro and Elite get more.

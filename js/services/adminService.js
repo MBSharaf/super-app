@@ -761,9 +761,12 @@
     approveSeller(id) {
       me();
       const s = db().find('sellers', id); if (!s) throw new ApiError('Seller not found.', 'not_found');
-      db().update('sellers', id, { status: 'active', reviewReason: '' });
+      // The ID sent with the application is checked as part of the approval
+      db().update('sellers', id, { status: 'active', reviewReason: '', ...(s.kyc === 'pending' ? { kyc: 'verified' } : {}) });
       if (s.storeId) db().update('stores', s.storeId, { status: 'active' });
       log('seller.approved', `Approved new seller ${s.name}`, id);
+      const u = SA.core.store.get().user;
+      if (s.userId && u && s.userId === u.id) SA.services.user.notify({ kind: 'account', title: 'You’re approved — your store is live', body: `“${s.name}” is open. Open your seller dashboard from your profile.`, link: '/profile' });
       N()?.toSeller(id, { cat: 'account', tone: 'turf', title: 'You’re approved — your store is live', body: 'Share your store link and send your designs for review.', link: '#/dash/seller' });
     },
     rejectSeller(id, reason) {

@@ -122,27 +122,25 @@
           <section class="panel panel-pad">
             <h2 class="h4">2. Your store</h2>
             <div class="form-grid" style="margin-top:14px">
-              <div class="field"><label for="sl-name">Store name</label><input class="input" id="sl-name" name="name" maxlength="40" required placeholder="e.g. Koora Ink" /></div>
-              <div class="field"><label for="sl-handle">Store link</label>
-                <div class="input-affix"><span class="affix" data-i18n-skip>superapp.eg/s/</span><input class="input" id="sl-handle" name="handle" maxlength="30" value="${esc(suggested)}" autocomplete="off" spellcheck="false" dir="ltr" /></div>
-                <span class="field-hint" data-handle-hint></span></div>
+              <div class="field"><label for="sl-name">Store name</label><input class="input" id="sl-name" name="name" maxlength="40" required placeholder="e.g. Koora Ink" /><span class="field-hint">Your store link is made from the name — you can change it later.</span><p class="field-error" data-err="name"></p></div>
               <div class="field span-2"><label for="sl-bio">About your store <span class="muted">(optional)</span></label><textarea class="textarea" id="sl-bio" name="bio" maxlength="280" placeholder="What do you make? Who is it for?"></textarea><span class="field-hint" data-count>0 / 280</span></div>
             </div>
           </section>
+          ${SA.ui.sellerIdFields(user)}
           <section class="panel panel-pad">
             <h2 class="h4">3. How we pay you</h2>
             <div class="form-grid" style="margin-top:14px">
               <div class="field"><label for="sl-pm">Method</label><select class="select" id="sl-pm" name="payoutMethod">${PAYOUTS.map((p) => `<option>${p}</option>`).join('')}</select></div>
-              <div class="field"><label for="sl-pd">Account <span class="muted">(you can add it later)</span></label><input class="input" id="sl-pd" name="payoutDetail" maxlength="60" placeholder="Phone, email or IBAN" dir="ltr" /></div>
+              <div class="field"><label for="sl-pd">Account</label><input class="input" id="sl-pd" name="payoutDetail" maxlength="60" placeholder="Phone, email or IBAN" dir="ltr" /><p class="field-error" data-err="payoutDetail"></p></div>
             </div>
-            <p class="small soft sell-note">${icon('info', 14)} Profit becomes available ${S.pod.cfg().holdDays} days after delivery. You can withdraw from <b>${money(S.pod.cfg().minWithdraw)}</b>; we verify your ID before the first withdrawal.</p>
+            <p class="small soft sell-note">${icon('info', 14)} Profit becomes available ${S.pod.cfg().holdDays} days after delivery. You can withdraw from <b>${money(S.pod.cfg().minWithdraw)}</b>.</p>
           </section>
           <section class="panel panel-pad">
             <h2 class="h4">4. Seller rules</h2>
             <ul class="sell-rules">${RULES.map((r) => `<li>${icon('shield', 16)}<span>${r}</span></li>`).join('')}</ul>
-            <label class="choice" style="margin-top:14px"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the seller rules</b></span></label>
+            <label class="choice" style="margin-top:14px"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the seller rules</b></span></label><p class="field-error" data-err="agree"></p>
           </section>
-          <button class="btn btn-blaze btn-lg sell-submit" type="submit">${icon('sparkle', 18)} Start selling</button>
+          <button class="btn btn-blaze btn-lg sell-submit" type="submit">${icon('sparkle', 18)} Send my application</button>
         </form>
         <aside class="stack sell-aside" style="--gap:16px">
           ${calc()}
@@ -161,6 +159,7 @@
       return `${c.pageHead({ crumbs: [['Shop', '#/shop'], ['Sell on Super App']], title: esc(s.name), text: `superapp.eg/s/${esc(s.handle)} · ${MODES.find((m) => m.id === s.mode)?.title || ''}` })}
       <div class="container sell-layout">
         <div class="stack" style="--gap:20px">
+          ${s.status === 'pending' ? `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">The Super App team checks new sellers within one working day. You can prepare designs and products meanwhile — they go live after approval.</p></div></section>` : s.status === 'rejected' ? `<section class="panel panel-pad ap-status is-bad">${icon('alert', 28)}<div><h2 class="h3">Your application wasn’t approved</h2><p class="soft">${esc(s.reviewReason || '')}</p></div></section>` : ''}
           <div class="row wrap" style="--gap:8px"><button class="btn btn-primary btn-sm" data-open-dash>${icon('grid', 14)} Seller dashboard</button><button class="btn btn-outline btn-sm" data-open-dash="store">${icon('settings', 14)} Store settings</button><a class="btn btn-outline btn-sm" href="#/s/${esc(s.handle)}">${icon('eye', 14)} View my store</a></div>
           ${levelCard(s)}
           <div class="panel panel-pad">
@@ -180,7 +179,7 @@
     mount(el) {
       el.addEventListener('click', async (e) => {
         const od = e.target.closest('[data-open-dash]');
-        if (od) { S.sellers.openDashboard(); SA.core.router.go(od.dataset.openDash === 'store' ? '/dash/seller/store' : '/dash/seller'); return; }
+        if (od) { S.sellers.openDashboard(); SA.core.router.go(od.dataset.openDash === 'store' ? '/seller/store' : '/seller'); return; }
         const p = e.target.closest('[data-pause]');
         if (p) { try { S.pod.setPaused(p.dataset.pause, p.dataset.to === '1'); SA.ui.overlay.toast(p.dataset.to === '1' ? 'Design paused — hidden from the shop' : 'Design is live again'); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
         const del = e.target.closest('[data-del-design]');
@@ -204,32 +203,21 @@
       price.addEventListener('input', calcUpdate);
       calcUpdate();
 
-      // Store link: follows the name until edited, live availability
-      const name = form.name, handle = form.handle, hint = el.querySelector('[data-handle-hint]');
-      let touched = false;
-      const check = () => {
-        const h = handle.value.trim().toLowerCase();
-        const free = S.sellers.handleFree(h);
-        hint.textContent = !h ? '' : !S.sellers.HANDLE.test(h) ? '3–30 letters, numbers or dashes' : free ? 'Available' : 'Taken — try another';
-        hint.className = `field-hint ${h && free ? 'text-turf' : h ? 'text-danger' : ''}`;
-      };
-      name.addEventListener('input', () => { if (!touched) { handle.value = S.sellers.slug(name.value); check(); } });
-      handle.addEventListener('input', () => { touched = true; handle.value = handle.value.toLowerCase().replace(/[^a-z0-9-]/g, ''); check(); });
-      check();
+      const idData = { idPhoto: '' };
+      SA.ui.bindSellerId(el, idData);
       form.bio.addEventListener('input', () => (el.querySelector('[data-count]').textContent = `${form.bio.value.length} / 280`));
 
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         const data = SA.core.utils.formData(form);
         try {
-          const s = S.sellers.start({ ...data, agree: form.agree.checked });
-          SA.ui.overlay.toast(`${s.name} is open — welcome aboard!`, { type: 'success' });
+          const s = S.sellers.start({ ...data, agree: form.agree.checked, idPhoto: idData.idPhoto, requireId: true });
+          SA.ui.overlay.toast(s.status === 'pending' ? 'Application sent — we review it within one working day' : `${s.name} is open — welcome aboard!`, { type: 'success' });
           SA.core.motion?.confetti?.({ count: 90 });
           SA.app.rerender();
         } catch (err) {
           SA.ui.overlay.toast(err.message, { type: 'error' });
-          const bad = { taken: handle, validation: null }[err.code];
-          (bad || form.querySelector(':invalid'))?.focus();
+          SA.ui.showApplyErrors(form, err.details || {});
         }
       });
     },

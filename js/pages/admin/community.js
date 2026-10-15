@@ -52,7 +52,7 @@
       <div class="field span-2"><label for="cf-p">Cover photo</label><select class="select" id="cf-p" name="cover">${['stadiumNight', 'nightMatch', 'litField', 'stadium', 'aerialPitch', 'greenTeam', 'kidsTraining', 'trophy', 'cairoNile'].filter((k) => media.photos[k]).map((k) => `<option ${c?.cover === k ? 'selected' : ''}>${k}</option>`).join('')}</select></div>
       <div class="field span-2"><label for="cf-r">Rules (one per line)</label><textarea class="input" id="cf-r" name="rules" rows="4">${esc((c?.rules || ['Be respectful — no insults, no fan fights.', 'No phone numbers or outside links: keep deals on Super App.']).join('\n'))}</textarea></div>
       <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${c ? 'Save' : 'Create community'}</button></div></form>`,
-    onMount(m, close) { m.querySelector('[data-cmf]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveCommunity(SA.core.utils.formData(e.target), c?.id); close(); toast(c ? 'Community saved' : 'Community created'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.fields || {}); } }); },
+    onMount(m, close) { m.querySelector('[data-cmf]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveCommunity(SA.core.utils.formData(e.target), c?.id); close(); toast(c ? 'Community saved' : 'Community created'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } }); },
   });
 
   SA.pages.adminCommunity = A.guard({
@@ -131,7 +131,7 @@
           if (!to.length) { C.showErrors(np, { to: 'Choose at least one community.' }); return; }
           const poll = np.querySelector('[data-np-poll]').hidden ? [] : [...np.querySelectorAll('[name=opt]')].map((i) => i.value);
           try { to.forEach((cid) => AD().communityPost(cid, { text: np.text.value, poll, image: draftImage, pinned: np.pinned.checked, announcement: np.announcement.checked })); draftImage = null; toast(`Published in ${to.length} communit${to.length > 1 ? 'ies' : 'y'}`); SA.core.router.go('/admin/community?tab=posts'); }
-          catch (err) { C.showErrors(np, err.fields || { text: err.message }); }
+          catch (err) { C.showErrors(np, err.details || { text: err.message }); }
         });
       }
       el.addEventListener('click', async (e) => {

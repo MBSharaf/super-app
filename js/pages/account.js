@@ -34,6 +34,7 @@
         </section>
         <div class="tile-grid">${tiles.map(([ic, t, sub, h]) => `<a class="card card-link account-tile" href="${h}"><span class="service-ico">${icon(ic, 20)}</span><span class="grow"><b>${t}</b><span class="small muted" style="display:block">${sub}</span></span>${icon('chevronRight', 18)}</a>`).join('')}</div>
 
+        ${SA.ui.growCards()}
         <section class="section-tight">
           <div class="sec-head"><h2 class="h3">Joined matches</h2><a class="btn btn-ghost btn-sm" href="#/players">Find more</a></div>
           ${mine.joined.length ? `<div class="stack" style="--gap:12px">${mine.joined.map((m) => cards.match(m)).join('')}</div>` : `<div class="panel">${c.empty({ icon: 'users', title: 'You haven’t joined a match yet', text: 'Browse games near you that need players.', action: '<a class="btn btn-primary" href="#/players">Find a game</a>' })}</div>`}

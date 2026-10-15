@@ -241,7 +241,7 @@
     const act = e.target.closest('[data-act]')?.dataset.act;
     const s = db().find('sellers', id);
     try {
-      if (act === 'open') { AD().openDashboard(s.accountId); window.open(SA.core.router.url('/dash/seller'), '_blank', 'noopener'); return false; }
+      if (act === 'open') { AD().openDashboard(s.accountId); window.open(SA.core.router.url('/seller'), '_blank', 'noopener'); return false; }
       if (act === 'adjust') { A.adjustDialog(s.accountId); return false; }
       if (act === 'feature') { AD().featureSeller(id, !s.featuredByAdmin); toast(s.featuredByAdmin ? 'Removed from featured' : 'Featured in the shop'); return true; }
       if (act === 'suspend') { const r = await A.reason({ title: `Suspend ${esc(s.name)}?`, text: 'Their designs and products disappear from the shop. Orders already placed are still printed and delivered.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; AD().setSellerStatus(id, 'suspended', r.reason); toast('Seller suspended', 'info'); return true; }

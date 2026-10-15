@@ -38,7 +38,7 @@
       <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${b ? 'Save banner' : 'Add banner'}</button></div></form>`,
     onMount(m, close) {
       bindPicker(m);
-      m.querySelector('[data-banner]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveBanner({ ...SA.core.utils.formData(e.target), active: b ? b.active : true }, b?.id); close(); toast('Banner saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.fields || {}); } });
+      m.querySelector('[data-banner]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveBanner({ ...SA.core.utils.formData(e.target), active: b ? b.active : true }, b?.id); close(); toast('Banner saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } });
     },
   });
   const newsDialog = (n = null) => SA.ui.overlay.open({
@@ -53,7 +53,7 @@
       <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${n ? 'Save story' : 'Publish'}</button></div></form>`,
     onMount(m, close) {
       bindPicker(m);
-      m.querySelector('[data-news]').addEventListener('submit', (e) => { e.preventDefault(); try { const out = AD().saveNews(SA.core.utils.formData(e.target), n?.id); close(); toast(n ? 'Story saved' : 'Story published', 'success'); SA.app.rerender(); void out; } catch (err) { C.showErrors(e.target, err.fields || {}); } });
+      m.querySelector('[data-news]').addEventListener('submit', (e) => { e.preventDefault(); try { const out = AD().saveNews(SA.core.utils.formData(e.target), n?.id); close(); toast(n ? 'Story saved' : 'Story published', 'success'); SA.app.rerender(); void out; } catch (err) { C.showErrors(e.target, err.details || {}); } });
     },
   });
 
@@ -116,7 +116,7 @@
       return C.layout('content', { title: 'Site content', subtitle: 'What visitors see: home banners, the announcement bar, news and pickup games', actions: '<a class="btn btn-ghost btn-sm" href="#/" target="_blank" rel="noopener">Open the site ' + icon('arrowUpRight', 14) + '</a>', body });
     },
     mount(el) {
-      el.querySelector('[data-announce]')?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().setAnnouncement(SA.core.utils.formData(e.target)); toast('Announcement saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.fields || {}); } });
+      el.querySelector('[data-announce]')?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().setAnnouncement(SA.core.utils.formData(e.target)); toast('Announcement saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } });
       const cf = el.querySelector('[data-cats]');
       const readCats = () => [...cf.querySelectorAll('[data-cat]')].map((li) => ({ id: li.dataset.cat, name: li.querySelector('[name=name]').value, icon: li.querySelector('[name=icon]').value, hidden: li.querySelector('[name=hidden]').checked }));
       cf?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveCategories(readCats()); toast('Categories saved'); SA.app.rerender(); } catch (err) { cf.querySelector('[data-err="cats"]').textContent = err.message; } });

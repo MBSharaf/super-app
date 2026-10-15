@@ -32,11 +32,15 @@
     { title: 'Pitch owner dashboard', icon: 'pitch', as: [['acc-o1', 'Karim · Turf 22'], ['acc-new', 'New partner']], links: [
       ['Overview', '#/dash'], ['My pitches', '#/dash/pitches'], ['Add a pitch', '#/dash/pitches/new'], ['Availability', '#/dash/availability'], ['Check-in', '#/dash/checkin'], ['Bookings', '#/dash/bookings'],
       ['Teams', '#/dash/teams'], ['Reviews', '#/dash/reviews'], ['Tournaments', '#/dash/tournaments'], ['Finance', '#/dash/finance'], ['Wallet', '#/dash/wallet'], ['Forecast & offers', '#/dash/insights'],
-      ['Discount codes', '#/dash/codes'], ['My store', '#/dash/store'], ['Store orders', '#/dash/orders'], ['Notifications', '#/dash/notifications'], ['Help & support', '#/dash/support'], ['Activity', '#/dash/activity'],
+      ['Discount codes', '#/dash/codes'], ['Sell on Super App', '#/dash/sell'], ['Notifications', '#/dash/notifications'], ['Help & support', '#/dash/support'], ['Activity', '#/dash/activity'],
     ] },
     { title: 'Seller dashboard', icon: 'image', as: [['acc-s1', 'Koora Ink · Elite'], ['acc-s2', 'Nile Lines · Pro'], ['acc-s3', 'Cairo Otaku · Rising']], links: [
-      ['Overview', '#/dash/seller'], ['Store settings', '#/dash/seller/store'], ['Marketing calendar', '#/dash/seller/calendar'], ['Analytics', '#/dash/seller/analytics'], ['Designs & samples', '#/dash/seller/designs'],
-      ['Print orders', '#/dash/seller/orders'], ['Wallet', '#/dash/seller/wallet'], ['Notifications', '#/dash/notifications'],
+      ['Overview', '#/seller'], ['Store settings', '#/seller/store'], ['Marketing calendar', '#/seller/calendar'], ['Analytics', '#/seller/analytics'], ['Designs & samples', '#/seller/designs'],
+      ['Print orders', '#/seller/orders'], ['Products (own store)', '#/seller/products'], ['Store orders', '#/seller/store-orders'], ['Wallet', '#/seller/wallet'], ['Notifications', '#/seller/notifications'], ['Seller sign-in', '#/seller'],
+    ] },
+    { title: 'Grow: become a seller or a pitch partner', icon: 'sparkle', links: [
+      ['Profile (grow cards)', '#/profile'], ['Apply to sell', '#/sell'], ['Apply as a pitch partner', '#/partner/apply'], ['Pitch partner: apply to sell', '#/dash/sell'], ['Karim’s shop (seller dashboard)', '#/seller/products'],
+      ['Admin: pitch partner applications', '#/admin/approvals?tab=partners'], ['Admin: seller applications', '#/admin/approvals?tab=sellers'],
     ] },
     { title: 'Factory (print-on-demand)', icon: 'truck', factory: [['fs-owner', '1111', 'Owner · Hany'], ['fs-sup', '2222', 'Supervisor · Reem'], ['fs-pr1', '3333', 'Printer · Mahmoud'], ['fs-qc', '4444', 'Quality · Nour'], ['fs-pack', '5555', 'Packing · Islam']], links: [
       ['Factory sign-in', '#/factory'], ['Overview', '#/factory'], ['Production', '#/factory/jobs'], ['New jobs & batches', '#/factory/jobs?tab=new'], ['Quality check', '#/factory/jobs?tab=qc'], ['Packing', '#/factory/jobs?tab=packing'], ['Late', '#/factory/jobs?tab=late'], ['Problems', '#/factory/jobs?tab=issues'],
@@ -102,7 +106,7 @@
       return;
     }
     const b = e.target.closest('[data-dev-as]'); if (!b) return;
-    try { SA.services.dash.auth.signIn(b.dataset.devAs); SA.ui.overlay.toast(`Signed in as ${b.textContent}`); SA.core.router.go(b.dataset.devGo); }
+    try { SA.services.dash.auth.signIn(b.dataset.devAs, { as: /^#?\/seller/.test(b.dataset.devGo) ? 'seller' : '' }); SA.ui.overlay.toast(`Signed in as ${b.textContent}`); SA.core.router.go(b.dataset.devGo); }
     catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
   });
 })(window.SA);

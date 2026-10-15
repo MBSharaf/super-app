@@ -69,7 +69,7 @@
           e.preventDefault();
           m.querySelectorAll('[data-err]').forEach((n) => (n.textContent = ''));
           try { F().saveStaff(SA.core.utils.formData(e.target), id); close(); toast(x ? 'Saved' : 'Added — share the PIN with them'); SA.app.rerender(); }
-          catch (err) { Object.entries(err.fields || {}).forEach(([k, v]) => { const n = m.querySelector(`[data-err="${k}"]`); if (n) n.textContent = v; }); if (!err.fields) toast(err.message, 'error'); }
+          catch (err) { Object.entries(err.details || {}).forEach(([k, v]) => { const n = m.querySelector(`[data-err="${k}"]`); if (n) n.textContent = v; }); if (!err.details) toast(err.message, 'error'); }
         });
       } });
   };
@@ -175,7 +175,7 @@
   }, mount(el, ctx, s) {
     el.querySelector('[data-cap]')?.addEventListener('submit', (e) => {
       e.preventDefault(); el.querySelectorAll('[data-err]').forEach((n) => (n.textContent = ''));
-      try { F().saveSettings(SA.core.utils.formData(e.target)); toast('Saved'); SA.app.rerender(); } catch (err) { Object.entries(err.fields || {}).forEach(([k, v]) => { const n = el.querySelector(`[data-err="${k}"]`); if (n) n.textContent = v; }); toast(err.message, 'error'); }
+      try { F().saveSettings(SA.core.utils.formData(e.target)); toast('Saved'); SA.app.rerender(); } catch (err) { Object.entries(err.details || {}).forEach(([k, v]) => { const n = el.querySelector(`[data-err="${k}"]`); if (n) n.textContent = v; }); toast(err.message, 'error'); }
     });
     el.addEventListener('click', async (e) => {
       const it = e.target.closest('[data-intake]');

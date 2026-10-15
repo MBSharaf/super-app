@@ -36,3 +36,34 @@
 /* Loading bar on navigation */
 body.is-loading::before { content: ""; position: fixed; top: 0; inset-inline-start: 0; height: 3px; width: 40%; background: var(--blaze); z-index: 500; animation: loadbar 1s var(--ease) infinite; }
 @keyframes loadbar { from { inset-inline-start: -40%; } to { inset-inline-start: 100%; } }
+
+/* Grow with Super App (profile) — highlighted so partners and sellers find their dashboards */
+.grow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grow-card { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); overflow: hidden; isolation: isolate; }
+.grow-card::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; padding: 1.5px; background: conic-gradient(from var(--ga, 0deg), transparent 0 60%, var(--blaze) 75%, var(--turf-fill, #0B6E4F) 90%, transparent); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: growSpin 6s linear infinite; }
+.grow-card.is-on::before { animation-duration: 3.5s; }
+.grow-card .grow { display: grid; gap: 2px; min-width: 0; }
+.grow-ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; flex: none; background: var(--blaze-tint); color: var(--blaze-2, var(--blaze)); }
+.grow-card.is-on .grow-ico { background: var(--blaze); color: #fff; box-shadow: 0 0 0 0 rgba(255,91,20,.5); animation: growPulse 2.4s ease-out infinite; }
+.grow-card.is-wait .grow-ico { background: var(--gold-tint); color: var(--gold-ink, #6b4a00); }
+.grow-card.is-bad .grow-ico { background: var(--danger-tint, #fde8e7); color: var(--danger); }
+@property --ga { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes growSpin { to { --ga: 360deg; } }
+@keyframes growPulse { 0% { box-shadow: 0 0 0 0 rgba(255,91,20,.45); } 70% { box-shadow: 0 0 0 12px rgba(255,91,20,0); } 100% { box-shadow: 0 0 0 0 rgba(255,91,20,0); } }
+@media (max-width: 760px) { .grow-grid { grid-template-columns: minmax(0, 1fr); } .grow-card { flex-wrap: wrap; } }
+@media (prefers-reduced-motion: reduce) { .grow-card::before, .grow-ico { animation: none !important; } }
+/* Applications */
+.ap-page { max-width: 880px; }
+.ap-status { display: flex; gap: 16px; align-items: flex-start; }
+.ap-status > svg { flex: none; color: var(--gold); }
+.ap-status.is-ok > svg { color: var(--turf); }
+.ap-status.is-bad > svg { color: var(--danger); }
+.ap-photo { display: grid; place-items: center; width: 100%; min-height: 110px; border: 1.5px dashed var(--line-2, var(--line)); border-radius: var(--r-md); cursor: pointer; overflow: hidden; color: var(--ink-3, #777); text-align: center; }
+.ap-photo:hover { border-color: var(--ink); }
+.ap-photo [data-preview] { display: grid; justify-items: center; gap: 4px; }
+.ap-photo img { width: 100%; height: 120px; object-fit: cover; }
+.ap-photos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .ap-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ap-map { height: 260px; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line); }
+.chip-check { cursor: pointer; }
+.chip-check input { accent-color: var(--blaze); }

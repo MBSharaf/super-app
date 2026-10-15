@@ -61,7 +61,7 @@
       });
       // Owner: full settings in the seller dashboard, or a quick cover/logo change right here
       el.querySelectorAll('[data-manage]').forEach((b) => b.addEventListener('click', () => {
-        if (SA.services.dash.me()?.role !== 'seller' || SA.services.dash.me()?.id !== s.accountId) SA.services.dash.auth.signIn(s.accountId);
+        if (SA.services.dash.me()?.role !== 'seller' || SA.services.dash.me()?.id !== s.accountId) SA.services.dash.auth.signIn(s.accountId, { as: 'seller' });
         SA.core.router.go('/dash/seller/store');
       }));
       el.querySelectorAll('[data-quick]').forEach((b) => b.addEventListener('click', async () => {

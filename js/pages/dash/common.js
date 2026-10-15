@@ -21,15 +21,19 @@
     { key: 'insights', label: 'Forecast & offers', href: '#/dash/insights', icon: 'trend' },
     { key: 'slots', label: 'Free slots', href: '#/dash/slots', icon: 'megaphone' },
     { key: 'codes', label: 'Discount codes', href: '#/dash/codes', icon: 'tag' },
-    { group: 'Store' },
-    { key: 'store', label: 'My store', href: '#/dash/store', icon: 'bag', badge: 'stock' },
-    { key: 'orders', label: 'Orders', href: '#/dash/orders', icon: 'package', badge: 'orders' },
     { group: '' },
     { key: 'activity', label: 'Activity', href: '#/dash/activity', icon: 'clock' },
   ];
   // Roles that can sign in to the partner dashboard (admins use the separate admin console at #/admin)
-  const SIGNIN_ROLES = ['owner', 'seller'];
+  const SIGNIN_ROLES = ['owner'];
   const isAdminUI = () => D().adminMode();
+  /** The seller dashboard (/seller): same engine, its own session, navigation and links */
+  const isSellerUI = () => !D().adminMode() && D().sellerMode();
+  // Seller pages are written with /dash/... links (shared with the admin console); in the seller dashboard they become /seller/...
+  const SELLER_LINKS = [['#/dash/seller/', '#/seller/'], ['#/dash/seller"', '#/seller"'], ['#/dash/seller?', '#/seller?'], ['#/dash/store/product/', '#/seller/products/product/'], ['#/dash/store"', '#/seller/products"'], ['#/dash/store?', '#/seller/products?'],
+    ['#/dash/orders', '#/seller/store-orders'], ['#/dash/codes', '#/seller/codes'], ['#/dash/notifications', '#/seller/notifications'], ['#/dash/support', '#/seller/support'], ['#/dash"', '#/seller"']];
+  const sellerLinks = (html) => SELLER_LINKS.reduce((h, [a, b]) => h.split(a).join(b), html);
+  const portalLinks = (html) => (isAdminUI() ? adminLinks(html) : isSellerUI() ? sellerLinks(html) : html);
   const A = () => SA.pages.adminCommon;
   /** Pages shared with the admin console keep working there: their dashboard links point to the admin routes */
   const ADMIN_LINKS = [['#/dash/notifications', '#/admin/notifications'], ['#/dash/pod-review', '#/admin/designs'], ['#/dash/pod-catalog', '#/admin/catalog'],
@@ -51,8 +55,7 @@
       ];
     },
   };
-  const ROLE_HOME = { seller: () => SA.pages.dashSeller };
-  const navFor = (a) => { if (isAdminUI()) return A().live(); const n = ROLE_NAV[a.role]; return typeof n === 'function' ? n(a) : n || NAV; };
+  const navFor = (a) => { if (isAdminUI()) return A().live(); if (isSellerUI()) return ROLE_NAV.seller(a); return NAV; };
 
   /* ---------- Admin owner filter (persists for the session) ---------- */
   const ownerFilter = () => { try { return sessionStorage.getItem('dash.owner') || ''; } catch { return ''; } };
@@ -89,15 +92,17 @@
     const b = n.badge && al.find((x) => x.key === n.badge);
     return `<a href="${n.href}" style="--i:${i}" ${n.key === active ? 'aria-current="page"' : ''}>${icon(n.icon, 18)}<span class="grow">${n.label}</span><span class="nav-badge ${b ? `nb-${b.tone}` : ''}" data-badge="${n.badge || ''}" ${b ? '' : 'hidden'}>${b ? b.count : ''}</span></a>`;
   };
-  const sideNav = (active, a, al = alertsNow()) => { const adm = isAdminUI(), home = adm ? '#/admin' : '#/dash'; return `
-    <a class="dash-brand" href="${home}"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">${adm ? 'Admin console' : 'Partner dashboard'}</span></span></a>
+  const sideNav = (active, a, al = alertsNow()) => { const adm = isAdminUI(), sel = isSellerUI(), home = adm ? '#/admin' : sel ? '#/seller' : '#/dash'; return `
+    <a class="dash-brand" href="${home}"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">${adm ? 'Admin console' : sel ? 'Seller dashboard' : 'Pitch partner dashboard'}</span></span></a>
     <div class="dash-acct">${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b class="small truncate">${esc(a.name)}</b><span class="xs truncate">${esc(a.company)}</span></span><span class="badge ${(ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${(ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span></div>
     <nav class="dash-nav" aria-label="Dashboard">
       ${navFor(a).map((n, i) => (n.group !== undefined ? (n.group ? `<span class="dash-nav-label xs">${n.group}</span>` : '<span class="dash-nav-sep"></span>') : navLink(n, i, active, al))).join('')}
     </nav>
     ${(() => { const u = unreadNow(); return `<nav class="dash-nav dash-nav-notes" aria-label="Notifications"><a href="${home}/notifications" ${active === 'notifications' ? 'aria-current="page"' : ''}>${icon('bell', 18)}<span class="grow">Notifications</span><span class="nav-badge ${u ? 'nb-blaze' : ''}" data-badge="notifications" ${u ? '' : 'hidden'}>${u || ''}</span></a>${adm ? '' : `<a href="#/dash/support" ${active === 'support' ? 'aria-current="page"' : ''}>${icon('help', 18)}<span class="grow">Help & support</span></a>`}</nav>`; })()}
     <div class="dash-side-foot">
-      <a href="#/" class="dash-foot-link">${icon('home', 16)} View the site</a>
+      <a href="#/" class="dash-foot-link dash-site-link">${icon('home', 16)} <span class="grow">Back to Super App</span>${icon('arrowUpRight', 14)}</a>
+      ${adm ? '' : sel ? (a.baseRole === 'owner' ? `<button class="dash-foot-link" data-switch="owner">${icon('pitch', 16)} Pitch partner dashboard</button>` : '')
+        : D().sellsOn(a) ? `<button class="dash-foot-link" data-switch="seller">${icon('bag', 16)} Seller dashboard</button>` : `<a href="#/dash/sell" class="dash-foot-link">${icon('bag', 16)} Sell on Super App</a>`}
       <button class="dash-foot-link" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button>
       <button class="dash-foot-link" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button>
       <button class="dash-foot-link" data-dash-signout>${icon('logout', 16)} Sign out</button>
@@ -137,18 +142,21 @@
         <div class="dash-body">${body}</div>
       </section>
     </div>`;
-    return adm ? adminLinks(out) : out;
+    return portalLinks(out);
   };
 
   /** Wire the common layout behaviours; returns cleanup */
   const bindLayout = (el) => {
-    const home = isAdminUI() ? '/admin' : '/dash';
-    el.querySelector('[data-dash-signout]')?.addEventListener('click', () => { const adm = isAdminUI(); D().auth.signOut(); SA.ui.overlay.toast(adm ? 'Signed out of the admin console' : 'Signed out of the partner dashboard', { type: 'info' }); SA.core.router.go(home); });
+    const home = isAdminUI() ? '/admin' : isSellerUI() ? '/seller' : '/dash';
+    el.querySelector('[data-dash-signout]')?.addEventListener('click', () => { const adm = isAdminUI(); D().auth.signOut(); SA.ui.overlay.toast(adm ? 'Signed out of the admin console' : 'Signed out', { type: 'info' }); SA.core.router.go(home); });
+    // A pitch partner who also sells: one tap between the two dashboards
+    const sw = (e) => { const b = e.target.closest('[data-switch]'); if (!b) return; D().auth.switchTo(b.dataset.switch); SA.core.router.go(b.dataset.switch === 'seller' ? '/seller' : '/dash'); };
+    el.addEventListener('click', sw);
     el.querySelector('[data-owner-filter]')?.addEventListener('change', (e) => { setOwnerFilter(e.target.value); SA.app.rerender(); });
     el.querySelector('[data-dash-menu]')?.addEventListener('click', () => {
       const a = D().me();
-      SA.ui.overlay.open({ drawer: true, side: 'left', label: 'Dashboard menu', body: `<div class="dash-drawer ${isAdminUI() ? 'is-admin' : ''}">${(isAdminUI() ? adminLinks : (x) => x)(sideNav(el.querySelector('.dash')?.dataset.dashActive, a))}</div>`,
-        onMount(m, close) { m.querySelectorAll('a').forEach((x) => x.addEventListener('click', close)); m.querySelector('[data-dash-signout]')?.addEventListener('click', () => { close(); D().auth.signOut(); SA.core.router.go(home); }); } });
+      SA.ui.overlay.open({ drawer: true, side: 'left', label: 'Dashboard menu', body: `<div class="dash-drawer ${isAdminUI() ? 'is-admin' : ''}">${portalLinks(sideNav(el.querySelector('.dash')?.dataset.dashActive, a))}</div>`,
+        onMount(m, close) { m.querySelectorAll('a').forEach((x) => x.addEventListener('click', close)); m.querySelector('[data-dash-signout]')?.addEventListener('click', () => { close(); D().auth.signOut(); SA.core.router.go(home); }); m.addEventListener('click', (e) => { if (e.target.closest('[data-switch]')) { close(); sw(e); } }); } });
     });
     // Bell dropdown
     const btn = el.querySelector('[data-bell]'), pop = el.querySelector('[data-bell-pop]');
@@ -189,7 +197,7 @@
         document.querySelectorAll('[data-badge]').forEach((n) => { const k = n.dataset.badge; const b = k && al.find((x) => x.key === k); n.hidden = !b; n.textContent = b ? b.count : ''; n.className = `nav-badge ${b ? `nb-${b.tone}` : ''}`; });
         const dot = el.querySelector('.bell-dot'); const total = bellCount(al);
         if (dot) { dot.hidden = !total; dot.textContent = total; }
-        if (pop) pop.innerHTML = isAdminUI() ? adminLinks(bellPop(al)) : bellPop(al);
+        if (pop) pop.innerHTML = portalLinks(bellPop(al));
         document.querySelectorAll('[data-badge="notifications"]').forEach((n) => { const u = unreadNow(); n.hidden = !u; n.textContent = u || ''; n.className = `nav-badge ${u ? 'nb-blaze' : ''}`; });
       }, 120);
     });
@@ -201,11 +209,12 @@
     ...page,
     title: page.title || 'Partner dashboard — Super App',
     async render(ctx) {
-      if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : SA.pages.dashLogin).render(ctx);
-      // Roles with their own area (print partner, seller) only see their pages; activity is shared
-      const home = ROLE_HOME[D().me().role]?.();
+      if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).render(ctx);
+      // The seller dashboard only routes seller pages; in the pitch partner dashboard, seller-only pages fall back to the overview
       const allow = this.roles || page.roles || [];
-      this._as = home && !(typeof allow === 'function' ? allow(D().me()) : allow.includes(D().me().role)) ? home : null;
+      const me = D().me();
+      const ok = typeof allow === 'function' ? allow(me) : !allow.length || allow.includes(me.role);
+      this._as = isSellerUI() || ok ? null : SA.pages.dashOverview;
       if (this._as) return this._as.render(ctx);
       try { return await page.render.call(page, ctx); }
       catch (err) {
@@ -215,7 +224,7 @@
       }
     },
     mount(el, ctx) {
-      if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : SA.pages.dashLogin).mount(el, ctx);
+      if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).mount(el, ctx);
       if (this._as) { const as = this._as; this._as = null; return as.mount(el, ctx); }
       if (this._failed) { this._failed = false; return bindLayout(el); }
       const offs = [bindLayout(el), page.mount?.call(page, el, ctx)];
@@ -365,12 +374,13 @@
         <section class="dl-copy">
           <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Partner dashboard</span></span></a>
           <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
-          <h1 class="display dl-title">Run your pitches. Open your store. Get paid.</h1>
-          <p class="lead">One place for pitch owners and the Super App team: bookings, availability, money, payouts and your own shop on Super App.</p>
+          <span class="badge badge-turf">${icon('pitch', 13)} Pitch partners</span>
+          <h1 class="display dl-title">Run your pitches. Fill every hour. Get paid.</h1>
+          <p class="lead">Bookings, availability, check-in, tournaments, free slots and your money — in one place.</p>
           <h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
           <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>
-                  <p class="small muted" style="margin-top:22px">Factory team? <a class="link" href="#/factory">Go to the factory system</a></p>
+                  <p class="small muted" style="margin-top:22px">Seller? <a class="link" href="#/seller">Seller dashboard</a> · Factory team? <a class="link" href="#/factory">Factory system</a> · Want to list your pitch? <a class="link" href="#/partner/apply">Apply here</a></p>
         </section>
         <section class="dl-visual" aria-hidden="true">
           <div class="hero-stage dl-stage" data-tilt>
@@ -396,5 +406,45 @@
     },
   };
 
-  SA.pages.dashCommon = { SIGNIN_ROLES, ROLE_LABEL, layout, guard, bindLayout, adminLinks, isAdminUI, kpi, barChart, bindChart, heatmap, statusBadge, range, rangeLabel, rangePicker, bindRange, scope, ownerFilter, showErrors, readImage, photoManager, xlsx, STATUS };
+  SA.pages.sellerLogin = {
+    title: 'Seller dashboard — Super App',
+    render() {
+      const accs = SA.services.db.all('accounts').filter((a) => a.role !== 'admin' && a.role !== 'printer' && D().sellsOn(a));
+      return `<div class="dash-login">
+        <section class="dl-copy">
+          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Partner dashboard</span></span></a>
+          <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
+          <span class="badge badge-blaze">${icon('bag', 13)} Sellers</span>
+          <h1 class="display dl-title">Your designs. Your store. Your money.</h1>
+          <p class="lead">Print-on-demand designs, your own products, orders, analytics and your wallet — in one place.</p>
+          <h2 class="h4" style="margin-top:28px">Sign in as</h2>
+          <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
+          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>
+                  <p class="small muted" style="margin-top:22px">Pitch partner? <a class="link" href="#/dash">Pitch partner dashboard</a> · Want to sell? <a class="link" href="#/sell">Apply here</a></p>
+        </section>
+        <section class="dl-visual" aria-hidden="true">
+          <div class="hero-stage dl-stage" data-tilt>
+            <div class="pitch3d"><div class="pitch3d-grass"></div>
+              <svg class="pitch3d-lines" viewBox="0 0 400 260" preserveAspectRatio="none"><g fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"><rect x="6" y="6" width="388" height="248" rx="2"/><line x1="200" y1="6" x2="200" y2="254"/><circle cx="200" cy="130" r="34"/><rect x="6" y="70" width="52" height="120"/><rect x="342" y="70" width="52" height="120"/></g></svg>
+              <div class="pitch3d-glow"></div></div>
+            <div class="float-card dl-f1"><span class="xs">Revenue this month</span><b class="num">186,420 EGP</b><span class="dl-spark"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:42%"></i><i style="--h:70%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:76%"></i></span></div>
+            <div class="float-card dl-f2"><span class="xs">Occupancy tonight</span><b class="num">82%</b><span class="meter"><span style="width:82%"></span></span></div>
+            <div class="float-card dl-f3">${icon('wallet', 16)}<span><span class="xs">Next payout</span><b class="num">Monday</b></span></div>
+          </div>
+        </section>
+      </div>`;
+    },
+    mount(el) {
+      const off = SA.core.motion.tilt(el.querySelector('[data-tilt]'), { max: 7 });
+      el.querySelectorAll('[data-signin]').forEach((b) => b.addEventListener('click', () => {
+        try { D().auth.signIn(b.dataset.signin, { as: 'seller' }); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
+        setOwnerFilter('');
+        SA.ui.overlay.toast(`Welcome, ${esc(D().me().name.split(' ')[0])}`);
+        SA.core.router.go(SA.core.router.location().startsWith('/seller/') ? SA.core.router.location() : '/seller', { replace: true });
+      }));
+      return off;
+    },
+  };
+
+  SA.pages.dashCommon = { SIGNIN_ROLES, ROLE_LABEL, isSellerUI, portalLinks, layout, guard, bindLayout, adminLinks, isAdminUI, kpi, barChart, bindChart, heatmap, statusBadge, range, rangeLabel, rangePicker, bindRange, scope, ownerFilter, showErrors, readImage, photoManager, xlsx, STATUS };
 })(window.SA);

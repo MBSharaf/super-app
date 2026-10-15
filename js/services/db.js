@@ -181,6 +181,14 @@
     // Rule (2026-10): 20 points = 1 EGP, the smallest voucher is 100 EGP (2,000 points), and points never become cash
     if (!data.settings.loyaltyV2) { data.settings.loyalty = { ...data.settings.loyalty, pointValue: 0.05, minRedeem: 2000 }; data.settings.loyaltyV2 = 1; changed = true; }
     if (data.settings.vat == null) { data.settings.vat = 0.14; changed = true; }
+    // Pitch partners and sellers have separate dashboards: a partner's own shop is run from the seller dashboard
+    if (!data.settings.sellerSplit && Array.isArray(data.sellers)) {
+      data.stores.filter((st) => !st.official && data.accounts.find((a) => a.id === st.ownerId)?.role === 'owner' && !data.sellers.some((x) => x.accountId === st.ownerId)).forEach((st) => {
+        data.sellers.push({ id: `sl-${st.slug}`, accountId: st.ownerId, userId: null, handle: st.slug, name: st.name, bio: st.description || '', cover: st.cover || null, logo: st.logo || null, avatar: 0, mode: 'store', storeId: st.id,
+          status: 'active', strikes: [], frozenUntil: 0, kyc: 'verified', followers: 40, history: { sales: 0, revenue: 0, profit: 0, rating: 0, reviews: 0 }, createdAt: st.createdAt || Date.now(), updatedAt: Date.now() });
+      });
+      data.settings.sellerSplit = 1; changed = true;
+    }
     data.pitches.forEach((p) => {
       if (!p.cancelPolicy) { const r = seeded(`${p.id}|policy`); p.cancelPolicy = p.seed ? POLICIES[r < 0.45 ? 0 : r < 0.65 ? 1 : r < 0.88 ? 2 : 3] : 'standard'; changed = true; }
       if (!p.weekly) { p.weekly = { enabled: true, discount: 0.1 }; changed = true; }
