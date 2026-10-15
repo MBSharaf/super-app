@@ -117,7 +117,11 @@
       const live = series.filter((x) => x.status === 'confirmed' && parseISO(x.date).getTime() + x.hour * 36e5 > Date.now());
       const myReview = S.bookings.reviewOf(b);
       const pol = S.pitches.policyOf(b.policy);
-      const code = S.bookings.checkInCode(b.id);
+      const pk = b.seriesId ? S.bookings.packageStatus(b.seriesId) : null;
+      // A weekly package has one QR code for all its games (it expires when none is left)
+      const code = pk ? S.bookings.packageCode(b.seriesId) : S.bookings.checkInCode(b.id);
+      const pkgPaid = pk ? series.reduce((t, x) => t + (x.total || 0), 0) : 0;
+      const ST = { played: ['badge-turf', 'Played'], missed: ['badge-danger', 'Missed — counted'], excused: ['badge-gold', 'Excused'], cancelled: ['', 'Cancelled'], upcoming: ['badge-info', 'Upcoming'] };
       return `<div class="container confirm-wrap">
         ${isNew ? `<div class="confirm-hero"><div class="success-mark"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 4.8 4.8L19.5 7"/></svg></div>
           <h1 class="h1">${series.length ? `${series.length} games booked!` : 'You’re booked!'}</h1><p class="lead" style="text-align:center">Show the QR code at reception — staff scan it to check you in.</p><div style="margin-top:12px">${c.steps(STEPS, 3)}</div></div>`
@@ -139,18 +143,23 @@
             <div><span class="xs muted">Time</span><b class="num">${fmtRange(b.hour, b.duration)}</b></div>
             <div><span class="xs muted">Pitch</span><b>${esc(b.format)} · ${b.players} players</b></div>
             <div><span class="xs muted">Payment</span><b>${esc(b.payment.label)}</b></div>
-            <div><span class="xs muted">Amount paid</span><b class="num">${money(b.total)}</b>${b.discountAmount ? `<span class="xs" style="color:var(--turf)">${money(b.discountAmount)} weekly discount</span>` : ''}</div>
+            <div><span class="xs muted">${pk ? 'Package paid' : 'Amount paid'}</span><b class="num">${money(pk ? pkgPaid : b.total)}</b>${pk ? `<span class="xs muted">${pk.total} games${b.discountAmount ? ` · ${money(series.reduce((t, x) => t + (x.discountAmount || 0), 0))} weekly discount` : ''}</span>` : b.discountAmount ? `<span class="xs" style="color:var(--turf)">${money(b.discountAmount)} weekly discount</span>` : ''}</div>
             <div><span class="xs muted">Status</span><b style="color:${cancelled ? 'var(--danger)' : 'var(--turf)'}">${statusLabel}${cancelled && b.refund ? ` · ${money(b.refund)} refunded` : ''}${checkedIn ? ` · ${new Date(venue.checkedInAt || Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}` : ''}</b></div>
           </div>
-          ${!cancelled && !past ? `<div class="ticket-qr">
+          ${pk ? `<div class="ticket-qr">
+            <div class="tq-code ${pk.expired ? 'is-used' : ''}">${SA.core.qr.svg(code, { size: 168, margin: 2, label: `Check-in QR code for package ${b.seriesId}` })}${pk.expired ? `<span class="tq-done">${icon('check', 30, 3)}</span>` : ''}</div>
+            <div><b class="h4">${pk.expired ? 'Package used up' : 'One QR for the whole package'}</b><p class="small soft">${pk.expired ? `All ${pk.total} games are used. The code has expired.` : `Show it at reception every week. It works for ${pk.total} games, then it expires. If the camera can’t read it, staff can type <b class="num">${b.seriesId}</b>.`}</p></div>
+          </div>` : !cancelled && !past ? `<div class="ticket-qr">
             <div class="tq-code ${checkedIn ? 'is-used' : ''}">${SA.core.qr.svg(code, { size: 168, margin: 2, label: `Check-in QR code for booking ${b.id}` })}${checkedIn ? `<span class="tq-done">${icon('check', 30, 3)}</span>` : ''}</div>
             <div><b class="h4">${checkedIn ? 'You’re checked in' : 'Your check-in code'}</b><p class="small soft">${checkedIn ? 'Have a great game!' : `Show this at reception. If the camera can’t read it, staff can type your booking ID <b class="num">${b.id}</b>.`}</p></div>
           </div>` : `<div class="ticket-code" aria-hidden="true">${Array.from({ length: 46 }, (_, i) => `<i style="width:${1 + ((b.id.charCodeAt(i % b.id.length) + i) % 4)}px"></i>`).join('')}</div>`}
         </article>
 
-        ${series.length > 1 ? `<section class="panel panel-pad">
-          <div class="row-between"><h2 class="h4">${icon('repeat', 18)} All games in this weekly booking</h2><span class="xs muted">${live.length} still to play</span></div>
-          <div class="series-list" style="margin-top:12px"><ul>${series.map((x, i) => `<li class="${x.status === 'cancelled' ? 'is-off' : ''} ${x.id === b.id ? 'is-me' : ''}" style="--i:${i}"><a href="#/booking/${x.id}"><b class="num">${fmtDate(x.date)}</b><span class="xs">${x.status === 'cancelled' ? 'Cancelled' : parseISO(x.date).getTime() + x.hour * 36e5 < Date.now() ? 'Played' : `Game ${x.sessionNo}`}</span></a></li>`).join('')}</ul></div>
+        ${pk ? `<section class="panel panel-pad pkg-panel">
+          <div class="row-between wrap" style="--gap:8px"><h2 class="h4">${icon('repeat', 18)} Your weekly package</h2><span class="xs muted num">${esc(b.seriesId)}</span></div>
+          <div class="pkg-stats"><span><b class="num">${pk.played}</b><span class="xs">Played</span></span><span class="is-bad"><b class="num">${pk.missed}</b><span class="xs">Missed</span></span><span><b class="num">${pk.left}</b><span class="xs">Left</span></span><span><b class="num">${pk.total}</b><span class="xs">In the package</span></span></div>
+          <p class="xs muted">${icon('info', 12)} A game you don’t come to counts as used. Can’t make it? Cancel it before kick-off from its page.${pk.exception ? ' One missed game was excused by Super App — a make-up game was added.' : ''}</p>
+          <ul class="pkg-list">${pk.sessions.map((x) => { const bk = series.find((y) => y.id === x.id); return `<li class="${x.id === b.id ? 'is-me' : ''}"><a href="#/booking/${x.id}" class="row-between" style="--gap:8px"><span class="small"><b class="num">${x.no ? `#${x.no}` : '—'}</b> · ${fmtDate(x.date)} · ${fmtRange(x.hour, x.duration)}${x.makeup ? ' <span class="badge badge-gold">Make-up</span>' : ''}</span><span class="badge ${ST[x.state][0]}">${ST[x.state][1]}</span></a></li>`; }).join('')}</ul>
           ${live.length > 1 ? `<button class="btn btn-ghost btn-sm" data-cancel-series style="color:var(--danger);margin-top:10px">Cancel all ${live.length} remaining games</button>` : ''}
         </section>` : ''}
 
@@ -168,7 +177,7 @@
         <div class="row wrap confirm-actions">
           ${!cancelled && !past ? `<button class="btn btn-outline" data-ics>${icon('calendar', 16)} Add to calendar</button>
           <a class="btn btn-outline" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}">${icon('map', 16)} Directions</a>` : `<a class="btn btn-primary" href="#/pitches/${p.id}">Book again</a>`}
-          <button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button>
+          <button class="btn btn-outline" data-invoice>${icon('file', 16)} ${pk ? 'Package invoice (PDF)' : 'Invoice (PDF)'}</button>
           ${!cancelled && !past && !checkedIn ? `<button class="btn btn-ghost" data-cancel style="color:var(--danger)">Cancel booking</button>` : ''}
           <a class="btn btn-ghost" href="#/bookings">All bookings</a>
           <a class="btn btn-ghost" href="#/support?ref=booking:${encodeURIComponent(b.id)}">${icon('help', 16)} Get help</a>
@@ -191,7 +200,10 @@
       el.querySelector('[data-invoice]')?.addEventListener('click', async (e) => {
         const btn = e.currentTarget; btn.disabled = true;
         const u = SA.core.store.get().user || {};
-        try { await SA.ui.docs.bookingInvoice({ ...b, amount: b.pitchTotal, fee: b.serviceFee, customer: { name: u.name, phone: u.phone }, payment: b.payment.label, source: 'app' }); }
+        try {
+          if (b.seriesId) await SA.ui.docs.packageInvoice({ seriesId: b.seriesId, games: S.bookings.seriesOf(b.seriesId), customer: { name: u.name, phone: u.phone } });
+          else await SA.ui.docs.bookingInvoice({ ...b, amount: b.pitchTotal, fee: b.serviceFee, customer: { name: u.name, phone: u.phone }, payment: b.payment.label, source: 'app' });
+        }
         catch (err) { console.error(err); SA.ui.overlay.toast('Couldn’t create the invoice. Try again.', { type: 'error' }); }
         btn.disabled = false;
       });

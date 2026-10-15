@@ -615,6 +615,7 @@
       const patch = action === 'check-in' ? { status: 'checked-in', checkedIn: true, checkedInAt: Date.now(), checkedInBy: me().id } : action === 'no-show' ? { status: 'no-show' } : null;
       if (!patch) return b;
       if (b.synthetic) db.override(id, patch); else db.update('bookings', id, patch);
+      if (action === 'check-in' && b.seriesId) { const sr = db.find('series', b.seriesId); if (sr) db.update('series', sr.id, { scans: [...(sr.scans || []), { at: Date.now(), bookingId: id, by: me().id }] }); }
       db.log(me().id, `booking.${action}`, `${action === 'check-in' ? 'Checked in' : 'Marked no-show'} ${id}`, id);
       return findBooking(id);
     },
@@ -855,10 +856,14 @@
       const parsed = SA.services.bookings.parseCheckInCode(raw);
       if (!parsed) return { state: 'invalid', message: 'This isn’t a Super App booking code.' };
       if (!parsed.valid) return { state: 'invalid', message: 'This code has been changed. Ask the customer to open the booking in the Super App.' };
+      if (parsed.series) return dash.checkPackage(parsed);
       const b = findBooking(parsed.id);
       if (!b) return { state: 'not-found', message: `No booking with the ID ${parsed.id}.` };
+      return dash.checkOne(b, parsed.manual);
+    },
+    checkOne(b, manual = false) {
       if (!canPitch(db.find('pitches', b.pitchId))) return { state: 'wrong-venue', message: `This booking is for ${b.pitchName}, which isn’t one of your pitches.` };
-      const out = { booking: b, manual: !!parsed.manual };
+      const out = { booking: b, manual: !!manual };
       const now = Date.now(), start = b.startsAt, end = start + b.duration * 36e5;
       if (b.status === 'cancelled') return { ...out, state: 'cancelled', message: 'This booking was cancelled.' };
       if (b.status === 'no-show') return { ...out, state: 'no-show', message: 'This booking was marked as a no-show.' };
@@ -867,6 +872,20 @@
       if (now > end) return { ...out, state: 'ended', message: 'This game has already finished.' };
       if (start - now > 60 * 6e4) return { ...out, state: 'early', message: `Kick-off is at ${fmtHour(b.hour)} — more than an hour from now.` };
       return { ...out, state: 'ok', message: start > now ? `Kick-off in ${Math.max(1, Math.round((start - now) / 6e4))} min.` : 'The game has started.' };
+    },
+    /** Weekly package QR: finds today's game in the package; once every game is played or missed, the code has expired */
+    checkPackage(parsed) {
+      const pk = SA.services.bookings.packageStatus(parsed.series);
+      if (!pk) return { state: 'not-found', message: `No weekly package with the ID ${parsed.series}.` };
+      if (!canPitch(db.find('pitches', pk.series.pitchId))) return { state: 'wrong-venue', message: 'This package is for a pitch that isn’t one of yours.' };
+      const info = { package: pk, manual: !!parsed.manual };
+      const first = findBooking(pk.sessions[0]?.id);
+      if (pk.expired) return { ...info, booking: first, state: 'expired', message: `This package is used up: ${pk.used} of ${pk.total} games (${pk.played} played, ${pk.missed} missed). The QR code has expired.` };
+      const t = isoDate(today());
+      const todays = pk.sessions.find((x) => x.date === t && ['upcoming', 'played'].includes(x.state));
+      if (!todays) { const nx = pk.next; return { ...info, booking: findBooking(nx.id), state: 'wrong-day', message: `No game in this package today. Next: game ${nx.no} of ${pk.total} on ${SA.core.utils.fmtDate(nx.date, 'long')} at ${fmtHour(nx.hour)}.` }; }
+      const r = dash.checkOne(findBooking(todays.id), parsed.manual);
+      return { ...r, ...info, message: `${r.message} Game ${todays.no} of ${pk.total} · ${pk.used} used so far.` };
     },
     arrivals(ownerId) {
       const t = isoDate(today());

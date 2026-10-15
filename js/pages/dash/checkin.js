@@ -26,8 +26,8 @@
     return lib(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' })?.data || null;
   };
 
-  const TONE = { ok: 'ok', early: 'warn', already: 'info', 'wrong-day': 'warn', ended: 'warn', cancelled: 'bad', 'no-show': 'bad', 'wrong-venue': 'bad', 'not-found': 'bad', invalid: 'bad' };
-  const TITLE = { ok: 'Ready to check in', early: 'Early arrival', already: 'Already checked in', 'wrong-day': 'Not today', ended: 'Game finished', cancelled: 'Cancelled booking', 'no-show': 'Marked no-show', 'wrong-venue': 'Different venue', 'not-found': 'Booking not found', invalid: 'Code not valid' };
+  const TONE = { ok: 'ok', early: 'warn', already: 'info', 'wrong-day': 'warn', ended: 'warn', cancelled: 'bad', 'no-show': 'bad', 'wrong-venue': 'bad', 'not-found': 'bad', invalid: 'bad', expired: 'bad' };
+  const TITLE = { expired: 'Package used up', ok: 'Ready to check in', early: 'Early arrival', already: 'Already checked in', 'wrong-day': 'Not today', ended: 'Game finished', cancelled: 'Cancelled booking', 'no-show': 'Marked no-show', 'wrong-venue': 'Different venue', 'not-found': 'Booking not found', invalid: 'Code not valid' };
 
   const resultCard = (res) => {
     const b = res.booking;
@@ -35,6 +35,7 @@
     return `<div class="ci-result ci-${tone}" role="status">
       <div class="ci-head"><span class="ci-ico">${icon(tone === 'ok' ? 'check' : tone === 'bad' ? 'x' : tone === 'info' ? 'check' : 'alert', 22, 2.4)}</span>
         <div class="grow"><b class="h4">${TITLE[res.state]}</b><p class="small">${esc(res.message)}</p></div></div>
+      ${res.package ? `<div class="ci-pkg">${icon('repeat', 16)}<span class="grow"><b class="small">Weekly package <span class="num">${esc(res.package.id)}</span></b><span class="xs muted" style="display:block">${res.package.played} played · ${res.package.missed} missed · ${res.package.left} left of ${res.package.total} · scanned ${res.package.scans.length}×</span></span></div>` : ''}
       ${b ? `<dl class="kv ci-kv">
         <div><dt>Customer</dt><dd><b>${esc(b.customer.name)}</b></dd></div>
         <div><dt>Booking</dt><dd class="num">${esc(b.id)}${res.manual ? ' <span class="badge">Typed in</span>' : ''}</dd></div>

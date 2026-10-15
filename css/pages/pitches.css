@@ -191,3 +191,13 @@
 .leaflet-tile-pane { filter: saturate(.3) contrast(.92) brightness(1.04); }
 /* Partner-blocked and closed hours on the public slot grid */
 .slot.is-blocked, .slot.is-closed { background: repeating-linear-gradient(135deg, var(--surface-2) 0 6px, var(--surface-3) 6px 12px); color: var(--ink-3); cursor: not-allowed; }
+
+/* Weekly package on the booking page */
+.pkg-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 14px 0 10px; }
+.pkg-stats > span { display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border-radius: var(--r-md); background: var(--surface-2); text-align: center; }
+.pkg-stats b { font-size: 1.4rem; }
+.pkg-stats .is-bad b { color: var(--danger); }
+.pkg-list { display: grid; gap: 4px; margin-top: 10px; padding: 0; list-style: none; }
+.pkg-list a { padding: 8px 10px; border-radius: var(--r-sm); }
+.pkg-list a:hover, .pkg-list li.is-me a { background: var(--surface-2); }
+@media (max-width: 480px) { .pkg-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

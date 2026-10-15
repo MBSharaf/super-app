@@ -137,6 +137,37 @@
     await finish(doc, [p], `super-app-invoice-${o.id}.pdf`);
   };
 
+  /* ---------------- Weekly package: one invoice for all its games ---------------- */
+  const packageInvoice = async ({ seriesId, games, customer }) => {
+    const b0 = games[0];
+    const pitch = db().find('pitches', b0.pitchId) || {};
+    const owner = db().find('accounts', pitch.ownerId) || HQ();
+    const pk = SA.services.bookings.packageStatus(seriesId);
+    const doc = SA.core.pdf.create({ title: `Invoice ${seriesId}` });
+    const rate = vatRate();
+    const p = doc.page();
+    let y = header(p, { title: 'TAX INVOICE', subtitle: `Weekly package · ${games.length} games`, number: invNo('INV', seriesId, b0.createdAt), date: fmtDate(new Date(b0.createdAt || Date.now()), 'long') });
+    p.text('Package', 360, 122, { size: 8, color: SOFT }); p.text(seriesId, 360, 136, { size: 10.5, weight: 700 });
+    y = Math.max(
+      party(p, 40, y + 6, 'Billed to', [customer?.name || 'Customer', customer?.phone || '', `Paid by ${b0.payment?.label || '—'}`]),
+      party(p, 300, y + 6, 'Pitch supplied by', [owner.company, pitch.name || b0.pitchName, `${pitch.address || ''}${pitch.area ? `, ${pitch.area}` : ''}`, `Tax reg. no. ${owner.taxId || '—'} (demo)`]),
+    ) + 22;
+    const rows = games.map((g, i) => [`Game ${i + 1}${g.makeup ? ' (make-up)' : ''}`, `${fmtDate(g.date, 'long')} · ${fmtRange(g.hour, g.duration)}`, g.status === 'cancelled' ? 'Cancelled' : 'Booked', m2(g.listPrice || 0)]);
+    y = p.table(40, y, [{ label: 'Game', w: 110 }, { label: 'Date and time', w: 205 }, { label: 'Status', w: 90 }, { label: 'List price', w: 110, align: 'right' }], rows, { rowH: 20 });
+    const list = games.reduce((t, g) => t + (g.listPrice || 0), 0), disc = games.reduce((t, g) => t + (g.discountAmount || 0), 0), fee = games.reduce((t, g) => t + (g.serviceFee || 0), 0);
+    const total = games.reduce((t, g) => t + (g.total || 0), 0), refunded = games.reduce((t, g) => t + (g.refund || 0), 0);
+    y += 16;
+    const yt = totalsBox(p, y, [['Pitch rental (list)', m2(list)], ...(disc ? [[`Weekly discount (${Math.round((b0.discount || 0) * 100)}%)`, `−${m2(disc)}`]] : []), ...(fee ? [['Super App service fee', m2(fee)]] : []),
+      [`VAT ${Math.round(rate * 100)}% included`, m2(vatIn(total))], ['Total paid', m2(total), true], ...(refunded ? [['Refunded', `−${m2(refunded)}`]] : [])]);
+    if (pk && !pk.expired) {
+      p.rect(40, y, 230, 112, { stroke: LINE, r: 8 });
+      p.qr(SA.services.bookings.packageCode(seriesId), 52, y + 12, 88);
+      p.text('Package check-in code', 150, y + 30, { size: 10, weight: 700 });
+      p.wrap(`Works for ${pk.total} games, then it expires. A missed game counts as used.`, 150, y + 46, 110, { size: 8, color: SOFT });
+    }
+    await finish(doc, [p], `super-app-${seriesId}.pdf`);
+  };
+
   /* ---------------- Store order (partner): invoice + packing slip ---------------- */
   const storeOrderDoc = async (o) => {
     const st = db().find('stores', o.storeId);
@@ -233,5 +264,5 @@
       `All amounts include VAT at ${Math.round(rate * 100)}% where applicable. Booking line details are in the Excel finance report. Demo document.`);
   };
 
-  SA.ui.docs = { bookingInvoice, orderInvoice, storeOrderDoc, statement, vatIn };
+  SA.ui.docs = { bookingInvoice, packageInvoice, orderInvoice, storeOrderDoc, statement, vatIn };
 })(window.SA);

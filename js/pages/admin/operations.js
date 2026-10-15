@@ -35,6 +35,15 @@
         count = all.length;
         table = `<thead><tr><th>Order</th><th>Store</th><th>Customer</th><th class="r">Items</th><th>Payment</th><th>Status</th><th class="r">Total</th></tr></thead><tbody>
           ${all.slice(0, n).map((o) => `<tr data-order="${esc(o.key)}" tabindex="0"><td><b class="small num">${esc(o.orderId)}</b><span class="xs muted" style="display:block">${timeAgo(o.createdAt)}</span></td><td class="small">${esc(o.storeName)}${o.official ? ' <span class="badge badge-ink">Official</span>' : ''}</td><td class="small">${esc(o.customer?.name || '')}<span class="xs muted" style="display:block">${esc(o.customer?.city || '')}</span></td><td class="r num">${o.units}</td><td class="xs">${esc(o.payment)}</td><td>${badge(SST, o.status)}</td><td class="r num">${money(o.gross)}</td></tr>`).join('')}`;
+      } else if (tab === 'packages') {
+        const all = AD().packages().filter((x) => match(q.q, x.id, x.series.customer?.name, x.pitch?.name) && (!q.status || (q.status === 'active' ? !x.expired : x.expired)));
+        count = all.length;
+        table = `<thead><tr><th>Package</th><th>Customer</th><th>Pitch & time</th><th class="r">Scanned</th><th class="r">Played</th><th class="r">Missed</th><th class="r">Left</th><th>Exception</th><th></th></tr></thead><tbody>
+          ${all.slice(0, n).map((x) => `<tr><td><b class="small num">${esc(x.id)}</b><span class="xs muted" style="display:block">${x.total} games · ${x.expired ? 'Used up' : 'Active'}</span></td><td class="small">${esc(x.series.customer?.name || '')}</td>
+            <td class="small">${esc(x.pitch?.name || '')}<span class="xs muted" style="display:block">${SA.core.utils.DAY[x.series.weekday]} · ${fmtHour(x.series.hour)}</span></td>
+            <td class="r num">${x.scans.length}×</td><td class="r num">${x.played}</td><td class="r num" style="${x.missed ? 'color:var(--danger)' : ''}">${x.missed}</td><td class="r num">${x.left}</td>
+            <td class="small">${x.exception ? `<span class="badge badge-gold" title="${esc(x.exception.note)}">Used</span>` : '<span class="badge">Available</span>'}</td>
+            <td class="r">${!x.exception && x.missed ? `<button class="btn btn-ghost btn-sm" data-excuse="${esc(x.id)}">Excuse a missed game</button>` : ''}</td></tr>`).join('')}`;
       } else {
         const all = (db().all('podOrders') || []).filter((o) => !o.sample && SA.core.utils.isoDate(new Date(o.placedAt)) >= r.from && SA.core.utils.isoDate(new Date(o.placedAt)) <= r.to && (!q.status || o.status === q.status) && match(q.q, o.id, o.orderId, o.title, o.customer?.name)).sort((a, b) => b.placedAt - a.placedAt);
         count = all.length;
@@ -42,10 +51,10 @@
           ${all.slice(0, n).map((o) => `<tr><td><b class="xs mono">${esc(o.id)}</b><span class="xs muted" style="display:block">${esc(o.orderId)} · ${timeAgo(o.placedAt)}</span></td><td class="small">${esc(o.title)}<span class="xs muted" style="display:block">${esc(o.color)} · ${esc(o.size)} × ${o.qty || 1}</span></td><td class="small">${esc(db().find('sellers', o.sellerId)?.name || '')}</td><td class="small">${esc(o.customer?.name || '')}</td><td>${badge(PST, o.status)}${o.reprints ? ` <span class="badge">${o.reprints} reprint</span>` : ''}</td><td class="r num">${money(o.price * (o.qty || 1))}</td>
             <td class="r">${['received', 'printing'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" data-cancel-print="${o.id}" style="color:var(--danger)">Cancel</button>` : ''}</td></tr>`).join('')}`;
       }
-      const statuses = !tab ? [['', 'Any status'], ['upcoming', 'Upcoming'], ['in-progress', 'Playing now'], ['completed', 'Completed'], ['cancelled', 'Cancelled'], ['no-show', 'No-show']]
+      const statuses = tab === 'packages' ? [['', 'Any status'], ['active', 'Active'], ['used', 'Used up']] : !tab ? [['', 'Any status'], ['upcoming', 'Upcoming'], ['in-progress', 'Playing now'], ['completed', 'Completed'], ['cancelled', 'Cancelled'], ['no-show', 'No-show']]
         : tab === 'shop' ? [['', 'Any status'], ...Object.entries(SST).map(([k, [, l]]) => [k, l])] : [['', 'Any status'], ...Object.entries(PST).map(([k, [, l]]) => [k, l])];
-      const body = `${A.tabs('/admin/orders', [['', 'Pitch bookings'], ['shop', 'Shop orders'], ['print', 'Printed items']], tab, extra)}
-        ${C.rangePicker(r, '/admin/orders', { tab: tab || undefined, q: q.q, status: q.status })}
+      const body = `${A.tabs('/admin/orders', [['', 'Pitch bookings'], ['packages', 'Weekly packages'], ['shop', 'Shop orders'], ['print', 'Printed items']], tab, extra)}
+        ${tab === 'packages' ? '<p class="small muted">One QR code per package: it works once per game, then it expires. A game the customer doesn’t come to counts as used. One missed game per package can be excused after you agree it with the pitch manager — the customer gets a make-up game.</p>' : C.rangePicker(r, '/admin/orders', { tab: tab || undefined, q: q.q, status: q.status })}
         <section class="dash-card"><form class="adm-filters" data-f>
           <label class="field grow"><span class="field-label">Search</span><input class="input" name="q" value="${esc(q.q || '')}" placeholder="ID, customer, pitch, store, design…" /></label>
           <label class="field"><span class="field-label">Status</span><select class="select" name="status">${statuses.map(([v, l]) => `<option value="${v}" ${q.status === v || (!q.status && !v) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
@@ -61,6 +70,16 @@
       el.querySelector('[data-f]')?.addEventListener('submit', (e) => { e.preventDefault(); const f = SA.core.utils.formData(e.target); SA.core.router.go(SA.core.router.href('/admin/orders', { ...ctx.query, q: f.q || undefined, status: f.status || undefined, n: undefined }).slice(1)); });
       const open = (row) => { if (row.dataset.booking) SA.pages.dashBookings.openBooking(row.dataset.booking); else if (row.dataset.order) SA.pages.dashOrders.openOrder(row.dataset.order); };
       el.addEventListener('click', async (e) => {
+        const ex = e.target.closest('[data-excuse]');
+        if (ex) {
+          const pk = SA.services.bookings.packageStatus(ex.dataset.excuse);
+          const missed = pk.sessions.filter((x) => x.state === 'missed');
+          const r = await A.reason({ title: `Excuse a missed game · ${pk.id}`, text: 'Only once per package. The game won’t count, and the customer gets a make-up game at the same time after the package ends. The customer and the pitch manager are told.', label: 'What did you agree with the pitch manager?', confirmLabel: 'Excuse the game',
+            extra: `<div class="field"><label for="ex-g">Missed game</label><select class="select" id="ex-g" name="game">${missed.map((x) => `<option value="${x.id}">Game ${x.no} · ${SA.core.utils.fmtDate(x.date, 'long')}</option>`).join('')}</select></div>` });
+          if (!r) return;
+          try { const out = AD().excuseMissed(pk.id, r.game, r.reason); toast(`Excused — make-up game on ${SA.core.utils.fmtDate(out.date, 'long')}`); SA.app.rerender(); } catch (err) { toast(err.message, 'error'); }
+          return;
+        }
         const cp = e.target.closest('[data-cancel-print]');
         if (cp) {
           const r = await A.reason({ title: 'Cancel this printed item?', text: 'The customer is refunded if they paid online. If printing already started, the cost is on Super App.', label: 'Reason the seller and customer see', confirmLabel: 'Cancel item', danger: true });

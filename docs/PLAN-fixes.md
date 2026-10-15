@@ -4,14 +4,25 @@ The user found these on desktop, in dark mode, in English. Every fix is also che
 
 Items are numbered as in the user's note: **G** general, **M** main site, **P** partner dashboard, **A** admin, **F** factory. Work from the first unticked item. Decisions and answers from the user are under each item.
 
-## Waiting for the user's answers
-- [ ] Q1 Separate dashboards (G1): confirm the proposal.
-- [ ] Q2 Pitch partner application (G2): confirm the required fields.
-- [ ] Q3 Seller application (G2): confirm the required fields.
-- [ ] Q4 Weekly bookings (M1): the missed-game rule and the admin exception.
-- [ ] Q5 Points (M8): where vouchers can be used, and the minimum.
-- [ ] Q6 Support email (M9): test@gmail.com (the note says test#gmail.com).
-- [ ] Q7 F7 is empty in the note: what is the issue?
+## The user's answers (2026-10-15)
+- **Q1, two dashboards — agreed.**
+  - Pitch partners use `/dash`; sellers use `/seller`. Each has its own sign-in and its own button.
+  - A pitch partner can apply to sell from inside their dashboard. After approval, one button switches between the two dashboards.
+- **Q2, pitch partner application — agreed, without the commercial register and tax card.**
+  - Fields: owner name, phone, email, national ID number + photo, pitch name, area, address, map pin, number and format of pitches, photos, payout method (bank or InstaPay), terms.
+  - The admin approves, or rejects with a reason.
+- **Q3, seller application — agreed, without a store link** (the store doesn't exist yet).
+  - Fields: name, store name, type (POD / own products / both), national ID number + photo, phone, payout method, about the store, terms.
+  - The admin approves.
+- **Q4, weekly package.** Example: a 12-game package where the customer played 5 and didn't come to game 6. Game 6 counts as used.
+  - The admin can make **one** exception per package (the missed game isn't counted, so they get it back).
+  - A new package allows a new exception.
+- **Q5, points.**
+  - 20 points = 1 EGP.
+  - The smallest voucher is 100 EGP = **2,000 points**.
+  - Vouchers work in bookings, the store, POD, tournaments, Fantasy Pass and game shares. No cash.
+- **Q6, support email.** Use test@gmail.com. Real sending comes with the backend; for now it is simulated end to end.
+- **Q7, F7.** Skipped for now.
 
 ## General
 - [ ] G1 Pitch partners and sellers are mixed in one "Partner dashboard". Make two separate dashboards with two separate buttons.
@@ -98,7 +109,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - Add the Super App logo.
   - Notifications for every action.
 - [ ] F6 Reports and Money: Excel export with a dashboard.
-- [ ] F7 Production — the note is empty: ask the user.
+- [x] F7 Skipped (the user said leave it for now).
 - [ ] F8 Supervisor vs owner: explain the difference.
 - [ ] F9 Every factory PDF (ticket, label) gets the Super App logo.
 - [ ] F10 The sidebar UI across the whole factory system.

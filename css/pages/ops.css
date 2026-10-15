@@ -241,3 +241,7 @@ tr.is-muted td { color: var(--ink-3); }
 /* Forecast range marks: lighter so the bars stay readable */
 .fc-chart .bc-w { opacity: .4; }
 .fc-chart .bc-w::before, .fc-chart .bc-w::after { inset-inline-start: -2px; width: 6px; }
+
+/* Weekly package on the check-in result */
+.ci-pkg { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: rgba(13,20,17,.05); }
+[data-theme="dark"] .ci-pkg { background: rgba(255,255,255,.06); }

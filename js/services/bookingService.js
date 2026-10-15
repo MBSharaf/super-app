@@ -16,8 +16,13 @@
   /** Check-in code: booking id + a short signature so a typed-up or edited code is rejected */
   const sign = (id) => Math.floor(seeded(`${id}|superapp-checkin|v1`) * 1e5).toString(36).toUpperCase().padStart(4, '0');
   const checkInCode = (id) => `SUPERAPP|BK|${id}|${sign(id)}`;
+  /** Weekly package: one code for all its games. It works once per game (the booked number of times), then it expires. */
+  const packageCode = (seriesId) => `SUPERAPP|WK|${seriesId}|${sign(`${seriesId}|pkg`)}`;
   const parseCheckInCode = (raw) => {
     const s = String(raw || '').trim();
+    const w = s.match(/^SUPERAPP\|WK\|([A-Z0-9-]+)\|([A-Z0-9]+)$/i);
+    if (w) return { series: w[1].toUpperCase(), valid: sign(`${w[1].toUpperCase()}|pkg`) === w[2].toUpperCase() };
+    if (/^WK-[A-Z0-9]{4,}$/i.test(s)) return { series: s.toUpperCase(), valid: true, manual: true };
     const m = s.match(/^SUPERAPP\|BK\|([A-Z0-9-]+)\|([A-Z0-9]+)$/i);
     if (m) return { id: m[1].toUpperCase(), valid: sign(m[1].toUpperCase()) === m[2].toUpperCase() };
     // Typed booking ID (from the customer's screen) — accepted, but flagged as manual
@@ -38,7 +43,27 @@
   };
 
   const bookingService = {
-    WEEK_OPTIONS, checkInCode, parseCheckInCode,
+    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode,
+    /**
+     * A weekly package and each game in it. A game is played (checked in), missed (it ended without a check-in — it
+     * still counts as used), excused (the admin's one exception: not counted, a make-up game was added), cancelled or
+     * upcoming. The QR code expires when no game is left.
+     */
+    packageStatus(seriesId) {
+      const s = db().find('series', seriesId); if (!s) return null;
+      const now = Date.now();
+      const sessions = (s.bookingIds || []).map((id) => db().find('bookings', id)).filter(Boolean).map((b) => {
+        const start = startsAt(b), end = start + b.duration * 36e5;
+        const state = b.status === 'cancelled' ? 'cancelled' : b.excused ? 'excused' : (b.checkedIn || b.checkedInAt || b.status === 'checked-in') ? 'played' : end < now ? 'missed' : 'upcoming';
+        return { id: b.id, date: b.date, hour: b.hour, duration: b.duration, makeup: !!b.makeup, checkedInAt: b.checkedInAt || 0, state, start };
+      }).sort((a, b) => a.start - b.start);
+      const n = (st) => sessions.filter((x) => x.state === st).length;
+      const counted = sessions.filter((x) => !['cancelled', 'excused'].includes(x.state));
+      counted.forEach((x, i) => (x.no = i + 1));
+      const played = n('played'), missed = n('missed'), left = n('upcoming');
+      return { id: s.id, series: s, sessions, total: counted.length, played, missed, excused: n('excused'), cancelled: n('cancelled'), left, used: played + missed,
+        expired: left === 0, scans: s.scans || [], exception: s.exception || null, next: sessions.find((x) => x.state === 'upcoming') || null };
+    },
 
     /** Price breakdown for a selection (pure — used by the UI before payment). */
     quote({ pitchId, date, hour, duration, discount = 0, code = '' }) {

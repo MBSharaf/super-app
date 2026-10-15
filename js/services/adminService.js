@@ -7,7 +7,7 @@
  */
 (function (SA) {
   const { ApiError } = SA.services.http;
-  const { isoDate, parseISO, addDays, today, seeded } = SA.core.utils;
+  const { isoDate, parseISO, addDays, today, seeded, fmtDate } = SA.core.utils;
   const db = () => SA.services.db;
   const D = () => SA.services.dash;
   const DAY = 864e5;
@@ -404,6 +404,47 @@
       else N()?.toAccount(tk.from.id, { cat: 'account', title: `${title} · ${tk.id}`, body, link: `#/dash/support/${tk.id}` });
     },
 
+    /** Weekly packages with their usage: QR scans, played, missed, left, and the one exception */
+    packages() {
+      return (db().all('series') || []).filter((s) => s.kind === 'weekly' && s.source === 'app').map((s) => ({ ...SA.services.bookings.packageStatus(s.id), pitch: db().find('pitches', s.pitchId) })).filter((x) => x.series)
+        .sort((a, b) => (b.series.createdAt || 0) - (a.series.createdAt || 0));
+    },
+    /**
+     * The one exception per package: a missed game isn't counted (agreed with the pitch manager first). The customer
+     * gets a make-up game at the same time, the first free week after the package ends.
+     */
+    excuseMissed(seriesId, bookingId, note) {
+      me();
+      const pk = SA.services.bookings.packageStatus(seriesId); if (!pk) throw new ApiError('Package not found.', 'not_found');
+      if (pk.exception) throw new ApiError('This package already used its one exception.', 'invalid');
+      if (!pk.sessions.some((x) => x.id === bookingId && x.state === 'missed')) throw new ApiError('Choose a missed game.', 'invalid');
+      if (!note || note.trim().length < 3) throw new ApiError('Write what you agreed with the pitch manager.', 'invalid');
+      const b = db().find('bookings', bookingId); const p = db().find('pitches', pk.series.pitchId);
+      const last = pk.sessions[pk.sessions.length - 1];
+      let date = null;
+      for (let k = 1; k <= 8 && !date; k++) {
+        const d = isoDate(addDays(parseISO(last.date), k * 7));
+        const slots = SA.services.pitches.slotsSync(p.id, d);
+        let free = true; for (let h = b.hour; h < b.hour + b.duration; h += 1) { const sl = slots.find((x) => x.hour === Math.floor(h)); if (!sl || sl.status !== 'available') free = false; }
+        if (free) date = d;
+      }
+      if (!date) throw new ApiError('No free week at that time in the next two months — agree another time with the pitch manager.', 'invalid');
+      const now = Date.now();
+      db().update('bookings', bookingId, { excused: true, excusedAt: now, excuseNote: note.trim() });
+      const id = `SA-M${now.toString(36).toUpperCase().slice(-6)}`;
+      // Already paid inside the package: the make-up game carries no new charge
+      db().insert('bookings', { ...b, id, date, status: 'confirmed', amount: 0, fee: 0, makeup: true, checkedIn: false, checkedInAt: 0, createdAt: now, updatedAt: now });
+      const u = SA.core.store.get().user;
+      const mine = (SA.core.store.get().bookings || []).find((x) => x.id === bookingId);
+      if (mine && u && b.customer?.id === u.id) {
+        SA.core.store.set((s) => ({ bookings: [{ ...mine, id, date, makeup: true, pitchTotal: 0, serviceFee: 0, total: 0, listPrice: 0, discountAmount: 0, createdAt: now }, ...s.bookings] }), 'booking:new');
+        SA.services.user.notify({ kind: 'booking', title: 'A missed game was excused', body: `Your game on ${fmtDate(b.date)} isn’t counted. Make-up game: ${fmtDate(date, 'long')} at ${SA.core.utils.fmtHour(b.hour)} at ${p.name}.`, link: `/booking/${id}` });
+      }
+      db().update('series', seriesId, { exception: { bookingId, makeupId: id, date, note: note.trim(), at: now, by: me().id }, bookingIds: [...pk.series.bookingIds, id] });
+      N()?.toAccount(p.ownerId, { cat: 'bookings', tone: 'gold', title: `Make-up game added: ${pk.series.customer?.name || 'Customer'}`, body: `Weekly package ${seriesId}: the missed game on ${fmtDate(b.date)} was excused. Make-up on ${fmtDate(date, 'long')} at ${SA.core.utils.fmtHour(b.hour)}.`, link: '#/dash/bookings' });
+      log('package.exception', `Excused a missed game in ${seriesId} (${fmtDate(b.date)}); make-up on ${date}: ${note.trim()}`, seriesId);
+      return { makeupId: id, date };
+    },
     /** Cancel a printed item before it ships (refund the customer; a started print is a cost for Super App) */
     async cancelPrint(id, reason) {
       me();
