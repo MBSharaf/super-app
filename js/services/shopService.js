@@ -12,7 +12,7 @@
 
   const storeOf = (p) => db.find('stores', p.storeId);
   const onBreak = (st) => { const sl = st && SA.services.sellers?.byAccount(st.ownerId); return !!sl && SA.services.sellers.onBreak(sl); };
-  const isLive = (p) => p && !p.deleted && p.status === 'active' && storeOf(p)?.status === 'active' && !onBreak(storeOf(p));
+  const isLive = (p) => p && !p.deleted && p.status === 'active' && !p.hiddenByAdmin && storeOf(p)?.status === 'active' && !onBreak(storeOf(p));
 
   /* Print-on-demand designs are sold as products made to order. Their images are "pod:<designId>:<colour>[:back]"
      references that SA.data.media turns into garment mockups. */

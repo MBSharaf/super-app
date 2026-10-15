@@ -288,6 +288,19 @@
       log('settings.maintenance', bookings || shop ? `Maintenance on: ${[bookings && 'bookings', shop && 'shop checkout'].filter(Boolean).join(' and ')} paused` : 'Maintenance off');
       SA.ui.shell?.render();
     },
+    /** Take one product off the shop (or put it back) — the store keeps everything else */
+    setProductHidden(productId, hidden, reason = '') {
+      me();
+      const p = db().find('products', productId); if (!p) throw new ApiError('Product not found.', 'not_found');
+      if (hidden && reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      db().update('products', productId, { hiddenByAdmin: !!hidden, hiddenReason: hidden ? reason.trim() : '' });
+      if (hidden) SA.core.store.set((st) => ({ cart: st.cart.filter((l) => l.productId !== productId) }), 'cart');
+      const st = db().find('stores', p.storeId);
+      log(hidden ? 'product.hidden' : 'product.restored', `${hidden ? 'Hid' : 'Restored'} “${p.name}” (${st?.name || ''})${hidden ? `: ${reason.trim()}` : ''}`, productId);
+      if (st && !st.official) N()?.toAccount(st.ownerId, hidden
+        ? { cat: 'store', tone: 'danger', title: `Hidden by Super App: ${p.name}`, body: `${reason.trim()} Fix the listing, then contact Help & support to bring it back.`, link: '#/dash/store' }
+        : { cat: 'store', tone: 'turf', title: `Back in the shop: ${p.name}`, body: 'Super App restored this product.', link: '#/dash/store' });
+    },
     /** Close or reopen a single pitch from the admin side */
     setPitchStatus(pitchId, status, reason = '') {
       me();

@@ -152,3 +152,4 @@ tr.is-dim td { opacity: .55; }
 .adm-approve-img img:first-child { grid-row: span 2; }
 .adm-approve-img img:only-child { grid-column: span 2; }
 .dp-review { background: rgba(160,110,8,.72); }
+.adm-list li.is-dim { opacity: .6; }
