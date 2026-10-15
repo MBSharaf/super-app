@@ -44,8 +44,10 @@
     { key: 'settings', page: 'dashSettings', label: 'Platform settings', href: '#/admin/settings', icon: 'settings' },
   ];
   // Pages are added chunk by chunk; links to pages that don't exist yet stay hidden
+  // Team roles (set by the CEO): each admin account only sees its role's sections
+  const mine = (n) => { const a = D().me(); return !SA.services.ceo || !a || SA.services.ceo.canSee(a, n.key); };
   const live = () => {
-    const list = NAV.filter((n) => n.group !== undefined || SA.pages[n.page]);
+    const list = NAV.filter((n) => n.group !== undefined || (SA.pages[n.page] && mine(n)));
     return list.filter((n, i) => n.group === undefined || (list[i + 1] && list[i + 1].group === undefined));
   };
 
@@ -53,7 +55,10 @@
   SA.pages.adminLogin = {
     title: 'Admin console — Super App',
     render() {
-      const accs = SA.services.db.all('accounts').filter((a) => a.role === 'admin');
+      const accs = SA.services.db.all('accounts').filter((a) => a.role === 'admin' && a.teamRole !== 'ceo');
+      const CE = SA.services.ceo;
+      const acc = (a, i) => { const r = CE?.roleOfAccount(a); const paused = CE?.blockedAccount(a); return `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${paused ? 'disabled' : ''}>${SA.ui.c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${r ? esc(r.title) : esc(a.email)}</span></span><span class="badge ${paused ? 'badge-danger' : a.agent ? 'badge-gold' : 'badge-blaze'}">${paused ? 'Paused' : a.agent ? 'AI agent' : 'Admin'}</span>${icon('arrowRight', 16)}</button>`; };
+      const people = accs.filter((a) => !a.agent), agents = accs.filter((a) => a.agent);
       return `<div class="dash-login adm-login">
         <section class="dl-copy">
           <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Admin console</span></span></a>
@@ -63,8 +68,9 @@
           <p class="lead">Money and withdrawals, customers, partners and sellers, every order and booking, support, content, fantasy and promotions — with a full audit log.</p>
           <h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo account — admin sign-in with email, password and two-step verification arrives with the backend.</p>
-          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}">${SA.ui.c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.email)}</span></span><span class="badge badge-blaze">Admin</span>${icon('arrowRight', 16)}</button>`).join('')}</div>
-          <p class="small muted" style="margin-top:22px">Pitch owner or seller? <a class="link" href="#/dash">Go to the partner dashboard</a> · Factory team? <a class="link" href="#/factory">Factory system</a></p>
+          <div class="dl-accounts">${people.map(acc).join('')}</div>
+          ${agents.length ? `<details class="adm-agents"><summary class="small"><b>${icon('bolt', 14)} AI agents</b> <span class="muted">· ${agents.length} — each sees only its role’s sections</span></summary><div class="dl-accounts">${agents.map(acc).join('')}</div></details>` : ''}
+          <p class="small muted" style="margin-top:22px">Pitch owner or seller? <a class="link" href="#/dash">Go to the partner dashboard</a> · Factory team? <a class="link" href="#/factory">Factory system</a> · CEO? <a class="link" href="#/ceo">Command Center</a></p>
         </section>
         <section class="dl-visual adm-visual" aria-hidden="true">
           <div class="adm-orbit adm-3d" data-tilt3d>
@@ -80,7 +86,7 @@
     mount(el) {
       const off = SA.core.motion.tilt(el.querySelector('[data-tilt3d]'), { max: 12 });
       el.querySelectorAll('[data-signin]').forEach((b) => b.addEventListener('click', () => {
-        D().auth.signIn(b.dataset.signin);
+        try { D().auth.signIn(b.dataset.signin); } catch (e) { SA.ui.overlay.toast(e.message, { type: 'error' }); return; }
         SA.ui.overlay.toast(`Welcome, ${esc(D().me().name.split(' ')[0])}`);
         const h = SA.core.router.location();
         SA.core.router.go(h.startsWith('/admin/') ? h : '/admin', { replace: true });
@@ -115,5 +121,15 @@
     });
   });
 
-  SA.pages.adminCommon = { NAV, live, guard, tabs, reason };
+  /** The admin section a path belongs to, and whether this admin's role may open it */
+  const sectionOf = (path) => {
+    const p = path.split('?')[0];
+    let best = null;
+    NAV.forEach((n) => { if (!n.href) return; const h = n.href.slice(1); if ((p === h || (h !== '/admin' && p.startsWith(`${h}/`))) && (!best || h.length > best.href.length - 1)) best = n; });
+    return best;
+  };
+  const denied = (path) => { const n = sectionOf(path); return n && !mine(n) ? n : null; };
+  const deniedBody = (n) => `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: `${esc(n.label)} isn’t part of your role`, text: `${esc(SA.services.ceo?.roleOfAccount(D().me())?.title || '')} — the CEO decides which sections each role opens.`, action: (live().find((x) => x.href) ? `<a class="btn btn-primary" href="${live().find((x) => x.href).href}">Go to ${esc(live().find((x) => x.href).label)}</a>` : '') })}</div>`;
+
+  SA.pages.adminCommon = { NAV, live, guard, tabs, reason, denied, deniedBody };
 })(window.SA);

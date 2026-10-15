@@ -21,6 +21,7 @@
     list: (status) => { ensure(); return db().all('partnerApps').filter((a) => !status || a.status === status).sort((a, b) => b.createdAt - a.createdAt); },
     apply(d) {
       ensure();
+      SA.services.ceo?.assertOn('applications');
       const prev = partners.mine();
       if (prev?.status === 'pending') throw new ApiError('Your application is already being reviewed.', 'exists');
       if (prev?.status === 'approved') throw new ApiError('You are already a pitch partner.', 'exists');

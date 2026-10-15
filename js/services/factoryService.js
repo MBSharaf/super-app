@@ -169,7 +169,7 @@
     staff: (factoryId = auth.current()?.factoryId) => staffAll(factoryId).sort((a, b) => Object.keys(ROLES).indexOf(a.role) - Object.keys(ROLES).indexOf(b.role)),
     jobs, job,
     /** Is there a factory taking orders for this product? (the shop and samples check this) */
-    canMake(catalogId) { return db().all('factories').some((f) => f.status === 'active' && f.intake && !(f.pausedProducts || []).includes(catalogId)); },
+    canMake(catalogId) { return SA.services.ceo?.isOn('pod') !== false && db().all('factories').some((f) => f.status === 'active' && f.intake && !(f.pausedProducts || []).includes(catalogId)); },
     accepting: () => db().all('factories').some((f) => f.status === 'active' && f.intake),
     /** Pick the factory for a new item: active, taking orders, makes this product; the least loaded wins */
     route(catalogId) {

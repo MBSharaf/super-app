@@ -117,6 +117,7 @@
     post(id) { const p = findPost(id); if (p.hidden) throw new ApiError('This post was removed by the Super App team.', 'not_found'); return postView(p); },
 
     createPost(communityId, { text, image = null, poll = [], card = null }) {
+      SA.services.ceo?.assertOn('community');
       const c = db().find('communities', communityId); if (!c) throw new ApiError('Community not found.', 'not_found');
       mustAccess(c);
       SA.services.user.assertActive();
@@ -135,6 +136,7 @@
       return db().insert('communityPosts', { communityId: c.id, author: author(), text: t, image, card, poll: opts.length ? { options: opts.map((o) => ({ text: o, votes: [] })) } : null, reactions: {}, comments: [], pinned: false, announcement: false, at: Date.now() }, 'cp');
     },
     comment(postId, text, replyTo = null) {
+      SA.services.ceo?.assertOn('community');
       const p = findPost(postId); const c = db().find('communities', p.communityId);
       mustAccess(c);
       SA.services.user.assertActive();

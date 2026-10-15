@@ -218,6 +218,10 @@
     title: page.title || 'Partner dashboard — Super App',
     async render(ctx) {
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).render(ctx);
+      // Admin team roles: a section outside this admin's role
+      const no = isAdminUI() && A()?.denied?.(SA.core.router.location());
+      this._denied = !!no;
+      if (no) return layout(no.key, { title: 'Not part of your role', body: A().deniedBody(no) });
       // The seller dashboard only routes seller pages; in the pitch partner dashboard, seller-only pages fall back to the overview
       const allow = this.roles || page.roles || [];
       const me = D().me();
@@ -234,6 +238,7 @@
     },
     mount(el, ctx) {
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).mount(el, ctx);
+      if (this._denied) { this._denied = false; return bindLayout(el); }
       if (this._as) { const as = this._as; this._as = null; return as.mount(el, ctx); }
       if (this._failed) { this._failed = false; return bindLayout(el); }
       const offs = [bindLayout(el), page.mount?.call(page, el, ctx)];

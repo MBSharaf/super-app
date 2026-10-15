@@ -35,7 +35,7 @@ The user's decisions (2026-10-15):
 ## Checklist
 
 ### Chunk 1 — services
-- [ ] `ceoService`:
+- [x] `ceoService`:
   - CEO session
   - org: departments, roles, agents (pause/resume, change permissions and limit, emergency stop)
   - agent activity, mapped from the audit log
@@ -48,7 +48,7 @@ The user's decisions (2026-10-15):
   - company KPIs and department health
   - reports data
   - "open as" into every system (logged)
-- [ ] Hooks:
+- [x] Hooks:
   - Payouts, settlements, refunds and credits over the limit become approval requests.
   - Kill switches are enforced: bookings, shop, printed designs, payouts, new applications, fantasy, community posting.
   - Admin team roles:
@@ -57,17 +57,17 @@ The user's decisions (2026-10-15):
     - agents sign in as their role
 
 ### Chunk 2 — CEO pages
-- [ ] Sign-in + layout
-- [ ] Command overview: live KPIs, department health, "needs your decision", smart alerts
-- [ ] Morning briefing
-- [ ] Approvals inbox
-- [ ] Departments + interactive org chart; department page
-- [ ] AI workforce: list, agent page (duties, permissions, limit, log, errors, cost), emergency stop
-- [ ] Reports: finance, operations, customers, partners, sellers, marketing, support, agents — date range, Excel with dashboard, PDF
-- [ ] Control: kill switches, limits, permissions matrix, company settings (commissions, fees, points, payout day)
-- [ ] Goals (OKRs), budgets, compliance calendar, what-if simulator
-- [ ] All systems: open as any partner, seller, factory staff, admin; the site
-- [ ] Company audit log
+- [x] Sign-in + layout
+- [x] Command overview: live KPIs, department health, "needs your decision", smart alerts
+- [x] Morning briefing
+- [x] Approvals inbox
+- [x] Departments + interactive org chart; department page
+- [x] AI workforce: list, agent page (duties, permissions, limit, log, errors, cost), emergency stop
+- [x] Reports: finance, operations, customers, partners, sellers, marketing, support, agents — date range, Excel with dashboard, PDF
+- [x] Control: kill switches, limits, permissions matrix, company settings (commissions, fees, points, payout day)
+- [x] Goals (OKRs), budgets, compliance calendar, what-if simulator
+- [x] All systems: open as any partner, seller, factory staff, admin; the site
+- [x] Company audit log
 
 ### Chunk 3 — finish
 - [ ] Arabic, Sharaf links, README, tests (desktop/mobile, Arabic, light/dark), commit and push

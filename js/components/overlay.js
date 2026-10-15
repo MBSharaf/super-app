@@ -64,6 +64,8 @@
   });
 
   const toast = (message, { type = 'success', action, onAction, duration = 3800 } = {}) => {
+    // A money action sent to the CEO for approval isn't an error
+    if (type === 'error' && SA.services.ceo?.isQueued(message)) type = 'info';
     const host = document.getElementById('toast-root');
     const el = document.createElement('div');
     el.className = `toast ${type}`;

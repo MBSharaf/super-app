@@ -73,6 +73,7 @@
     /** Ask to join: the share is paid online now and held by Super App until the host decides */
     async request(matchId, { position, message = '', payment }) {
       SA.services.user.assertActive();
+      SA.services.ceo?.assertOn('games');
       const b = blockedFor(me().id); if (b) throw new ApiError(`You can’t join games right now: ${b.reason}`, 'blocked');
       const m = M().allSync().find((x) => x.id === matchId);
       if (!m) throw new ApiError('This game is no longer listed.', 'not_found');

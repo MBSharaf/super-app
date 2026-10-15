@@ -27,11 +27,13 @@
     accounts: () => db.all('accounts'),
     current: () => {
       try {
+        // The CEO system: the CEO's account acts as an admin there (every admin action works and is logged as the CEO)
+        if (SA.services.ceo?.ceoMode()) return SA.services.ceo.auth.current();
         const admin = adminMode(), seller = !admin && sellerMode();
         const id = localStorage.getItem(admin ? ADMIN_SESSION : seller ? SELLER_SESSION : SESSION);
         const a = id ? db.find('accounts', id) : null;
         if (!a) return null;
-        if (admin) return a.role === 'admin' ? a : null;
+        if (admin) return a.role === 'admin' && !SA.services.ceo?.blockedAccount(a) ? a : null;
         if (a.role === 'admin' || a.role === 'printer' || a.status === 'suspended') return null;
         // In the seller dashboard a pitch partner who also sells acts as a seller
         if (seller) return sellsOn(a) ? (a.role === 'seller' ? a : { ...a, role: 'seller', baseRole: a.role }) : null;
@@ -42,6 +44,7 @@
       const a = db.find('accounts', id);
       if (!a) throw new ApiError('Account not found.', 'not_found');
       if (a.status === 'suspended') throw new ApiError('This account is suspended. Contact the Super App team.', 'suspended');
+      const paused = SA.services.ceo?.blockedAccount(a); if (paused) throw new ApiError(`This agent is paused by the CEO: ${paused}`, 'suspended');
       const key = a.role === 'admin' ? ADMIN_SESSION : (as === 'seller' || a.role === 'seller' || (sellerMode() && sellsOn(a))) ? SELLER_SESSION : SESSION;
       localStorage.setItem(key, id);
       db.log(id, 'auth.signin', `${a.name} signed in${a.role === 'admin' ? ' to the admin console' : key === SELLER_SESSION ? ' to the seller dashboard' : ''}`);
@@ -693,6 +696,7 @@
     // ---- Wallet ----
     requestPayout({ amount, method, detail }, ownerId) {
       const a = me();
+      SA.services.ceo?.assertOn('payouts');
       const w = wallet({ ownerId });
       const amt = Math.round(+amount);
       if (!(amt >= 100)) throw new ApiError('The minimum withdrawal is 100 EGP.', 'invalid', { amount: 'Minimum 100 EGP' });

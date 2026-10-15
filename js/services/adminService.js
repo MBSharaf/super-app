@@ -246,6 +246,7 @@
       const amt = Math.round(+amount);
       if (!(amt >= 5 && amt <= 5000)) throw new ApiError('Credit between 5 and 5,000 EGP.', 'invalid');
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      SA.services.ceo?.gate({ kind: 'credit', amount: amt, fn: 'creditCustomer', args: [id, amt, reason], title: `${c.name} — ${reason.trim()}`, ref: id });
       if (c.device) await SA.services.payment.refund(amt, `Credit from Super App — ${reason.trim()}`);
       saveRec(id, { credits: [{ amount: amt, reason: reason.trim(), at: Date.now() }, ...(rec(id).credits || [])] });
       db().insert('refunds', { customerId: id, amount: amt, bearer: 'platform', kind: 'credit', reason: reason.trim(), at: Date.now() }, 'rf');
@@ -401,6 +402,7 @@
       if (!(amt >= 1 && amt <= max)) throw new ApiError(`Refund between 1 and ${max.toLocaleString()} EGP.`, 'invalid');
       if (!['platform', 'partner'].includes(bearer)) throw new ApiError('Choose who pays for it.', 'invalid');
       if (bearer === 'partner' && !tk.against) throw new ApiError('No partner or seller is linked to this request.', 'invalid');
+      SA.services.ceo?.gate({ kind: 'refund', amount: amt, fn: 'refundTicket', args: [id, { amount: amt, bearer, note }], title: `${tk.id} — ${tk.subject} (${tk.from?.name || 'customer'})`, detail: bearer, ref: id });
       const u = deviceUser();
       if (tk.from?.kind === 'customer' && u && tk.from.id === u.id) await SA.services.payment.refund(amt, `Refund — ${tk.id} ${tk.subject}`);
       const rf = db().insert('refunds', { ticketId: id, customerId: tk.from?.id, amount: amt, bearer: bearer === 'partner' ? 'partner' : 'platform', against: tk.against, ref: tk.ref, note: note.trim(), at: Date.now() }, 'rf');
@@ -948,6 +950,8 @@
       if (p.status !== 'processing') throw new ApiError('This withdrawal was already handled.', 'invalid');
       const hard = checks(p).filter(([t]) => t === 'danger');
       if (hard.length) throw new ApiError(`Can’t send it yet: ${hard.map(([, l]) => l.toLowerCase()).join(', ')}.`, 'invalid');
+      SA.services.ceo?.assertOn('payouts');
+      SA.services.ceo?.gate({ kind: 'payout', amount: p.amount, fn: 'approvePayout', args: [id, { ref }], title: `${p.company || p.name} — ${p.method} ${p.detail}`, detail: p.kind, ref: p.id });
       const by = admin.slaDate(Date.now());
       setPayout(p, { status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id, arrivesBy: by });
       log('payout.approved', `Approved ${p.amount.toLocaleString()} EGP withdrawal for ${p.company || p.name} via ${p.method}`, p.id);
@@ -985,6 +989,7 @@
       const amt = Math.round(+amount || o.owed);
       if (!o.account) throw new ApiError('No print partner account.', 'not_found');
       if (!(amt > 0 && amt <= o.owed)) throw new ApiError(`Enter up to ${o.owed.toLocaleString()} EGP.`, 'invalid');
+      SA.services.ceo?.gate({ kind: 'settle', amount: amt, fn: 'settlePrinter', args: [{ amount: amt, ref }], title: `${o.account.company || o.account.name} — printed items` });
       const p = db().insert('payouts', { accountId: o.account.id, amount: amt, method: o.account.payout?.method || 'Bank transfer', detail: o.account.payout?.detail || 'Print partner account', status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id, settlement: true }, 'PO');
       log('printer.settled', `Paid the print partner ${amt.toLocaleString()} EGP for printed items`, p.id);
       N()?.toAccount(o.account.id, { cat: 'account', tone: 'turf', title: `Settlement sent: ${amt.toLocaleString()} EGP`, body: 'Payment for printed and shipped items.', link: '#/factory/money' });
@@ -998,6 +1003,7 @@
       if (!a || a.role === 'admin') throw new ApiError('Choose a partner or seller.', 'invalid');
       if (!amt || Math.abs(amt) > 100000) throw new ApiError('Enter an amount between −100,000 and 100,000 EGP (not 0).', 'invalid');
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason — they see it in their wallet.', 'invalid');
+      if (kind === 'manual') SA.services.ceo?.gate({ kind: 'adjust', amount: Math.abs(amt), fn: 'adjust', args: [{ accountId, amount: amt, reason, kind, ref }], title: `${a.company || a.name} — ${amt > 0 ? '+' : '−'}${Math.abs(amt).toLocaleString()} EGP: ${reason.trim()}`, ref: accountId });
       // Sellers with print-on-demand: their print wallet; pitch owners and store-only sellers: the partner wallet
       const sl = SA.services.sellers?.byAccount(accountId);
       const wallet = sl && sl.mode !== 'store' ? 'pod' : 'store';

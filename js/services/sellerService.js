@@ -106,6 +106,7 @@
      */
     start({ mode, name, handle = '', bio = '', payoutMethod = 'InstaPay', payoutDetail = '', agree, fullName = '', phone = '', nationalId = '', idPhoto = '', accountId: ownerId = '', requireId = false }) {
       const u = me();
+      SA.services.ceo?.assertOn('applications');
       const owner = ownerId ? db().find('accounts', ownerId) : null;
       if (ownerId && (!owner || owner.role !== 'owner')) throw new ApiError('Only pitch partners can apply from their dashboard.', 'forbidden');
       if (owner ? sellers.byAccount(owner.id) : sellers.mine()) throw new ApiError('Seller mode is already on for this account.', 'exists');

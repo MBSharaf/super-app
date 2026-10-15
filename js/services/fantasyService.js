@@ -169,6 +169,7 @@
     /* Fantasy Pass */
     passPlans, pass, passCovers,
     async buyPass(planId, payment) {
+      SA.services.ceo?.assertOn('fantasy');
       const plan = passPlans().find((x) => x.id === planId);
       if (!plan) throw new ApiError('Choose a plan.', 'validation');
       SA.services.user.assertActive();
@@ -242,6 +243,7 @@
 
     /** Create the team or apply transfers. */
     saveSquad: (ids, { name } = {}) => request(() => {
+      SA.services.ceo?.assertOn('fantasy');
       const errs = validateSquad(ids);
       if (errs.length) throw new ApiError(errs[0], 'invalid_squad', errs);
       const cur = fstate().team;

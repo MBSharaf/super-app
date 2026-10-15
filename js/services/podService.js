@@ -361,6 +361,7 @@
       };
     },
     withdraw(sellerId, amount) {
+      SA.services.ceo?.assertOn('payouts');
       const s = S().get(sellerId); if (!s) throw new ApiError('Seller not found.', 'not_found');
       const e = pod.earnings(sellerId);
       amount = Math.round(Number(amount));
