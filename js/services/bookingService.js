@@ -70,6 +70,7 @@
     /** Checks the slot is still free, takes payment, creates the booking. */
     async create({ pitchId, date, hour, duration, payment, players, code = '' }) {
       SA.services.user.assertActive();
+      SA.services.content?.assertOpen('bookings');
       const p = PS().getSync(pitchId);
       if (!PS().bookable(p)) throw new ApiError('This pitch isn’t taking bookings right now.', 'closed');
       const slots = PS().slotsSync(pitchId, date);
@@ -94,6 +95,7 @@
     /** Same slot every week for N weeks, paid once. Weeks where the slot is taken are skipped. */
     async createSeries({ pitchId, date, hour, duration, weeks, payment, players }) {
       SA.services.user.assertActive();
+      SA.services.content?.assertOpen('bookings');
       const p = PS().getSync(pitchId);
       if (!PS().bookable(p)) throw new ApiError('This pitch isn’t taking bookings right now.', 'closed');
       if (!WEEK_OPTIONS.includes(+weeks)) throw new ApiError('Choose 4, 8 or 12 weeks.', 'invalid');

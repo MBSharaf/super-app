@@ -203,6 +203,7 @@
     // Orders
     async placeOrder({ address, delivery, payment }) {
       SA.services.user.assertActive();
+      SA.services.content?.assertOpen('shop');
       const t = totals();
       if (!t.lines.length) throw new ApiError('Your cart is empty.', 'empty_cart');
       // Re-check stock right before taking payment

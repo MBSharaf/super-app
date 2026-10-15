@@ -95,11 +95,14 @@
   };
 
   const commissionRate = () => db.settings().commission.bookings;
+  // A partner can have its own commission deal (set by the Super App team); otherwise the platform rate applies
+  const dealOf = (ownerId) => db.find('accounts', ownerId)?.commission || null;
+  const bookingRate = (ownerId) => (dealOf(ownerId)?.bookings ?? commissionRate());
   const SOURCES = { app: 'Super App', 'walk-in': 'Walk-in', team: 'Team booking' };
   const sourceLabel = (b) => (b.source === 'app' && b.seriesId ? 'Super App · weekly' : SOURCES[b.source] || 'Super App');
   /** Money for one booking, from the partner's point of view */
   const bookingMoney = (b, status = statusOf(b)) => {
-    const rate = b.source === 'app' || !b.source ? commissionRate() : 0;
+    const rate = b.source === 'app' || !b.source ? bookingRate(b.ownerId) : 0;
     if (status === 'cancelled') {
       // Late customer cancellation: the venue keeps what the policy didn't refund
       const kept = b.cancelledBy === 'customer' && b.refundShare != null ? Math.round(b.amount * (1 - b.refundShare)) : 0;
@@ -145,6 +148,7 @@
   // Stores run by sellers pay the commission of their seller level (12% → 8%)
   const storeRate = (st) => {
     if (st?.official) return 0;
+    if (st && dealOf(st.ownerId)?.store != null) return dealOf(st.ownerId).store;
     const sl = st && SA.services.sellers?.byAccount(st.ownerId);
     return sl ? SA.services.sellers.levelOf(sl).commission : db.settings().commission.store;
   };
@@ -532,7 +536,7 @@
   const vatPart = (gross) => gross - gross / (1 + (db.settings().vat || 0));
 
   const dash = {
-    adminMode,
+    adminMode, bookingRate, storeRate, dealOf,
     auth, isAdmin, me: () => auth.current(),
     myPitches, myStores, ledger, findBooking, summary, daily: series, heatmap, wallet, salesFor, statusOf, bookingMoney, lastSettlement, sourceLabel, saleState, FLOW, renewMemberships,
     commission: () => db.settings().commission,

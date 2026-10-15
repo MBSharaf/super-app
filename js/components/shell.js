@@ -28,7 +28,8 @@
     const cartCount = s.cart.reduce((a, l) => a + l.qty, 0);
     const unread = s.notifications.filter((n) => !n.read).length;
     const u = s.user;
-    const an = SA.services.content?.announcement();
+    const mt = SA.services.db?.settings().maintenance;
+    const an = mt && (mt.bookings || mt.shop) ? { text: `${mt.bookings && mt.shop ? 'Bookings and shop checkout are' : mt.bookings ? 'Pitch bookings are' : 'Shop checkout is'} paused for maintenance. ${mt.message || ''}`.trim(), tone: 'alert', v: `m${mt.v || 0}` } : SA.services.content?.announcement();
     const bar = an && !SA.services.content.dismissed(an) ? `<div class="announce t-${an.tone || 'info'}" role="status"><div class="container announce-inner">${icon(an.tone === 'promo' ? 'gift' : an.tone === 'alert' ? 'alert' : 'megaphone', 16)}<span class="grow small">${SA.core.utils.esc(an.text)}${an.link ? ` <a class="announce-link" href="${SA.core.utils.esc(an.link)}">${SA.core.utils.esc(an.cta || 'Learn more')}</a>` : ''}</span><button class="icon-btn announce-x" data-announce-x aria-label="Hide announcement">${icon('x', 14)}</button></div></div>` : '';
     return `${bar}<div class="container header-inner">
       ${brand}

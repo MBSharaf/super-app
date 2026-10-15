@@ -100,6 +100,20 @@
               <td><input class="input num" name="commission-${i}" type="number" min="0" max="50" step="0.5" value="${+(l.commission * 100).toFixed(1)}" aria-label="${esc(l.name)} commission" /></td>
               <td><input class="input num" name="fantasyDiscount-${i}" type="number" min="0" max="100" step="5" value="${Math.round(l.fantasyDiscount * 100)}" aria-label="${esc(l.name)} fantasy discount" /></td></tr>`).join('')}
           </tbody></table></div><p class="field-error" data-err="lvls"></p><button class="btn btn-primary" type="submit" style="margin-top:12px">Save levels</button></form></section>
+        <section class="dash-card"><h2 class="h4">Delivery & service fees</h2><p class="small soft" style="margin-top:6px">What customers pay on top: shop delivery and the booking service fee. Changes apply to new orders and bookings.</p>
+          <form id="fees" novalidate class="form-grid" style="margin-top:16px">
+            <div class="field"><label for="fe-s">Standard delivery (EGP)</label><input class="input num" id="fe-s" name="standard" type="number" min="0" step="5" value="${SA.data.products.shipping.standard}" /></div>
+            <div class="field"><label for="fe-e">Express delivery (EGP)</label><input class="input num" id="fe-e" name="express" type="number" min="0" step="5" value="${SA.data.products.shipping.express}" /></div>
+            <div class="field"><label for="fe-f">Free delivery from (EGP)</label><input class="input num" id="fe-f" name="freeOver" type="number" min="0" step="50" value="${SA.data.products.shipping.freeOver}" /><span class="field-hint">0 = never free</span></div>
+            <div class="field"><label for="fe-b">Booking service fee (%)</label><input class="input num" id="fe-b" name="serviceFee" type="number" min="0" max="15" step="0.5" value="${+(db().settings().serviceFee * 100).toFixed(1)}" /></div>
+            <p class="field-error span-2" data-err="fees"></p>
+            <div class="span-2"><button class="btn btn-primary" type="submit">Save fees</button></div></form></section>
+        <section class="dash-card"><h2 class="h4">Maintenance mode</h2><p class="small soft" style="margin-top:6px">Pause checkout while something is being fixed. People can still browse; a red bar on the site explains it.</p>
+          <form id="maint" novalidate class="stack" style="--gap:10px;margin-top:14px">
+            <label class="choice"><input type="checkbox" name="bookings" ${db().settings().maintenance?.bookings ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Pause pitch bookings</b></span></label>
+            <label class="choice"><input type="checkbox" name="shop" ${db().settings().maintenance?.shop ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Pause shop checkout</b></span></label>
+            <div class="field"><label for="mt-m">Message (optional)</label><input class="input" id="mt-m" name="message" maxlength="140" value="${esc(db().settings().maintenance?.message || '')}" placeholder="e.g. Back by 2 AM — sorry for the wait." /></div>
+            <div><button class="btn btn-primary" type="submit">Save</button></div></form></section>
         <section class="dash-card"><h2 class="h4">Demo data</h2><p class="small soft" style="margin-top:6px">Restore all pitches, products, stores and bookings to the original demo state on this device.</p><button class="btn btn-outline" data-reset style="margin-top:14px;color:var(--danger)">${icon('refresh', 15)} Reset platform data</button></section>
       </div>`;
       return C.layout('settings', { title: 'Platform settings', subtitle: 'Commission, VAT, sellers, Fantasy Pass and demo data', body });
@@ -154,6 +168,17 @@
         if (bad) { e.target.querySelector('[data-err="lvls"]').textContent = 'Each level needs more items and at least the same rating as the one before; commission 0–50%; the base discount must keep every product above its partner cost.'; return; }
         db().setSettings({ sellerLevels: next }); db().log(D().me().id, 'settings.levels', 'Seller levels updated');
         SA.ui.overlay.toast('Seller levels saved'); SA.app.rerender();
+      });
+      el.querySelector('#fees')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        try { SA.services.admin.setFees(SA.core.utils.formData(e.target)); SA.ui.overlay.toast('Fees saved'); SA.app.rerender(); }
+        catch (err) { e.target.querySelector('[data-err="fees"]').textContent = err.message; }
+      });
+      el.querySelector('#maint')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const f = SA.core.utils.formData(e.target);
+        SA.services.admin.setMaintenance({ bookings: !!f.bookings, shop: !!f.shop, message: f.message || '' });
+        SA.ui.overlay.toast(f.bookings || f.shop ? 'Maintenance mode is on' : 'Maintenance mode is off', { type: 'info' }); SA.app.rerender();
       });
       el.querySelector('[data-reset]')?.addEventListener('click', async () => {
         if (!(await SA.ui.overlay.confirm({ title: 'Reset platform data?', text: 'Pitches, products, stores, bookings, closures and payouts go back to the demo state on this device.', confirmLabel: 'Reset', danger: true }))) return;

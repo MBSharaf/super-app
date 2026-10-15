@@ -209,7 +209,7 @@
         const price = +d.price || 0, was = +d.was > price ? +d.was : price;
         const pv = { id: 'preview', name: d.name || 'Product name', brand: d.brand || store.name, price, was, discount: was > price ? Math.round((1 - price / was) * 100) : 0, rating: p.rating || 5, reviews: p.reviews || 0, images: d.images.length ? d.images : ['photo-1551958219-acbc608c6377'], sizes: d.sizes.length ? d.sizes : ['One size'], badges: [], wished: false };
         el.querySelector('[data-preview]').innerHTML = SA.ui.cards.product(pv).replace(/href="#\/shop\/preview"/g, 'href="#" tabindex="-1"');
-        const rate = store.official ? 0 : D().commission().store;
+        const rate = D().storeRate(store);
         el.querySelector('[data-you-get]').textContent = price ? money(Math.round(price * (1 - rate))) : '—';
       };
       form.addEventListener('input', preview); form.addEventListener('change', preview);

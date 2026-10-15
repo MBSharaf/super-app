@@ -49,7 +49,7 @@
               <div><dt>Gross pitch revenue</dt><dd class="num">${money(Math.round(s.gross))}</dd></div>
               <div class="kv-sub"><dt>of which VAT ${vatPct()}% (you declare it)</dt><dd class="num">${money(Math.round(vatIn(s.gross)))}</dd></div>
               ${s.retained ? `<div class="kv-sub"><dt>includes late-cancellation income</dt><dd class="num">${money(Math.round(s.retained))}</dd></div>` : ''}
-              <div><dt>Super App commission (${Math.round(D().commission().bookings * 100)}% on app bookings)</dt><dd class="num">−${money(Math.round(s.commission))}</dd></div>
+              <div><dt>Super App commission (${+(D().bookingRate(C.scope().ownerId || D().me().id) * 100).toFixed(1)}% on app bookings)</dt><dd class="num">−${money(Math.round(s.commission))}</dd></div>
               <div><dt>Refunded to customers</dt><dd class="num">${money(Math.round(s.refunds))}</dd></div>
               ${s.tourGross ? `<div class="kv-sub"><dt>includes tournament entry fees (${s.tourTeams} team${s.tourTeams === 1 ? '' : 's'})</dt><dd class="num">${money(Math.round(s.tourGross))}</dd></div>` : ''}
               <div class="total"><dt>Net from bookings</dt><dd class="num">${money(Math.round(s.net))}</dd></div>

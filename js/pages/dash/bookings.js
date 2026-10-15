@@ -31,7 +31,7 @@
         <dl class="kv" style="margin-top:8px">
           <div><dt>Pitch price</dt><dd class="num">${money(b.amount)}</dd></div>
           ${b.discountAmount || b.discount ? `<div><dt>Includes weekly discount</dt><dd class="num">${Math.round((b.discount || 0) * 100)}%</dd></div>` : ''}
-          <div><dt>Super App commission (${b.source === 'app' ? Math.round(D().commission().bookings * 100) : '0'}%)</dt><dd class="num">−${money(b.money.commission)}</dd></div>
+          <div><dt>Super App commission (${b.source === 'app' ? +(D().bookingRate(b.ownerId) * 100).toFixed(1) : '0'}%)</dt><dd class="num">−${money(b.money.commission)}</dd></div>
           ${b.status === 'cancelled' ? `<div><dt>Refunded to customer</dt><dd class="num" style="color:var(--danger)">${money(b.money.refund)}</dd></div>` : ''}
           ${b.money.retained ? `<div><dt>Kept under the cancellation policy</dt><dd class="num">${money(b.money.gross)}</dd></div>` : ''}
           <div class="total"><dt>Your earnings</dt><dd class="num">${money(b.money.net)}</dd></div>

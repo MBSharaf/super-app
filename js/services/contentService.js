@@ -34,8 +34,15 @@
       const own = (db().all('newsPosts') || []).filter((p) => !p.deleted).map((p) => ({ ...p, own: true }));
       return [...own, ...SA.data.news.stories].map((s) => ({ ...s, ...(edits[s.id] || {}) })).sort((a, b) => b.at - a.at);
     },
+    /** Maintenance mode: bookings and/or shop checkout paused by the Super App team */
+    paused(what) { const m = settings().maintenance; return m && m[what] ? `${what === 'shop' ? 'Shop checkout is' : 'Pitch bookings are'} paused for maintenance. ${m.message || 'Please try again soon.'}` : ''; },
+    assertOpen(what) { const msg = content.paused(what); if (msg) throw new SA.services.http.ApiError(msg, 'paused'); },
     /** Pickup games hidden by the Super App team */
     matchHidden: (id) => !!(settings().hiddenMatches || {})[id],
   };
   SA.services.content = content;
+  // Delivery prices set in the admin console replace the defaults everywhere the shop reads them
+  const syncShipping = () => Object.assign(SA.data.products.shipping, settings().shipping || {});
+  syncShipping();
+  db().subscribe((col) => { if (col === 'settings' || col === '*') syncShipping(); });
 })(window.SA);

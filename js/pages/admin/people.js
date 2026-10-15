@@ -14,7 +14,7 @@
    * Details drawer: render(id) → html; onClick / onChange return true when something changed.
    * The drawer repaints in place; the page behind refreshes when the drawer closes (a re-render would close it).
    */
-  const drawer = ({ title, render, onClick, onChange, id }) => {
+  const drawer = ({ title, render, onClick, onChange, onSubmit, id }) => {
     let dirty = false, host = null;
     const paint = () => { if (host) host.innerHTML = render(id); };
     return SA.ui.overlay.open({
@@ -27,6 +27,7 @@
           if (await onClick(e, id, close)) { dirty = true; paint(); }
         });
         m.addEventListener('change', async (e) => { if (onChange && (await onChange(e, id))) { dirty = true; paint(); } });
+        m.addEventListener('submit', async (e) => { if (!onSubmit) return; e.preventDefault(); if (await onSubmit(e, id)) { dirty = true; paint(); } });
       },
       onClose() { if (dirty) SA.app.rerender(); },
     });
@@ -123,6 +124,11 @@
         <button class="btn btn-outline btn-sm" data-act="adjust">${icon('swap', 14)} Adjust balance</button>
         ${p.status === 'suspended' ? `<button class="btn btn-primary btn-sm" data-act="activate">${icon('check', 14, 2.6)} Reactivate</button>` : `<button class="btn btn-outline btn-sm" data-act="suspend" style="color:var(--danger)">${icon('ban', 14)} Suspend account</button>`}
       </div><p class="xs muted" style="margin-top:8px">Payouts to ${esc(p.payout?.method || '—')} ${esc(p.payout?.detail || '')}</p></section>
+      ${(() => { const d = p.commission, g = db().settings().commission; return `<section class="adm-ds"><h3 class="h4">Commission deal</h3><p class="xs muted" style="margin-top:-4px">Leave a box empty to use the platform rate (bookings ${+(g.bookings * 100).toFixed(1)}%, store ${+(g.store * 100).toFixed(1)}%).</p>
+        <form class="form-grid" data-deal novalidate style="margin-top:8px"><div class="field"><label for="dl-b">Bookings %</label><input class="input num" id="dl-b" name="bookings" type="number" min="0" max="50" step="0.5" value="${d?.bookings != null ? +(d.bookings * 100).toFixed(1) : ''}" placeholder="${+(g.bookings * 100).toFixed(1)}" /></div>
+          <div class="field"><label for="dl-s">Store %</label><input class="input num" id="dl-s" name="store" type="number" min="0" max="50" step="0.5" value="${d?.store != null ? +(d.store * 100).toFixed(1) : ''}" placeholder="${+(g.store * 100).toFixed(1)}" /></div>
+          <div class="field span-2"><label for="dl-n">Note (internal)</label><input class="input" id="dl-n" name="note" maxlength="120" value="${esc(d?.note || '')}" placeholder="e.g. 12-month deal, 3 venues" /></div>
+          <div class="span-2 row" style="--gap:8px;justify-content:flex-end">${d ? '<button type="button" class="btn btn-ghost btn-sm" data-act="deal-clear">Use platform rate</button>' : ''}<button class="btn btn-primary btn-sm" type="submit">Save deal</button></div></form></section>`; })()}
       <section class="adm-ds"><h3 class="h4">Pitches</h3><ul class="adm-list">${pitches.map((x) => `<li><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.area)} · ${esc(x.format)} · ${money(x.price)}/h</span></span>${x.status === 'active' ? '<span class="badge badge-turf">Open</span>' : `<span class="badge badge-danger" title="${esc(x.closedReason || '')}">Closed</span>`}
         <a class="btn btn-ghost btn-sm" href="#/pitches/${x.id}" target="_blank" rel="noopener">View</a><button class="btn btn-ghost btn-sm" data-pitch="${x.id}" data-to="${x.status === 'active' ? 'closed' : 'active'}">${x.status === 'active' ? 'Close' : 'Reopen'}</button></li>`).join('') || '<li class="small muted">No pitches yet.</li>'}</ul></section>
       ${store ? `<section class="adm-ds"><h3 class="h4">Store</h3><ul class="adm-list"><li><span class="grow"><b class="small">${esc(store.name)}</b><span class="xs muted" style="display:block">${db().all('products').filter((x) => x.storeId === store.id && !x.deleted).length} products</span></span><span class="badge ${store.status === 'active' ? 'badge-turf' : 'badge-danger'}">${store.status === 'active' ? 'Live' : 'Suspended'}</span><a class="btn btn-ghost btn-sm" href="#/shop?store=${store.id}" target="_blank" rel="noopener">View</a></li></ul></section>` : ''}`;
@@ -134,6 +140,7 @@
       if (act === 'adjust') { A.adjustDialog(id); return false; }
       if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super App. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
       if (act === 'activate') { AD().setPartnerStatus(id, 'active'); toast('Partner reactivated'); return true; }
+      if (act === 'deal-clear') { AD().setCommissionDeal(id, {}); toast('Platform rates apply again', 'info'); return true; }
       const pt = e.target.closest('[data-pitch]');
       if (pt) {
         if (pt.dataset.to === 'closed') { const r = await A.reason({ title: 'Close this pitch?', text: 'Players can’t book it until it’s reopened. The owner is notified.', label: 'Reason the owner sees', confirmLabel: 'Close pitch', danger: true }); if (!r) return; AD().setPitchStatus(pt.dataset.pitch, 'closed', r.reason); }
@@ -179,7 +186,7 @@
     },
     mount(el, ctx) {
       bindSearch(el, '/admin/partners', ctx.query);
-      const open = (id) => drawer({ title: 'Partner', id, render: partnerDrawer, onClick: partnerClick });
+      const open = (id) => drawer({ title: 'Partner', id, render: partnerDrawer, onClick: partnerClick, onSubmit: (e, pid) => { if (!e.target.matches('[data-deal]')) return false; try { AD().setCommissionDeal(pid, SA.core.utils.formData(e.target)); toast('Commission deal saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
       el.addEventListener('click', async (e) => {
         const r = e.target.closest('[data-open]'); if (r) { open(r.dataset.open); return; }
         const st = e.target.closest('[data-store-status]');

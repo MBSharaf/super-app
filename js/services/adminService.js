@@ -259,6 +259,35 @@
         ? { cat: 'account', tone: 'turf', title: 'Your account is active again', body: 'Your pitches and store are back on Super App.', link: '#/dash' }
         : { cat: 'account', tone: 'danger', title: 'Your account is suspended', body: `${reason.trim()} Your pitches and store are hidden until this is resolved.`, link: '#/dash' });
     },
+    /** Commission deal for one partner (percent values; empty = platform rate) */
+    setCommissionDeal(accountId, { bookings, store, note = '' }) {
+      me();
+      const a = db().find('accounts', accountId); if (!a) throw new ApiError('Partner not found.', 'not_found');
+      const val = (v) => (v === '' || v == null ? null : +v / 100);
+      const b = val(bookings), s = val(store);
+      if ([b, s].some((x) => x != null && !(x >= 0 && x <= 0.5))) throw new ApiError('Commission must be between 0% and 50%.', 'invalid');
+      const deal = b == null && s == null ? null : { bookings: b, store: s, note: note.trim(), since: Date.now() };
+      db().update('accounts', accountId, { commission: deal });
+      const g = db().settings().commission;
+      log('partner.commission', deal ? `Commission deal for ${a.company}: bookings ${b == null ? `${g.bookings * 100}% (platform)` : `${+(b * 100).toFixed(1)}%`}, store ${s == null ? 'platform rate' : `${+(s * 100).toFixed(1)}%`}${deal.note ? ` — ${deal.note}` : ''}` : `Removed ${a.company}’s commission deal (platform rates apply)`, accountId);
+      N()?.toAccount(accountId, { cat: 'money', title: deal ? 'Your commission was updated' : 'Your commission is back to the standard rate', body: deal ? `Bookings ${b == null ? `${+(g.bookings * 100).toFixed(1)}%` : `${+(b * 100).toFixed(1)}%`} · store ${s == null ? `${+(g.store * 100).toFixed(1)}%` : `${+(s * 100).toFixed(1)}%`} — from now on.` : `Bookings ${+(g.bookings * 100).toFixed(1)}% · store ${+(g.store * 100).toFixed(1)}%.`, link: '#/dash/finance' });
+    },
+    setFees({ standard, express, freeOver, serviceFee }) {
+      me();
+      const s = { standard: Math.round(+standard), express: Math.round(+express), freeOver: Math.round(+freeOver) };
+      const fee = +serviceFee / 100;
+      if (!(s.standard >= 0 && s.express >= s.standard && s.freeOver >= 0)) throw new ApiError('Express can’t cost less than standard delivery, and prices can’t be negative.', 'invalid');
+      if (!(fee >= 0 && fee <= 0.15)) throw new ApiError('Service fee must be between 0% and 15%.', 'invalid');
+      db().setSettings({ shipping: s, serviceFee: fee });
+      log('settings.fees', `Delivery ${s.standard}/${s.express} EGP, free from ${s.freeOver || 'never'}; booking service fee ${+(fee * 100).toFixed(1)}%`);
+    },
+    setMaintenance({ bookings, shop, message }) {
+      me();
+      const prev = db().settings().maintenance || {};
+      db().setSettings({ maintenance: { bookings: !!bookings, shop: !!shop, message: String(message || '').trim().slice(0, 140), v: (prev.v || 0) + 1, at: Date.now() } });
+      log('settings.maintenance', bookings || shop ? `Maintenance on: ${[bookings && 'bookings', shop && 'shop checkout'].filter(Boolean).join(' and ')} paused` : 'Maintenance off');
+      SA.ui.shell?.render();
+    },
     /** Close or reopen a single pitch from the admin side */
     setPitchStatus(pitchId, status, reason = '') {
       me();
