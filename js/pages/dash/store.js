@@ -90,7 +90,7 @@
               <td class="r"><div class="row" style="--gap:2px;justify-content:flex-end"><a class="icon-btn" href="#/shop/${p.id}" target="_blank" rel="noopener" aria-label="View ${esc(p.name)} on the site">${icon('eye', 16)}</a><a class="icon-btn" href="#/dash/store/product/${p.id}" aria-label="Edit ${esc(p.name)}">${icon('edit', 16)}</a><button class="icon-btn" data-del="${p.id}" aria-label="Delete ${esc(p.name)}" style="color:var(--danger)">${icon('trash', 16)}</button></div></td></tr>`).join('')}
           </tbody></table></div>` : SA.ui.c.empty({ icon: 'bag', title: 'Add your first product', text: 'Products you publish appear in the Super App shop straight away.', action: `<a class="btn btn-primary" href="#/dash/store/product/new">${icon('plus', 16)} Add product</a>` })}
         </section>`;
-      return C.layout('store', { title: viewingOther ? `Store · ${esc(store.name)}` : 'My store', subtitle: `${products.length} product${products.length === 1 ? '' : 's'} · ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super App commission on sales`, actions: `<a class="btn btn-primary btn-sm" href="#/dash/store/product/new">${icon('plus', 15)} Add product</a>`, body });
+      return C.layout('store', { title: viewingOther ? `Store · ${esc(store.name)}` : D().isAdmin() ? 'Super App Store' : 'My store', subtitle: `${products.length} product${products.length === 1 ? '' : 's'} · ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super App commission on sales`, actions: `<a class="btn btn-primary btn-sm" href="#/dash/store/product/new">${icon('plus', 15)} Add product</a>`, body });
     },
     mount(el) {
       const sc = C.scope();

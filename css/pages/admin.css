@@ -192,3 +192,27 @@ tr.is-dim td { opacity: .55; }
 .adm-search-box:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(11,110,79,.15); }
 .adm-search-box input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); }
 .adm-search-box .btn { height: 36px; border-radius: 999px; }
+
+/* A1: admin sign-in — 3D control cube */
+.adm-3d { transform-style: preserve-3d; perspective: 1100px; }
+.adm-cube-wrap { position: absolute; inset: 0; display: grid; place-items: center; transform-style: preserve-3d; perspective: 900px; pointer-events: none; }
+.adm-cube { position: relative; width: 150px; height: 150px; transform-style: preserve-3d; animation: admCube 16s cubic-bezier(.45,.05,.55,.95) infinite; }
+.adm-face { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; border-radius: 26px; color: #fff; font-size: 13px; letter-spacing: .04em;
+  background: linear-gradient(145deg, rgba(255,91,20,.95), #4a1b06 70%); border: 1px solid rgba(255,255,255,.22); box-shadow: inset 0 0 36px rgba(0,0,0,.35), 0 0 40px rgba(255,91,20,.25); backface-visibility: hidden; }
+.adm-face.f0 { transform: rotateY(0deg) translateZ(75px); }
+.adm-face.f1 { transform: rotateY(90deg) translateZ(75px); background: linear-gradient(145deg, #17795A, #0b2a20 70%); }
+.adm-face.f2 { transform: rotateY(180deg) translateZ(75px); }
+.adm-face.f3 { transform: rotateY(-90deg) translateZ(75px); background: linear-gradient(145deg, #1C2541, #0b0f1d 70%); }
+.adm-face.f4 { transform: rotateX(90deg) translateZ(75px); background: linear-gradient(145deg, #C9963A, #3d2a08 70%); }
+.adm-face.f5 { transform: rotateX(-90deg) translateZ(75px); background: linear-gradient(145deg, #6C3FB5, #1d0f33 70%); }
+@keyframes admCube { 0% { transform: rotateX(-18deg) rotateY(0deg); } 25% { transform: rotateX(-18deg) rotateY(90deg); } 50% { transform: rotateX(-18deg) rotateY(180deg); } 62% { transform: rotateX(72deg) rotateY(180deg); } 75% { transform: rotateX(-18deg) rotateY(270deg); } 100% { transform: rotateX(-18deg) rotateY(360deg); } }
+.adm-ring { position: absolute; inset: 8%; border-radius: 50%; border: 1px solid rgba(255,91,20,.35); transform: rotateX(72deg); transform-style: preserve-3d; animation: admRing 12s linear infinite; pointer-events: none; }
+.adm-ring i { position: absolute; width: 12px; height: 12px; margin: -6px; border-radius: 50%; background: var(--blaze); box-shadow: 0 0 14px var(--blaze); }
+.adm-ring i:nth-child(1) { left: 50%; top: 0; } .adm-ring i:nth-child(2) { left: 100%; top: 50%; background: #2fd18f; box-shadow: 0 0 14px #2fd18f; } .adm-ring i:nth-child(3) { left: 15%; top: 85%; background: #FFBA49; box-shadow: 0 0 14px #FFBA49; }
+@keyframes admRing { to { transform: rotateX(72deg) rotateZ(360deg); } }
+.adm-3d .float-card { transform: translateZ(60px); z-index: 2; }
+@media (max-width: 980px) { .adm-cube { width: 110px; height: 110px; } .adm-face { border-radius: 20px; } .adm-face.f0, .adm-face.f1, .adm-face.f2, .adm-face.f3, .adm-face.f4, .adm-face.f5 { --z: 55px; } .adm-face.f0 { transform: rotateY(0deg) translateZ(55px); } .adm-face.f1 { transform: rotateY(90deg) translateZ(55px); } .adm-face.f2 { transform: rotateY(180deg) translateZ(55px); } .adm-face.f3 { transform: rotateY(-90deg) translateZ(55px); } .adm-face.f4 { transform: rotateX(90deg) translateZ(55px); } .adm-face.f5 { transform: rotateX(-90deg) translateZ(55px); } }
+@media (prefers-reduced-motion: reduce) { .adm-cube, .adm-ring { animation: none; } }
+
+.adm-help { display: flex; gap: 8px; align-items: flex-start; padding: 10px 14px; border-radius: var(--r-md); background: var(--surface-2); color: var(--ink-2); }
+.adm-help svg { flex: none; margin-top: 2px; color: var(--blaze); }

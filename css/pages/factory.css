@@ -119,3 +119,10 @@
 
 /* Admin console: factory jobs */
 tr.is-late td:first-child { box-shadow: inset 3px 0 var(--danger); }
+
+/* F1: factory sign-in — the turning tee */
+.fac-belt { transform-style: preserve-3d; perspective: 1000px; }
+.fac-tee { position: absolute; inset: 14% 22%; display: grid; place-items: center; z-index: 1; cursor: grab; }
+.fac-tee.is-drag { cursor: grabbing; }
+.fac-belt .float-card { z-index: 2; transform: translateZ(50px); }
+.fac-tee img, .fac-tee svg { border-radius: 22px; box-shadow: 0 30px 60px -20px rgba(0,0,0,.6); }

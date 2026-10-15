@@ -126,6 +126,13 @@
   };
   const bell = (al) => `<div class="bell-wrap"><button class="icon-btn dash-bell" data-bell aria-expanded="false" aria-haspopup="true" aria-label="Notifications">${icon('bell', 19)}<span class="bell-dot" ${bellCount(al) ? '' : 'hidden'}>${bellCount(al)}</span></button>
       <div class="bell-pop" data-bell-pop hidden>${bellPop(al)}</div></div>`;
+  /** One line at the top of shared pages in the admin console: what the page is and what the admin can do there */
+  const ADMIN_HELP = {
+    store: 'Super App’s own official store — products Super App buys and sells itself (not a seller’s). You have full control: add and edit products, prices, stock, photos and sales, and handle every order.',
+    orders: 'Orders from Super App’s official store. Mark them packed and shipped, print the packing slip, or cancel and refund.',
+    tournaments: 'Every tournament pitch partners run on Super App. You have the same powers as the organiser: teams and registrations, the schedule, scores and tables — and you can cancel a tournament, which refunds every team.',
+    'pod-catalog': 'The blank products sellers can print their designs on (tee, oversized tee, hoodie, cap). For each one you set the colours, sizes, the lowest shop price, the factory’s price and the extra for a back print. Pause a product and its designs leave the shop.',
+  };
   const layout = (active, { title, subtitle = '', actions = '', body }) => {
     const a = D().me();
     const al = alertsNow();
@@ -140,7 +147,7 @@
           ${owners.length ? `<label class="dash-owner"><span class="xs muted">Viewing</span><select class="select" data-owner-filter>${[['', 'All partners'], ...owners.map((o) => [o.id, `${o.name} · ${o.company}`])].map(([v, l]) => `<option value="${v}" ${ownerFilter() === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></label>` : ''}
           <div class="dash-actions">${actions}<span class="dash-prefs">${SA.ui.shell.prefButtons()}</span>${bell(al)}</div>
         </header>
-        <div class="dash-body">${body}</div>
+        <div class="dash-body">${adm && ADMIN_HELP[active] ? `<p class="adm-help small">${icon('info', 14)} <span>${ADMIN_HELP[active]}</span></p>` : ''}${body}</div>
       </section>
     </div>`;
     return portalLinks(out);
@@ -214,7 +221,8 @@
       // The seller dashboard only routes seller pages; in the pitch partner dashboard, seller-only pages fall back to the overview
       const allow = this.roles || page.roles || [];
       const me = D().me();
-      const ok = typeof allow === 'function' ? allow(me) : !allow.length || allow.includes(me.role);
+      // The admin console sees every shared page; a pitch partner is only kept out of seller-only pages (roles: ['seller'])
+      const ok = isAdminUI() || typeof allow === 'function' || !allow.length || allow.includes(me.role);
       this._as = isSellerUI() || ok ? null : SA.pages.dashOverview;
       if (this._as) return this._as.render(ctx);
       try { return await page.render.call(page, ctx); }

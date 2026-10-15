@@ -65,7 +65,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 - [x] P7 Notifications section: explain it, then keep or change it.
 
 ## Admin
-- [ ] A1 Sign-in screen: 3D animation (it is static now).
+- [x] A1 Sign-in screen: 3D animation (it is static now).
 - [x] A2 Overview, "Where revenue comes from": the bar animation overflows the text.
 - [x] A3 Withdrawals:
   - Show who is asking (player, pitch owner, seller, factory) with full details.
@@ -80,12 +80,12 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - Separate pitch owners, sellers and factories, each with details and an overview.
   - The same search UI and export as A5.
   - Notifications.
-- [ ] A7 Tournaments: explain the admin's powers there.
+- [x] A7 Tournaments: explain the admin's powers there.
 - [x] A8 Support & disputes:
   - Every reply or action notifies the other side (pitch owner, seller or factory) and the customer.
   - Show clearly who opened the dispute and against whom.
   - The chat comes later.
-- [ ] A9 Super App Store: explain it. It is Super App's own store, so the admin gets full access.
+- [x] A9 Super App Store: explain it. It is Super App's own store, so the admin gets full access.
 - [x] A10 Reviews:
   - Same search/UI issue.
   - Explain what is reviewed (pitches).
@@ -95,13 +95,13 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - Approve and reject (with reason) notify the seller.
   - Reports get the same fix and notifications.
   - Suspending a seller notifies them with the reason.
-- [ ] A12 Print catalogue: explain it.
-- [ ] A13 Free slots & games: explain it.
+- [x] A12 Print catalogue: explain it.
+- [x] A13 Free slots & games: explain it.
 - [x] A14 Analytics: fix the bars UI.
-- [ ] A15 Platform settings and Audit log: admin manager only. This comes with the backend and the admin team roles.
+- [~] A15 (deferred to the backend + admin team roles — needs real sign-in) Platform settings and Audit log: admin manager only. This comes with the backend and the admin team roles.
 
 ## Factory
-- [ ] F1 Sign-in screen: 3D animation.
+- [x] F1 Sign-in screen: 3D animation.
 - [x] F2 Sidebar: low colour contrast, nothing is readable.
 - [x] F3 Production: notifications for everyone concerned (customer, seller, admin).
 - [x] F4 Scan a job: explain it.

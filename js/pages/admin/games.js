@@ -57,6 +57,7 @@
           ${C.kpi({ label: 'Games with requests', value: games.length, ic: 'users', sub: `${games.filter((g) => g.m && g.m.spotsLeft === 0).length} full` })}
           ${C.kpi({ label: 'Blocked players', value: players.filter((x) => x.blocked).length, ic: 'ban' })}
         </div>
+        <p class="adm-help small">${icon('info', 14)} <span>Watch the “Pitches & free slots” community: pitch partners post free hours as cards (set the daily limit, stop a venue, hide a card); players ask to join games (remove a player with a full refund); and each player’s record (block players who keep not showing up).</span></p>
         ${A.tabs('/admin/games', [['', 'Free slots', slots.length], ['games', 'Games & requests', games.length], ['players', 'Player records', players.length]], tab)}${section}`;
       return C.layout('games', { title: 'Free slots & games', subtitle: 'Venues’ free-slot cards, games looking for players, and every player’s record', body });
     },

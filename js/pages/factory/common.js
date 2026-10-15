@@ -59,13 +59,19 @@
             <div class="float-card fac-f1">${icon('qr', 18)}<span><span class="xs">Job ticket</span><b class="num">PO-F702</b></span></div>
             <div class="float-card fac-f2">${icon('shield', 16)}<span><span class="xs">Quality check</span><b>Passed</b></span></div>
             <div class="float-card fac-f3">${icon('truck', 16)}<span><span class="xs">Courier booked</span><b class="num">BST-48120931</b></span></div>
-            <div class="fac-core">${icon('shirt', 44)}</div>
+            <div class="fac-tee" data-tee aria-hidden="true"></div>
           </div>
         </section>
       </div>`;
     },
     mount(el) {
       el.querySelectorAll('[data-who]').forEach((b) => b.addEventListener('click', () => pinPad(b.dataset.who)));
+      // The Super App mark printed on a tee that turns in 3D (drag it); the belt tilts with the pointer
+      const brandArt = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><rect x="20" y="0" width="80" height="80" rx="22" fill="#FF5B14"/><path d="M80 23C75 17 68 15 60 15c-12 0-20 6-20 15 0 20 40 11 40 31 0 9-8 15-21 15-9 0-17-3-23-9" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/><text x="60" y="118" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="20" fill="#fff">SUPER</text><text x="60" y="142" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="20" fill="#fff">APP</text></svg>')}`;
+      const tee = el.querySelector('[data-tee]');
+      const g = tee && SA.ui.garment3d?.mount(tee, { kind: 'tee', hex: '#0D1411', art: brandArt, artRatio: 1.25, place: { front: { x: 0.5, y: 0.4, w: 0.34 }, back: { x: 0.5, y: 0.3, w: 0.22 } }, label: 'Super App tee' });
+      const off = SA.core.motion.tilt(el.querySelector('.fac-belt'), { max: 8 });
+      return () => { g?.destroy(); off?.(); };
     },
   };
   const pinPad = (staffId) => {
