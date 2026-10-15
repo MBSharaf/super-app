@@ -59,4 +59,4 @@ Agreed with the user on 2026-10-15.
   - monthly level review with a grace month;
   - samples (seller, admin and print queue);
   - advanced analytics and export (admin and seller).
-- [ ] 9. Full-site pass: Arabic strings, dark mode, mobile. Then report to the user what admin powers are still missing.
+- [x] 9. Full-site pass: Arabic strings, dark mode, mobile. Then report to the user what admin powers are still missing.

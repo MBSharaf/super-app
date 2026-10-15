@@ -90,7 +90,10 @@
         [...node.childNodes].forEach((n) => {
           if (n.nodeType === 3) {
             const frag = document.createDocumentFragment();
-            n.textContent.split(/(\s+)/).forEach((part) => {
+            // Translate the whole phrase before splitting it into words (the translator works on whole text nodes)
+            let text = n.textContent;
+            if (SA.i18n?.isAr && /[A-Za-z]/.test(text)) { const core = text.trim(); text = text.replace(core, () => SA.i18n.t(core)); }
+            text.split(/(\s+)/).forEach((part) => {
               if (!part) return;
               if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
               const w = document.createElement('span'); w.className = 'w';
