@@ -12,7 +12,7 @@ Agreed with the user on 2026-10-15.
 **Resume rule:** if the session stops, continue from the first unticked item and don't redo finished items.
 
 ## Checklist
-- [ ] 1. **Internal link cards.** Any Super App link in a post or comment becomes a rich card: pitch, free slot, game, product, design, seller store, tournament, community post. Outside links stay blocked.
+- [x] 1. **Internal link cards.** Any Super App link in a post or comment becomes a rich card: pitch, free slot, game, product, design, seller store, tournament, community post. Outside links stay blocked.
 - [ ] 2. **Free slots from the partner dashboard.**
   - The owner picks a pitch and a free hour, with an optional discount (uses the offers system).
   - This posts a live **slot card** in "Pitches & free slots", with a "Book now" button that opens checkout with the time pre-selected.

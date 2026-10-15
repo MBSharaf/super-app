@@ -15,7 +15,8 @@
   const REASONS = [['spam', 'Spam or advertising'], ['abuse', 'Insults or hate'], ['scam', 'Scam or fake'], ['offtopic', 'Off-topic'], ['other', 'Something else']];
   const badge = (b) => (b ? `<span class="cm-badge t-${esc(b.tone || '')}">${b.tone === 'team' ? icon('shield', 11) : ''}${esc(b.label)}</span>` : '');
   const who = (a, size = 'sm') => `${SA.ui.c.avatar({ name: a.name, avatar: a.avatar }, size)}`;
-  const text = (t) => esc(t).replace(/\n/g, '<br>');
+  const text = (t) => SA.ui.linkCards.linkify(esc(t)).replace(/\n/g, '<br>');
+  const LC = () => SA.ui.linkCards;
 
   /** One post. opts: { admin, showCommunity, full } */
   const postCard = (p, opts = {}) => {
@@ -33,6 +34,8 @@
         ${opts.admin ? '' : `<button class="icon-btn cm-more" data-menu="${p.id}" aria-label="More">${icon('list', 16)}</button>`}
       </header>
       <div class="cm-text">${text(p.text)}</div>
+      ${p.card ? `<div class="lk-list">${p.card.type === 'slot' ? LC().slot(p.card) : LC().game(p.card)}</div>` : ''}
+      ${(() => { const h = LC().fromText(p.text); return h ? `<div class="lk-list">${h}</div>` : ''; })()}
       ${p.image ? `<img class="cm-img" src="${media.u(p.image, 900)}" alt="" loading="lazy" />` : ''}
       ${p.poll ? `<div class="cm-poll">${pollRows.map(({ o, i, n, pct }) => (voted || opts.admin ? `<button class="cm-opt is-result ${p.myVote === i ? 'is-mine' : ''}" data-vote="${i}"><span class="cm-opt-bar" style="width:${pct}%"></span><span class="grow">${esc(o.text)}</span><b class="num">${pct}%</b></button>` : `<button class="cm-opt" data-vote="${i}"><span class="grow">${esc(o.text)}</span></button>`)).join('')}<span class="xs muted">${p.pollTotal.toLocaleString()} vote${p.pollTotal === 1 ? '' : 's'}${voted ? ' · tap another option to change your vote' : ''}</span></div>` : ''}
       <footer class="cm-actions">
@@ -50,7 +53,7 @@
           ${(comments || []).map((x) => `<div class="cm-comment ${x.author.kind === 'admin' ? 'is-admin' : ''} ${x.hidden ? 'is-hidden' : ''}" data-comment="${x.id}">${who(x.author)}
             <div class="grow"><div class="cm-bubble"><span class="row wrap" style="--gap:6px"><b class="xs">${esc(x.author.name)}</b>${badge(x.author.badge)}${x.hidden ? '<span class="xs" style="color:var(--danger)">Hidden</span>' : ''}</span>
               ${x.replyTo && byId[x.replyTo] ? `<span class="cm-quote xs">↪ ${esc(byId[x.replyTo].author.name)}: “${esc(byId[x.replyTo].text.slice(0, 70))}${byId[x.replyTo].text.length > 70 ? '…' : ''}”</span>` : ''}
-              <p class="small">${text(x.text)}</p></div>
+              <p class="small">${text(x.text)}</p>${(() => { const h = LC().fromText(x.text); return h ? `<div class="lk-list lk-sm">${h}</div>` : ''; })()}</div>
               <span class="xs muted cm-cmeta">${timeAgo(x.at)} · ${opts.admin ? `<button class="link xs" data-admin-reply="${x.id}">Reply as admin</button> · <button class="link xs" data-admin-c="${x.hidden ? 'show' : 'hide'}">${x.hidden ? 'Show' : 'Hide'}</button>${x.author.kind === 'user' ? ' · <button class="link xs" data-admin-c="mute">Mute</button>' : ''}`
                 : `${p.locked ? '' : `<button class="link xs" data-reply="${x.id}">Reply</button> · `}${x.author.id === SA.core.store.get().user?.id ? `<button class="link xs" data-del-c="${x.id}">Delete</button>` : `<button class="link xs" data-report-c="${x.id}">Report</button>`}`}</span></div></div>`).join('') || '<p class="xs muted">No comments yet.</p>'}
           ${opts.admin ? `<form class="cm-reply-form" data-admin-form>${replyTarget.get(p.id) && byId[replyTarget.get(p.id)] ? `<span class="xs cm-replying">↪ Replying to ${esc(byId[replyTarget.get(p.id)].author.name)} <button type="button" class="link xs" data-cancel-reply>cancel</button></span>` : ''}<input class="input" name="text" placeholder="Reply as Super App Admin…" maxlength="1500" /><button class="btn btn-primary btn-sm" type="submit">Send</button></form>`
@@ -144,7 +147,11 @@
     render(ctx) {
       let c; try { c = CS().get(ctx.params.slug); } catch (e) { return `<div class="container section">${SA.ui.c.empty({ icon: 'users', title: 'Community not found', action: '<a class="btn btn-primary" href="#/community">All communities</a>' })}</div>`; }
       const sort = ctx.query.sort === 'top' ? 'top' : 'new';
-      const posts = c.access.ok ? CS().feed(c.id, { sort }) : [];
+      const isPitches = c.id === CS().PITCH_COMMUNITY;
+      let posts = c.access.ok ? CS().feed(c.id, { sort }) : [];
+      if (isPitches) posts = CS().slotFilter(posts, { area: ctx.query.area || '', when: ctx.query.when || '' });
+      const areas = isPitches ? [...new Set(SA.services.db.all('pitches').filter((p) => !p.deleted && p.status === 'active').map((p) => p.area))].sort() : [];
+      const qh = (patch) => SA.core.router.href(`/community/${c.slug}`, { sort: sort === 'top' ? 'top' : undefined, area: ctx.query.area || undefined, when: ctx.query.when || undefined, ...patch });
       const m = CS().muted(c.id);
       return `<div class="cm-page">
         <section class="cm-hero" ${COVER(c)}><img src="${media.photo(c.cover, 1600, 500)}" alt="" /><div class="container cm-hero-in">
@@ -155,7 +162,10 @@
           <div class="cm-main">
             ${!c.access.ok ? `<div class="panel">${SA.ui.c.empty({ icon: 'lock', title: c.access.reason, text: c.about, action: c.access.action ? `<a class="btn btn-primary" href="${c.access.action[0]}">${c.access.action[1]}</a>` : '' })}</div>`
               : `${m ? `<div class="notice blaze">${icon('ban', 18)}<span>You can’t post here until ${new Date(m.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. ${esc(m.reason)}</span></div>` : composer(c)}
-              <div class="tabs" role="tablist">${[['new', 'Newest'], ['top', 'Top']].map(([k, l]) => `<a class="tab" role="tab" href="#/community/${esc(c.slug)}${k === 'top' ? '?sort=top' : ''}" aria-selected="${sort === k}">${l}</a>`).join('')}</div>
+              ${isPitches ? `<div class="cm-filters"><label class="field"><span class="field-label">Area</span><select class="select" data-area><option value="">All areas</option>${areas.map((a) => `<option ${ctx.query.area === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select></label>
+                <div class="chips" role="group" aria-label="Time">${[['', 'Any time'], ['day', 'Before 5 PM'], ['evening', '5–9 PM'], ['night', 'After 9 PM']].map(([k, l]) => `<a class="chip" href="${qh({ when: k || undefined })}" aria-pressed="${(ctx.query.when || '') === k}">${l}</a>`).join('')}</div>
+                <a class="btn btn-outline btn-sm" href="#/alerts">${icon('bell', 14)} Free-slot alerts</a></div>` : ''}
+              <div class="tabs" role="tablist">${[['new', 'Newest'], ['top', 'Top']].map(([k, l]) => `<a class="tab" role="tab" href="${qh({ sort: k === 'top' ? 'top' : undefined })}" aria-selected="${sort === k}">${l}</a>`).join('')}</div>
               <div class="cm-feed">${posts.map((p) => postCard(p)).join('') || `<div class="panel">${SA.ui.c.empty({ icon: 'message', title: 'No posts yet', text: 'Be the first to post.' })}</div>`}</div>`}
           </div>
           <aside class="cm-side"><section class="panel panel-pad"><h2 class="h4">About</h2><p class="small soft" style="margin-top:6px">${esc(c.about)}</p>
@@ -166,6 +176,7 @@
     mount(el, ctx) {
       bindPosts(el);
       const c = (() => { try { return CS().get(ctx.params.slug); } catch { return null; } })(); if (!c) return;
+      el.querySelector('[data-area]')?.addEventListener('change', (e) => SA.core.router.go(SA.core.router.href(`/community/${ctx.params.slug}`, { ...ctx.query, area: e.target.value || undefined }).slice(1)));
       el.querySelector('[data-join]')?.addEventListener('click', (e) => { try { if (e.currentTarget.dataset.on) { CS().join(c.id); toast(`You joined ${c.name}`); } else { CS().leave(c.id); toast(`You left ${c.name}`, 'info'); } SA.app.rerender(); } catch (err) { toast(err.message, 'error'); } });
       const f = el.querySelector('[data-compose]'); if (!f) return;
       draftImage = null;

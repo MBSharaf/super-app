@@ -72,3 +72,38 @@
 .adm-report { display: grid; gap: 12px; }
 .adm-report-body { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: var(--r-sm); background: var(--surface-2); border-inline-start: 3px solid var(--danger); }
 .adm-cm-feed .cm-post { box-shadow: none; }
+
+/* Rich cards for Super App links, free slots and games */
+.lk-list { display: grid; gap: 8px; }
+.lk-card { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface-2); transition: border-color 200ms, transform 250ms var(--ease); min-width: 0; }
+.lk-card:hover { border-color: var(--ink-3); transform: translateY(-1px); }
+.lk-card.is-off { opacity: .7; }
+.lk-img { flex: none; width: 96px; height: 72px; border-radius: var(--r-sm); overflow: hidden; background: var(--surface-3); }
+.lk-img img { width: 100%; height: 100%; object-fit: cover; }
+.lk-body { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.lk-body b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lk-when { font-size: var(--fs-sm); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--ink-2); }
+.lk-cta { flex: none; align-self: center; }
+.lk-slot.is-free { border-color: var(--turf); background: linear-gradient(90deg, var(--turf-tint), var(--surface-2) 60%); }
+.lk-slot.is-booked .lk-img, .lk-slot.is-expired .lk-img { filter: grayscale(1); }
+.lk-sm .lk-img { width: 64px; height: 48px; }
+@media (max-width: 520px) { .lk-card { flex-wrap: wrap; } .lk-cta { width: 100%; justify-content: center; } }
+.cm-badge.t-venue { background: var(--turf-fill); color: #fff; }
+
+/* Rich cards for Super App links, free slots and games */
+.lk-list { display: grid; gap: 8px; }
+.lk-card { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface-2); transition: border-color 200ms, transform 250ms var(--ease); min-width: 0; }
+.lk-card:hover { border-color: var(--ink-3); transform: translateY(-1px); }
+.lk-card.is-off { opacity: .7; }
+.lk-img { flex: none; width: 96px; height: 72px; border-radius: var(--r-sm); overflow: hidden; background: var(--surface-3); }
+.lk-img img { width: 100%; height: 100%; object-fit: cover; }
+.lk-body { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.lk-body b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lk-when { font-size: var(--fs-sm); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--ink-2); }
+.lk-cta { flex: none; align-self: center; }
+.lk-slot.is-free { border-color: var(--turf); background: linear-gradient(90deg, var(--turf-tint), var(--surface-2) 60%); }
+.lk-slot.is-booked .lk-img, .lk-slot.is-expired .lk-img { filter: grayscale(1); }
+.lk-sm .lk-img { width: 64px; height: 48px; }
+@media (max-width: 520px) { .lk-card { flex-wrap: wrap; } .lk-cta { width: 100%; justify-content: center; } }
+.cm-badge.t-venue { background: var(--turf-fill); color: #fff; }
+.cm-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line-2); } .cm-filters .field { margin: 0; min-width: 160px; }

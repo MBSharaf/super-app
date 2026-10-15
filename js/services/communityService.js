@@ -52,7 +52,8 @@
     if (bad) throw new ApiError('Your post has words that aren’t allowed in Super App communities. Please edit it.', 'filtered');
     if (cfg().blockContacts !== false) {
       if (/(\+?20|0)1[0125][\s-]?\d{3,4}[\s-]?\d{3,4}/.test(t.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))) throw new ApiError('Phone numbers can’t be shared in communities — keep deals and messages on Super App.', 'filtered');
-      if (/(https?:\/\/|www\.)(?!superapp)/i.test(t)) throw new ApiError('Outside links can’t be shared in communities.', 'filtered');
+      const outside = (t.match(/(?:https?:\/\/|www\.)[^\s]+/gi) || []).filter((u) => !community.isInternal(u));
+      if (outside.length) throw new ApiError('Outside links can’t be shared in communities — links to Super App pages are fine.', 'filtered');
     }
     return t.trim();
   };
@@ -76,8 +77,21 @@
   /** The Super App team writes as "Super App Admin" */
   const ADMIN = { kind: 'admin', id: 'acc-admin', name: 'Super App Admin', avatar: 7, badge: { label: 'Official', tone: 'team' } };
 
+  /** Links to Super App pages (shown as cards); anything else counts as an outside link */
+  const ROUTES = [['slot', /^#\/book\/([\w-]+)\?(.*)$/], ['pitch', /^#\/pitches\/([\w-]+)/], ['game', /^#\/players\/(m-[\w-]+)/], ['product', /^#\/shop\/([\w:-]+)/], ['store', /^#\/s\/([\w-]+)/],
+    ['tournament', /^#\/tournaments\/([\w-]+)/], ['post', /^#\/community\/([\w-]+)\/([\w-]+)/], ['community', /^#\/community\/([\w-]+)$/]];
+  const hashOf = (u) => { const i = u.indexOf('#/'); return i < 0 ? '' : u.slice(i).replace(/[.,!?)]+$/, ''); };
+  const isInternal = (u) => { if (/^#\//.test(u)) return true; try { const x = new URL(u.startsWith('www.') ? `https://${u}` : u); return (x.host === location.host || /superapp/i.test(x.host) || /mbsharaf\.github\.io$/i.test(x.host)) && x.hash.startsWith('#/'); } catch { return false; } };
+  /** Super App links found in a text → [{ type, id, hash }] (max 3) */
+  const linksIn = (text) => {
+    const found = String(text || '').match(/(?:https?:\/\/[^\s]+|www\.[^\s]+|#\/[^\s]+)/gi) || [];
+    const out = [];
+    found.filter(isInternal).map(hashOf).forEach((h) => { const r = ROUTES.find(([, re]) => re.test(h)); if (r && !out.some((x) => x.hash === h)) { const m = h.match(r[1]); out.push({ type: r[0], id: m[1], extra: m[2] || '', hash: h }); } });
+    return out.slice(0, 3);
+  };
+
   const community = {
-    AUDIENCE, REACTIONS, ADMIN, access, myBadge, clean, postView, view,
+    AUDIENCE, REACTIONS, ADMIN, access, myBadge, clean, postView, view, isInternal, linksIn,
     list: () => db().all('communities').filter((c) => c.status !== 'archived').map(view).sort((a, b) => (b.joined - a.joined) || (a.order || 0) - (b.order || 0)),
     get(slug) { const c = db().all('communities').find((x) => x.slug === slug || x.id === slug); if (!c || c.status === 'archived') throw new ApiError('This community doesn’t exist.', 'not_found'); return view(c); },
     join(id) {
@@ -99,7 +113,7 @@
     },
     post(id) { const p = findPost(id); if (p.hidden) throw new ApiError('This post was removed by the Super App team.', 'not_found'); return postView(p); },
 
-    createPost(communityId, { text, image = null, poll = [] }) {
+    createPost(communityId, { text, image = null, poll = [], card = null }) {
       const c = db().find('communities', communityId); if (!c) throw new ApiError('Community not found.', 'not_found');
       mustAccess(c);
       SA.services.user.assertActive();
@@ -115,7 +129,7 @@
         if (wait > 0) throw new ApiError(`Slow mode is on — you can post again in ${Math.ceil(wait / 6e4)} min.`, 'slow');
       }
       if (!joined().includes(c.id)) community.join(c.id);
-      return db().insert('communityPosts', { communityId: c.id, author: author(), text: t, image, poll: opts.length ? { options: opts.map((o) => ({ text: o, votes: [] })) } : null, reactions: {}, comments: [], pinned: false, announcement: false, at: Date.now() }, 'cp');
+      return db().insert('communityPosts', { communityId: c.id, author: author(), text: t, image, card, poll: opts.length ? { options: opts.map((o) => ({ text: o, votes: [] })) } : null, reactions: {}, comments: [], pinned: false, announcement: false, at: Date.now() }, 'cp');
     },
     comment(postId, text, replyTo = null) {
       const p = findPost(postId); const c = db().find('communities', p.communityId);
@@ -164,6 +178,35 @@
       }
     },
     muted,
+    PITCH_COMMUNITY: 'cm-pitches',
+    /** Share one of the shopper's games (looking for players) as a card in "Pitches & free slots" */
+    shareGame(matchId, text) {
+      const m = SA.services.matches.allSync().find((x) => x.id === matchId);
+      if (!m || !m.isMine) throw new ApiError('You can only share your own games.', 'forbidden');
+      if (db().all('communityPosts').some((p) => !p.deleted && p.card?.type === 'game' && p.card.matchId === matchId)) throw new ApiError('This game is already shared in the community.', 'already');
+      return community.createPost('cm-pitches', { text: text || `Looking for ${m.spotsLeft} player${m.spotsLeft > 1 ? 's' : ''} — ${m.level}, ${m.type}. Ask to join from the card.`, card: { type: 'game', matchId } });
+    },
+    /** Free slot cards posted by pitch owners (from the partner dashboard) */
+    postSlot({ ownerId, pitchId, date, hour, pct = 0, text = '', promoId = null }) {
+      const p = db().find('pitches', pitchId);
+      const a = db().find('accounts', ownerId);
+      const card = { type: 'slot', pitchId, date, hour, duration: 1, pct, promoId };
+      const post = db().insert('communityPosts', { communityId: 'cm-pitches', author: { kind: 'partner', id: ownerId, name: p.name, avatar: a?.avatar ?? 0, badge: { label: `Verified venue · ${a?.company || ''}`, tone: 'venue' } },
+        text: clean(text || `Free slot ${pct ? `with ${Math.round(pct * 100)}% off ` : ''}at ${p.name} — tap the card to book it.`), image: null, card, reactions: {}, comments: [], pinned: false, announcement: false, at: Date.now() }, 'cp');
+      SA.services.games?.matchAlerts(card);
+      return post;
+    },
+    /** Filters for "Pitches & free slots": area and time of day */
+    slotFilter(posts, { area = '', when = '' } = {}) {
+      if (!area && !when) return posts;
+      return posts.filter((p) => {
+        const pitchId = p.card?.type === 'slot' ? p.card.pitchId : p.card?.type === 'game' ? SA.services.matches.allSync().find((x) => x.id === p.card.matchId)?.pitchId : null;
+        if (!pitchId) return !area && !when;
+        const pt = db().find('pitches', pitchId);
+        const hour = p.card.type === 'slot' ? p.card.hour : SA.services.matches.allSync().find((x) => x.id === p.card.matchId)?.hour;
+        return (!area || pt?.area === area || pt?.city === area) && (!when || (when === 'day' ? hour < 17 : when === 'evening' ? hour >= 17 && hour < 21 : hour >= 21));
+      });
+    },
 
     /** Seed data (fictional people and stores; Koora Ink, Nile Lines and Cairo Otaku are the demo sellers) */
     seed(now = Date.now()) {
@@ -212,5 +255,31 @@
     db().raw().communities = s.communities; db().raw().communityPosts = s.posts;
     if (!db().settings().community) db().raw().settings.community = { bannedWords: ['scam', 'fake', 'نصاب', 'حرامي'], blockContacts: true, muted: [] };
     try { db().touch('communities'); } catch { /* storage full */ }
+  }
+  // "Pitches & free slots" (added later): one community for free-slot cards from venues and games looking for players
+  if (!db().find('communities', 'cm-pitches')) {
+    const now = Date.now();
+    db().raw().communities.unshift({ id: 'cm-pitches', slug: 'pitches', name: 'Pitches & free slots', about: 'Free hours posted by verified venues — book them in one tap — and games looking for players. Filter by area and time.', audience: 'everyone',
+      icon: 'pitch', color: '#0A3D2D', cover: 'aerialPitch', baseMembers: 2630, order: 0, slowMode: 0, status: 'active', createdAt: now, createdBy: 'acc-admin',
+      rules: ['Slot cards come only from verified venues on Super App.', 'Share your game as a card so players can ask to join and pay safely.', 'No phone numbers or outside links — book and pay on Super App.', 'Be on time: hosts rate players after every game.'] });
+    db().raw().communityPosts.push({ id: 'cp-seed-pitches-welcome', communityId: 'cm-pitches', author: { ...community.ADMIN }, text: 'Welcome! Venues post free hours here (tap “Book now” on a card), and players share games that need people. Turn on alerts to hear about free slots near you first: #/alerts', image: null, poll: null, reactions: {}, seedReactions: 64, comments: [], pinned: true, announcement: true, at: now - 3 * 864e5 });
+    try { db().touch('communities'); } catch { /* storage full */ }
+    // A few real free slots from demo venues (posted after the pitch data is ready)
+    setTimeout(() => {
+      try {
+        const { isoDate, addDays, today } = SA.core.utils;
+        const picks = [['p-maadi-cage', 1], ['p-zayed-22', 1], ['p-gezira-fives', 2]];
+        picks.forEach(([pid, d], i) => {
+          const date = isoDate(addDays(today(), d));
+          const slot = (SA.services.pitches.slotsSync(pid, date) || []).find((s) => s.status === 'available' && s.hour >= 17);
+          const p = db().find('pitches', pid);
+          if (!slot || !p) return;
+          const post = community.postSlot({ ownerId: p.ownerId, pitchId: pid, date, hour: slot.hour, pct: 0, text: i === 0 ? `Last-minute free hour at ${p.name}. First to book gets it!` : `A team cancelled — this hour at ${p.name} is free again.` });
+          db().update('communityPosts', post.id, { at: now - (i + 1) * 2 * 36e5, seedReactions: 6 + i * 4 });
+        });
+        const g = SA.services.matches.allSync().find((m) => m.id === 'm-1001');
+        if (g) db().insert('communityPosts', { communityId: 'cm-pitches', author: { kind: 'user', id: 'seed-karim', name: g.hostName, avatar: 0, badge: null }, text: 'We need a keeper and one more player for tonight — friendly but competitive. Ask to join from the card 👇', image: null, card: { type: 'game', matchId: g.id }, reactions: {}, seedReactions: 9, comments: [], pinned: false, announcement: false, at: now - 50 * 6e4 }, 'cp');
+      } catch (e) { console.warn('Slot seed skipped', e); }
+    }, 0);
   }
 })(window.SA);
