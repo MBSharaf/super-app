@@ -101,6 +101,8 @@
     add('support', 'message', 'blaze', tk, `${tk} support ticket${tk > 1 ? 's' : ''} waiting`, 'Customers, partners and sellers waiting for a reply.', '#/admin/support');
     const sm = (db().all('samples') || []).filter((x) => x.status === 'requested').length;
     add('samples', 'shirt', 'info', sm, `${sm} sample request${sm > 1 ? 's' : ''}`, 'Approve to send them to the print partner.', '#/admin/samples');
+    const cr = admin.communityReports ? admin.communityReports().length : 0;
+    add('community', 'flag', 'danger', cr, `${cr} community report${cr > 1 ? 's' : ''}`, 'Posts and comments people reported.', '#/admin/community');
     const ap = admin.pendingPitches ? admin.pendingPitches().filter((p) => p.review === 'pending').length + admin.pendingSellers().filter((s) => s.status === 'pending').length : 0;
     add('approvals', 'check', 'blaze', ap, `${ap} new pitch${ap > 1 ? 'es and sellers' : ' or seller'} to approve`, 'They go live on Super App once you approve them.', '#/admin/approvals');
     try { const low = D().lowStock(); add('stock', 'alert', 'gold', low.length, `${low.length} Super App Store product${low.length > 1 ? 's' : ''} low on stock`, low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), '#/admin/store?low=1'); } catch { /* no official store */ }
@@ -713,6 +715,109 @@
       N()?.toSeller(id, { cat: 'account', tone: 'danger', title: 'Your store wasn’t approved', body: `${reason.trim()} Contact Help & support to appeal.`, link: '#/dash/seller' });
     },
     setSellerApproval(on) { me(); db().setSettings({ sellerApproval: !!on }); log('settings.seller-approval', `New sellers ${on ? 'need approval' : 'go live straight away'}`); },
+    /* ---------- Communities ---------- */
+    communityReports() {
+      const out = [];
+      db().all('communityPosts').forEach((p) => (p.reports || []).filter((r) => r.status === 'open').forEach((r) => {
+        const cm = r.commentId ? (p.comments || []).find((x) => x.id === r.commentId) : null;
+        out.push({ ...r, post: p, comment: cm, community: db().find('communities', p.communityId), target: cm || p });
+      }));
+      return out.sort((a, b) => b.at - a.at);
+    },
+    /** keep = dismiss the report; hide = hide the post or comment */
+    resolveCommunityReport(postId, reportId, action) {
+      me();
+      const p = db().find('communityPosts', postId); if (!p) throw new ApiError('Post not found.', 'not_found');
+      const r = (p.reports || []).find((x) => x.id === reportId); if (!r) throw new ApiError('Report not found.', 'not_found');
+      const reports = p.reports.map((x) => (x.id === reportId || (action === 'hide' && x.commentId === r.commentId) ? { ...x, status: action === 'hide' ? 'removed' : 'kept', resolvedAt: Date.now() } : x));
+      const patch = { reports };
+      if (action === 'hide') { if (r.commentId) patch.comments = p.comments.map((x) => (x.id === r.commentId ? { ...x, hidden: true } : x)); else patch.hidden = true; }
+      db().update('communityPosts', postId, patch);
+      log(`community.report-${action}`, `${action === 'hide' ? 'Removed' : 'Kept'} a reported ${r.commentId ? 'comment' : 'post'} (${r.reason}) in ${db().find('communities', p.communityId)?.name || ''}`, postId);
+    },
+    /** Post in a community as "Super App Admin" */
+    communityPost(communityId, { text, poll = [], image = null, pinned = false, announcement = true }) {
+      me();
+      const CS = SA.services.community;
+      const c = db().find('communities', communityId); if (!c) throw new ApiError('Choose a community.', 'invalid');
+      const t = String(text || '').trim();
+      if (t.length < 3) throw new ApiError('Write the post first.', 'invalid', { text: 'Too short' });
+      const opts = (poll || []).map((o) => String(o).trim()).filter(Boolean);
+      if (opts.length === 1 || opts.length > 6) throw new ApiError('A poll needs 2 to 6 options.', 'invalid', { poll: 'Add options' });
+      const p = db().insert('communityPosts', { communityId, author: { ...CS.ADMIN }, text: t.slice(0, 3000), image, poll: opts.length ? { options: opts.map((o) => ({ text: o, votes: [] })) } : null, reactions: {}, comments: [], pinned: !!pinned, announcement: !!announcement, at: Date.now() }, 'cp');
+      log('community.post', `Posted in ${c.name} as Super App Admin: “${t.slice(0, 70)}”`, p.id);
+      const u = deviceUser();
+      if (u && (SA.core.store.get().communities || []).includes(communityId)) SA.services.user.notify({ kind: 'shop', title: `Super App Admin posted in ${c.name}`, body: t.slice(0, 120), link: `/community/${c.slug}/${p.id}` });
+      return p;
+    },
+    /** Reply to a post (or to one comment) as "Super App Admin" */
+    communityReply(postId, text, replyTo = null) {
+      me();
+      const p = db().find('communityPosts', postId); if (!p) throw new ApiError('Post not found.', 'not_found');
+      const t = String(text || '').trim();
+      if (t.length < 1) throw new ApiError('Write the reply first.', 'invalid');
+      const cm = { id: `cm-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`, author: { ...SA.services.community.ADMIN }, text: t.slice(0, 1500), at: Date.now(), replyTo: replyTo || null };
+      db().update('communityPosts', postId, { comments: [...(p.comments || []), cm] });
+      const c = db().find('communities', p.communityId);
+      log('community.reply', `Replied as Super App Admin in ${c?.name || ''}: “${t.slice(0, 70)}”`, postId);
+      const u = deviceUser();
+      const target = replyTo ? (p.comments || []).find((x) => x.id === replyTo)?.author : p.author;
+      if (u && target?.id === u.id) SA.services.user.notify({ kind: 'shop', title: 'Super App Admin replied to you', body: t.slice(0, 120), link: `/community/${c?.slug}/${p.id}` });
+      return cm;
+    },
+    setPost(postId, patch, what) {
+      me();
+      const p = db().find('communityPosts', postId); if (!p) throw new ApiError('Post not found.', 'not_found');
+      db().update('communityPosts', postId, patch);
+      log('community.moderate', `${what}: “${(p.text || '').slice(0, 60)}”`, postId);
+    },
+    setComment(postId, commentId, patch, what) {
+      me();
+      const p = db().find('communityPosts', postId); if (!p) throw new ApiError('Post not found.', 'not_found');
+      const cm = p.comments.find((x) => x.id === commentId);
+      db().update('communityPosts', postId, { comments: p.comments.map((x) => (x.id === commentId ? { ...x, ...patch } : x)) });
+      log('community.moderate', `${what} comment by ${cm?.author?.name || ''}: “${(cm?.text || '').slice(0, 60)}”`, postId);
+    },
+    muteMember({ userId, name, communityId = null, days = 7, reason }) {
+      me();
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      const c = db().settings().community || {};
+      const muted = [...(c.muted || []).filter((x) => !(x.userId === userId && x.communityId === communityId)), { userId, name, communityId, until: Date.now() + Math.max(1, +days) * 864e5, reason: reason.trim(), at: Date.now() }];
+      db().setSettings({ community: { ...c, muted } });
+      log('community.mute', `Muted ${name} ${communityId ? `in ${db().find('communities', communityId)?.name}` : 'in all communities'} for ${days} day${+days > 1 ? 's' : ''}: ${reason.trim()}`, userId);
+      const u = deviceUser();
+      if (u && u.id === userId) SA.services.user.notify({ kind: 'shop', title: 'You can’t post in communities for a while', body: `${reason.trim()} (${days} day${+days > 1 ? 's' : ''})`, link: '/community' });
+    },
+    unmuteMember(userId, communityId = null) {
+      me();
+      const c = db().settings().community || {};
+      db().setSettings({ community: { ...c, muted: (c.muted || []).filter((x) => !(x.userId === userId && x.communityId === communityId)) } });
+      log('community.unmute', `Unmuted ${userId}`, userId);
+    },
+    setCommunityFilter({ words, blockContacts }) {
+      me();
+      const c = db().settings().community || {};
+      const list = String(words || '').split(/[\n,]/).map((w) => w.trim()).filter(Boolean).slice(0, 300);
+      db().setSettings({ community: { ...c, bannedWords: list, blockContacts: !!blockContacts } });
+      log('community.filter', `Community filter: ${list.length} banned words; phone numbers and links ${blockContacts ? 'blocked' : 'allowed'}`);
+    },
+    saveCommunity(d, id = null) {
+      me();
+      const e = {};
+      const name = String(d.name || '').trim(), about = String(d.about || '').trim();
+      if (name.length < 3) e.name = 'Name it (3+ characters).';
+      if (about.length < 10) e.about = 'Describe it (10+ characters).';
+      if (!SA.services.community.AUDIENCE[d.audience]) e.audience = 'Choose who can join.';
+      const slug = (d.slug || name).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30);
+      if (!slug) e.slug = 'Use English letters for the link.';
+      else if (db().all('communities').some((c) => c.slug === slug && c.id !== id)) e.slug = 'This link is taken.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const rec = { name, slug, about, audience: d.audience, icon: d.icon || 'users', color: d.color || '#0B6E4F', cover: d.cover || 'stadiumNight', slowMode: Math.max(0, Math.round(+d.slowMode || 0)), rules: String(d.rules || '').split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 12) };
+      const out = id ? db().update('communities', id, rec) : db().insert('communities', { ...rec, status: 'active', baseMembers: 0, order: db().all('communities').length + 1, createdBy: me().id }, 'cm');
+      log(id ? 'community.updated' : 'community.created', `${id ? 'Updated' : 'Created'} community ${out.name} (${SA.services.community.AUDIENCE[out.audience]})`, out.id);
+      return out;
+    },
+    setCommunityStatus(id, status) { me(); const c = db().update('communities', id, { status }); log('community.status', `${status === 'archived' ? 'Archived' : 'Restored'} community ${c.name}`, id); },
     /** Feature a seller on the shop (or remove the badge) */
     featureSeller(sellerId, on) { me(); const s = db().update('sellers', sellerId, { featuredByAdmin: !!on }); log('seller.featured', `${on ? 'Featured' : 'Un-featured'} ${s.name} in the shop`, sellerId); },
     payouts: allPayouts, checks, printerOwed,

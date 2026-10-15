@@ -8,14 +8,14 @@ Agreed with the user on 2026-10-15:
 **Resume rule:** if the session stops, continue from the first unticked item and don't redo finished items.
 
 ## Checklist
-- [ ] 1. Data and service (`js/services/communityService.js`):
+- [x] 1. Data and service (`js/services/communityService.js`):
   - communities with an audience: everyone / sellers / Pro+ sellers;
   - posts: text, image, poll; comments; reactions; pinned posts and announcements;
   - joining; badges (seller level, Super App team, store owner);
   - reports; banned-word filter; slow mode; muted members;
   - notifications when someone comments on your post;
   - seed communities and posts.
-- [ ] 2. Site:
+- [x] 2. Site:
   - `#/community` (your feed + discover);
   - `#/community/:slug` (community page, composer, feed, comments, report);
   - `#/community/:slug/:postId` (one post);
@@ -26,6 +26,7 @@ Agreed with the user on 2026-10-15:
   - all posts (search, hide, pin, announce, delete, close comments);
   - muted members;
   - banned words;
-  - post as Super App;
+  - **post as “Super App Admin”** (announcements to everyone in a community);
+  - **reply to any post or comment as “Super App Admin”** (replies are tied to the comment they answer);
   - to-do badge.
 - [ ] 4. Sharaf test section links; Arabic strings; mobile, dark mode and error check; README; push.
