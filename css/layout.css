@@ -158,3 +158,6 @@ html.reduce-motion .wa-fab::before { display: none; }
 .announce-inner { display: flex; align-items: center; gap: 10px; min-height: 38px; padding-block: 6px; }
 .announce-link { color: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; margin-inline-start: 4px; }
 .announce .announce-x { width: 28px; height: 28px; color: #fff; background: rgba(255,255,255,.12); border: 0; }
+/* With the announcement bar the header grows by its height instead of overlapping the page */
+.site-header:has(> .announce) { height: auto; }
+.site-header:has(> .announce) .header-inner { height: var(--header-h); }

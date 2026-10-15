@@ -160,3 +160,16 @@ tr.is-dim td { opacity: .55; }
 .adm-cat-hide { padding: 0; border: 0; background: none; gap: 6px; }
 .adm-cats [data-cat-move="-1"] svg { transform: rotate(180deg); }
 @media (max-width: 640px) { .adm-cats li { grid-template-columns: 36px minmax(0, 1fr); } .adm-cats li > :nth-child(n+3) { grid-column: 2; } }
+
+/* ===== Sharaf test section (TEMPORARY — remove with js/pages/devLinks.js) ===== */
+.dev-links { padding-top: 18px; }
+.dev-head { display: grid; gap: 6px; margin-bottom: 12px; justify-items: start; }
+.dev-group { border: 1px dashed var(--blaze); border-radius: var(--r-md); background: var(--surface); margin-top: 10px; overflow: hidden; }
+.dev-group > summary { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; list-style: none; }
+.dev-group > summary::-webkit-details-marker { display: none; }
+.dev-group[open] > summary > svg:last-child { transform: rotate(180deg); }
+.dev-as { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 0 16px 10px; }
+.dev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 0 16px 16px; }
+.dev-link { display: grid; gap: 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--line-2); font-weight: 650; font-size: var(--fs-sm); }
+.dev-link:active, .dev-link:hover { border-color: var(--blaze); }
+.dev-link .xs { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }

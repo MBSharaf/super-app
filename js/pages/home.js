@@ -76,6 +76,7 @@
       const ticker = tickerItems.join('');
 
       return `
+      ${SA.ui.devLinks?.() || ''}
       <section class="hero container">
         <div class="hero-copy">
           <span class="badge badge-blaze hero-live"><span class="live-dot"></span>${tonight} games looking for players this week</span>
