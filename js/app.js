@@ -116,6 +116,16 @@
     .add('/admin/store/product/new', P.dashProductEdit)
     .add('/admin/store/product/:id', P.dashProductEdit)
     .add('/admin/store-orders', P.dashOrders)
+    .add('/factory', P.factoryOverview)
+    .add('/factory/jobs', P.factoryJobs)
+    .add('/factory/job/:id', P.factoryJob)
+    .add('/factory/scan', P.factoryScan)
+    .add('/factory/shipping', P.factoryShipping)
+    .add('/factory/team', P.factoryTeam)
+    .add('/factory/money', P.factoryMoney)
+    .add('/factory/reports', P.factoryReports)
+    .add('/factory/settings', P.factorySettings)
+    .add('/factory/activity', P.factoryActivity)
     .add('*', P.notFound);
 
   const render = async (match, { keepScroll = false } = {}) => {

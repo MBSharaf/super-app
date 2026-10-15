@@ -234,7 +234,7 @@
         const u = store.get().user || {};
         const podLines = order.lines.filter((l) => l.pod);
         if (podLines.length) {
-          SA.services.pod.place({ orderId: order.id, customer: { id: u.id || 'u-001', name: u.name || 'Customer', city: address?.city || '' }, payment: paid.method,
+          SA.services.pod.place({ orderId: order.id, customer: { id: u.id || 'u-001', name: u.name || 'Customer', city: address?.city || '', phone: address?.phone || u.phone || '', address: [address?.line1, address?.line2].filter(Boolean).join(', ') }, payment: paid.method,
             lines: podLines.map((l) => ({ designId: l.designId, color: l.variant.color, size: l.variant.size, qty: l.qty, title: l.name })) });
         }
         order.lines.forEach((l, i) => {

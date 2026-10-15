@@ -1,0 +1,118 @@
+/* =====================================================================
+   FACTORY SYSTEM (#/factory) — built on the dashboard layout (css/dash.css)
+   ===================================================================== */
+.dash.is-factory .dash-side { background: radial-gradient(140% 80% at 0% 0%, #2f2410, var(--ink) 58%); }
+.dash.is-factory .dash-nav a[aria-current="page"] { background: rgba(255,186,73,.16); }
+
+/* Sign-in */
+.fac-login { background: radial-gradient(70% 60% at 100% 0%, rgba(255,186,73,.18), transparent 60%), var(--paper); }
+.fac-login .dl-title { margin-top: 14px; }
+.fac-people { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; }
+@media (max-width: 560px) { .fac-people { grid-template-columns: minmax(0, 1fr); } }
+.fac-visual { display: grid; place-items: center; min-height: clamp(320px, 42vw, 520px); }
+.fac-belt { position: relative; width: min(100%, 460px); aspect-ratio: 1; border-radius: 32px; background: repeating-linear-gradient(90deg, transparent 0 38px, rgba(13,20,17,.05) 38px 40px), radial-gradient(circle at 50% 50%, rgba(255,186,73,.22), transparent 64%); border: 1px dashed var(--line); }
+.fac-core { position: absolute; inset: 34%; border-radius: 28%; display: grid; place-items: center; background: linear-gradient(145deg, #3a2a0c, var(--ink-bg)); color: #FFBA49; box-shadow: var(--shadow-3, 0 18px 40px rgba(0,0,0,.2)); }
+.fac-belt .float-card { position: absolute; display: flex; align-items: center; gap: 10px; }
+.fac-belt .float-card > span { display: grid; }
+.fac-f1 { top: 6%; inset-inline-start: -4%; }
+.fac-f2 { top: 44%; inset-inline-end: -6%; }
+.fac-f3 { bottom: 6%; inset-inline-start: 4%; }
+/* On phones and tablets the floor needs the names first */
+@media (max-width: 980px) { .fac-visual { display: none; } }
+
+/* PIN pad */
+.pin { display: grid; justify-items: center; gap: 8px; }
+.pin-dots { display: flex; gap: 14px; margin: 6px 0 2px; }
+.pin-dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink-3, #888); transition: background 120ms, transform 120ms; }
+.pin-dots i.on { background: var(--ink); border-color: var(--ink); transform: scale(1.08); }
+.pin-dots.shake { animation: pinShake 360ms; }
+@keyframes pinShake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.pin-keys { display: grid; grid-template-columns: repeat(3, 72px); gap: 10px; }
+.pin-key { height: 60px; border-radius: 16px; font-size: 1.4rem; font-weight: 700; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); cursor: pointer; transition: background 120ms, transform 120ms; }
+.pin-key:hover { background: var(--surface-3); }
+.pin-key:active { transform: scale(.95); }
+
+/* Banners */
+.fac-banner { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--r-md); font-size: var(--fs-sm); }
+.fac-banner.is-danger { background: var(--danger-tint, #fde8e7); color: var(--danger-ink, #8c1d18); }
+.fac-banner.is-gold { background: var(--gold-tint, #fff4dc); color: var(--gold-ink, #6b4a00); }
+
+/* Overview */
+.fac-mywork { background: linear-gradient(120deg, var(--surface), var(--gold-tint, #fff4dc)); }
+.fac-pipe { display: flex; align-items: center; gap: 6px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; }
+.fac-step { flex: 1 0 92px; display: grid; justify-items: center; gap: 2px; padding: 12px 8px; border-radius: var(--r-md); background: var(--surface-2); text-align: center; transition: background 150ms, transform 150ms; }
+.fac-step:hover { background: var(--surface-3); transform: translateY(-2px); }
+.fac-step b { font-size: 1.6rem; line-height: 1.1; }
+.fac-arrow { color: var(--ink-3, #888); flex: none; }
+[dir="rtl"] .fac-arrow svg { transform: scaleX(-1); }
+.fac-list { display: grid; gap: 2px; margin-top: 10px; }
+.fac-list li > a, .fac-list li > span, .fac-list > li { display: block; padding: 8px 10px; border-radius: var(--r-sm); }
+.fac-list li > a:hover { background: var(--surface-2); }
+.fac-list li { list-style: none; }
+.fj-issue-inline { display: block; color: var(--danger); }
+
+/* Job cards */
+.fj.is-late { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger) inset, var(--shadow-1); }
+.fj.has-issue { border-inline-start: 4px solid var(--danger); }
+.fj-due, .fj-who { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--r-pill); font-size: 12px; font-weight: 650; background: var(--surface-2); }
+.fj-due.is-soon { background: var(--gold-tint, #fff4dc); color: var(--gold-ink, #6b4a00); }
+.fj-due.is-late { background: var(--danger); color: #fff; }
+.fj-issue { margin-top: 6px; padding: 6px 8px; border-radius: var(--r-sm); background: var(--danger-tint, #fde8e7); color: var(--danger-ink, #8c1d18); }
+.fac-tabs { flex-wrap: wrap; }
+.chip-count.is-danger { color: var(--danger); opacity: 1; font-weight: 800; }
+.fac-tools { align-items: center; }
+.search-mini .input { height: 36px; min-width: 220px; }
+.fac-batches { background: linear-gradient(120deg, var(--surface), var(--blaze-tint)); }
+.fac-batch-list { display: grid; gap: 8px; margin-top: 10px; }
+.fac-batch { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); }
+
+/* One job */
+.fac-job { display: grid; gap: 18px; }
+.fac-job-main { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 22px; align-items: start; }
+.fac-job-media { display: flex; gap: 10px; justify-content: center; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); }
+.pr-mock.is-big .garment { max-height: 240px; }
+.fac-big-actions .btn-lg { min-height: 56px; padding-inline: 22px; }
+@media (max-width: 760px) { .fac-job-main { grid-template-columns: minmax(0, 1fr); } .fac-big-actions .btn { flex: 1 1 100%; } }
+.fac-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin-top: 10px; font-size: var(--fs-sm); }
+.fac-dl dt { color: var(--ink-3, #777); }
+.fac-dl dd { margin: 0; }
+.fac-timeline { display: grid; gap: 0; margin-top: 10px; padding: 0; list-style: none; }
+.fac-timeline li { position: relative; display: grid; gap: 2px; padding: 0 0 14px 22px; border-inline-start: 2px solid var(--line); margin-inline-start: 6px; }
+[dir="rtl"] .fac-timeline li { padding: 0 22px 14px 0; }
+.fac-timeline li::before { content: ""; position: absolute; inset-inline-start: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--turf-fill, #0B6E4F); box-shadow: 0 0 0 3px var(--surface); }
+.fac-timeline li.is-bad::before { background: var(--danger); }
+.fac-timeline li.is-courier::before { background: var(--blaze); }
+.fac-timeline li:last-child { border-color: transparent; }
+
+/* Scan */
+.fac-scan { display: grid; gap: 18px; max-width: 760px; }
+.fac-scan-input { font-size: 1.3rem; letter-spacing: .06em; height: 56px; flex: 1; text-transform: uppercase; }
+.fac-video { width: 100%; max-height: 320px; border-radius: var(--r-md); background: #000; object-fit: cover; }
+.fac-scan-result { display: grid; gap: 12px; }
+.fac-scan-btn { display: none; }
+@media (max-width: 900px) { .fac-scan-btn { display: inline-flex; } }
+
+/* Shipping */
+.fac-courier { display: flex; align-items: center; gap: 14px; }
+.fac-courier-ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--blaze); color: #fff; flex: none; }
+.fac-ship { display: grid; gap: 6px; }
+.fac-track { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 6px 0 2px; padding: 0; list-style: none; }
+.fac-track li { display: grid; gap: 1px; padding-top: 8px; border-top: 3px solid var(--line); }
+.fac-track li.is-done { border-color: var(--turf-fill, #0B6E4F); }
+
+/* Team */
+.fac-roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 12px; }
+.fac-roles > div { display: grid; gap: 4px; justify-items: start; }
+
+/* Reports */
+.fac-bars { display: flex; align-items: flex-end; gap: 3px; height: 180px; margin: 14px 0 6px; padding-top: 18px; }
+.fac-bar { position: relative; flex: 1; height: var(--h); min-height: 2px; border-radius: 4px 4px 0 0; background: var(--turf-fill, #0B6E4F); }
+.fac-bar i { position: absolute; top: -16px; inset-inline: 0; text-align: center; font-size: 10px; font-style: normal; color: var(--ink-3, #777); }
+@media (max-width: 700px) { .fac-bar i { display: none; } }
+
+/* Dark theme: tinted warnings keep their contrast */
+[data-theme="dark"] .fac-banner.is-danger, [data-theme="dark"] .fj-issue { background: rgba(229,72,77,.16); color: #FFB8B4; }
+[data-theme="dark"] .fac-banner.is-gold, [data-theme="dark"] .fj-due.is-soon { background: rgba(255,186,73,.14); color: #FFD892; }
+[data-theme="dark"] .fac-mywork { background: linear-gradient(120deg, var(--surface), rgba(255,186,73,.10)); }
+[data-theme="dark"] .fac-batches { background: linear-gradient(120deg, var(--surface), rgba(255,91,20,.10)); }
+[data-theme="dark"] .fac-belt { background: repeating-linear-gradient(90deg, transparent 0 38px, rgba(255,255,255,.04) 38px 40px), radial-gradient(circle at 50% 50%, rgba(255,186,73,.16), transparent 64%); }

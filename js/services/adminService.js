@@ -153,6 +153,7 @@
   /** What Super App owes the print partner: partner cost of every item it printed, minus settlements already paid */
   const printerAccount = () => db().all('accounts').find((a) => a.role === 'printer');
   const printerOwed = () => {
+    if (SA.services.factory) { const m = SA.services.factory.money(SA.services.factory.list()[0]?.id); return { ...m, account: m.account || printerAccount() }; }
     const pr = printerAccount();
     // Demo history: older seeded items count as already settled; the last two weeks are still owed
     const done = (db().all('podOrders') || []).filter((o) => ['shipped', 'delivered', 'refused'].includes(o.status) && (!o.seed || o.placedAt > Date.now() - 14 * DAY));
@@ -406,7 +407,10 @@
       if (!['received', 'printing'].includes(o.status)) throw new ApiError('Only items that haven’t shipped can be cancelled.', 'invalid');
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
       const loss = o.status === 'printing' ? o.partnerCost * (o.qty || 1) : 0;
-      db().update('podOrders', id, { status: 'cancelled', loss, reason: reason.trim(), history: [...(o.history || []), { status: 'cancelled', at: Date.now(), note: reason.trim() }] });
+      SA.services.shipping?.dropItem(id);
+      db().update('podOrders', id, { status: 'cancelled', stage: 'cancelled', loss, reason: reason.trim(), history: [...(o.history || []), { status: 'cancelled', at: Date.now(), note: reason.trim() }] });
+      const fac = o.factoryId && SA.services.factory?.get(o.factoryId);
+      if (fac) N()?.toAccount(fac.accountId, { cat: 'orders', tone: 'danger', title: `Cancelled: ${o.id}`, body: `Stop work on “${o.title}” — ${reason.trim()}`, link: `#/factory/job/${o.id}` });
       const u = deviceUser();
       const mine = u && o.customer.id === u.id ? (SA.core.store.get().orders || []).find((x) => x.id === o.orderId) : null;
       if (mine && mine.payment?.method !== 'cod') { await SA.services.payment.refund(o.price * (o.qty || 1), `Refund — ${o.title} (cancelled)`); SA.services.user.notify({ kind: 'shop', title: 'A printed item was cancelled', body: `“${o.title}” — ${reason.trim()} The money is back in your wallet.`, link: `/order/${o.orderId}` }); }
@@ -441,7 +445,7 @@
     deleteCode(id) { me(); const c = db().find('codes', id); db().update('codes', id, { deleted: true, status: 'paused' }); log('promo.deleted', `Deleted code ${c.code}`, id); },
 
     /* ---------- Broadcasts ---------- */
-    AUDIENCES: { owners: 'All pitch owners', sellers: 'All sellers', printer: 'The print partner', partners: 'Every partner (owners, sellers, print partner)', customers: 'Customers on the site', everyone: 'Everyone' },
+    AUDIENCES: { owners: 'All pitch owners', sellers: 'All sellers', printer: 'The factory', partners: 'Every partner (owners, sellers, print partner)', customers: 'Customers on the site', everyone: 'Everyone' },
     audience(key, level = '') {
       const accs = db().all('accounts');
       const owners = accs.filter((a) => a.role === 'owner' && a.status !== 'suspended');
@@ -637,12 +641,12 @@
       const c = db().find('podCatalog', x.catalogId);
       const now = Date.now();
       const o = db().insert('podOrders', { id: `PO-S${now.toString(36).toUpperCase().slice(-5)}`, orderId: `SMP-${id.slice(-5).toUpperCase()}`, designId: x.designId, sellerId: x.sellerId, catalogId: x.catalogId, title: x.title, color: x.color, size: x.size, qty: 1,
-        price: 0, base: 0, profit: 0, partnerCost: c?.partnerCost || 0, sample: true, customer: { id: `seller-${s.id}`, name: `${s.name} (sample)`, city: x.address.split(',').pop().trim() }, payment: 'Seller wallet', status: 'received', history: [{ status: 'received', at: now }], placedAt: now, deliveredAt: 0 });
+        price: 0, base: 0, profit: 0, partnerCost: c?.partnerCost || 0, sample: true, customer: { id: `seller-${s.id}`, name: `${s.name} (sample)`, city: x.address.split(',').pop().trim(), address: x.address }, payment: 'Seller wallet', status: 'received', history: [{ status: 'received', at: now }], placedAt: now, ...(SA.services.factory?.assignNew({ catalogId: x.catalogId }) || {}), deliveredAt: 0 });
       if (x.price > 0) admin.adjust({ accountId: s.accountId, amount: -x.price, reason: `Sample: ${x.title} (${x.color}, ${x.size})`, kind: 'sample', ref: id });
       db().update('samples', id, { status: 'approved', orderId: o.id, approvedAt: now });
       log('sample.approved', `Approved a sample of “${x.title}” for ${s.name}${x.price ? ` (${x.price} EGP)` : ' (free)'}`, id);
       N()?.toSeller(s.id, { cat: 'designs', tone: 'turf', title: `Sample approved: ${x.title}`, body: `It’s in the print queue. ${x.price ? `${x.price.toLocaleString()} EGP was taken from your balance.` : 'This one is free with Elite.'}`, link: '#/dash/seller/designs' });
-      db().all('accounts').filter((a) => a.role === 'printer').forEach((a) => N()?.toAccount(a.id, { cat: 'orders', tone: 'blaze', title: `Sample to print: ${x.title}`, body: `${x.color} · ${x.size} · ship to the seller`, link: '#/dash/print' }));
+      SA.services.factory?.announce([o]);
     },
     rejectSample(id, reason) {
       me();
@@ -905,7 +909,7 @@
       if (!(amt > 0 && amt <= o.owed)) throw new ApiError(`Enter up to ${o.owed.toLocaleString()} EGP.`, 'invalid');
       const p = db().insert('payouts', { accountId: o.account.id, amount: amt, method: o.account.payout?.method || 'Bank transfer', detail: o.account.payout?.detail || 'Print partner account', status: 'paid', paidAt: Date.now(), ref: ref.trim() || `TRX-${Date.now().toString(36).toUpperCase().slice(-6)}`, by: me().id, settlement: true }, 'PO');
       log('printer.settled', `Paid the print partner ${amt.toLocaleString()} EGP for printed items`, p.id);
-      N()?.toAccount(o.account.id, { cat: 'account', tone: 'turf', title: `Settlement sent: ${amt.toLocaleString()} EGP`, body: 'Payment for printed and shipped items.', link: '#/dash/print' });
+      N()?.toAccount(o.account.id, { cat: 'account', tone: 'turf', title: `Settlement sent: ${amt.toLocaleString()} EGP`, body: 'Payment for printed and shipped items.', link: '#/factory/money' });
       return p;
     },
     /** Credit (+) or debit (−) a partner's or seller's balance, with a reason they can see */

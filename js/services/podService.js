@@ -131,7 +131,7 @@
     /** Live designs from active sellers, ranked by sales with the level search boost */
     live({ category, q, sellerId } = {}) {
       return pod.list({ status: 'live', category, q, sellerId })
-        .filter((d) => { const s = S().get(d.sellerId); return s?.status === 'active' && !S().onBreak(s) && d.product?.status === 'active'; })
+        .filter((d) => { const s = S().get(d.sellerId); return s?.status === 'active' && !S().onBreak(s) && d.product?.status === 'active' && (!SA.services.factory || SA.services.factory.canMake(d.catalogId)); })
         .map((d) => ({ ...d, rank: (d.sales || 0) + (d.views || 0) / 100 + S().levelOf(S().get(d.sellerId)).boost * 4 }))
         .sort((a, b) => b.rank - a.rank);
     },
@@ -240,15 +240,15 @@
         N()?.toSeller(sid, { cat: 'orders', tone: 'turf', title: os.length === 1 ? `New order: ${first.title}` : `New order: ${items} items`,
           body: `${os.length === 1 ? `${prod}, ` : ''}${os.map((o) => `${o.qty} × ${o.color} · ${o.size}`).join(', ')} · you earn ${profit.toLocaleString()} EGP after delivery.`, link: '#/dash/seller/orders' });
       });
-      // The print partner gets the job
-      const qty = made.reduce((t, o) => t + o.qty, 0);
-      db().all('accounts').filter((a) => a.role === 'printer').forEach((a) => N()?.toAccount(a.id, { cat: 'orders', tone: 'blaze', title: `New print job: ${qty} item${qty > 1 ? 's' : ''}`, body: `Order ${orderId} · ${made.map((o) => `${o.qty} × ${catalogItem(o.catalogId)?.name || ''} ${o.color} ${o.size}`).join(', ')}`, link: '#/dash/print' }));
+      // The factory gets the job (SA.services.factory routes it and tells the factory)
+      SA.services.factory?.announce(made);
       return made;
     },
     _place({ orderId, customer, lines, payment }) {
       return lines.map((l) => {
         const d = db().find('designs', l.designId);
         if (!d || d.status !== 'live') throw new ApiError(`“${l.title || 'A design'}” is no longer available.`, 'unavailable');
+        if (SA.services.factory && !SA.services.factory.canMake(d.catalogId)) throw new ApiError(`“${d.title}” can’t be printed right now. Try again later.`, 'unavailable');
         const c = catalogItem(d.catalogId);
         const base = baseFor(d.catalogId, { size: l.size, back: !!d.placement?.back, sellerId: d.sellerId });
         const price = priceFor(d, l.size);
@@ -256,7 +256,8 @@
         return db().insert('podOrders', {
           id: `PO-${now.toString(36).toUpperCase().slice(-5)}${Math.random().toString(36).slice(2, 4).toUpperCase()}`, orderId, designId: d.id, sellerId: d.sellerId, catalogId: d.catalogId,
           title: d.title, color: l.color, size: l.size, qty: l.qty, price, base, profit: (price - base) * l.qty, partnerCost: c.partnerCost + (d.placement?.back ? Math.round(c.backExtra * 0.6) : 0),
-          customer: { id: customer.id, name: customer.name, city: customer.city || '' }, payment, status: 'received', history: [{ status: 'received', at: now }], placedAt: now, deliveredAt: 0,
+          customer: { id: customer.id, name: customer.name, city: customer.city || '', phone: customer.phone || '', address: customer.address || '' }, payment, status: 'received', history: [{ status: 'received', at: now }], placedAt: now, deliveredAt: 0,
+          ...(SA.services.factory?.assignNew({ catalogId: d.catalogId }) || {}),
         });
       });
     },
@@ -325,6 +326,7 @@
       if (!d.colors.includes(color)) throw new ApiError('Choose one of the design’s colours.', 'invalid');
       const c = catalogItem(d.catalogId); if (!c?.sizes.includes(size)) throw new ApiError('Choose a size.', 'invalid');
       if (!address || String(address).trim().length < 8) throw new ApiError('Enter the delivery address.', 'invalid');
+      if (SA.services.factory && !SA.services.factory.canMake(d.catalogId)) throw new ApiError('The factory can’t make this product right now. Try again later.', 'unavailable');
       const p = pod.samplePrice(designId, size);
       const s = S().get(d.sellerId);
       const e = pod.earnings(s.id);
