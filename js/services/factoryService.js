@@ -51,7 +51,9 @@
     const d = db().raw();
     let changed = false;
     ['factories', 'factoryStaff', 'shipments', 'priceRequests', 'factoryLedger'].forEach((k) => { if (!Array.isArray(d[k])) { d[k] = []; changed = true; } });
-    if (!d.settings.shipping) { d.settings.shipping = { provider: 'bosta', mode: 'test', auto: true }; changed = true; }
+    // The courier lives in settings.courier (settings.shipping holds the delivery fees)
+    if (d.settings.shipping?.provider) { d.settings.courier = { provider: d.settings.shipping.provider, mode: d.settings.shipping.mode || 'test', auto: true }; const { provider, mode, auto, ...fees } = d.settings.shipping; void provider; void mode; void auto; if (Object.keys(fees).length) d.settings.shipping = fees; else delete d.settings.shipping; changed = true; }
+    if (!d.settings.courier) { d.settings.courier = { provider: 'bosta', mode: 'test', auto: true }; changed = true; }
     if (!d.factories.length) {
       const now = Date.now();
       d.factories.push({ id: 'fc-1', name: 'Nile DTF Works', accountId: 'acc-print', city: 'Obour City', address: 'Industrial Zone B, plot 41, Obour City', phone: '+20 2 4610 2200',

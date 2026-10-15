@@ -2,7 +2,7 @@
  * Shipping: Super App's contract with a courier, connected to the factory automatically.
  *
  * - The courier is one adapter in PROVIDERS. Today Bosta is used as a trial; switching courier is one setting in the
- *   admin console (settings.shipping.provider) and only affects new shipments. With the backend, each adapter calls
+ *   admin console (settings.courier.provider) and only affects new shipments. With the backend, each adapter calls
  *   the courier's real API (create shipment → airway bill, pickup request, status webhooks) behind the same methods.
  * - When the factory packs the last item of a customer order, `packed()` creates the shipment: an airway bill number,
  *   cash to collect for cash-on-delivery, and a pickup request from the factory.
@@ -28,7 +28,7 @@
   // Demo timing: seconds before the courier's next update on a live shipment
   const DEMO_STEP = { awaiting_pickup: 40, picked_up: 45, out_for_delivery: 45 };
 
-  const cfg = () => db().settings().shipping || { provider: 'bosta', mode: 'test', auto: true };
+  const cfg = () => db().settings().courier || { provider: 'bosta', mode: 'test', auto: true };
   const current = () => PROVIDERS[cfg().provider] || PROVIDERS.bosta;
   const awb = (p) => `${p.prefix}-${Math.floor(10e6 + Math.random() * 89e6)}`;
 
@@ -105,7 +105,7 @@
       if (!PROVIDERS[key]) throw new ApiError('Unknown courier.', 'invalid');
       if (!['test', 'live'].includes(mode)) throw new ApiError('Choose test or live.', 'invalid');
       const before = current().name;
-      db().setSettings({ shipping: { ...cfg(), provider: key, mode } });
+      db().setSettings({ courier: { ...cfg(), provider: key, mode } });
       SA.services.admin.log('shipping.provider', `Courier set to ${PROVIDERS[key].name} (${mode})${before !== PROVIDERS[key].name ? ` — was ${before}` : ''}`, key);
       db().all('factories').forEach((f) => N()?.toAccount(f.accountId, { cat: 'orders', title: `New courier: ${PROVIDERS[key].name}`, body: 'New parcels are booked with this courier automatically. Use its labels from now on.', link: '#/factory/shipping' }));
     },
