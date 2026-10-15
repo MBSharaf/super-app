@@ -245,6 +245,17 @@
       if (c.device) SA.services.user.notify({ kind: 'shop', title: `${amt.toLocaleString()} EGP added to your wallet`, body: reason.trim(), link: '/wallet' });
     },
 
+    /** Add or remove Super Points (the shopper on this device; others are recorded for the backend) */
+    adjustPoints(id, points, reason) {
+      me(); const c = customer(id);
+      const p = Math.round(+points);
+      if (!p || Math.abs(p) > 100000) throw new ApiError('Enter the points (between −100,000 and 100,000, not 0).', 'invalid');
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      if (c.device) SA.services.loyalty.adjust(p, reason.trim());
+      saveRec(id, { points: [{ points: p, reason: reason.trim(), at: Date.now() }, ...(rec(id).points || [])] });
+      log('customer.points', `${p > 0 ? 'Added' : 'Removed'} ${Math.abs(p).toLocaleString()} Super Points ${p > 0 ? 'to' : 'from'} ${c.name}: ${reason.trim()}`, id);
+      if (c.device) SA.services.user.notify({ kind: 'shop', title: `${p > 0 ? '+' : '−'}${Math.abs(p).toLocaleString()} Super Points`, body: reason.trim(), link: '/wallet' });
+    },
     /** Suspend or reactivate a pitch owner: no sign-in, pitches and store hidden from the site */
     setPartnerStatus(accountId, status, reason = '') {
       me();

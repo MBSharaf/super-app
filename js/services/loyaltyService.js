@@ -70,6 +70,13 @@
       add({ key, points, label, kind: 'bonus' });
       SA.ui?.overlay?.toast(`+${points} Super Points — ${label}`, { type: 'success' });
     },
+    /** Correction from the Super App team (+ or −), shown in the points history */
+    adjust(points, label) {
+      const p = Math.round(+points);
+      if (!p) throw new ApiError('Enter the number of points.', 'invalid');
+      if (p < 0 && compute().balance + p < 0) throw new ApiError(`They only have ${compute().balance.toLocaleString()} points.`, 'invalid');
+      add({ points: p, label: `Super App: ${label}`, kind: p > 0 ? 'bonus' : 'adjust' });
+    },
     redeem(points) {
       const s = compute();
       const p = Math.floor(+points / 100) * 100;

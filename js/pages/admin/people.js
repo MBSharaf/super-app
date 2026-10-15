@@ -47,11 +47,13 @@
     const c = AD().customer(id);
     return `${head(esc(c.name), `${esc(c.city || '—')}${c.phone ? ` · ${esc(c.phone)}` : ''}${c.email ? ` · ${esc(c.email)}` : ''}`, custBadges(c))}
       <div class="adm-stats">${stat(c.bookings, 'Bookings')}${stat(c.orders, 'Shop orders')}${stat(c.items, 'Printed items')}${stat(money(Math.round(c.spent)), 'Spent')}</div>
+      ${c.device ? (() => { const L = SA.services.loyalty.summary(); return `<p class="small" style="margin-top:10px">${icon('sparkle', 14)} <b class="num">${L.balance.toLocaleString()}</b> Super Points · ${esc(L.tier.name)} tier</p>`; })() : ''}
       ${c.blocked ? `<div class="adm-alert danger">${icon('ban', 16)}<span><b>Blocked</b> ${esc(c.blockedReason)}</span></div>` : ''}
       <section class="adm-ds"><h3 class="h4">Actions</h3>
         <div class="adm-actions">
           ${c.blocked ? `<button class="btn btn-outline btn-sm" data-act="unblock">${icon('check', 14, 2.6)} Unblock</button>` : `<button class="btn btn-outline btn-sm" data-act="block" style="color:var(--danger)">${icon('ban', 14)} Block</button>`}
           <button class="btn btn-outline btn-sm" data-act="credit">${icon('wallet', 14)} Wallet credit</button>
+          <button class="btn btn-outline btn-sm" data-act="points">${icon('sparkle', 14)} Super Points</button>
           <button class="btn btn-outline btn-sm" data-act="note">${icon('edit', 14)} Add note</button>
           ${c.refused ? `<button class="btn btn-ghost btn-sm" data-act="reset">${icon('refresh', 14)} Reset ${c.refused} refusal${c.refused > 1 ? 's' : ''}</button>` : ''}
         </div>
@@ -71,6 +73,10 @@
       if (act === 'block') { const r = await A.reason({ title: 'Block this customer?', text: 'They can still browse, but can’t book, order, join games or buy a Fantasy Pass.', label: 'Reason (internal)', confirmLabel: 'Block', danger: true }); if (!r) return; AD().blockCustomer(id, r.reason); toast('Customer blocked', 'info'); return true; }
       if (act === 'unblock') { AD().unblockCustomer(id); toast('Customer unblocked'); return true; }
       if (act === 'reset') { AD().resetRefusals(id); toast('Refusals reset'); return true; }
+      if (act === 'points') {
+        const r = await A.reason({ title: 'Adjust Super Points', text: 'Use a minus sign to remove points. They see the reason in their points history.', label: 'Reason they’ll see', confirmLabel: 'Save', extra: '<div class="field"><label for="pt-a">Points (+ or −)</label><input class="input num" id="pt-a" name="points" type="number" step="10" value="100" /></div>' });
+        if (!r) return; AD().adjustPoints(id, r.points, r.reason); toast('Points updated'); return true;
+      }
       if (act === 'note') { const r = await A.reason({ title: 'Add a note', text: 'Only the Super App team sees notes.', label: 'Note', confirmLabel: 'Save note' }); if (!r) return; AD().noteCustomer(id, r.reason); toast('Note saved'); return true; }
       if (act === 'credit') {
         const r = await A.reason({ title: 'Credit their wallet', text: 'Super App pays for it. It shows up in the revenue report as a cost.', label: 'Reason they’ll see', confirmLabel: 'Send credit', extra: '<div class="field"><label for="cr-a">Amount (EGP)</label><input class="input num" id="cr-a" name="amount" type="number" min="5" max="5000" value="100" /></div>' });
