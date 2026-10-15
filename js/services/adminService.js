@@ -346,7 +346,7 @@
       me();
       const s = db().find('sellers', sellerId); if (!s) throw new ApiError('Seller not found.', 'not_found');
       if (status === 'suspended' && reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
-      SA.services.sellers.setStatus(sellerId, status);
+      SA.services.sellers.setStatus(sellerId, status, status === 'suspended' ? reason.trim() : '');
       db().update('sellers', sellerId, { suspendedReason: status === 'suspended' ? reason.trim() : '' });
       log(`seller.${status}`, `${status === 'active' ? 'Reactivated' : 'Suspended'} seller ${s.name}${reason ? `: ${reason.trim()}` : ''}`, sellerId);
     },

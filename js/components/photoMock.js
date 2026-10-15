@@ -96,11 +96,12 @@
     return { img, W, H, d, alpha, S, crop: b.crop, print: b.print, credit: b.credit };
   };
 
+  let failed = false;
   const load = () => {
     if (loading) return loading;
     loading = Promise.all(Object.entries(BASES).map(async ([k, b]) => { state[k] = build(b, await loadImg(b.src)); }))
       .then(() => { ready = true; listeners.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } }); })
-      .catch((e) => { console.warn('Photo mockups unavailable — using drawn mockups', e); loading = null; });
+      .catch((e) => { console.warn('Photo mockups unavailable — using drawn mockups', e); loading = null; failed = true; listeners.forEach((fn) => { try { fn(); } catch (err) { console.error(err); } }); });
     return loading;
   };
 
@@ -250,6 +251,8 @@
       const svg = photoSvg(opts);
       if (svg) return svg;
     } else load();
+    // Photos still loading: a placeholder of the final size (no drawn mockup that jumps to a photo a moment later)
+    if (!failed && SA.ui.photoMock.hasSide(kind, side) && !opts.showArea) return `<span class="garment garment-skel g-${kind}" role="img" aria-label="${esc(opts.label || '')}" style="aspect-ratio:${aspect(kind, side)}"></span>`;
     return SA.ui.garment(opts);
   };
   /** Aspect ratio (w/h) of the photo used for a garment side */

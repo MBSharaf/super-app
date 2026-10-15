@@ -66,7 +66,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 
 ## Admin
 - [ ] A1 Sign-in screen: 3D animation (it is static now).
-- [ ] A2 Overview, "Where revenue comes from": the bar animation overflows the text.
+- [x] A2 Overview, "Where revenue comes from": the bar animation overflows the text.
 - [x] A3 Withdrawals:
   - Show who is asking (player, pitch owner, seller, factory) with full details.
   - Approve: notification + PDF + transfer time (SLA).
@@ -86,18 +86,18 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
   - Show clearly who opened the dispute and against whom.
   - The chat comes later.
 - [ ] A9 Super App Store: explain it. It is Super App's own store, so the admin gets full access.
-- [ ] A10 Reviews:
+- [x] A10 Reviews:
   - Same search/UI issue.
   - Explain what is reviewed (pitches).
   - Notifications.
-- [ ] A11 Design review:
+- [x] A11 Design review:
   - The UI changes a few seconds after load.
   - Approve and reject (with reason) notify the seller.
   - Reports get the same fix and notifications.
   - Suspending a seller notifies them with the reason.
 - [ ] A12 Print catalogue: explain it.
 - [ ] A13 Free slots & games: explain it.
-- [ ] A14 Analytics: fix the bars UI.
+- [x] A14 Analytics: fix the bars UI.
 - [ ] A15 Platform settings and Audit log: admin manager only. This comes with the backend and the admin team roles.
 
 ## Factory

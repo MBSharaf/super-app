@@ -215,6 +215,7 @@
     resolveReport(id, action) {
       const r = db().find('reports', id); if (!r) throw new ApiError('Report not found.', 'not_found');
       if (action === 'takedown') pod.reject(r.designId, `Removed after a ${r.reason} report.`, { strike: r.reason === 'copyright' || r.reason === 'trademark' });
+      if (action !== 'takedown') { const d = db().find('designs', r.designId); if (d) N()?.toSeller(d.sellerId, { cat: 'designs', tone: 'turf', title: `Report checked: “${d.title}” stays live`, body: `Someone reported it (${r.reason}). The Super App team checked it and found no problem.`, link: '#/dash/seller/designs' }); }
       return db().update('reports', id, { status: action === 'takedown' ? 'removed' : 'dismissed', resolvedAt: Date.now() });
     },
 

@@ -300,3 +300,11 @@
 .tag-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 650; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); transition: background 150ms, color 150ms; }
 .tag-chip:hover { background: var(--blaze); color: #fff; border-color: transparent; }
 .ss-url { padding: 6px 10px; border-radius: var(--r-sm); background: var(--surface-2); font-size: 12.5px; word-break: break-all; }
+/* Meters are often <span>s: make them blocks so their height counts and they never sit on top of the next line (A2, A14) */
+.meter { display: block; }
+.meter > span { display: block; }
+
+/* Product photo still loading: same size as the photo, soft shimmer */
+.garment-skel { display: block; width: 100%; max-width: 100%; border-radius: 14px; background: linear-gradient(100deg, var(--surface-2) 30%, var(--surface-3) 50%, var(--surface-2) 70%); background-size: 300% 100%; animation: skelShine 1.2s linear infinite; }
+@keyframes skelShine { from { background-position: 100% 0; } to { background-position: -50% 0; } }
+@media (prefers-reduced-motion: reduce) { .garment-skel { animation: none; } }

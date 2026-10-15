@@ -50,7 +50,8 @@
         all: (r) => true, unreplied: (r) => !r.reply && !r.hidden, replied: (r) => !!r.reply, low: (r) => r.rating <= 3,
         reported: (r) => r.reported && !r.reported.resolved, hidden: (r) => r.hidden,
       };
-      const list = all.filter(F[filter] || F.all);
+      const qq = (q.q || '').trim().toLowerCase();
+      const list = all.filter(F[filter] || F.all).filter((r) => !qq || `${r.customer?.name} ${r.text} ${r.reply?.text || ''} ${SA.services.db.find('pitches', r.pitchId)?.name || ''}`.toLowerCase().includes(qq));
       const visible = all.filter((r) => !r.hidden);
       const avg = visible.length ? visible.reduce((t, r) => t + r.rating, 0) / visible.length : 0;
       const replied = visible.filter((r) => r.reply).length;
@@ -70,6 +71,8 @@
             ${C.kpi({ label: 'Reported', value: all.filter((r) => r.reported && !r.reported.resolved).length, ic: 'flag' })}
           </div>
         </div>
+        ${admin ? `<p class="small muted">${icon('info', 13)} Players review a pitch after they play there. Pitch partners reply publicly and can report a review; you hide reviews that break the rules (insults, personal details, fake reviews). The partner and the player are told what you decided.</p>` : ''}
+        <form class="adm-search" data-rv-search role="search"><label class="adm-search-box"><span class="sr-only">Search reviews</span>${icon('search', 18)}<input name="q" value="${esc(q.q || '')}" placeholder="Player, words in the review, pitch…" autocomplete="off" /><button class="btn btn-primary btn-sm" type="submit">Search</button></label>${q.q ? `<a class="btn btn-ghost btn-sm" href="${SA.core.router.href('/dash/reviews', { ...q, q: undefined })}">${icon('x', 14)} Clear</a>` : ''}</form>
         <div class="filters-bar">
           <div class="tabs" role="tablist">${tabs.map(([v, l]) => `<a class="tab" role="tab" href="${SA.core.router.href('/dash/reviews', { ...q, filter: v })}" aria-selected="${filter === v}">${l}</a>`).join('')}</div>
           <select class="select" data-pitch aria-label="Pitch"><option value="">All pitches</option>${pitches.map((p) => `<option value="${p.id}" ${q.pitch === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
@@ -78,6 +81,7 @@
       return C.layout('reviews', { title: 'Reviews', subtitle: 'What players say about your pitches — reply publicly from here', body });
     },
     mount(el, ctx) {
+      el.querySelector('[data-rv-search]')?.addEventListener('submit', (e) => { e.preventDefault(); SA.core.router.go(SA.core.router.href(SA.core.router.location().split('?')[0], { ...ctx.query, q: e.target.q.value.trim() || undefined }).slice(1)); });
       el.querySelector('[data-pitch]')?.addEventListener('change', (e) => SA.core.router.go(SA.core.router.href(SA.services.dash.adminMode() ? '/admin/reviews' : '/dash/reviews', { ...ctx.query, pitch: e.target.value || undefined }).slice(1)));
       el.addEventListener('click', async (e) => {
         const art = e.target.closest('[data-review]'); if (!art) return;

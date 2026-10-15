@@ -69,6 +69,10 @@
     'Pitch partners — Super App Admin': 'أصحاب الملاعب — إدارة Super App', 'Pitch owners and their pitches — suspend, close pitches, set commission deals, open their dashboards. Sellers and factories have their own sections.': 'أصحاب الملاعب وملاعبهم — إيقاف، قفل ملاعب، اتفاقات العمولة، وفتح لوحاتهم. البياعين والمصانع ليهم أقسام لوحدهم.',
     'Printed items need online payment': 'القطع المطبوعة لازم تتدفع أونلاين', 'Cash on delivery is available again': 'الدفع عند الاستلام رجع متاح', 'Payment rules updated': 'قواعد الدفع اتحدّثت', 'Your delivery record was cleared': 'سجل التوصيل بتاعك اتمسح',
     'For printed designs on your account, pay by card or wallet. Contact support if you have questions.': 'التصميمات المطبوعة على حسابك ادفعها بالكارت أو المحفظة. كلّم الدعم لو عندك أسئلة.', 'You can choose cash on delivery for printed designs.': 'تقدر تختار الدفع عند الاستلام للتصميمات المطبوعة.', 'Cash on delivery is available again for printed designs.': 'الدفع عند الاستلام رجع متاح للتصميمات المطبوعة.',
+    /* ---------- A10 / A11 reviews, design review ---------- */
+    'Players review a pitch after they play there. Pitch partners reply publicly and can report a review; you hide reviews that break the rules (insults, personal details, fake reviews). The partner and the player are told what you decided.': 'اللاعيبة بيقيّموا الملعب بعد ما يلعبوا فيه. صاحب الملعب بيرد علناً ويقدر يبلّغ عن تقييم؛ وأنت بتخفي التقييمات اللي بتكسر القواعد (شتايم، بيانات شخصية، تقييمات مزيفة). صاحب الملعب واللاعب بيتبلّغوا بقرارك.',
+    'Player, words in the review, pitch…': 'اللاعب، كلام من التقييم، الملعب…', 'Search reviews': 'دوّر في التقييمات', 'Report sent to Super App': 'البلاغ اتبعت لـ Super App', 'A review was hidden': 'تقييم اتخفى', 'A review is visible again': 'تقييم رجع يظهر', 'Super App kept a review': 'Super App سابت التقييم',
+    'Your review was hidden': 'تقييمك اتخفى', 'Your review is visible again': 'تقييمك رجع يظهر', 'Your store is suspended': 'متجرك اتوقف', 'Your store is active again': 'متجرك رجع يشتغل',
     /* ---------- M9 / A8 support, email, disputes ---------- */
     'Customer disputes about you': 'شكاوى العملاء عنك', 'Super App may ask you for details. Your answers go to the Super App team, who update the customer.': 'Super App ممكن تسألك عن تفاصيل. ردودك بتروح لفريق Super App، وهما اللي بيبلّغوا العميل.',
     'A customer opened this about you. Only Super App sees your answers — they update the customer.': 'عميل فتح الطلب ده عنك. Super App بس اللي بتشوف ردودك — وهي اللي بتبلّغ العميل.',
@@ -76,6 +80,8 @@
     'Question sent — the customer was told you’re checking': 'السؤال اتبعت — والعميل اتبلّغ إنك بتتأكد', 'No pitch owner or seller is linked to this request.': 'مفيش صاحب ملعب أو بياع مربوط بالطلب ده.', 'Write your question first.': 'اكتب سؤالك الأول.',
   });
   D.patterns.push(
+    ['^Review reported: (.+)$', 'بلاغ عن تقييم: {1}'], ['^We’ll check (.+)’s review and tell you what we decided\\.$', 'هنراجع تقييم {1} ونبلّغك بالقرار.'], ['^Report checked: “(.+)” stays live$', 'البلاغ اتراجع: "{1}" فاضل شغال'],
+    ['^Someone reported it \\((.+)\\)\\. The Super App team checked it and found no problem\\.$', 'حد بلّغ عنه ({1}). فريق Super App راجعه وملقاش مشكلة.'], ['^Reason: (.+)\\. Your designs and products are hidden from the shop\\. Contact Super App support to appeal\\.$', 'السبب: {1}. تصميماتك ومنتجاتك مستخبية من المتجر. كلّم دعم Super App لو عايز تعترض.'],
     ['^To (.+)\\. It arrives by (.+) at the latest \\(2 working days\\)\\. The payment advice \\(PDF\\) is in your wallet\\.$', 'لـ {1}. هتوصل يوم {2} بالكتير (يومين شغل). إيصال الدفع (PDF) في محفظتك.'], ['^asked (.+)$', 'اتطلب {1}'],
     ['^(Pitch partner|Seller|Factory) · asked (.+)$', '{t1} · اتطلب {2}'],
     ['^More at (.+): colours, sizes, cities and best days$', 'أكتر في {1}: الألوان والمقاسات والمدن وأحسن أيام'], ['^([\\d,]+) views · ([\\d,]+) taps$', '{1} مشاهدة · {2} ضغطة'],

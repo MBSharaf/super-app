@@ -382,3 +382,7 @@ body.dash-mode .app { min-height: 100vh; }
 .bc-s { background: repeating-linear-gradient(135deg, var(--blaze) 0 4px, #ff8a57 4px 7px); box-shadow: 0 -2px 0 #fff inset; border-bottom: 2px solid #fff; }
 .lg-hatch { background: repeating-linear-gradient(135deg, var(--blaze) 0 3px, #ff8a57 3px 5px) !important; }
 .bc-grid i, .bc-x, .hm-h, .hm-d, .legend { color: var(--ink-2); }
+/* KPI numbers are never cut off: long values shrink to fit their card */
+.kpi { container-type: inline-size; }
+.kpi-value { overflow: visible; text-overflow: clip; font-size: clamp(1rem, 12cqi, 1.7rem); }
+.kpi-sm .kpi-value { font-size: clamp(1rem, 11cqi, 1.35rem); }

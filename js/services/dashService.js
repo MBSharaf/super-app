@@ -798,6 +798,8 @@
       if (!reason) throw new ApiError('Choose a reason.', 'invalid', { reason: 'Required' });
       db.update('reviews', id, { reported: { reason, at: Date.now(), by: me().id } });
       db.log(me().id, 'review.reported', `Reported ${r.customer.name}’s review to Super App — ${reason}`, id);
+      SA.services.notify?.toAdmins({ cat: 'store', tone: 'danger', title: `Review reported: ${db.find('pitches', r.pitchId)?.name || ''}`, body: `${me().company || me().name}: ${reason}`, link: '#/admin/reviews?filter=reported' });
+      SA.services.notify?.toAccount(me().id, { cat: 'store', title: 'Report sent to Super App', body: `We’ll check ${r.customer.name}’s review and tell you what we decided.`, link: '#/dash/reviews?filter=reported' });
     },
     moderateReview(id, action) {
       assert(isAdmin(), 'Only Super App admins can moderate reviews.');
@@ -805,6 +807,11 @@
       const patch = action === 'hide' ? { hidden: true, reported: r.reported ? { ...r.reported, resolved: 'hidden' } : null } : action === 'show' ? { hidden: false } : { reported: null };
       db.update('reviews', id, patch);
       db.log(me().id, `review.${action}`, `${action === 'hide' ? 'Hid' : action === 'show' ? 'Restored' : 'Kept'} ${r.customer.name}’s review`, id);
+      // The pitch partner and the player who wrote it hear what Super App decided
+      const p = db.find('pitches', r.pitchId);
+      if (p) SA.services.notify?.toAccount(p.ownerId, { cat: 'store', tone: action === 'hide' ? 'turf' : '', title: action === 'hide' ? 'A review was hidden' : action === 'show' ? 'A review is visible again' : 'Super App kept a review', body: `${r.customer.name}’s ${r.rating}★ review on ${p.name}${action === 'keep' ? ' follows the review rules, so it stays. You can reply to it publicly.' : '.'}`, link: '#/dash/reviews' });
+      const u = SA.core.store.get().user;
+      if (u && r.customer?.id === u.id && action !== 'keep') SA.services.user.notify({ kind: 'booking', title: action === 'hide' ? 'Your review was hidden' : 'Your review is visible again', body: action === 'hide' ? `Your review of ${p?.name || 'the pitch'} doesn’t follow the review rules (no insults or personal details).` : `${p?.name || ''}`, link: `/pitches/${r.pitchId}` });
     },
 
     // ---- Teams (weekly bookings & memberships) ----

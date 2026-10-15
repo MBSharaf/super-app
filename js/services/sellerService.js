@@ -221,7 +221,7 @@
       SA.services.notify?.toSeller(id, { cat: 'account', tone: 'danger', title: `Copyright strike ${active.length} of 3`, body: `${reason} Your level is frozen for 90 days.${active.length >= 3 ? ' Your account is suspended.' : ' Three active strikes suspend the account.'}`, link: '#/dash/seller/designs' });
       return out;
     },
-    setStatus(id, status) {
+    setStatus(id, status, reason = '') {
       if (!['active', 'suspended'].includes(status)) throw new ApiError('Unknown status.', 'validation');
       const s = db().update('sellers', id, { status });
       // A suspended seller's own store leaves the shop too
@@ -229,7 +229,7 @@
       db().log('acc-admin', `seller.${status}`, `${s.name} ${status === 'active' ? 'reactivated' : 'suspended'}`, id);
       SA.services.notify?.toSeller(id, status === 'active'
         ? { cat: 'account', tone: 'turf', title: 'Your store is active again', body: 'Your designs and products are back in the shop.', link: '#/dash/seller' }
-        : { cat: 'account', tone: 'danger', title: 'Your store is suspended', body: 'Your designs and products are hidden from the shop. Contact Super App support to appeal.', link: '#/dash/seller' });
+        : { cat: 'account', tone: 'danger', title: 'Your store is suspended', body: `${reason ? `Reason: ${reason}. ` : ''}Your designs and products are hidden from the shop. Contact Super App support to appeal.`, link: '#/dash/support' });
       return s;
     },
 

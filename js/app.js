@@ -210,10 +210,10 @@
       t = setTimeout(() => {
         const m = router.current();
         if (!m || /^\/sell\/studio/.test(m.path) || document.querySelector('form :focus')) return;
-        if (document.querySelector('svg.garment:not([data-photo]), img[src^="data:image/svg"]')) SA.app.rerender();
+        if (document.querySelector('.garment-skel, svg.garment:not([data-photo]), img[src^="data:image/svg"]')) SA.app.rerender();
       }, 160);
     });
-    setTimeout(() => SA.ui.photoMock.load(), 300);
+    SA.ui.photoMock.load();
   }
   SA.ui.whatsapp.init();
   router.onChange((m) => render(m));
