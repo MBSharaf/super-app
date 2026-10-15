@@ -29,6 +29,15 @@
         ${K().kpi({ label: 'Packed today', value: fmtNum(t.readyToday), sub: 'handed to the courier flow', ic: 'check', tone: 'k-turf' })}
         ${K().kpi({ label: 'Late', value: fmtNum(t.late), sub: `${s.factory.slaHours} h to ship`, ic: 'alert', tone: t.late ? 'k-danger' : '' })}
       </div>
+      ${F().can('assign', s) ? (() => {
+        const open = F().jobs({ factoryId: s.factoryId, stage: ['new', 'printing'] }).filter((o) => !o.assignee);
+        const printers = F().staff(s.factoryId).filter((x) => x.active && x.role === 'printer');
+        const load = printers.map((x) => ({ x, n: F().jobs({ factoryId: s.factoryId, stage: ['new', 'printing'] }).filter((o) => o.assignedTo === x.id).length }));
+        return `<section class="dash-card"><div class="row-between wrap" style="--gap:8px"><div><h2 class="h4">${icon('users', 16)} Assign the work</h2><p class="xs muted">${s.role === 'supervisor' ? 'Your job as supervisor: give each printer their jobs and watch the deadlines.' : 'The supervisor usually does this; you can too.'}</p></div>
+          <span class="row wrap" style="--gap:6px">${load.map(({ x, n }) => `<span class="badge">${esc(x.name.split(' ')[0])} · ${n}</span>`).join('')}</span></div>
+          ${open.length ? `<ul class="fac-list">${open.slice(0, 8).map((o) => `<li class="row-between wrap" style="--gap:8px"><a class="small" href="#/factory/job/${o.id}"><b class="num">${o.id}</b> · ${o.qty} × ${esc(o.product?.name || '')} · ${esc(o.color)} ${esc(o.size)} ${FC().dueChip(o)}</a>
+            <select class="select" data-assign-job="${o.id}" aria-label="Assign ${o.id}" style="max-width:200px"><option value="">Assign to…</option>${printers.map((x) => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></li>`).join('')}</ul>` : `<p class="small soft" style="margin-top:8px">${icon('check', 14)} Every job on the press has a printer.</p>`}
+        </section>`; })() : ''}
       <section class="dash-card"><div class="row-between"><h2 class="h4">The line right now</h2><span class="xs muted">tap a step to open it</span></div>
         <div class="fac-pipe">${pipe.map((p, i) => `<a class="fac-step" href="#/factory/jobs?tab=${p}" style="--i:${i}"><b class="num">${t.pipe[p] || 0}</b><span class="xs">${F().STAGE_LABEL[p]}</span></a>`).join(`<span class="fac-arrow" aria-hidden="true">${icon('chevronRight', 16)}</span>`)}</div>
         <div class="meter" style="margin-top:14px" aria-label="Today’s load ${pct}%"><span style="width:${pct}%;${pct > 90 ? 'background:var(--danger)' : ''}"></span></div>
@@ -43,7 +52,9 @@
       </div>
       ${F().can('reports', s) ? `<section class="dash-card"><div class="row-between"><h2 class="h4">Last 7 days</h2><a class="link xs" href="#/factory/reports">Reports</a></div>
         <div class="kpi-grid kpi-sm">${K().kpi({ label: 'Packed on time', value: `${st.onTimePct}%`, ic: 'clock', tone: st.onTimePct >= 95 ? 'k-turf' : 'k-danger' })}${K().kpi({ label: 'Defect rate', value: `${st.defectPct}%`, sub: `${st.qcFails} failed QC · ${st.complaints} complaints`, ic: 'shield' })}${K().kpi({ label: 'Average time to pack', value: `${st.avgHours} h`, ic: 'bolt' })}${K().kpi({ label: 'Items packed', value: fmtNum(st.items), ic: 'package' })}</div></section>` : ''}`;
-    return FC().layout('overview', { title: `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${esc(s.name.split(' ')[0])}`, subtitle: `${esc(s.factory.name)} · DTF · ${esc(s.factory.city)}`, body });
+    return FC().layout('overview', { title: `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${esc(s.name.split(' ')[0])}`, subtitle: `${esc(s.factory.name)} · DTF · ${esc(s.factory.city)} · ${F().ROLES[s.role].label}`, body });
+  }, mount(el) {
+    el.addEventListener('change', (e) => { const sel = e.target.closest('[data-assign-job]'); if (!sel || !sel.value) return; try { F().assign(sel.dataset.assignJob, sel.value); SA.ui.overlay.toast('Assigned'); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } });
   } };
 
   /* ---------- Production board ---------- */

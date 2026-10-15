@@ -231,8 +231,9 @@
     ids.forEach((id) => {
       const o = F().job(id); const p = doc.page();
       p.rect(0, 0, p.W, 70, { fill: INK });
-      p.logo(40, 20, 28);
-      p.text('SUPER APP · JOB TICKET', 78, 40, { size: 13, weight: 800, color: '#fff', spacing: 1 });
+      p.logo(40, 18, 34);
+      p.text('SUPER APP', 84, 36, { size: 15, weight: 800, color: '#fff', spacing: 1 });
+      p.text('Job ticket · made for Super App', 84, 52, { size: 9, color: '#9FB3A9' });
       p.text(`${o.product?.name || ''} · DTF`, p.W - 40, 40, { size: 11, color: '#9FB3A9', align: 'right' });
       p.text(o.id, 40, 130, { size: 40, weight: 800 });
       p.qr(o.id, p.W - 40 - 150, 92, 150);
@@ -244,6 +245,7 @@
       p.rect(40, 460, p.W - 80, 150, { stroke: INK, lw: 1, r: 8 });
       ['Printed by', 'Quality check', 'Packed by'].forEach((k, i) => { p.text(k, 56 + i * ((p.W - 112) / 3), 486, { size: 9, color: SOFT }); p.line(56 + i * ((p.W - 112) / 3), 590, 40 + (i + 1) * ((p.W - 112) / 3), 590); });
       p.text('Scan the QR code on the factory tablet to move this job to the next step.', 40, 650, { size: 9, color: SOFT });
+      p.logo(p.W - 40 - 26, p.H - 60, 26); p.text('SUPER APP', p.W - 74, p.H - 42, { size: 9, weight: 800, align: 'right' });
     });
     await doc.save(`job-tickets-${ids[0]}${ids.length > 1 ? `-and-${ids.length - 1}-more` : ''}.pdf`);
     SA.ui.overlay.toast(`Downloaded ${ids.length} ticket${ids.length > 1 ? 's' : ''}`, { type: 'success' });
@@ -255,23 +257,30 @@
     const doc = SA.core.pdf.create({ title: `Label ${sh.awb}` });
     const p = doc.page();
     p.rect(30, 30, p.W - 60, p.H - 60, { stroke: INK, lw: 2, r: 10 });
-    p.text(sh.providerName.toUpperCase(), 50, 74, { size: 26, weight: 800 });
-    if (sh.mode === 'test') p.text('TEST SHIPMENT', p.W - 50, 74, { size: 11, weight: 800, color: BLAZE, align: 'right' });
-    p.qr(sh.awb, 50, 100, 140);
-    p.text('AIRWAY BILL', 210, 116, { size: 8, weight: 700, color: TURF, spacing: 1 });
-    p.text(sh.awb, 210, 146, { size: 24, weight: 800 });
-    p.text(`Order ${sh.orderId} · ${items.reduce((t, o) => t + o.qty, 0)} item(s)`, 210, 170, { size: 11, color: SOFT });
-    p.text(sh.cod ? `COLLECT ${sh.cod.toLocaleString('en-US')} EGP` : 'PAID — collect nothing', 210, 214, { size: 18, weight: 800, color: sh.cod ? BLAZE : TURF });
-    p.line(50, 270, p.W - 50, 270);
-    p.text('SHIP TO', 50, 300, { size: 8, weight: 700, color: TURF, spacing: 1 });
-    p.text(sh.customer?.name || 'Customer', 50, 330, { size: 22, weight: 800 });
-    p.text(sh.customer?.address || '', 50, 356, { size: 13, color: SOFT, maxWidth: p.W - 100 });
-    p.text(`${sh.customer?.city || ''}${sh.customer?.phone ? ` · ${sh.customer.phone}` : ''}`, 50, 378, { size: 13, color: SOFT });
-    p.line(50, 410, p.W - 50, 410);
-    p.text('FROM', 50, 440, { size: 8, weight: 700, color: TURF, spacing: 1 });
-    p.text(`${f?.name || ''} for Super App`, 50, 462, { size: 12, weight: 700 });
-    p.text(`${f?.address || ''} · ${f?.phone || ''}`, 50, 480, { size: 10, color: SOFT, maxWidth: p.W - 100 });
-    items.forEach((o, i) => p.text(`☐ ${o.id} — ${o.qty} × ${o.title} (${o.color}, ${o.size})`, 50, 530 + i * 18, { size: 10 }));
+    // Super App brand band: confirms the parcel comes from Super App
+    p.rect(30, 30, p.W - 60, 64, { fill: INK, r: 10 });
+    p.logo(50, 46, 32);
+    p.text('SUPER APP', 92, 62, { size: 16, weight: 800, color: '#fff', spacing: 1 });
+    p.text('superapp.eg · Order from Super App', 92, 78, { size: 8.5, color: '#9FB3A9' });
+    p.text(sh.providerName.toUpperCase(), p.W - 50, 70, { size: 18, weight: 800, color: '#fff', align: 'right' });
+    const Y = 50; // everything below moves down under the band
+    if (sh.mode === 'test') p.text('TEST SHIPMENT', p.W - 50, 116, { size: 11, weight: 800, color: BLAZE, align: 'right' });
+    p.qr(sh.awb, 50, 100 + Y, 120);
+    p.text('AIRWAY BILL', 190, 116 + Y, { size: 8, weight: 700, color: TURF, spacing: 1 });
+    p.text(sh.awb, 190, 146 + Y, { size: 24, weight: 800 });
+    p.text(`Order ${sh.orderId} · ${items.reduce((t, o) => t + o.qty, 0)} item(s)`, 190, 170 + Y, { size: 11, color: SOFT });
+    p.text(sh.cod ? `COLLECT ${sh.cod.toLocaleString('en-US')} EGP` : 'PAID — collect nothing', 190, 206 + Y, { size: 18, weight: 800, color: sh.cod ? BLAZE : TURF });
+    p.line(50, 270 + Y, p.W - 50, 270 + Y);
+    p.text('SHIP TO', 50, 300 + Y, { size: 8, weight: 700, color: TURF, spacing: 1 });
+    p.text(sh.customer?.name || 'Customer', 50, 330 + Y, { size: 22, weight: 800 });
+    p.text(sh.customer?.address || '', 50, 356 + Y, { size: 13, color: SOFT, maxWidth: p.W - 100 });
+    p.text(`${sh.customer?.city || ''}${sh.customer?.phone ? ` · ${sh.customer.phone}` : ''}`, 50, 378 + Y, { size: 13, color: SOFT });
+    p.line(50, 410 + Y, p.W - 50, 410 + Y);
+    p.text('FROM', 50, 440 + Y, { size: 8, weight: 700, color: TURF, spacing: 1 });
+    p.text(`Super App — made by ${f?.name || ''}`, 50, 462 + Y, { size: 12, weight: 700 });
+    p.text(`${f?.address || ''} · ${f?.phone || ''}`, 50, 480 + Y, { size: 10, color: SOFT, maxWidth: p.W - 100 });
+    items.forEach((o, i) => p.text(`☐ ${o.id} — ${o.qty} × ${o.title} (${o.color}, ${o.size})`, 50, 530 + Y + i * 18, { size: 10 }));
+    p.text('Thank you for ordering from Super App · superapp.eg', p.W / 2, p.H - 46, { size: 9, color: SOFT, align: 'center' });
     await doc.save(`label-${sh.awb}.pdf`);
     SA.ui.overlay.toast(`Downloaded the label ${sh.awb}`, { type: 'success' });
   };

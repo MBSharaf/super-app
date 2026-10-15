@@ -73,6 +73,10 @@
     'Players review a pitch after they play there. Pitch partners reply publicly and can report a review; you hide reviews that break the rules (insults, personal details, fake reviews). The partner and the player are told what you decided.': 'اللاعيبة بيقيّموا الملعب بعد ما يلعبوا فيه. صاحب الملعب بيرد علناً ويقدر يبلّغ عن تقييم؛ وأنت بتخفي التقييمات اللي بتكسر القواعد (شتايم، بيانات شخصية، تقييمات مزيفة). صاحب الملعب واللاعب بيتبلّغوا بقرارك.',
     'Player, words in the review, pitch…': 'اللاعب، كلام من التقييم، الملعب…', 'Search reviews': 'دوّر في التقييمات', 'Report sent to Super App': 'البلاغ اتبعت لـ Super App', 'A review was hidden': 'تقييم اتخفى', 'A review is visible again': 'تقييم رجع يظهر', 'Super App kept a review': 'Super App سابت التقييم',
     'Your review was hidden': 'تقييمك اتخفى', 'Your review is visible again': 'تقييمك رجع يظهر', 'Your store is suspended': 'متجرك اتوقف', 'Your store is active again': 'متجرك رجع يشتغل',
+    /* ---------- F3 / F6 / F8 factory ---------- */
+    'Your printed item is being made': 'قطعتك المطبوعة بتتعمل', 'Your printed item is packed': 'قطعتك المطبوعة اتغلّفت', 'Your printed item may take a little longer': 'قطعتك المطبوعة ممكن تتأخر شوية', 'Your printed item is back on track': 'قطعتك المطبوعة رجعت تتعمل',
+    'Your parcel is booked with the courier': 'طردك اتحجز مع شركة الشحن', 'Out for delivery today': 'خارج للتوصيل النهارده', 'Assign the work': 'وزّع الشغل', 'Assign to…': 'وزّعه على…', 'Every job on the press has a printer.': 'كل أمر على المكنة ليه مسؤول.',
+    'Your job as supervisor: give each printer their jobs and watch the deadlines.': 'شغلك كمشرف: توزّع على كل طابع أوامره وتتابع المواعيد.', 'The supervisor usually does this; you can too.': 'المشرف عادةً بيعمل ده؛ وأنت كمان تقدر.',
     /* ---------- M9 / A8 support, email, disputes ---------- */
     'Customer disputes about you': 'شكاوى العملاء عنك', 'Super App may ask you for details. Your answers go to the Super App team, who update the customer.': 'Super App ممكن تسألك عن تفاصيل. ردودك بتروح لفريق Super App، وهما اللي بيبلّغوا العميل.',
     'A customer opened this about you. Only Super App sees your answers — they update the customer.': 'عميل فتح الطلب ده عنك. Super App بس اللي بتشوف ردودك — وهي اللي بتبلّغ العميل.',
@@ -80,6 +84,8 @@
     'Question sent — the customer was told you’re checking': 'السؤال اتبعت — والعميل اتبلّغ إنك بتتأكد', 'No pitch owner or seller is linked to this request.': 'مفيش صاحب ملعب أو بياع مربوط بالطلب ده.', 'Write your question first.': 'اكتب سؤالك الأول.',
   });
   D.patterns.push(
+    ['^“(.+)” \\((.+), (.+)\\) is on the press now\\.$', '"{1}" ({2}، {3}) على المكنة دلوقتي.'], ['^Packed: (.+)$', 'اتغلّف: {1}'], ['^Possible delay: (.+)$', 'ممكن تأخير: {1}'], ['^Factory problem resolved: (\\S+)$', 'مشكلة المصنع اتحلّت: {1}'],
+    ['^Failed quality check twice: (\\S+)$', 'اترفض في الجودة مرتين: {1}'], ['^Parcel refused: (\\S+)$', 'الطرد اترفض: {1}'], ['^(.+) · tracking (\\S+)\\. You’ll get a message when it leaves the factory\\.$', '{1} · رقم التتبع {2}. هيجيلك إشعار لما يخرج من المصنع.'],
     ['^Review reported: (.+)$', 'بلاغ عن تقييم: {1}'], ['^We’ll check (.+)’s review and tell you what we decided\\.$', 'هنراجع تقييم {1} ونبلّغك بالقرار.'], ['^Report checked: “(.+)” stays live$', 'البلاغ اتراجع: "{1}" فاضل شغال'],
     ['^Someone reported it \\((.+)\\)\\. The Super App team checked it and found no problem\\.$', 'حد بلّغ عنه ({1}). فريق Super App راجعه وملقاش مشكلة.'], ['^Reason: (.+)\\. Your designs and products are hidden from the shop\\. Contact Super App support to appeal\\.$', 'السبب: {1}. تصميماتك ومنتجاتك مستخبية من المتجر. كلّم دعم Super App لو عايز تعترض.'],
     ['^To (.+)\\. It arrives by (.+) at the latest \\(2 working days\\)\\. The payment advice \\(PDF\\) is in your wallet\\.$', 'لـ {1}. هتوصل يوم {2} بالكتير (يومين شغل). إيصال الدفع (PDF) في محفظتك.'], ['^asked (.+)$', 'اتطلب {1}'],

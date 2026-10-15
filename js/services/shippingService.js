@@ -61,6 +61,8 @@
       items.forEach((o) => db().update('podOrders', o.id, { shipmentId: sh.id }));
       db().log(f?.accountId || 'acc-print', 'factory.shipment', `${p.name} shipment ${sh.awb} booked for ${orderId} (${items.length} item${items.length > 1 ? 's' : ''})`, sh.id);
       N()?.toAccount(f?.accountId, { cat: 'orders', tone: 'turf', title: `Courier booked: ${sh.awb}`, body: `${p.name} will pick up ${orderId}. Print the label and stick it on the parcel.`, link: '#/factory/shipping' });
+      const u = SA.core.store.get().user;
+      if (u && first.customer?.id === u.id && !first.sample) SA.services.user.notify({ kind: 'shop', title: 'Your parcel is booked with the courier', body: `${p.name} · tracking ${sh.awb}. You’ll get a message when it leaves the factory.`, link: `/order/${orderId}` });
       return sh;
     },
     /** A courier status update (from the courier's webhook with the backend; simulated in the demo) */
@@ -77,7 +79,8 @@
         try {
           if (status === 'picked_up') { db().update('podOrders', itemId, { stage: 'shipped' }); P().advance(itemId, 'shipped', { courier: sh.providerName, tracking: sh.awb }); }
           if (status === 'delivered') { db().update('podOrders', itemId, { stage: 'delivered' }); P().advance(itemId, 'delivered'); }
-          if (status === 'refused') { db().update('podOrders', itemId, { stage: 'refused' }); P().advance(itemId, 'refused'); }
+          if (status === 'refused') { db().update('podOrders', itemId, { stage: 'refused' }); P().advance(itemId, 'refused'); N()?.toAdmins({ cat: 'orders', tone: 'danger', title: `Parcel refused: ${sh.awb}`, body: `${sh.customer?.name || 'Customer'} · ${sh.orderId}`, link: '#/admin/factories?tab=shipping' }); }
+          if (status === 'out_for_delivery') { const u = SA.core.store.get().user; if (u && o.customer?.id === u.id) SA.services.user.notify({ kind: 'shop', title: 'Out for delivery today', body: `“${o.title}” · ${sh.providerName} ${sh.awb}`, link: `/order/${o.orderId}` }); }
         } catch (e) { console.warn(e); }
       });
       return db().find('shipments', id);

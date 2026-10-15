@@ -103,13 +103,13 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 ## Factory
 - [ ] F1 Sign-in screen: 3D animation.
 - [x] F2 Sidebar: low colour contrast, nothing is readable.
-- [ ] F3 Production: notifications for everyone concerned (customer, seller, admin).
-- [ ] F4 Scan a job: explain it.
-- [ ] F5 Shipping label:
+- [x] F3 Production: notifications for everyone concerned (customer, seller, admin).
+- [x] F4 Scan a job: explain it.
+- [x] F5 Shipping label:
   - Add the Super App logo.
   - Notifications for every action.
-- [ ] F6 Reports and Money: Excel export with a dashboard.
+- [x] F6 Reports and Money: Excel export with a dashboard.
 - [x] F7 Skipped (the user said leave it for now).
-- [ ] F8 Supervisor vs owner: explain the difference.
-- [ ] F9 Every factory PDF (ticket, label) gets the Super App logo.
+- [x] F8 Supervisor vs owner: explain the difference.
+- [x] F9 Every factory PDF (ticket, label) gets the Super App logo.
 - [x] F10 The sidebar UI across the whole factory system.

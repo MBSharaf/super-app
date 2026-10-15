@@ -286,7 +286,7 @@
       db().log('acc-print', `pod.${status}`, `${o.id} “${o.title}” ${status}`, id);
       const hold = cfg().holdDays;
       const sellerMsg = {
-        printing: { title: `Printing: ${o.title}`, body: `${o.qty} × ${o.color} · ${o.size} — the print partner started on it.` },
+        printing: { title: `Printing: ${o.title}`, body: `${o.qty} × ${o.color} · ${o.size} — the factory started on it.` },
         shipped: { title: `Shipped: ${o.title}`, body: `${courier || 'Courier'} · tracking ${tracking}. Usually delivered in 1–3 days.` },
         delivered: { tone: 'turf', title: `Delivered: ${o.title}`, body: `${o.profit.toLocaleString()} EGP profit is released in ${hold} days.` },
         refused: { tone: 'danger', title: `Refused on delivery: ${o.title}`, body: 'The customer didn’t accept it. Super App covers the cost — nothing is taken from your wallet.' },

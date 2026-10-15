@@ -143,6 +143,8 @@
 
   /* ---------- Jobs ---------- */
   const isLate = (o) => ACTIVE.includes(o.stage) && Date.now() > o.dueAt;
+  /** The customer on this device (the demo's only real customer) — other customers get it with the backend */
+  const tellCustomer = (o, title, body) => { const u = SA.core.store.get().user; if (u && o.customer?.id === u.id && !o.sample) SA.services.user.notify({ kind: 'shop', title, body, link: `/order/${o.orderId}` }); };
   const stepAt = (o, stage) => (o.steps || []).filter((x) => x.stage === stage).pop()?.at || 0;
   const enrich = (o) => ({ ...o, late: isLate(o), left: o.dueAt - Date.now(), design: P().get?.(o.designId) || null, product: db().find('podCatalog', o.catalogId) || null, assignee: o.assignedTo ? db().find('factoryStaff', o.assignedTo) : null });
   const jobs = ({ factoryId, stage, mine, late, issue, q } = {}) => {
@@ -199,7 +201,11 @@
       const patch = { stage: to, steps: addStep(o, to, s) };
       if (to === 'printing' && !o.assignedTo && s.role === 'printer') patch.assignedTo = s.id;
       db().update('podOrders', id, patch);
-      if (to === 'printing' && o.status === 'received') P().advance(id, 'printing');
+      if (to === 'printing' && o.status === 'received') { P().advance(id, 'printing'); tellCustomer(o, 'Your printed item is being made', `“${o.title}” (${o.color}, ${o.size}) is on the press now.`); }
+      if (to === 'ready') {
+        tellCustomer(o, 'Your printed item is packed', `“${o.title}” passed the quality check and is packed. The courier picks it up soon — you’ll get the tracking number.`);
+        N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'turf', title: `Packed: ${o.title}`, body: `${o.qty} × ${o.color} · ${o.size} passed the quality check — waiting for the courier.`, link: '#/dash/seller/orders' });
+      }
       flog(s.factory, to, `${s.name}: ${o.id} “${o.title}” → ${STAGE_LABEL[to]}`, id);
       if (to === 'ready') SA.services.shipping.packed(o.orderId, o.factoryId);
       return db().find('podOrders', id);
@@ -218,6 +224,7 @@
       if (!reason || reason.trim().length < 3) throw new ApiError('Write what is wrong.', 'invalid');
       db().update('podOrders', id, { stage: 'printing', qcFails: (o.qcFails || 0) + 1, reprints: (o.reprints || 0) + 1, steps: addStep(o, 'qc-fail', s, reason.trim()) });
       flog(s.factory, 'qc_fail', `${s.name}: ${o.id} failed QC — ${reason.trim()}`, id);
+      if ((o.qcFails || 0) + 1 >= 2) N()?.toAdmins({ cat: 'orders', tone: 'danger', title: `Failed quality check twice: ${o.id}`, body: `${s.factory.name} — ${reason.trim()}`, link: '#/admin/factories?tab=jobs' });
       const who = o.assignedTo && db().find('factoryStaff', o.assignedTo);
       if (who) N()?.toAccount(s.factory.accountId, { cat: 'orders', tone: 'danger', title: `Reprint: ${o.id}`, body: `${who.name} — ${reason.trim()}`, link: `#/factory/job/${o.id}` });
     },
@@ -235,6 +242,9 @@
       const issue = { type, note: note.trim(), by: s.name, at: Date.now(), resolved: false };
       db().update('podOrders', id, { issue, steps: addStep(o, 'issue', s, `${type}${note ? ` — ${note.trim()}` : ''}`) });
       flog(s.factory, 'issue', `${s.name} reported a problem on ${o.id}: ${type}`, id);
+      // The seller and the customer know a delay is possible
+      N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'gold', title: `Possible delay: ${o.title}`, body: `The factory reported: ${type}. Super App is on it — nothing to do on your side.`, link: '#/dash/seller/orders' });
+      tellCustomer(o, 'Your printed item may take a little longer', `We hit a small problem making “${o.title}”. We’re fixing it and will keep you posted.`);
       N()?.toAdmins({ cat: 'orders', tone: 'danger', title: `Factory problem: ${o.id}`, body: `${s.factory.name} — ${type}${note ? `: ${note.trim()}` : ''}`, link: '#/admin/factories?tab=jobs' });
     },
     resolveIssue(id, note = '') {
@@ -243,6 +253,8 @@
       const o = db().find('podOrders', id); if (!o?.issue) throw new ApiError('No open problem.', 'invalid');
       db().update('podOrders', id, { issue: { ...o.issue, resolved: true, resolvedAt: Date.now(), resolvedBy: s?.name || 'Super App', resolution: note.trim() }, steps: addStep(o, 'resolved', s, note.trim()) });
       flog(factory.get(o.factoryId), 'resolved', `${s?.name || 'Super App'} resolved the problem on ${o.id}${note ? `: ${note.trim()}` : ''}`, id);
+      N()?.toAdmins({ cat: 'orders', tone: 'turf', title: `Factory problem resolved: ${o.id}`, body: `${s?.name || 'Super App'}${note ? ` — ${note.trim()}` : ''}`, link: '#/admin/factories?tab=jobs' });
+      tellCustomer(o, 'Your printed item is back on track', `“${o.title}” is moving again.`);
     },
 
     /* ---------- Admin actions ---------- */

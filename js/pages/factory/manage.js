@@ -114,7 +114,22 @@
       <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Statement</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th></tr></thead><tbody>
         ${rows.slice(0, 120).map((r) => `<tr><td class="xs muted">${fmtDate(new Date(r.at))}</td><td class="small">${esc(r.text)}</td><td class="r num ${r.amount < 0 ? 'neg' : ''}" style="${r.tone === 'deduction' ? 'color:var(--danger)' : ''}">${r.amount < 0 ? '−' : ''}${money(Math.abs(r.amount))}</td></tr>`).join('') || '<tr><td colspan="3" class="small muted">Nothing yet.</td></tr>'}
       </tbody></table></div></section>`;
-    return FC().layout('money', { title: 'Money', subtitle: 'Between your factory and Super App', body });
+    return FC().layout('money', { title: 'Money', subtitle: 'Between your factory and Super App', actions: `<button class="btn btn-outline btn-sm" data-xls>${icon('file', 14)} Export Excel</button>`, body });
+  }, mount(el, ctx, s) {
+    el.querySelector('[data-xls]')?.addEventListener('click', () => {
+      const m = F().money(s.factoryId);
+      const rows = [
+        ...m.orders.map((o) => [new Date(F().stepAt(o, 'ready') || o.placedAt).toISOString().slice(0, 10), 'Job packed', o.id, `${o.qty} × ${o.title} (${o.color}, ${o.size})`, o.product?.name || o.catalogId, o.partnerCost * o.qty]),
+        ...m.ledger.map((l) => [new Date(l.createdAt).toISOString().slice(0, 10), l.type === 'deduction' ? 'Deduction' : 'Bonus', l.jobId || '', l.reason, '', l.type === 'deduction' ? -l.amount : l.amount]),
+        ...m.payouts.map((p) => [new Date(p.paidAt || p.createdAt).toISOString().slice(0, 10), 'Payment from Super App', p.ref || p.id, p.method || '', '', -p.amount]),
+      ];
+      SA.pages.dashCommon.xlsx(`factory-money-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
+        title: `${s.factory.name} — Money with Super App`, subtitle: `Owed now ${m.owed.toLocaleString()} EGP`,
+        data: { name: 'Statement', columns: [{ header: 'Date', width: 12 }, { header: 'Type', width: 22 }, { header: 'Reference', width: 14 }, { header: 'Details', width: 40 }, { header: 'Product', width: 18 }, { header: 'Amount', width: 14, type: 'money' }], rows },
+        kpis: [{ label: 'Balance (earned − deductions − paid)', col: 'Amount', type: 'money' }, { label: 'Earned from jobs', f: 'SUMIF', col: 'Type', match: 'Job packed', sum: 'Amount', type: 'money' }, { label: 'Deductions', f: 'SUMIF', col: 'Type', match: 'Deduction', sum: 'Amount', type: 'money' }, { label: 'Paid by Super App', f: 'SUMIF', col: 'Type', match: 'Payment from Super App', sum: 'Amount', type: 'money' }, { label: 'Jobs', f: 'COUNTIF', col: 'Type', match: 'Job packed' }],
+        groups: [{ title: 'Earned by product', by: 'Product', sum: 'Amount', chart: 'bar', type: 'money' }, { title: 'By day', by: 'Date', sum: 'Amount', chart: 'line', type: 'money', limit: 62 }],
+      }));
+    });
   } };
 
   /* ---------- Reports ---------- */
@@ -145,7 +160,22 @@
           ${fails.length ? `<ul class="fac-list">${fails.slice(0, 12).map((x) => `<li><a href="#/factory/job/${x.job}"><b class="small"><span>${x.stage === 'complaint' ? 'Customer complaint' : 'Failed QC'}</span> · <span class="num">${x.job}</span></b><span class="xs muted" style="display:block">${esc(x.note || '')} · ${x.name ? `${esc(x.name)} · ` : ''}${timeAgo(x.at)}</span></a></li>`).join('')}</ul>` : c.empty({ icon: 'shield', title: 'No quality problems', text: 'Failed checks and customer complaints show up here.' })}
         </section>
       </div>`;
-    return FC().layout('reports', { title: 'Reports', subtitle: `${esc(s.factory.name)} · last ${days} days`, body });
+    return FC().layout('reports', { title: 'Reports', subtitle: `${esc(s.factory.name)} · last ${days} days`, actions: `<button class="btn btn-outline btn-sm" data-xls>${icon('file', 14)} Export Excel</button>`, body });
+  }, mount(el, ctx, s) {
+    el.querySelector('[data-xls]')?.addEventListener('click', () => {
+      const days = [7, 30, 90].includes(+ctx.query.days) ? +ctx.query.days : 30;
+      const since = Date.now() - days * 864e5;
+      const jobs = F().jobs({ factoryId: s.factoryId }).filter((o) => o.placedAt >= since);
+      const name = (o, st) => (o.steps || []).filter((x) => x.stage === st).pop()?.name || '';
+      const hours = (o) => { const t = F().stepAt(o, 'ready'); return t ? Math.round(((t - o.placedAt) / 36e5) * 10) / 10 : ''; };
+      const rows = jobs.map((o) => [o.id, new Date(o.placedAt).toISOString().slice(0, 10), o.product?.name || o.catalogId, o.color, o.size, o.qty, F().STAGE_LABEL[o.stage], hours(o), F().stepAt(o, 'ready') ? (F().stepAt(o, 'ready') <= o.dueAt ? 'On time' : 'Late') : (o.late ? 'Late' : 'In production'), o.qcFails || 0, o.complaints || 0, name(o, 'qc'), name(o, 'packing'), name(o, 'ready')]);
+      SA.pages.dashCommon.xlsx(`factory-report-${days}d-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
+        title: `${s.factory.name} — Production report`, subtitle: `Last ${days} days`,
+        data: { name: 'Jobs', columns: [{ header: 'Job', width: 12 }, { header: 'Placed', width: 12 }, { header: 'Product', width: 18 }, { header: 'Colour', width: 14 }, { header: 'Size', width: 8 }, { header: 'Qty', width: 6, type: 'number' }, { header: 'Stage', width: 16 }, { header: 'Hours to pack', width: 13, type: 'number' }, { header: 'Deadline', width: 13 }, { header: 'QC fails', width: 9, type: 'number' }, { header: 'Complaints', width: 11, type: 'number' }, { header: 'Printed by', width: 16 }, { header: 'Checked by', width: 16 }, { header: 'Packed by', width: 16 }], rows },
+        kpis: [{ label: 'Jobs', f: 'COUNT', col: 'Job' }, { label: 'Items', col: 'Qty' }, { label: 'On time', f: 'COUNTIF', col: 'Deadline', match: 'On time' }, { label: 'Late', f: 'COUNTIF', col: 'Deadline', match: 'Late' }, { label: 'QC fails', col: 'QC fails' }, { label: 'Average hours to pack', f: 'AVERAGE', col: 'Hours to pack' }],
+        groups: [{ title: 'Items by product', by: 'Product', sum: 'Qty', chart: 'bar' }, { title: 'Deadline', by: 'Deadline', chart: 'pie' }, { title: 'Items packed by person', by: 'Packed by', sum: 'Qty', chart: 'bar' }, { title: 'Items by day', by: 'Placed', sum: 'Qty', chart: 'line', limit: 92 }],
+      }));
+    });
   } };
 
   /* ---------- Settings ---------- */
