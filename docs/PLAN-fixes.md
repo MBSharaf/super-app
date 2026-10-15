@@ -37,13 +37,13 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 - [x] M2 Joining a game:
   - The "I'll arrive 10 minutes early" checkbox should not be mandatory.
   - No PDF after paying. Every payment needs a PDF.
-- [ ] M3 Profile: "My games" — the matches I posted, to manage them easily.
-- [ ] M4 Home "Live & next up": the UI looks bad. Redesign it.
-- [ ] M5 Footer:
+- [x] M3 Profile: "My games" — the matches I posted, to manage them easily.
+- [x] M4 Home "Live & next up": the UI looks bad. Redesign it.
+- [x] M5 Footer:
   - Remove the "Animations: On" link.
   - "Theme: Dark" and "العربية" have no space between them.
-- [ ] M6 Header: the profile picture is not aligned.
-- [ ] M7 Active/hover states are not aligned (site-wide).
+- [x] M6 Header: the profile picture is not aligned.
+- [x] M7 Active/hover states are not aligned (site-wide).
 - [x] M8 Points:
   - 20 points = 1 EGP (it was 5 = 1).
   - No cash. Points can only become a voucher used in the app (store, tournaments, bookings, POD, Fantasy Pass, …).
@@ -102,7 +102,7 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 
 ## Factory
 - [ ] F1 Sign-in screen: 3D animation.
-- [ ] F2 Sidebar: low colour contrast, nothing is readable.
+- [x] F2 Sidebar: low colour contrast, nothing is readable.
 - [ ] F3 Production: notifications for everyone concerned (customer, seller, admin).
 - [ ] F4 Scan a job: explain it.
 - [ ] F5 Shipping label:
@@ -112,4 +112,4 @@ Items are numbered as in the user's note: **G** general, **M** main site, **P** 
 - [x] F7 Skipped (the user said leave it for now).
 - [ ] F8 Supervisor vs owner: explain the difference.
 - [ ] F9 Every factory PDF (ticket, label) gets the Super App logo.
-- [ ] F10 The sidebar UI across the whole factory system.
+- [x] F10 The sidebar UI across the whole factory system.

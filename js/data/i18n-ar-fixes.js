@@ -48,6 +48,10 @@
     'The name customers will see.': 'الاسم اللي العملاء هيشوفوه.', 'Choose the area.': 'اختار المنطقة.', 'Street and landmark.': 'الشارع وعلامة مميزة.', 'Tap the map to pin the pitch.': 'دوس على الخريطة وحدد الملعب.', 'From 1 to 20.': 'من 1 لـ 20.', 'Choose at least one.': 'اختار واحد على الأقل.',
     'Add at least one photo of the pitch.': 'ضيف صورة واحدة على الأقل للملعب.', 'Between 100 and 5,000 EGP an hour.': 'من 100 لـ 5,000 جنيه في الساعة.', 'Choose how we pay you.': 'اختار هندفعلك إزاي.', 'Please accept the partner terms.': 'وافق على شروط الشركاء.', 'Where we send your money.': 'هنبعتلك فلوسك فين.',
     'Please accept the seller rules.': 'وافق على قواعد البيع.',
+    /* ---------- M3 my games ---------- */
+    'My games': 'ماتشاتي', 'The games you posted and the ones you joined — answer requests and manage players from here.': 'الماتشات اللي نشرتها واللي انضميت ليها — رد على الطلبات وأدير اللاعيبة من هنا.', 'Post a game': 'انشر ماتش', 'Find a game': 'دوّر على ماتش',
+    'Games you posted': 'ماتشات نشرتها', 'Games you joined': 'ماتشات انضميت ليها', 'You haven’t posted a game': 'لسه منشرتش ماتش', 'Booked a pitch and short of players? Post it — players near you ask to join and pay their share.': 'حاجز ملعب وناقصك لاعيبة؟ انشره — اللاعيبة اللي جنبك هيطلبوا ينضموا ويدفعوا نصيبهم.',
+    'No games yet': 'لسه مفيش ماتشات', 'Find a game near you and ask to join.': 'دوّر على ماتش جنبك واطلب تنضم.', 'Waiting for the host': 'مستني صاحب الماتش', 'You’re in': 'أنت معاهم', 'Waitlist': 'قايمة الانتظار', 'Not accepted': 'متقبلتش', 'You left': 'خرجت', 'Removed': 'اتشلت', 'Joined': 'منضم', 'Auto-accept': 'قبول تلقائي', 'Closed': 'مقفول',
     /* ---------- M9 / A8 support, email, disputes ---------- */
     'Customer disputes about you': 'شكاوى العملاء عنك', 'Super App may ask you for details. Your answers go to the Super App team, who update the customer.': 'Super App ممكن تسألك عن تفاصيل. ردودك بتروح لفريق Super App، وهما اللي بيبلّغوا العميل.',
     'A customer opened this about you. Only Super App sees your answers — they update the customer.': 'عميل فتح الطلب ده عنك. Super App بس اللي بتشوف ردودك — وهي اللي بتبلّغ العميل.',
@@ -55,6 +59,7 @@
     'Question sent — the customer was told you’re checking': 'السؤال اتبعت — والعميل اتبلّغ إنك بتتأكد', 'No pitch owner or seller is linked to this request.': 'مفيش صاحب ملعب أو بياع مربوط بالطلب ده.', 'Write your question first.': 'اكتب سؤالك الأول.',
   });
   D.patterns.push(
+    ['^(\d+) to answer$', '{1} مستني رد'], ['^(\d+) requests? to answer$', '{1} طلب مستني رد'], ['^(\d+) joined$', '{1} انضموا'], ['^(\d+) joined · (\d+) posted( · (\d+) to answer)?$', '{1} انضميت · {2} نشرت'],
     ['^New pitch partner application: (.+)$', 'طلب صاحب ملعب جديد: {1}'], ['^“(.+)” — the Super App team reviews it within 2 working days\\.$', '"{1}" — فريق Super App هيراجعه خلال يومين شغل.'],
     ['^“(.+)” is being reviewed — within 2 working days\\.$', '"{1}" بيتراجع — خلال يومين شغل.'], ['^“(.+)” is being reviewed — usually within one working day\\.$', '"{1}" بيتراجع — عادةً خلال يوم شغل.'],
     ['^“(.+)” — designs, products, orders and your wallet\\.$', '"{1}" — التصميمات والمنتجات والطلبات ومحفظتك.'], ['^“(.+)” — bookings, hours, check-in and your money\\.$', '"{1}" — الحجوزات والمواعيد والتشيك إن وفلوسك.'],

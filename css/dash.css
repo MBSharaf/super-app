@@ -6,7 +6,7 @@ body.dash-mode #site-header, body.dash-mode #site-footer, body.dash-mode #tabbar
 body.dash-mode .app { min-height: 100vh; }
 
 .dash { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100vh; }
-.dash-side { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: radial-gradient(140% 80% at 0% 0%, #17302a, var(--ink) 55%); color: #fff; display: flex; flex-direction: column; padding: 18px 14px; gap: 14px; }
+.dash-side { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: radial-gradient(140% 80% at 0% 0%, #17302a, var(--ink-bg) 55%); color: #fff; display: flex; flex-direction: column; padding: 18px 14px; gap: 14px; }
 .dash-brand { display: flex; align-items: center; gap: 10px; padding: 4px 6px; }
 .dash-brand b { display: block; font-weight: 850; font-variation-settings: "wdth" 125; letter-spacing: -0.02em; }
 .dash-brand .xs { color: rgba(255,255,255,.55); display: block; }
@@ -268,7 +268,7 @@ body.dash-mode .app { min-height: 100vh; }
 .flip-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--r-xl); padding: 24px; color: #fff; display: flex; flex-direction: column; gap: 10px; overflow: hidden;
   background: radial-gradient(120% 140% at 100% 0%, #1b7a57, var(--turf-deep) 55%, #041a12); box-shadow: var(--shadow-3); }
 .flip-face::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.16) 50%, transparent 65%); background-size: 260% 100%; animation: sheen 5s ease-in-out infinite; pointer-events: none; }
-.flip-back { transform: rotateY(180deg); background: radial-gradient(120% 140% at 0% 100%, #6b2a08, var(--ink) 60%); }
+.flip-back { transform: rotateY(180deg); background: radial-gradient(120% 140% at 0% 100%, #6b2a08, var(--ink-bg) 60%); }
 .fc-dim { color: rgba(255,255,255,.68); }
 .fc-bal { font-size: clamp(2.2rem, 1.6rem + 2vw, 3rem); font-weight: 900; font-variation-settings: "wdth" 120; letter-spacing: -0.03em; }
 .fc-chip { width: 42px; height: 30px; border-radius: 6px; background: linear-gradient(135deg, #f7d27a, #b98a20); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }

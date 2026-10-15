@@ -1,7 +1,7 @@
 /* =====================================================================
    FACTORY SYSTEM (#/factory) — built on the dashboard layout (css/dash.css)
    ===================================================================== */
-.dash.is-factory .dash-side { background: radial-gradient(140% 80% at 0% 0%, #2f2410, var(--ink) 58%); }
+.dash.is-factory .dash-side { background: radial-gradient(140% 80% at 0% 0%, #2f2410, var(--ink-bg) 58%); }
 .dash.is-factory .dash-nav a[aria-current="page"] { background: rgba(255,186,73,.16); }
 
 /* Sign-in */

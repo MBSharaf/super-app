@@ -3,7 +3,7 @@
    ========================================================================== */
 
 /* ---------- Tournaments: hero + 3D trophy ---------- */
-.tour-hero { position: relative; overflow: hidden; padding: clamp(36px, 6vw, 72px) 0 clamp(24px, 4vw, 48px); background: radial-gradient(120% 120% at 85% 10%, #2a2410 0%, var(--ink) 55%); color: #fff; }
+.tour-hero { position: relative; overflow: hidden; padding: clamp(36px, 6vw, 72px) 0 clamp(24px, 4vw, 48px); background: radial-gradient(120% 120% at 85% 10%, #2a2410 0%, var(--ink-bg) 55%); color: #fff; }
 .tour-hero::after { content: ""; position: absolute; inset: auto -10% -40% -10%; height: 60%; background: radial-gradient(50% 60% at 50% 0%, rgba(255,91,20,.25), transparent 70%); pointer-events: none; }
 .tour-hero-in { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: center; }
 .tour-hero .lead { color: rgba(255,255,255,.78); max-width: 52ch; }

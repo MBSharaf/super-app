@@ -131,6 +131,7 @@
     .add('/admin/store/product/:id', P.dashProductEdit)
     .add('/admin/store-orders', P.dashOrders)
     .add('/partner/apply', P.partnerApply)
+    .add('/my-games', P.myGames)
     .add('/factory', P.factoryOverview)
     .add('/factory/jobs', P.factoryJobs)
     .add('/factory/job/:id', P.factoryJob)

@@ -140,7 +140,7 @@ html.reduce-motion .wa-fab::before { display: none; }
 /* Fill rises from the bottom on hover: blaze for Facebook, turf for Instagram, ink-to-blaze for TikTok */
 .social-btn::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--blaze); transform: translateY(101%); transition: transform 380ms var(--ease); }
 .social-instagram::before { background: var(--turf-2); }
-.social-tiktok::before { background: linear-gradient(135deg, var(--ink) 0%, var(--turf) 55%, var(--blaze) 100%); }
+.social-tiktok::before { background: linear-gradient(135deg, var(--ink-bg) 0%, var(--turf) 55%, var(--blaze) 100%); }
 .social-btn svg { transition: transform 450ms var(--ease-spring); }
 .social-btn:hover, .social-btn:focus-visible { transform: translateY(-4px); color: #fff; box-shadow: inset 0 0 0 1.5px transparent, 0 12px 22px -10px rgba(255,91,20,.7); }
 .social-btn:hover::before, .social-btn:focus-visible::before { transform: none; }
@@ -178,3 +178,15 @@ html.reduce-motion .wa-fab::before { display: none; }
 .nav-dd-menu a b { display: block; font-size: var(--fs-sm); }
 .nav-dd-menu .menu-ico { width: 36px; height: 36px; flex: none; }
 .nav-dd-menu a.is-active .menu-ico { background: var(--blaze); color: #fff; }
+
+/* Header alignment (M6, M7): items never wrap, everything sits on one centre line */
+.main-nav { align-items: center; }
+.main-nav a, .main-nav .nav-dd-btn { white-space: nowrap; }
+.header-avatar { display: grid; place-items: center; flex: none; width: 40px; height: 40px; line-height: 0; }
+.header-avatar .avatar { width: 36px; height: 36px; }
+[data-theme="dark"] .main-nav a:hover, [data-theme="dark"] .main-nav .nav-dd-btn:hover, [data-theme="dark"] .nav-dd.is-open .nav-dd-btn { background: rgba(255,255,255,.07); }
+@media (max-width: 1180px) { .wallet-chip { display: none; } }
+@media (max-width: 1000px) { .main-nav { display: none; } .header-actions { margin-inline-start: auto; } }
+/* Footer settings (theme, language) sit on their own lines like the links above them */
+.footer-grid .footer-link { display: block; width: 100%; text-align: start; font: inherit; font-size: var(--fs-sm); padding: 4px 0; color: #aab2ad; background: none; border: 0; cursor: pointer; }
+.footer-grid .footer-link:hover { color: #fff; }

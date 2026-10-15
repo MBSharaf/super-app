@@ -15,7 +15,7 @@
       const favs = s.favoritesPitches.map((id) => S.pitches.getSync(id)).filter(Boolean);
       const tiles = [
         ['ticket', 'My bookings', `${upcoming.length} upcoming`, '#/bookings'],
-        ['users', 'My matches', `${mine.joined.length} joined · ${mine.hosting.length} hosting`, '#/players'],
+        ['users', 'My games', `${mine.joined.length} joined · ${mine.hosting.length} posted${(() => { const n = mine.hosting.reduce((t, m) => t + S.games.forMatch(m.id).filter((r) => r.status === 'pending').length, 0); return n ? ` · ${n} to answer` : ''; })()}`, '#/my-games'],
         ['trophy', 'Fantasy team', team ? `${esc(team.name)} · ${tot.total} pts` : 'Not created yet', '#/fantasy'],
         ['package', 'Orders', `${s.orders.length} order${s.orders.length === 1 ? '' : 's'}`, '#/orders'],
         ['heart', 'Wishlist', `${s.wishlist.length} saved`, '#/wishlist'],

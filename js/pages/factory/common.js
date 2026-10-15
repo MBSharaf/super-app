@@ -106,7 +106,7 @@
       <div class="dash-acct">${c.avatar({ name: s.name, avatar: s.avatar })}<span class="grow"><b class="small truncate">${esc(s.name)}</b><span class="xs truncate">${esc(s.factory.name)}</span></span><span class="badge ${ROLE_TONE[s.role]}">${F().ROLES[s.role].label}</span></div>
       <nav class="dash-nav" aria-label="Factory">${list.map((n, i) => (n.group ? `<span class="dash-nav-label xs">${n.group}</span>` : `<a href="${n.href}" style="--i:${i}" ${n.key === active ? 'aria-current="page"' : ''}>${icon(n.icon, 18)}<span class="grow">${n.label}</span><span class="nav-badge ${b[n.badge] ? 'nb-blaze' : ''}" ${b[n.badge] ? '' : 'hidden'}>${b[n.badge] || ''}</span></a>`)).join('')}</nav>
       <div class="dash-side-foot">
-        <a href="#/" class="dash-foot-link">${icon('home', 16)} View the site</a>
+        <a href="#/" class="dash-foot-link dash-site-link">${icon('home', 16)} <span class="grow">Back to Super App</span>${icon('arrowUpRight', 14)}</a>
         <button class="dash-foot-link" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button>
         <button class="dash-foot-link" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button>
         <button class="dash-foot-link" data-fac-signout>${icon('logout', 16)} Switch user</button>

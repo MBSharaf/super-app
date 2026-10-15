@@ -54,3 +54,10 @@
 .need-callout { display: flex; gap: 14px; align-items: center; margin-top: 16px; padding: 14px 16px; border-radius: var(--r-md); background: var(--blaze-tint); color: #7a2a05; font-size: var(--fs-sm); }
 .need-callout b { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--blaze-2); font-variation-settings: "wdth" 118; }
 @media (max-width: 1000px) { .publish-layout { grid-template-columns: minmax(0, 1fr); } .publish-preview { position: static; } }
+
+/* My games */
+.mg-page { max-width: 880px; }
+.mg-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.mg-row.is-past { opacity: .65; }
+.mg-when { display: grid; justify-items: center; min-width: 64px; padding: 6px 8px; border-radius: var(--r-sm); background: var(--surface-2); }
+@media (max-width: 560px) { .mg-row { flex-wrap: wrap; } }

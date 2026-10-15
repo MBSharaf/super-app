@@ -32,7 +32,7 @@
     { key: 'football', label: 'Football', items: ['matches', 'news', 'fantasy'] },
     { key: 'shop', label: 'Shop', items: ['shop', 'wishlist', 'sell'] },
   ].map((g) => ({ ...g, items: g.items.map((k) => LINKS[k]) }));
-  const MINE = [['#/bookings', 'ticket', 'My bookings'], ['#/orders', 'package', 'Orders'], ['#/wallet', 'wallet', 'Wallet'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/profile', 'user', 'Profile'], ['#/support', 'help', 'Help & support']];
+  const MINE = [['#/bookings', 'ticket', 'My bookings'], ['#/my-games', 'users', 'My games'], ['#/orders', 'package', 'Orders'], ['#/wallet', 'wallet', 'Wallet'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/profile', 'user', 'Profile'], ['#/support', 'help', 'Help & support']];
   // Desktop header: Home · Play ▾ · Fantasy · Matches & news ▾ · Shop ▾
   const DESK = [
     { link: NAV[0] },
@@ -89,7 +89,7 @@
       <div><h4>Play</h4><a href="#/pitches">Book a pitch</a><a href="#/players">Find players</a><a href="#/tournaments">Tournaments</a><a href="#/players/new">Post a match</a><a href="#/bookings">My bookings</a></div>
       <div><h4>Fantasy</h4><a href="#/fantasy">My team</a><a href="#/fantasy/leagues">Leagues</a><a href="#/fantasy/fixtures">Fixtures</a><a href="#/fantasy/stats">Player stats</a></div>
       <div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super App</a></div>
-      <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/community">Communities</a><a href="#/support">Help & support</a><a href="#/dash">Partner dashboard</a><a href="#" data-action="reset-demo">Reset demo data</a><button class="footer-link" data-action="toggle-motion" aria-pressed="false">Animations: <b data-motion-label>On</b></button><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
+      <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/community">Communities</a><a href="#/support">Help & support</a><a href="#/dash">Partner dashboard</a><a href="#" data-action="reset-demo">Reset demo data</a><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
     </div>
     <div class="footer-base"><span>© 2026 Super App. Cairo, Egypt.</span><span>Frontend demo: payments, bookings and fantasy scores are simulated on this device.</span></div>
   </div>`;

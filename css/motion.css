@@ -303,3 +303,7 @@ html.reduce-motion .ticker-track { animation: none !important; }
 .ball3d-hit { animation: ballHit 600ms var(--ease-spring); }
 @keyframes ballHit { 0% { transform: none; } 25% { transform: translateY(6px) scale(.995); } 60% { transform: translateY(-2px); } 100% { transform: none; } }
 html.reduce-motion .ball3d { display: none; }
+/* The pill is placed with left/top offsets measured in pixels — anchor it to the physical left so it also lines up in Arabic (RTL) */
+.nav-pill { inset-inline-start: auto; left: 0; right: auto; }
+.main-nav .nav-dd { z-index: 1; }
+.main-nav:has(.nav-pill) .nav-dd-btn[aria-current="page"] { background: transparent; }
