@@ -160,3 +160,17 @@
 }
 /* Projected centre of the 3D pitch — the ball's first landing spot */
 .pitch3d-anchor { position: absolute; left: 50%; top: 50%; width: 2px; height: 2px; transform: translateZ(0); }
+
+/* Shortcuts to every section, under the hero */
+.quick-nav { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+.quick-nav-item { display: grid; justify-items: center; gap: 8px; padding: 14px 6px; border-radius: var(--r-lg, 16px); background: var(--surface); border: 1px solid var(--line); font-size: var(--fs-sm); font-weight: 650; text-align: center; transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast); }
+.quick-nav-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-1); border-color: transparent; }
+.quick-nav-ico { position: relative; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-3); color: var(--ink); }
+.quick-nav-item:hover .quick-nav-ico { background: var(--blaze); color: #fff; }
+.quick-nav-dot { position: absolute; top: 6px; inset-inline-end: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--danger, #E5484D); box-shadow: 0 0 0 2px var(--surface-3); }
+@media (max-width: 900px) {
+  .quick-nav { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 8px; margin-inline: -16px; padding: 2px 16px 6px; scrollbar-width: none; }
+  .quick-nav::-webkit-scrollbar { display: none; }
+  .quick-nav-item { flex: 0 0 84px; scroll-snap-align: start; padding: 10px 4px; font-size: var(--fs-xs, 12px); }
+  .quick-nav-ico { width: 42px; height: 42px; }
+}

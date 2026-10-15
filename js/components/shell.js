@@ -11,12 +11,44 @@
     { key: 'fantasy', label: 'Fantasy', href: '#/fantasy', icon: 'trophy', match: (p) => /^\/fantasy/.test(p) },
     { key: 'shop', label: 'Shop', href: '#/shop', icon: 'bag', match: (p) => /^\/(shop|cart|checkout|order|wishlist)/.test(p) },
   ];
-  // Media sections: in the desktop menu, and in the menu drawer on mobile
-  const EXTRA = [
-    { key: 'tournaments', label: 'Tournaments', href: '#/tournaments', icon: 'trophy', match: (p) => /^\/tournaments/.test(p) },
-    { key: 'matches', label: 'Matches', href: '#/matches', icon: 'calendar', match: (p) => /^\/matches/.test(p) },
-    { key: 'news', label: 'News', href: '#/news', icon: 'info', match: (p) => /^\/news/.test(p) },
+
+  // The whole site in three groups. The desktop dropdowns, the menu drawer and the home shortcuts all read from here.
+  const L = (key, label, href, ic, text, re) => ({ key, label, href, icon: ic, text, match: (p) => re.test(p) });
+  const LINKS = {
+    pitches: L('pitches', 'Book a pitch', '#/pitches', 'pitch', 'Live availability near you', /^\/(pitches|booking)/),
+    players: L('players', 'Find players', '#/players', 'users', 'Join a game or fill your squad', /^\/players(?!\/new)/),
+    post: L('post', 'Post a match', '#/players/new', 'plus', 'Short on players? Post your game', /^\/players\/new/),
+    tournaments: L('tournaments', 'Tournaments', '#/tournaments', 'trophy', 'Cups and leagues at pitches near you', /^\/tournaments/),
+    community: L('community', 'Communities', '#/community', 'message', 'Talk football and find free slots', /^\/community/),
+    matches: L('matches', 'Matches', '#/matches', 'calendar', 'Live scores and fixtures', /^\/matches/),
+    news: L('news', 'News', '#/news', 'news', 'The latest from Egyptian football', /^\/news/),
+    fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'star', 'Egyptian league fantasy and prizes', /^\/fantasy/),
+    shop: L('shop', 'Shop', '#/shop', 'bag', 'Boots, kits and gear', /^\/(shop|cart|checkout|order\/)/),
+    wishlist: L('wishlist', 'Wishlist', '#/wishlist', 'heart', 'Items you saved', /^\/wishlist/),
+    sell: L('sell', 'Sell on Super App', '#/sell', 'shirt', 'Sell your designs', /^\/(sell|s\/)/),
+  };
+  const GROUPS = [
+    { key: 'play', label: 'Play', items: ['pitches', 'players', 'post', 'tournaments', 'community'] },
+    { key: 'football', label: 'Football', items: ['matches', 'news', 'fantasy'] },
+    { key: 'shop', label: 'Shop', items: ['shop', 'wishlist', 'sell'] },
+  ].map((g) => ({ ...g, items: g.items.map((k) => LINKS[k]) }));
+  const MINE = [['#/bookings', 'ticket', 'My bookings'], ['#/orders', 'package', 'Orders'], ['#/wallet', 'wallet', 'Wallet'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/profile', 'user', 'Profile'], ['#/support', 'help', 'Help & support']];
+  // Desktop header: Home · Play ▾ · Fantasy · Matches & news ▾ · Shop ▾
+  const DESK = [
+    { link: NAV[0] },
+    { label: 'Play', items: GROUPS[0].items },
+    { link: LINKS.fantasy },
+    { label: 'Matches & news', items: [LINKS.matches, LINKS.news] },
+    { label: 'Shop', items: GROUPS[2].items },
   ];
+  const liveCount = () => { try { return SA.services.schedule.listSync(SA.core.utils.isoDate(SA.core.utils.today())).filter((m) => m.status === 'live').length; } catch { return 0; } };
+  const linkBadge = (n, live) => (n.key === 'matches' && live ? `<span class="badge badge-danger"><span class="live-dot"></span>${live} live</span>` : '');
+  const mainNav = (path) => DESK.map((d) => {
+    if (d.link) return `<a href="${d.link.href}" ${d.link.match(path) ? 'aria-current="page"' : ''}>${d.link.label}</a>`;
+    const on = d.items.some((n) => n.match(path));
+    return `<div class="nav-dd"><button type="button" class="nav-dd-btn" data-nav-dd aria-expanded="false" aria-haspopup="true" ${on ? 'aria-current="page"' : ''}>${d.label} ${icon('chevronDown', 14)}</button>
+      <div class="nav-dd-menu">${d.items.map((n) => `<a href="${n.href}" class="${n.match(path) ? 'is-active' : ''}"><span class="menu-ico">${icon(n.icon, 18)}</span><span class="grow"><b>${n.label}</b><span class="xs muted">${n.text}</span></span></a>`).join('')}</div></div>`;
+  }).join('');
 
   const brand = `<a class="brand" href="#/" aria-label="Super App home"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span>SUPER APP</span></a>`;
 
@@ -33,7 +65,7 @@
     const bar = an && !SA.services.content.dismissed(an) ? `<div class="announce t-${an.tone || 'info'}" role="status"><div class="container announce-inner">${icon(an.tone === 'promo' ? 'gift' : an.tone === 'alert' ? 'alert' : 'megaphone', 16)}<span class="grow small">${SA.core.utils.esc(an.text)}${an.link ? ` <a class="announce-link" href="${SA.core.utils.esc(an.link)}">${SA.core.utils.esc(an.cta || 'Learn more')}</a>` : ''}</span><button class="icon-btn announce-x" data-announce-x aria-label="Hide announcement">${icon('x', 14)}</button></div></div>` : '';
     return `${bar}<div class="container header-inner">
       ${brand}
-      <nav class="main-nav" aria-label="Main">${[...NAV, ...EXTRA].map((n) => `<a href="${n.href}" ${n.match(path) ? 'aria-current="page"' : ''}>${n.label}</a>`).join('')}</nav>
+      <nav class="main-nav" aria-label="Main">${mainNav(path)}</nav>
       <div class="header-actions">
         ${prefButtons('hdr-pref')}
         <a class="wallet-chip" href="#/wallet" aria-label="Wallet balance ${money(s.wallet.balance)}"><span class="w-ico">${icon('wallet', 15, 2)}</span><span class="num">${money(s.wallet.balance)}</span></a>
@@ -100,6 +132,9 @@
   const bindGlobal = () => {
     document.addEventListener('click', async (e) => {
       if (e.target.closest('[data-announce-x]')) { const an = SA.services.content?.announcement(); if (an) SA.services.content.dismiss(an); render(); return; }
+      const dd = e.target.closest('[data-nav-dd]');
+      document.querySelectorAll('.nav-dd.is-open').forEach((x) => { if (!dd || x !== dd.parentElement) { x.classList.remove('is-open'); x.querySelector('[data-nav-dd]').setAttribute('aria-expanded', 'false'); } });
+      if (dd) { const open = dd.parentElement.classList.toggle('is-open'); dd.setAttribute('aria-expanded', String(open)); return; }
       const t = e.target.closest('[data-action]');
       if (!t) return;
       const { action, id } = t.dataset;
@@ -108,12 +143,15 @@
         case 'open-menu': {
           e.preventDefault();
           const path = SA.core.router.current()?.path || '/';
-          const live = SA.services.schedule.listSync(SA.core.utils.isoDate(SA.core.utils.today())).filter((m) => m.status === 'live').length;
+          const live = liveCount();
+          let i = 0;
           SA.ui.overlay.open({
             drawer: true, title: 'Menu',
-            body: `<nav class="menu-list" aria-label="All sections">${[...NAV, ...EXTRA].map((n, i) => `<a href="${n.href}" class="menu-item ${n.match(path) ? 'is-active' : ''}" style="--i:${i}" data-close>
-                <span class="menu-ico">${icon(n.icon, 20)}</span><span class="grow">${n.label}</span>${n.key === 'matches' && live ? `<span class="badge badge-danger"><span class="live-dot"></span>${live} live</span>` : n.key === 'news' ? '<span class="badge badge-blaze">New</span>' : icon('chevronRight', 18)}</a>`).join('')}</nav>
-              <div class="menu-sub">${[['#/community', 'users', 'Communities'], ['#/wallet', 'wallet', 'Wallet'], ['#/bookings', 'ticket', 'My bookings'], ['#/orders', 'package', 'Orders'], ['#/profile', 'user', 'Profile'], ['#/dash', 'grid', 'Partner dashboard']].map(([h, ic, l]) => `<a href="${h}" data-close>${icon(ic, 18)} ${l}</a>`).join('')}</div>
+            body: `<a href="#/" class="menu-item menu-home ${path === '/' ? 'is-active' : ''}" data-close><span class="menu-ico">${icon('home', 20)}</span><span class="grow">Home</span></a>
+              ${GROUPS.map((g) => `<section class="menu-group"><h3 class="menu-group-title">${g.label}</h3><nav class="menu-list" aria-label="${g.label}">${g.items.map((n) => `<a href="${n.href}" class="menu-item ${n.match(path) ? 'is-active' : ''}" style="--i:${i++}" data-close>
+                <span class="menu-ico">${icon(n.icon, 20)}</span><span class="grow menu-txt"><span>${n.label}</span><span class="xs muted">${n.text}</span></span>${linkBadge(n, live) || icon('chevronRight', 18)}</a>`).join('')}</nav></section>`).join('')}
+              <section class="menu-group"><h3 class="menu-group-title">My account</h3><div class="menu-sub">${MINE.map(([h, ic, l]) => `<a href="${h}" data-close>${icon(ic, 18)} ${l}</a>`).join('')}</div></section>
+              <a class="menu-partner" href="#/dash" data-close>${icon('grid', 18)}<span class="grow"><b>Partner dashboard</b><span class="xs muted">For pitch owners, sellers and print partners</span></span>${icon('chevronRight', 16)}</a>
               <div class="menu-prefs"><button class="btn btn-outline btn-sm" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button><button class="btn btn-outline btn-sm" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
               ${SA.ui.social.render({ variant: 'light' })}`,
           });
@@ -193,5 +231,5 @@
     window.addEventListener('scroll', () => hdr.classList.toggle('is-scrolled', scrollY > 8), { passive: true });
   };
 
-  SA.ui.shell = { init, render, openNotifications, quickAdd, NAV, prefButtons };
+  SA.ui.shell = { init, render, openNotifications, quickAdd, NAV, GROUPS, LINKS, liveCount, prefButtons };
 })(window.SA);

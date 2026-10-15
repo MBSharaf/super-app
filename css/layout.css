@@ -161,3 +161,20 @@ html.reduce-motion .wa-fab::before { display: none; }
 /* With the announcement bar the header grows by its height instead of overlapping the page */
 .site-header:has(> .announce) { height: auto; }
 .site-header:has(> .announce) .header-inner { height: var(--header-h); }
+
+/* Header dropdowns (Play / Matches & news / Shop) */
+.nav-dd { position: relative; }
+.main-nav .nav-dd-btn { display: inline-flex; align-items: center; gap: 4px; position: relative; padding: 8px 14px; border-radius: var(--r-pill); font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); background: none; border: 0; cursor: pointer; transition: color var(--t-fast), background var(--t-fast); }
+.main-nav .nav-dd-btn:hover, .nav-dd.is-open .nav-dd-btn { color: var(--ink); background: rgba(13,20,17,.05); }
+.main-nav .nav-dd-btn[aria-current="page"] { color: var(--ink); }
+.nav-dd-btn svg { transition: transform var(--t-fast); }
+.nav-dd-menu { position: absolute; top: 100%; inset-inline-start: 50%; transform: translateX(-50%); margin-top: 8px; min-width: 300px; padding: 8px; display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg, 16px); box-shadow: var(--shadow-3, 0 18px 40px rgba(0,0,0,.14)); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 160ms, visibility 160ms; z-index: 60; }
+[dir="rtl"] .nav-dd-menu { transform: translateX(50%); }
+.nav-dd-menu::before { content: ""; position: absolute; inset-inline: 0; top: -10px; height: 10px; }
+.nav-dd:hover .nav-dd-menu, .nav-dd:focus-within .nav-dd-menu, .nav-dd.is-open .nav-dd-menu { opacity: 1; visibility: visible; pointer-events: auto; }
+.nav-dd:hover .nav-dd-btn svg, .nav-dd.is-open .nav-dd-btn svg { transform: rotate(180deg); }
+.main-nav .nav-dd-menu a { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: var(--r-md); color: var(--ink); }
+.main-nav .nav-dd-menu a:hover, .main-nav .nav-dd-menu a.is-active { background: var(--surface-2); }
+.nav-dd-menu a b { display: block; font-size: var(--fs-sm); }
+.nav-dd-menu .menu-ico { width: 36px; height: 36px; flex: none; }
+.nav-dd-menu a.is-active .menu-ico { background: var(--blaze); color: #fff; }

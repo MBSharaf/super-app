@@ -2,6 +2,12 @@
 (function (SA) {
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
+    /* ---------- Navigation ---------- */
+    'Football': 'كورة', 'Matches & news': 'ماتشات وأخبار', 'Everything in Super App': 'كل حاجة في Super App',
+    'Live availability near you': 'المواعيد المتاحة جنبك', 'Join a game or fill your squad': 'انضم لماتش أو كمّل فريقك', 'Short on players? Post your game': 'ناقصك لاعيبة؟ انشر ماتشك',
+    'Cups and leagues at pitches near you': 'كاسات ودوريات في ملاعب جنبك', 'Talk football and find free slots': 'اتكلم كورة ولاقي ساعات فاضية', 'Live scores and fixtures': 'النتايج المباشرة والمواعيد',
+    'The latest from Egyptian football': 'آخر أخبار الكورة المصرية', 'Egyptian league fantasy and prizes': 'فانتازي الدوري المصري والجوايز', 'Boots, kits and gear': 'أحذية وأطقم ومعدات',
+    'Items you saved': 'الحاجات اللي حفظتها', 'For pitch owners, sellers and print partners': 'لأصحاب الملاعب والبياعين وشركاء الطباعة',
     /* ---------- Shell & sign-in ---------- */
     'Admin console': 'لوحة الإدارة', 'Admin console — Super App': 'لوحة الإدارة — Super App', 'Super App team only': 'لفريق Super App بس',
     'Run the whole platform from one place.': 'أدر المنصة كلها من مكان واحد.',

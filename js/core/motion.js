@@ -298,7 +298,7 @@
   /** Slide the active-indicator pill under the current nav item (desktop nav + mobile tab bar). */
   const lastPill = {};
   const syncIndicators = () => {
-    [['.main-nav', 'a[aria-current="page"]'], ['.tabbar', 'a[aria-current="page"]']].forEach(([wrapSel, activeSel]) => {
+    [['.main-nav', ':scope > a[aria-current="page"], :scope > .nav-dd > [aria-current="page"]'], ['.tabbar', 'a[aria-current="page"]']].forEach(([wrapSel, activeSel]) => {
       const wrap = document.querySelector(wrapSel); if (!wrap || !wrap.getClientRects().length || getComputedStyle(wrap).display === 'none') return;
       let pill = wrap.querySelector('.nav-pill');
       const fresh = !pill;

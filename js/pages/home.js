@@ -95,6 +95,12 @@
       </section>
 
       <section class="container">
+        <nav class="quick-nav reveal" aria-label="Everything in Super App">
+          ${['pitches', 'players', 'tournaments', 'community', 'matches', 'news', 'fantasy', 'shop'].map((k) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item"><span class="quick-nav-ico">${icon(n.icon, 22)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${n.label}</span></a>`; }).join('')}
+        </nav>
+      </section>
+
+      <section class="container">
         <div class="ticker" aria-label="Live activity across Super App">
           <span class="ticker-label"><span class="live-dot" style="width:8px;height:8px;border-radius:50%;background:#fff;display:inline-block"></span>LIVE</span>
           <div class="ticker-track" aria-hidden="true">${ticker}${ticker}</div>
