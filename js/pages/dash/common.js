@@ -32,7 +32,7 @@
   const A = () => SA.pages.adminCommon;
   /** Pages shared with the admin console keep working there: their dashboard links point to the admin routes */
   const ADMIN_LINKS = [['#/dash/notifications', '#/admin/notifications'], ['#/dash/pod-review', '#/admin/designs'], ['#/dash/pod-catalog', '#/admin/catalog'], ['#/dash/print', '#/admin/print'],
-    ['#/dash/settings', '#/admin/settings'], ['#/dash/partners', '#/admin/partners'], ['#/dash/reviews', '#/admin/reviews'], ['#/dash/activity', '#/admin/audit'], ['#/dash/store', '#/admin/store'], ['#/dash/orders', '#/admin/store-orders']];
+    ['#/dash/settings', '#/admin/settings'], ['#/dash/partners', '#/admin/partners'], ['#/dash/reviews', '#/admin/reviews'], ['#/dash/activity', '#/admin/audit'], ['#/dash/store', '#/admin/store'], ['#/dash/orders', '#/admin/store-orders'], ['#/dash/tournaments', '#/admin/tournaments']];
   const adminLinks = (html) => ADMIN_LINKS.reduce((h, [a, b]) => h.split(a).join(b), html);
   const ROLE_LABEL = { admin: ['badge-blaze', 'Admin'], owner: ['badge-turf', 'Owner'], printer: ['badge-gold', 'Print partner'], seller: ['badge-turf', 'Seller'] };
   /** Navigation per role; pages outside it send the user to the role's home page */

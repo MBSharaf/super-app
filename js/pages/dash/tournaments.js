@@ -57,7 +57,7 @@
       f.addEventListener('submit', (e) => {
         e.preventDefault();
         const d = SA.core.utils.formData(f);
-        try { const t = T().create(d); close(); SA.core.motion.confetti({ count: 80 }); SA.ui.overlay.toast(`${t.name} is open for registration`, { type: 'success', action: 'View on site', onAction: () => window.open(`#/tournaments/${t.id}`, '_blank') }); SA.core.router.go(`/dash/tournaments/${t.id}`); }
+        try { const t = T().create(d); close(); SA.core.motion.confetti({ count: 80 }); SA.ui.overlay.toast(`${t.name} is open for registration`, { type: 'success', action: 'View on site', onAction: () => window.open(`#/tournaments/${t.id}`, '_blank') }); SA.core.router.go(`${SA.services.dash.adminMode() ? '/admin' : '/dash'}/tournaments/${t.id}`); }
         catch (err) { if (err.details) C.showErrors(f, err.details); SA.ui.overlay.toast(err.message, { type: 'error', duration: 6000 }); }
       });
     },
@@ -170,7 +170,7 @@
         if (e.target.closest('[data-cancel-tour]')) {
           const t = T().manage(id);
           if (!(await SA.ui.overlay.confirm({ title: `Cancel ${esc(t.name)}?`, text: 'Every team is refunded, the reserved hours open up for bookings again, and the tournament disappears from the site.', confirmLabel: 'Cancel tournament', danger: true }))) return;
-          await T().cancel(id); SA.ui.overlay.toast('Tournament cancelled — teams refunded'); SA.core.router.go('/dash/tournaments');
+          await T().cancel(id); SA.ui.overlay.toast('Tournament cancelled — teams refunded'); SA.core.router.go((SA.services.dash.adminMode() ? '/admin' : '/dash') + '/tournaments');
         }
       });
     },

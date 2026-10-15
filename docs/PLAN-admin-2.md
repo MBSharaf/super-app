@@ -9,7 +9,7 @@ Agreed with the user on 2026-10-15: build the 5 "important" items and the 4 "med
 - [x] 2. **Commission deal per partner.** Booking and store commission can be overridden for one partner; the deal is used in all money calculations. Set it in the partner drawer.
 - [x] 3. **Shipping and service fees** are editable in Platform settings: standard and express delivery, free-delivery threshold, booking service fee.
 - [x] 4. **Hide one product** from a partner's store, with a reason. The product disappears from the shop and the partner is notified. Done from the partner drawer and a products list.
-- [ ] 5. **Tournament oversight** in the admin console: see all tournaments, open them, cancel one with refunds.
+- [x] 5. **Tournament oversight** in the admin console: see all tournaments, open them, cancel one with refunds.
 - [ ] 6. **Adjust a customer's loyalty points** (credit or debit, with a reason) from the customer drawer.
 - [x] 7. **Maintenance mode:** pause bookings and/or shop checkout with a message. Shown on the site and enforced at checkout.
 - [ ] 8. **Shop categories:** rename, hide, reorder and add categories.

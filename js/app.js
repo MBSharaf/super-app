@@ -99,6 +99,8 @@
     .add('/admin/samples', P.adminSamples)
     .add('/admin/analytics', P.adminAnalytics)
     .add('/admin/approvals', P.adminApprovals)
+    .add('/admin/tournaments', P.dashTournaments)
+    .add('/admin/tournaments/:id', P.dashTournament)
     .add('/admin/support', P.adminSupport)
     .add('/admin/support/:id', P.adminTicket)
     .add('/admin/sellers', P.adminSellers)
@@ -134,7 +136,7 @@
       view.className = 'view';
       view.innerHTML = html;
       appEl.replaceChildren(view);
-      document.title = page.title || 'Super App';
+      document.title = (page.title || 'Super App').replace(/Super App Partner$/, match.path.startsWith('/admin') ? 'Super App Admin' : 'Super App Partner');
       if (keepScroll) window.scrollTo(0, scroll);
       else window.scrollTo(0, 0);
       cleanup = page.mount ? page.mount(view, ctx) : null;
