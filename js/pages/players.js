@@ -35,6 +35,7 @@
             <div class="field"><label for="jn-msg">Message to the host <span class="muted">(optional)</span></label><input class="input" id="jn-msg" name="message" maxlength="200" placeholder="e.g. I can be there 15 minutes early" /></div></div>
           <div class="notice ${hs.autoAccept ? 'turf' : ''}">${icon(hs.autoAccept ? 'bolt' : 'shield', 18)}<span>${hs.autoAccept ? '<b>Instant:</b> this host accepts automatically — you’re in as soon as you pay.' : `<b>${esc(m.hostName)} decides.</b> Your share is held by Super App and comes back in full if you’re not accepted.`} The host sees your record: ${rec.games} games${rec.attendance != null ? `, ${Math.round(rec.attendance * 100)}% attendance` : ''}${rec.rating ? `, ${rec.rating.toFixed(1)}★` : ''}.</span></div>
           ${SA.ui.payment.render({ amount: m.pricePerPlayer, allowCash: false, name: 'joinpay' })}
+          ${SA.ui.legal.field()}
           <p class="xs muted">${icon('clock', 12)} Tip: arrive 10 minutes early, and tell the host if you can’t make it.</p>
         </form>`,
       footer: `<div class="grow"><b class="num">${money(m.pricePerPlayer)}</b><span class="xs muted" style="display:block">your share of the pitch</span></div><button class="btn btn-blaze" form="join-form" type="submit">${m.spotsLeft ? "Pay &amp; ask to join" : "Pay &amp; join waitlist"}</button>`,
@@ -43,9 +44,10 @@
         SA.ui.payment.bind(form, { name: 'joinpay' });
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
+          if (!SA.ui.legal.check(form)) return;
           const payment = SA.ui.payment.read(form, { name: 'joinpay' });
           try {
-            const r = await SA.ui.payment.process(() => S.games.request(id, { position: form.position.value, message: form.message.value, payment }), { root: form, label: 'Sending your request', methodHint: payment.method });
+            const r = await SA.ui.payment.process(() => S.games.request(id, { position: form.position.value, message: form.message.value, payment, waiver: true }), { root: form, label: 'Sending your request', methodHint: payment.method });
             close();
             if (r?.status === 'accepted') { SA.core.motion.confetti(); SA.ui.overlay.toast(`You’re in! See you ${relDay(m.date).toLowerCase()} at ${fmtHour(m.hour)}.`, { action: 'View game', onAction: () => SA.core.router.go(`/players/${id}`) }); }
             else SA.ui.overlay.toast(r?.status === 'waitlist' ? 'You’re on the waitlist — we’ll tell you if a spot opens' : 'Request sent — the host will accept or decline', { type: 'info', action: 'View game', onAction: () => SA.core.router.go(`/players/${id}`) });

@@ -259,6 +259,32 @@
     },
   });
 
+  /* ---------- Legal documents ---------- */
+  SA.pages.ceoLegal = C.guard({
+    title: 'Legal documents — Super App',
+    render() {
+      const docs = SA.services.legal.docs();
+      const acc = db().all('legalAccepts') || [];
+      const tx = (o) => (SA.i18n.isAr ? o.ar : o.en);
+      const body = `<p class="small muted">${icon('info', 12)} Drafts written in Arabic and English. Before launch an Egyptian lawyer must review each one; mark it here when they do. Every acceptance is recorded with the version.</p>
+        <div class="ceo-agents">${docs.map((d) => `<section class="dash-card">
+          <div class="row-between"><span class="ceo-sys-ico" style="width:40px;height:40px">${icon(d.icon, 18)}</span>${d.review ? `<span class="badge badge-turf">Reviewed by the lawyer</span>` : '<span class="badge badge-gold">Draft</span>'}</div>
+          <h2 class="h4" style="margin-top:10px" data-i18n-skip>${esc(tx(d.title))}</h2><p class="xs muted">Version ${d.version} · ${fmtDate(d.updated)}${d.review ? ` · reviewed ${fmtDate(isoDate(new Date(d.review.at)))}` : ''}</p>
+          <p class="small" style="margin-top:6px"><b class="num">${d.accepted.toLocaleString()}</b> <span class="muted">acceptances</span>${acc.find((x) => x.doc === d.key) ? ` · <span class="xs muted">last ${timeAgo(acc.find((x) => x.doc === d.key).at)}</span>` : ''}</p>
+          <div class="row" style="--gap:6px;margin-top:10px;flex-wrap:wrap"><a class="btn btn-ghost btn-sm" href="#/legal/${d.key}" target="_blank" rel="noopener">Read ${icon('arrowUpRight', 13)}</a>${d.review ? `<button class="btn btn-ghost btn-sm" data-draft="${d.key}">Back to draft</button>` : `<button class="btn btn-primary btn-sm" data-reviewed="${d.key}">${icon('check', 14)} Lawyer reviewed it</button>`}</div>
+        </section>`).join('')}</div>
+        <section class="dash-card"><h2 class="h4">Latest acceptances</h2><ul class="ceo-log">${acc.slice(0, 30).map((x) => `<li><span class="xs muted num">${timeAgo(x.at)}</span><span class="grow small">${esc(x.who?.name || '')} <span class="muted">· ${esc(x.where || '')}</span></span><span class="badge">${esc(x.doc)} v${esc(x.version)}</span></li>`).join('') || '<li class="small muted">Nobody yet.</li>'}</ul></section>`;
+      return C.layout('legal', { title: 'Legal documents', subtitle: 'Terms, privacy, refunds, agreements, waiver and cookies', body });
+    },
+    mount(el) {
+      el.querySelectorAll('[data-reviewed]').forEach((b) => b.addEventListener('click', async () => {
+        const r = await A().reason({ title: 'Reviewed by the lawyer?', text: 'The "Draft" note disappears from the public page.', label: 'Lawyer / note', required: false, confirmLabel: 'Mark as reviewed' });
+        if (r) C.run(() => SA.services.legal.setReviewed(b.dataset.reviewed, true, r.reason), 'Marked as reviewed');
+      }));
+      el.querySelectorAll('[data-draft]').forEach((b) => b.addEventListener('click', () => C.run(() => SA.services.legal.setReviewed(b.dataset.draft, false), 'Back to draft')));
+    },
+  });
+
   /* ---------- Every page (site map with test shortcuts) ---------- */
   SA.pages.ceoSiteMap = C.guard({
     title: 'Every page — Super App',

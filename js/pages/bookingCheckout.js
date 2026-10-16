@@ -59,8 +59,9 @@
             <div class="points-earn">${icon('sparkle', 16)}<span>You’ll earn <b class="num">${(weeks ? S.loyalty.estimate(q.pitchTotal) : points).toLocaleString()} Super Points</b> ${weeks ? 'across these games' : 'after the game'}.</span></div>
             <div class="notice turf" style="margin-top:16px">${icon('shield', 18)}<span><b>${esc(pol.name)} cancellation:</b> ${esc(pol.summary)}${weeks ? ' Applies to each game separately.' : ''} Refunds go straight to your wallet.</span></div>
             ${weeks && (q.booked < 2 || !q.sessions[0].available) ? `<p class="field-error" style="margin-top:12px">${!q.sessions[0].available ? 'The first game’s time was just booked by someone else.' : 'Fewer than two of those weeks are free.'} <a class="link" href="#/pitches/${p.id}?date=${date}">Pick another time</a></p>` : ''}
-            <button class="btn btn-blaze btn-lg btn-block" style="margin-top:18px" form="book-form" type="submit" ${weeks && (q.booked < 2 || !q.sessions[0].available) ? 'disabled' : ''}>${icon('lock', 16)} Pay ${money(q.total)}</button>
-            <p class="xs muted" style="margin-top:10px;text-align:center">By paying you agree to the pitch rules and cancellation policy.</p>
+            <div style="margin-top:14px">${SA.ui.legal.field()}</div>
+            <button class="btn btn-blaze btn-lg btn-block" style="margin-top:8px" form="book-form" type="submit" ${weeks && (q.booked < 2 || !q.sessions[0].available) ? 'disabled' : ''}>${icon('lock', 16)} Pay ${money(q.total)}</button>
+            <p class="xs muted" style="margin-top:10px;text-align:center">By paying you agree to the pitch rules, the cancellation policy and our <a class="link" href="#/legal/refunds" target="_blank" rel="noopener">refunds policy</a>.</p>
           </aside>
         </div>
       </div>`;
@@ -77,8 +78,10 @@
       });
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const aside = el.querySelector('.legal-consent')?.parentElement || form;
+        if (!SA.ui.legal.check(aside)) return;
         const payment = SA.ui.payment.read(form, { name: 'bkpay' });
-        const args = { pitchId: ctx.params.id, date: ctx.query.date, hour: +ctx.query.hour, duration: +ctx.query.dur || 1, payment, players: +form.players.value };
+        const args = { pitchId: ctx.params.id, date: ctx.query.date, hour: +ctx.query.hour, duration: +ctx.query.dur || 1, payment, players: +form.players.value, waiver: true };
         try {
           if (weeks) {
             const r = await SA.ui.payment.process(() => S.bookings.createSeries({ ...args, weeks }), { root: form, label: `Booking ${weeks} weeks`, methodHint: payment.method });

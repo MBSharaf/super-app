@@ -71,8 +71,9 @@
     myRequests: () => requests().filter((r) => r.player.id === me().id),
 
     /** Ask to join: the share is paid online now and held by Super App until the host decides */
-    async request(matchId, { position, message = '', payment }) {
+    async request(matchId, { position, message = '', payment, waiver = false }) {
       SA.services.user.assertActive();
+      SA.services.legal?.requireWaiver(waiver, 'joining a game');
       SA.services.ceo?.assertOn('games');
       const b = blockedFor(me().id); if (b) throw new ApiError(`You can’t join games right now: ${b.reason}`, 'blocked');
       const m = M().allSync().find((x) => x.id === matchId);

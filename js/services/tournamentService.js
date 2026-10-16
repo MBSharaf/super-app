@@ -133,8 +133,9 @@
     getSync: (id) => { const t = db.find('tournaments', id); return t ? view(t) : null; },
     forPitch: (pitchId) => db.all('tournaments').filter((t) => t.pitchId === pitchId && ['open', 'full', 'running'].includes(t.status)).map(view),
     teamName,
-    async register(id, { team, captain, phone, players, payment }) {
+    async register(id, { team, captain, phone, players, payment, waiver = false }) {
       SA.services.user.assertActive();
+      SA.services.legal?.requireWaiver(waiver, 'tournament entry');
       const t0 = db.find('tournaments', id);
       if (!t0) throw new ApiError('Tournament not found.', 'not_found');
       const v = view(t0);

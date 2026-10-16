@@ -61,7 +61,7 @@
             ${field('payoutMethod', 'Method', `<select class="select" id="ap-payoutMethod" name="payoutMethod">${S.partners.PAYOUTS.map((p) => `<option>${p}</option>`).join('')}</select>`)}
             ${field('payoutDetail', 'Account', '<input class="input" id="ap-payoutDetail" name="payoutDetail" maxlength="60" dir="ltr" placeholder="IBAN, account number or InstaPay address" />')}
           </div><p class="xs muted" style="margin-top:8px">${icon('info', 12)} Super App pays your bookings every week, after its commission.</p></section>
-          <section class="panel panel-pad"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the Super App partner terms</b><span class="xs muted" style="display:block">Accurate prices and hours, honour every booking, and Super App’s cancellation and refund rules.</span></span></label><p class="field-error" data-err="agree"></p></section>
+          <section class="panel panel-pad"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the Super App <a class="link" href="#/legal/partner" target="_blank" rel="noopener">pitch partner agreement</a></b><span class="xs muted" style="display:block">Accurate prices and hours, honour every booking, and Super App’s cancellation and refund rules.</span></span></label><p class="field-error" data-err="agree"></p></section>
           <button class="btn btn-blaze btn-lg" type="submit">${icon('pitch', 18)} Send my application</button>
         </form></div>`;
     },
@@ -128,7 +128,7 @@
           ${field('payoutMethod', 'Method', `<select class="select" id="ap-payoutMethod" name="payoutMethod">${['InstaPay', 'Bank transfer', 'Vodafone Cash'].map((p) => `<option ${a.payout?.method === p ? 'selected' : ''}>${p}</option>`).join('')}</select>`)}
           ${field('payoutDetail', 'Account', `<input class="input" id="ap-payoutDetail" name="payoutDetail" maxlength="60" dir="ltr" value="${esc(a.payout?.detail || '')}" />`)}
         </div></section>
-        <section class="dash-card"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the seller rules</b></span></label><p class="field-error" data-err="agree"></p></section>
+        <section class="dash-card"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the <a class="link" href="#/legal/seller" target="_blank" rel="noopener">seller agreement</a></b></span></label><p class="field-error" data-err="agree"></p></section>
         <button class="btn btn-blaze btn-lg" type="submit" style="justify-self:start">${icon('bag', 18)} Send my application</button></form>`;
       return C().layout('sell', { title: 'Sell on Super App', subtitle: 'Open a store next to your pitches', body });
     },

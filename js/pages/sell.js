@@ -138,7 +138,7 @@
           <section class="panel panel-pad">
             <h2 class="h4">4. Seller rules</h2>
             <ul class="sell-rules">${RULES.map((r) => `<li>${icon('shield', 16)}<span>${r}</span></li>`).join('')}</ul>
-            <label class="choice" style="margin-top:14px"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the seller rules</b></span></label><p class="field-error" data-err="agree"></p>
+            <label class="choice" style="margin-top:14px"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the <a class="link" href="#/legal/seller" target="_blank" rel="noopener">seller agreement</a></b></span></label><p class="field-error" data-err="agree"></p>
           </section>
           <button class="btn btn-blaze btn-lg sell-submit" type="submit">${icon('sparkle', 18)} Send my application</button>
         </form>

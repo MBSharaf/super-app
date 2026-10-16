@@ -145,6 +145,7 @@
         SA.services.notify?.toAccount(accountId, { cat: 'account', title: 'Your application is being reviewed', body: 'The Super App team checks new sellers within one working day. You can prepare designs and products meanwhile.', link: '#/dash/seller' });
         if (!owner) SA.services.user.notify({ kind: 'account', title: 'We got your seller application', body: `“${name}” — we review it within one working day. You can prepare designs meanwhile.`, link: '/sell' });
       }
+      SA.services.legal?.accept(['seller', 'terms'], { where: 'seller application', person: { id: accountId, name, kind: 'seller' } });
       db().log(accountId, 'seller.started', `${name} started selling (${mode === 'pod' ? 'print on demand' : mode === 'store' ? 'own store' : 'print on demand + own store'})`, s.id);
       SA.services.notify?.toAccount(accountId, { cat: 'account', tone: 'turf', title: `Welcome to Super App, ${name}!`, body: mode === 'store' ? 'Add your first products, then share your store link.' : 'Create your first design in the studio — it takes a few minutes.', link: mode === 'store' ? '#/dash/store' : '#/sell/studio' });
       SA.services.notify?.toAccount(accountId, { cat: 'store', title: 'Make your store yours', body: 'Add a logo, a cover photo and a short description in Store settings.', link: '#/dash/seller/store' });

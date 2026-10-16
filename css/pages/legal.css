@@ -1,0 +1,54 @@
+/* Legal pages, consent checkbox, cookie banner, footer legal links, help center */
+.legal-head { max-width: 720px; margin-bottom: 22px; }
+.legal-head .lead { margin-top: 8px; }
+.legal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.legal-card { display: grid; gap: 6px; padding: 18px; align-content: start; }
+.legal-card > svg { color: var(--turf); }
+.legal-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; align-items: start; }
+.legal-nav { position: sticky; top: calc(var(--header-h, 64px) + 16px); display: grid; gap: 2px; }
+.legal-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-sm); color: var(--ink-2); font-size: var(--fs-sm); font-weight: 600; }
+.legal-nav a:hover { background: var(--surface-2); }
+.legal-nav a[aria-current="page"] { background: var(--turf-tint); color: var(--turf); }
+.legal-doc { max-width: 760px; min-width: 0; }
+.legal-doc .lead { margin: 14px 0 8px; }
+.legal-draft { margin-top: 12px; }
+.legal-sec { margin-top: 22px; }
+.legal-sec p { margin-top: 8px; line-height: 1.75; color: var(--ink-2); }
+@media (max-width: 860px) {
+  .legal-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .legal-nav { position: static; display: flex; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+  .legal-nav a { white-space: nowrap; border: 1px solid var(--line-2); }
+}
+@media print { .legal-nav, .site-header, .site-footer, .tabbar, .cookie-bar, .legal-doc .row { display: none !important; } .legal-layout { display: block; } }
+
+.legal-consent { margin-top: 6px; }
+.legal-consent .field-error { margin-top: 4px; }
+
+.cookie-bar { position: fixed; z-index: 60; inset-inline: 16px; bottom: calc(var(--tabbar-h, 0px) + 16px); max-width: 560px; margin-inline: auto; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-3); animation: cookieIn .35s var(--ease) both; }
+.cookie-bar p { flex: 1 1 260px; }
+@keyframes cookieIn { from { transform: translateY(16px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cookie-bar { animation: none; } }
+
+.footer-legal { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 16px 0 4px; border-top: 1px solid rgba(255,255,255,.1); margin-top: 22px; font-size: var(--fs-sm); }
+.footer-legal a, .footer-legal .footer-link { color: rgba(255,255,255,.7); }
+.footer-legal a:hover, .footer-legal .footer-link:hover { color: #fff; }
+
+/* Help center */
+.help-hero { padding: clamp(28px, 5vw, 56px) 0 8px; }
+.help-search { display: flex; align-items: center; gap: 10px; max-width: 620px; height: 54px; padding: 0 6px 0 18px; margin-top: 18px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-1); }
+.help-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; color: var(--ink); }
+.help-search:focus-within { border-color: var(--turf); box-shadow: 0 0 0 3px rgba(11,110,79,.15); }
+.help-topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin: 22px 0; }
+.help-topic { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line-2); font-weight: 650; font-size: var(--fs-sm); }
+.help-topic[aria-current="true"] { border-color: var(--turf); background: var(--turf-tint); color: var(--turf); }
+.help-list { display: grid; gap: 10px; }
+.help-q { border: 1px solid var(--line-2); border-radius: var(--r-md); background: var(--surface); }
+.help-q > summary { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; list-style: none; font-weight: 650; }
+.help-q > summary::-webkit-details-marker { display: none; }
+.help-q[open] > summary > svg:last-child { transform: rotate(180deg); }
+.help-q .help-a { padding: 0 16px 16px; color: var(--ink-2); line-height: 1.75; }
+.help-q .help-a a { color: var(--turf); font-weight: 600; }
+.help-more { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin-top: 26px; padding: 20px; border-radius: var(--r-lg); background: var(--ink-bg); color: #fff; }
+.help-more .soft { color: rgba(255,255,255,.72); }
+[data-theme="dark"] .help-topic[aria-current="true"] { background: rgba(31,174,110,.14); }

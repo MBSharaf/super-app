@@ -19,6 +19,7 @@
     { key: 'goals', label: 'Goals (OKRs)', href: '#/ceo/goals', icon: 'target' },
     { key: 'budgets', label: 'Budgets', href: '#/ceo/budgets', icon: 'wallet' },
     { key: 'calendar', label: 'Compliance calendar', href: '#/ceo/calendar', icon: 'calendar', badge: 'deadlines' },
+    { key: 'legal', label: 'Legal documents', href: '#/ceo/legal', icon: 'file', badge: 'drafts' },
     { group: 'Insight & control' },
     { key: 'reports', label: 'Reports', href: '#/ceo/reports', icon: 'chart' },
     { key: 'whatif', label: 'What-if simulator', href: '#/ceo/whatif', icon: 'sparkle' },
@@ -30,7 +31,7 @@
   const badges = () => {
     try {
       return { approvals: CE().approvals({ status: 'pending' }).length, paused: CE().roles().filter((r) => r.holder === 'ai' && r.status === 'paused').length,
-        deadlines: CE().calendar().filter((x) => ['overdue', 'soon'].includes(x.state)).length, off: CE().switches().filter((s) => !s.on).length };
+        deadlines: CE().calendar().filter((x) => ['overdue', 'soon'].includes(x.state)).length, drafts: SA.services.legal ? SA.services.legal.docs().filter((d) => !d.review).length : 0, off: CE().switches().filter((s) => !s.on).length };
     } catch { return {}; }
   };
   const TONES = { turf: 'var(--turf)', info: 'var(--info)', blaze: 'var(--blaze)', ink: 'var(--ink-3)', gold: 'var(--gold)', violet: '#7C4DDB', danger: 'var(--danger)' };

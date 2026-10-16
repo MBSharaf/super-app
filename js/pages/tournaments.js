@@ -100,6 +100,7 @@
         </div>
         <label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow small">I’ve read the rules. Entry fees are refunded only if the venue cancels or removes the team.</span></label>
         <span class="field-error" data-err="agree"></span>
+        ${SA.ui.legal.field()}
         ${t.fee ? `<section data-pay>${SA.ui.payment.render({ amount: t.fee, name: 'trpay' })}</section>` : ''}
       </form>`,
       footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-blaze" form="tr-reg" type="submit">${icon('trophy', 16)} ${t.fee ? `Pay ${money(t.fee)} & register` : 'Register team'}</button>`,
@@ -112,9 +113,10 @@
           const d = SA.core.utils.formData(f);
           f.querySelectorAll('[data-err]').forEach((x) => (x.textContent = ''));
           if (!d.agree) { f.querySelector('[data-err="agree"]').textContent = 'Please accept the rules to register.'; return; }
+          if (!SA.ui.legal.check(f)) return;
           const payment = pay ? SA.ui.payment.read(pay, { name: 'trpay' }) : null;
           try {
-            const run = () => S.tournaments.register(t.id, { ...d, payment });
+            const run = () => S.tournaments.register(t.id, { ...d, payment, waiver: true });
             const tm = pay ? await SA.ui.payment.process(run, { root: pay, label: 'Registering your team', methodHint: payment.method }) : await run();
             close(); SA.core.motion.confetti({ count: 90 }); SA.ui.overlay.toast(`${tm.name} is registered!`, { type: 'success' }); SA.app.rerender();
           } catch (err) { if (err.details) Object.entries(err.details).forEach(([k, v]) => { const n = f.querySelector(`[data-err="${k}"]`); if (n) n.textContent = v; }); else if (!pay) SA.ui.overlay.toast(err.message, { type: 'error' }); }

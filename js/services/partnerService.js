@@ -53,6 +53,7 @@
         pitchName: t('pitchName'), area: t('area'), city: t('city') || 'Cairo', address: t('address'), lat: +d.lat, lng: +d.lng, count, formats, photos: d.photos.slice(0, 4), price,
         payout: { method: d.payoutMethod, detail: t('payoutDetail') }, note: t('note').slice(0, 400),
       }, 'pa');
+      SA.services.legal?.accept(['partner', 'terms', 'privacy'], { where: 'pitch partner application', person: { id: u.id, name: app.ownerName, kind: 'partner' } });
       db().log('customer', 'partner.applied', `${app.ownerName} applied to list “${app.pitchName}” (${app.area})`, app.id);
       N()?.toAdmins({ cat: 'store', tone: 'gold', title: `New pitch partner application: ${app.pitchName}`, body: `${app.ownerName} · ${app.area} · ${app.count} pitch${app.count > 1 ? 'es' : ''}`, link: '#/admin/approvals?tab=partners' });
       SA.services.user.notify({ kind: 'account', title: 'We got your application', body: `“${app.pitchName}” — the Super App team reviews it within 2 working days.`, link: '/partner/apply' });
