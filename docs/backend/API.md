@@ -1,7 +1,7 @@
 # API Specification
 Subtitle: Every endpoint of the Super App Web API — who may call it, what it does, how it answers, and how to test it.
 Document: API — backend phase
-Version: 1.1 (review fixes applied)
+Version: 1.2 (public data APIs added)
 Date: 17 October 2026
 Owner: Sharaf (CEO)
 Status: For review — controllers, routes and Postman tests are written from this document
@@ -167,6 +167,7 @@ Never `200` with an error inside.
 | GET | `/lookups/product-categories` · `/lookups/design-categories` | Shop |
 | GET | `/lookups/seller-levels` | Level ladder and perks |
 | GET | `/lookups/settings/public` | Public settings: fees, VAT, delivery, points value, pop-up timing |
+| GET | `/lookups/holidays?year` | Egyptian public holidays (estimated Islamic dates flagged) |
 
 # 3. Pitches and bookings (site + partner dashboard)
 
@@ -175,13 +176,15 @@ Never `200` with an error inside.
 |---|---|---|---|---|
 | GET | `/pitches` | Search: `q, areaId, governorateId, format, minPrice, maxPrice, facilities, date, hour, lat, lng, sort` | Public | live pitches only |
 | GET | `/pitches/{slug}` | Pitch page: photos, facilities, policy, packages (approved), rating | Public | 404 if not live |
-| GET | `/pitches/{slug}/availability?from&days` | Hour grid for up to 14 days (free, booked, closed, offer, waitlist count) | Public | cached 30 s |
+| GET | `/pitches/{slug}/availability?from&days` | Hour grid for up to 14 days (free, booked, closed, offer, waitlist count, holiday badge) | Public | cached 30 s |
+| GET | `/pitches/{slug}/weather?date` | Hourly forecast for an outdoor pitch (temperature, rain chance, wind) | Public | cached 3 h · 204 for indoor pitches or dates beyond 7 days |
 | GET | `/pitches/{slug}/reviews` | Reviews with replies | Public | paged |
 
 ## 3.2 Partner pitches — `PartnerPitchesController` (`/partner/pitches`)
 | Method | Path | Purpose | Access | Notes |
 |---|---|---|---|---|
 | GET | `/partner/venues` · POST · PUT `/{id}` | Venues | Owner | |
+| GET | `/geo/search?q` · `/geo/reverse?lat&lng` | Address ↔ map pin (Egypt only) for the pitch editor, the pitch-owner application and addresses | Customer · rate-limited 1 request/second per account, cached | 422 outside Egypt · 503 provider busy (retry) |
 | GET | `/partner/pitches` | My pitches with status | Owner | |
 | POST | `/partner/pitches` | Add a pitch → **waiting for review** | Owner | 201 |
 | PUT | `/partner/pitches/{id}` | Edit (price, hours, facilities, policy…) | Owner | price/photo changes of a live pitch stay live; 409 rowVersion |
@@ -488,7 +491,7 @@ Every admin endpoint requires a signed-in admin **with 2FA** (or an agent key) *
 | Support | `support.read`, `support.reply`, `support.assign`, `disputes.decide` |
 | POD | `designs.review`, `designs.reports`, `levels.review`, `samples.manage`, `catalogue.manage` |
 | Marketing | `codes.manage`, `broadcasts.send` |
-| Content | `content.banners`, `content.popups`, `content.news`, `content.help`, `content.legal`, `content.categories`, `games.moderate` |
+| Content | `content.banners`, `content.popups`, `content.news`, `content.help`, `content.legal`, `content.categories`, `content.holidays`, `games.moderate` |
 | Community | `community.moderate`, `community.manage`, `community.postAsAdmin` |
 | Fantasy | `fantasy.manage`, `fantasy.groups.paid` |
 | Tournaments | `tournaments.manage` |
@@ -544,6 +547,7 @@ Every admin endpoint requires a signed-in admin **with 2FA** (or an agent key) *
 | | GET/POST | `/admin/broadcasts` | Send now or schedule (202) | `broadcasts.send` |
 | Content | GET/POST/PUT/DELETE | `/admin/banners`, `/admin/popups`, `/admin/news`, `/admin/help`, `/admin/categories` | Site content | `content.*` |
 | | PUT | `/admin/announcement` | Announcement bar | `content.banners` |
+| | GET/POST/PUT | `/admin/holidays` · `/{id}/confirm` · POST `/admin/holidays/sync` | Public holidays: confirm or move estimated Islamic dates, add a holiday, re-sync | `content.holidays` |
 | | GET/POST | `/admin/legal/{key}/versions` · `/{version}/publish` | Legal versions | `content.legal` |
 | | POST | `/admin/games/{code}/hide` · `/remove-player` · `/admin/players/{id}/block` | Pickup-game moderation | `games.moderate` |
 | Community | GET/POST | `/admin/community/reports` · `/{id}/remove` · `/keep` · `/mute-author` | Reports | `community.moderate` |

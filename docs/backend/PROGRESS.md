@@ -11,6 +11,7 @@ Language: English (it goes to engineers). Decisions: see the memory file backend
 - [x] 5. STRUCTURE.md → pdf/STRUCTURE.pdf — solution and folder layout, packages and why, how to run it, migrations, testing
 
 - [x] Review fixes v1.1 (CHANGES-v1.1.md): wallet top-up, CEO screens, 18 demo agents, 9 kill switches, Caddy volumes
+- [x] v1.2 (CHANGES-v1.2.md): public data APIs — geocoding (Nominatim), weather (Open-Meteo, commercial plan before launch), public holidays (new table ops.PublicHolidays → 162 tables), local phone/email validation; rejected APIs listed
 
 ## After approval (not started — waiting for the owner to approve the five documents)
 - Code: solution setup → Domain → Infrastructure (DbContext, configurations, seed) → Application → Api → wiring the site → tests and Postman collection

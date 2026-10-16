@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 Subtitle: Super App — the Egyptian sports super app: pitches, players, fantasy, shop, print on demand, and the systems that run the company.
 Document: PRD — backend phase
-Version: 1.1 (review fixes applied)
+Version: 1.2 (public data APIs added)
 Date: 16 October 2026
 Owner: Sharaf (CEO)
 Status: For review — no code is written until this is approved
@@ -464,6 +464,21 @@ Every page and action below requires the matching permission; every action is wr
 | FR-CEO-12 | Reports: finance, operations, customers, partners, sellers, marketing, support, agents — date range, Excel (with a dashboard sheet), PDF | Must |
 | FR-CEO-13 | "Open as" any partner, seller, factory staff or admin (logged) | Must |
 | FR-CEO-14 | Company audit log | Must |
+
+## 8.5 Public data services (from the public API list)
+| ID | Requirement | Priority |
+|---|---|---|
+| FR-GEO-01 | **Address ↔ map pin** in the partner pitch editor and the pitch-owner application (search an address to drop the pin; moving the pin fills the address), plus factory and seller addresses — through `IGeocoder` (Nominatim now, respecting its usage policy: 1 request per second, identifying user agent, attribution, server-side cache) | Must |
+| FR-GEO-02 | **"Near me"** search uses the customer's browser position and distances calculated in SQL from venue coordinates and area centres — no outside API call per search | Must |
+| FR-WX-01 | **Weather on the pitch page and at checkout** for outdoor pitches: forecast for the chosen hour up to 7 days ahead (Open-Meteo, cached per area every 3 hours) | Should |
+| FR-WX-02 | **Rain / heat alert** in the day-before reminder, suggesting an indoor pitch nearby or another hour | Later |
+| FR-WX-03 | **Seller marketing calendar** uses real forecasts (Rising and up) instead of monthly averages | Should |
+| FR-WX-04 | Open-Meteo **commercial plan** taken before launch (the free API is non-commercial) | Must (before launch) |
+| FR-HOL-01 | **Egyptian public holidays** stored in `ops.PublicHolidays`, synced yearly from the holidays provider (Nager.Date after confirming Egypt coverage, or Calendarific); Islamic holidays saved as **estimated** and confirmed or moved by an admin | Should |
+| FR-HOL-02 | Holidays feed partner insights (peak-price suggestions, forecast), the seller marketing calendar, the CEO what-if simulator and a "holiday" badge on availability | Should |
+| FR-VAL-01 | **Phone and email validation without an outside API:** phones normalised with libphonenumber to `+20…` (mobile required where SMS is used), emails proven by the confirmation link; optional local block list of disposable email domains | Must |
+
+Not used from the same list: betting and odds (illegal in Egypt), currency (EGP only), QR (made on our server), other sports, highlight videos until their terms are checked.
 
 # 9. AI agents and automation (Claude + n8n)
 

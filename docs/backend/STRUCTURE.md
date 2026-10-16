@@ -1,7 +1,7 @@
 # Project Structure and Setup
 Subtitle: How the ASP.NET Core solution is organised, which packages it uses and why, and how to run, migrate, seed and test it from VS Code.
 Document: STRUCTURE — backend phase
-Version: 1.1 (review fixes applied)
+Version: 1.2 (public data APIs added)
 Date: 17 October 2026
 Owner: Sharaf (CEO)
 Status: For review — the solution is created from this document after approval
@@ -103,6 +103,9 @@ SuperApp/
 │   │   │   ├── Shipping/            # SimulatedCourier, (Bosta…)
 │   │   │   ├── Email/               # FileEmailSender, SmtpEmailSender, templates
 │   │   │   ├── Football/            # ApiFootballClient
+│   │   │   ├── Geo/                 # NominatimGeocoder (later Geoapify / LocationIQ)
+│   │   │   ├── Weather/             # OpenMeteoClient
+│   │   │   ├── Holidays/            # NagerDateClient, CalendarificClient
 │   │   │   ├── Storage/             # LocalFileStorage
 │   │   │   └── Webhooks/            # outgoing webhook dispatcher (n8n)
 │   │   ├── Jobs/                    # Hangfire jobs: holds release, fantasy sync/scoring, emails, outbox…
@@ -261,6 +264,7 @@ All versions are pinned once in `Directory.Packages.props` (the latest stable re
 | `AspNetCore.HealthChecks.SqlServer` | Api | `/health/ready` |
 | `DotNetEnv` | Api | loads `.env` in development |
 | `Mapster` | Application | DTO mapping (or hand-written mappers where clearer) |
+| `libphonenumber-csharp` | Application | validate and normalise Egyptian phone numbers locally (no outside API) |
 | Built in: SignalR, Rate Limiting, Data Protection, Output Caching, Response Compression | Api | realtime, limits, encryption of secrets, caching, gzip/brotli |
 | **Tests:** `xunit`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk`, `Microsoft.AspNetCore.Mvc.Testing`, `NSubstitute`, `Shouldly`, `coverlet.collector` | Tests | unit and integration tests, coverage |
 

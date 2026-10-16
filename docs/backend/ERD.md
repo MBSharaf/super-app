@@ -1,7 +1,7 @@
 # Entity Relationship Design (ERD)
 Subtitle: Every table, column, relationship, constraint and index of the Super App database — SQL Server, EF Core Code-First.
 Document: ERD — backend phase
-Version: 1.1 (review fixes applied)
+Version: 1.2 (public data APIs added)
 Date: 16 October 2026
 Owner: Sharaf (CEO)
 Status: For review — the entities and Fluent API configurations are written from this document
@@ -98,6 +98,7 @@ SQL Server forbids several cascade paths into one table, so where two parents co
 | A22 | `content.Banners` | Home banners |
 | A23 | `content.PopupAds` | Pop-up ads |
 | A24 | `community.BannedWords` | Blocked words |
+| A25 | `ops.PublicHolidays` | Egyptian public holidays (synced; Islamic dates estimated, confirmed by an admin) |
 
 ## Part B — Child tables (in dependency order)
 | # | Table | Depends on |
@@ -244,7 +245,7 @@ SQL Server forbids several cascade paths into one table, so where two parents co
 | C12 | `community.CommunityMembers` | Communities ↔ Users |
 | C13 | `community.PollVotes` | PollOptions ↔ Users |
 
-**Totals:** 24 lookup/independent tables, 124 child tables, 13 junction tables — **161 tables** in 16 schemas.
+**Totals:** 25 lookup/independent tables, 124 child tables, 13 junction tables — **162 tables** in 16 schemas.
 
 # 3. Part A — Lookup and independent tables
 
@@ -333,7 +334,7 @@ Indexes: `IX_Users_Status`, `IX_Users_CreatedAt`.
 | Column | Type | Null | Rules |
 |---|---|---|---|
 | Key | varchar(60) | NO | UQ (`payments.paymob`, `courier.bosta`, `email.smtp`, `football.apifootball`, `ai.claude`, `automation.n8n`, `storage.local`, `einvoice.eta`) |
-| Category | tinyint | NO | CK 0–8 (Payment, Courier, Email, SMS, WhatsApp, Football data, AI model, Automation, Storage/E-invoice) |
+| Category | tinyint | NO | CK 0–11 (Payment, Courier, Email, SMS, WhatsApp, Football data, AI model, Automation, Storage/E-invoice, **Geocoding**, **Weather**, **Holidays**) — keys such as `geo.nominatim`, `weather.openmeteo`, `holidays.nagerdate` |
 | Name | nvarchar(80) | NO | |
 | Mode | tinyint | NO | DF 0, CK 0–2 (0 Simulated, 1 Test/sandbox, 2 Live) |
 | IsEnabled | bit | NO | DF 0 |
@@ -514,6 +515,21 @@ Index: `IX_OutboxEvents_Status_NextAttemptAt` (the dispatcher reads pending even
 |---|---|---|---|
 | Word | nvarchar(60) | NO | UQ |
 | Language | char(2) | NO | CK IN (`'ar'`,`'en'`) |
+
+### A25 ops.PublicHolidays — `Id int IDENTITY` PK + CreatedAt/UpdatedAt as [B]
+| Column | Type | Null | Rules |
+|---|---|---|---|
+| Country | char(2) | NO | DF `'EG'` |
+| Date | date | NO | UQ (Country, Date, NameEn) |
+| NameEn / NameAr | nvarchar(120) | NO | |
+| Kind | tinyint | NO | CK 0–2 (National, Religious, Observance) |
+| IsDayOff | bit | NO | DF 1 |
+| IsEstimated | bit | NO | DF 0 — Islamic holidays waiting for the moon sighting |
+| ConfirmedById | uniqueidentifier | YES | no FK (lookup table rule); the audit log records the confirmation |
+| ConfirmedAt | datetime2(0) | YES | |
+| Source | varchar(20) | NO | CK IN (`'nagerdate'`, `'calendarific'`, `'admin'`) |
+
+Index: `IX_PublicHolidays_Date`.
 
 # 4. Part B — Child tables: accounts, operations, AI, pitches
 
@@ -2247,13 +2263,13 @@ The seed runs at start-up in development (and on demand in other environments). 
 | 7 | Facilities, cancellation policies, shop categories, design categories, seller levels | front-end data files |
 | 8 | POD catalogue with colours, sizes + size charts, details and print areas | `js/data/pod.js` |
 | 9 | Legal documents with version 1 (Arabic and English drafts), help topics and articles, banners, pop-ups, communities, banned words | `js/data/legal.js`, `help.js`, content |
-| 10 | Fantasy competitions (EGY, EPL); clubs, players and fixtures come from the **first API-FOOTBALL sync** (the seed only creates the competitions) | API-FOOTBALL |
+| 10 | Fantasy competitions (EGY, EPL); clubs, players and fixtures come from the **first API-FOOTBALL sync** (the seed only creates the competitions). **Public holidays** of the current and next year come from the **first holidays sync** (Islamic dates marked estimated) | API-FOOTBALL, holidays provider |
 | 11 | **Demo data** (switch `Seed:DemoData=true`): partners, venues, pitches, stores, products, sellers, designs, bookings, orders, tournaments, community posts — today's front-end demo data, so the site is not empty — **plus the 18 AI agents** (service accounts, positions under their 8 departments, permissions, money limits, status **Paused**, no API keys) | `js/data/*.js`, `js/data/org.js` |
 
 Set `Seed:DemoData=false` (and run the cleanup command) before the real launch.
 
 # 13. Checks after `Update-Database` (SSMS)
-1. **Object Explorer → Databases → SuperApp → Tables:** 161 tables in 16 schemas (`auth`, `geo`, `ops`, `ai`, `pitch`, `booking`, `shop`, `pod`, `factory`, `ship`, `money`, `fantasy`, `community`, `support`, `content`, `notify`) plus `__EFMigrationsHistory`.
+1. **Object Explorer → Databases → SuperApp → Tables:** 162 tables in 16 schemas (`auth`, `geo`, `ops`, `ai`, `pitch`, `booking`, `shop`, `pod`, `factory`, `ship`, `money`, `fantasy`, `community`, `support`, `content`, `notify`) plus `__EFMigrationsHistory`.
 2. **Database Diagrams → New Database Diagram:** add one schema at a time; compare with section 9.
 3. **Keys and constraints:** for a few tables (e.g. `booking.BookingSlots`, `money.PayoutRequests`, `pod.Designs`) open *Keys*, *Constraints* and *Indexes* and check the names and rules against this document.
 4. **Try the rules:** insert a second active slot for the same pitch, date and hour → must fail; insert a payout with `SentById = PreparedById` → must fail; insert a package with `UsedCount > MatchCount` → must fail.

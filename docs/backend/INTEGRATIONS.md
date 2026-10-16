@@ -1,7 +1,7 @@
 # Integrations Guide
 Subtitle: Payments, couriers, email, SMS, football data, AI agents (Claude + n8n), storage and e-receipts — how each one plugs in, who uses it, and what to ask each company.
 Document: INTEGRATIONS — backend phase
-Version: 1.0 (draft for review)
+Version: 1.2 (public data APIs added)
 Date: 17 October 2026
 Owner: Sharaf (CEO)
 Status: For review — providers are connected when their contracts and API details arrive
@@ -32,6 +32,10 @@ Audience: Founders (for negotiations), backend engineers, n8n builders
 | **Automation** | Webhooks + Agent API | n8n | All (events) | CEO | AI supervisor |
 | **File storage** | `IFileStorage` | Local disk | Studio artwork, photos, IDs, receipts, labels | Technology lead | Technology agent |
 | **Maps** | front end (Leaflet + OpenStreetMap) | Live | Site (pitch maps), Partner (location picker) | — | — |
+| **Geocoding** (address ↔ map pin) | `IGeocoder` | Nominatim (OpenStreetMap), cached | Partner pitch editor and application, factory and seller addresses | Admin manager | Partnerships agent |
+| **Weather** | `IWeatherProvider` | Open-Meteo — free for testing; **paid plan needed for commercial use** | Site (pitch page, checkout, reminders), Seller marketing calendar, Partner insights | Admin manager | Pitch & bookings agent, Marketing lead |
+| **Public holidays** | `IHolidaysProvider` | Nager.Date (verify Egypt) or Calendarific, synced into `ops.PublicHolidays` | Partner insights and forecast, Seller marketing calendar, CEO what-if | Admin manager | Revenue analyst, Marketing lead |
+| **Phone & email validation** | local library (no external API) | `libphonenumber-csharp` + confirmation email | Sign-up, profiles, applications, addresses | — | — |
 | **E-receipts (ETA)** | `IEInvoiceProvider` | Off — needs the commercial register and tax card | Finance, receipts | CFO | Compliance agent |
 | **Error monitoring** | Serilog sink | Files + database (Sentry optional) | All | Technology lead | Quality & monitoring agent |
 
@@ -320,7 +324,7 @@ The site **never** calls API-FOOTBALL; only the server's sync jobs do, and resul
 ## 8.4 MCP (later)
 A Super App **MCP server** will expose safe tools (search bookings, read a ticket, prepare a payout, draft a reply) directly to Claude, with the same permissions and audit as the Agent API. It is designed now and built after launch.
 
-# 9. Storage, maps, e-receipts and monitoring
+# 9. Storage, maps, e-receipts, monitoring and public data
 
 ## 9.1 File storage
 | Phase | Where | Notes |
@@ -333,8 +337,13 @@ A Super App **MCP server** will expose safe tools (search bookings, read a ticke
 - Images are checked (type, size, real image), re-encoded and resized on upload; SVG artwork is sanitised.
 - Daily backup of the storage folder together with the database.
 
-## 9.2 Maps and location
-The front end already uses **Leaflet with OpenStreetMap tiles** (vendored). The server stores latitude/longitude for venues and areas and calculates distances in SQL. Address search (geocoding) can use Nominatim at low volume and a paid geocoder later.
+## 9.2 Maps and geocoding
+- **Maps:** the front end already uses **Leaflet with OpenStreetMap tiles** (vendored). The server stores latitude/longitude for venues, areas and factories.
+- **"Near me"** never calls an outside API: the browser gives the customer's position (with permission) and the server calculates distances in SQL from venue coordinates and area centres.
+- **Geocoding** (`IGeocoder`: `SearchAsync(text)` → candidates with coordinates, `ReverseAsync(lat, lng)` → address) is used only where a person types or moves a pin: the partner pitch editor and pitch-owner application (address → pin, pin → address), factory and seller addresses.
+- **Provider now — Nominatim (OpenStreetMap):** free, no key. Its usage policy must be respected: at most **1 request per second**, an identifying `User-Agent` with a contact email, **attribution** "© OpenStreetMap contributors", no bulk geocoding, and results cached on our side. Our server calls it (never the browser), rate-limits it and caches every answer, which fits the low volume of partners adding venues.
+- **Later — a paid geocoder** (e.g. Geoapify or LocationIQ) when volume grows or Arabic address quality needs to be better; switched in the integrations registry.
+- **Questions for a paid geocoder:** quality of Egyptian and Arabic addresses; price per request and free quota; whether results may be **stored** (some licences forbid it); rate limits; attribution rules.
 
 ## 9.3 E-receipts (Egyptian Tax Authority)
 - Interface `IEInvoiceProvider` with the adapter switched **off**.
@@ -345,6 +354,36 @@ The front end already uses **Leaflet with OpenStreetMap tiles** (vendored). The 
 - **Serilog** structured logs (files + database table for errors) with a `traceId` per request.
 - **Health checks** at `/health` (database, storage, background jobs, each integration's last status).
 - Optional **Sentry** (or Azure Application Insights) for error alerts once the site is live.
+
+## 9.5 Weather (Open-Meteo)
+- **Interface:** `IWeatherProvider.GetHourlyAsync(lat, lng, date)` → temperature, rain probability, wind for each hour.
+- **Uses:**
+    - **Pitch page and checkout** (outdoor pitches only): the forecast for the chosen hour, up to 7 days ahead.
+    - **Reminder the day before:** when rain probability is high or the temperature is extreme, the reminder suggests an indoor pitch nearby or another hour (Later).
+    - **Seller marketing calendar** (Rising level and up): real forecasts replace the monthly Cairo averages used today.
+    - **Partner insights** (Later): demand compared with weather.
+- **Few calls:** the forecast is fetched **per area centre, not per pitch**, every 3 hours, and cached; the site reads only our cache.
+- **Licence:** Open-Meteo's free API is for **non-commercial use**. Before launch, Super App must take their **commercial (paid) API plan**, which adds an API key. Confirm the current terms and price on their site before relying on it.
+- **Responsible:** Pitch & bookings agent (alerts), Marketing lead (calendar).
+
+## 9.6 Public holidays
+- **Interface:** `IHolidaysProvider.GetHolidaysAsync(country, year)`; results are stored in the table **`ops.PublicHolidays`** (ERD A25), synced every January and refreshed monthly.
+- **Providers:** **Nager.Date** (free, no key) — **its Egypt coverage must be verified first**; **Calendarific** (API key, free tier and paid tiers) as the alternative.
+- **Islamic holidays** (Eid al-Fitr, Eid al-Adha, Islamic New Year, the Prophet's Birthday) depend on the moon sighting, so they are stored as **estimated**; an admin confirms or moves the date in the admin console once it is announced.
+- **Uses:** partner insights (peak-price suggestions on holidays and the eve of holidays, better revenue forecast), the seller marketing calendar, the CEO what-if simulator and forecasts, a "holiday" badge on the availability grid.
+- **Responsible:** Revenue analyst (forecast), Marketing lead (calendar); admins with `content.holidays` confirm dates.
+
+## 9.7 Phone and email validation (no external API)
+- **Phone numbers:** validated and normalised on the server with **libphonenumber-csharp** (the .NET port of Google's library) to the international format `+20…`; mobile numbers are required where SMS will be used (Egyptian mobile prefixes 10, 11, 12, 15). No outside service is called, so no cost and no personal data leaves the server.
+- **Emails:** format validated on the server, then **proven by the confirmation link** (FR-AUTH-01). An optional local list of disposable email domains can block throw-away addresses. No paid validation API.
+
+## 9.8 APIs from the public list that are not used
+From the public API list the owner shared (public-apis, *Sports & Fitness*), these were **rejected** on 14 October 2026:
+- **Betting and odds APIs:** gambling is illegal in Egypt.
+- **Currency APIs:** the whole site works in EGP.
+- **QR APIs:** QR codes are made and signed on our server.
+- **Other sports:** outside the product's scope.
+- **Goal highlight videos:** optional, only after checking their commercial terms.
 
 # 10. Secrets and configuration
 
@@ -391,6 +430,14 @@ AUTOMATION__WEBHOOK_SIGNING_KEY=
 # Storage
 STORAGE__MODE=Local         # Local | S3
 STORAGE__LOCAL_ROOT=storage
+
+# Geocoding, weather, holidays
+GEO__PROVIDER=Nominatim       # Nominatim | Geoapify | LocationIQ
+GEO__USER_AGENT=SuperApp/1.0 (contact email)
+GEO__APIKEY=                  # paid providers only
+WEATHER__OPENMETEO__APIKEY=   # empty = free non-commercial endpoint (testing only)
+HOLIDAYS__PROVIDER=NagerDate  # NagerDate | Calendarific
+HOLIDAYS__CALENDARIFIC__APIKEY=
 ```
 
 Rules:
@@ -424,6 +471,9 @@ Rules:
 | API-FOOTBALL plan and quota | A | I | I (cost) | R | Fantasy & games agent watches |
 | Claude + n8n | A | I | I (cost) | R | AI supervisor R |
 | File storage and backups | I | I | — | A / R | Quality & monitoring watches |
+| Geocoding (Nominatim / paid geocoder) | A | R | — | R | Partnerships agent uses it |
+| Weather (Open-Meteo plan) | A | R | I (cost) | R | Pitch & bookings agent, Marketing lead |
+| Public holidays (sync + confirming Islamic dates) | I | R | — | R | Revenue analyst, Marketing lead |
 | E-receipts (ETA) | A | — | R | R | Compliance agent tracks |
 
 # 13. Connecting a new company — step by step
