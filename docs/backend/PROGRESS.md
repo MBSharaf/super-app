@@ -8,7 +8,7 @@ Language: English (it goes to engineers). Decisions: see the memory file backend
 - [x] 2. ERD.md → pdf/ERD.pdf — every table (lookup → child → junction), 5 constraints, ON DELETE, indexes, Mermaid diagram
 - [x] 3. API.md → pdf/API.pdf — endpoints per system, who calls them and with which permission, unified response
 - [x] 4. INTEGRATIONS.md → pdf/INTEGRATIONS.pdf — payments, shipping, email, SMS, API-FOOTBALL, n8n, AI agents (Claude), ETA e-receipt; questions for each company
-- [ ] 5. STRUCTURE.md → pdf/STRUCTURE.pdf — solution and folder layout, packages and why, how to run it, migrations, testing
+- [x] 5. STRUCTURE.md → pdf/STRUCTURE.pdf — solution and folder layout, packages and why, how to run it, migrations, testing
 
-## After approval (not started)
+## After approval (not started — waiting for the owner to approve the five documents)
 - Code: solution setup → Domain → Infrastructure (DbContext, configurations, seed) → Application → Api → wiring the site → tests and Postman collection
