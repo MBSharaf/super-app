@@ -76,7 +76,7 @@
       SA.ui.map.ready().then((ok) => {
         const box = el.querySelector('[data-map]'); if (!ok || !box) return;
         map = SA.ui.map.create(box, { center: { lat: 30.0444, lng: 31.2357 }, zoom: 11 });
-        map.raw.on('click', (e) => { data.lat = e.latlng.lat; data.lng = e.latlng.lng; if (pin) pin.setLatLng(e.latlng); else pin = window.L.marker(e.latlng).addTo(map.raw); el.querySelector('[data-coords]').textContent = `${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`; });
+        map?.raw.on('click', (e) => { data.lat = e.latlng.lat; data.lng = e.latlng.lng; if (pin) pin.setLatLng(e.latlng); else pin = window.L.marker(e.latlng).addTo(map.raw); el.querySelector('[data-coords]').textContent = `${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`; });
       });
       f.addEventListener('submit', (e) => {
         e.preventDefault();

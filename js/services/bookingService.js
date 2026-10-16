@@ -113,6 +113,8 @@
         bookingService._toLedger(booking);
         db().log('customer', 'booking.created', `New app booking ${booking.id} at ${p.name}`, booking.id);
         SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}.`, link: `/booking/${booking.id}` });
+        // The pitch partner is told too
+        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · paid in the app`, link: '#/dash/bookings' });
         return booking;
       });
     },
@@ -139,6 +141,7 @@
           weekday: parseISO(date).getDay(), hour, duration, startDate: date, weeks: +weeks, discount: q.discount, payment: paid.method === 'wallet' ? 'Wallet' : 'Card', source: 'app', status: 'active', bookingIds: list.map((b) => b.id), skipped: q.skipped }, 'WK');
         db().log('customer', 'series.created', `New weekly booking ${seriesId} at ${p.name}: ${list.length} sessions`, seriesId);
         SA.services.user.notify({ kind: 'booking', title: 'Weekly booking confirmed', body: `${list.length} games at ${p.name}, every ${SA.core.utils.DAY[parseISO(date).getDay()]} at ${SA.core.utils.fmtHour(hour)}.`, link: `/booking/${list[0].id}` });
+        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New weekly package at ${p.name}`, body: `${u.name || 'A customer'} · ${list.length} games, every ${SA.core.utils.DAY[parseISO(date).getDay()]} at ${SA.core.utils.fmtHour(hour)} · one QR for the whole package`, link: '#/dash/bookings' });
         return { seriesId, bookings: list };
       });
     },

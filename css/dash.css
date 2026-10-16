@@ -81,7 +81,7 @@ body.dash-mode .app { min-height: 100vh; }
 .kpi-sm .kpi-value { font-size: 1.35rem; }
 
 /* Bar chart */
-.bar-chart { position: relative; height: var(--h); margin: 18px 0 26px 44px; }
+.bar-chart { position: relative; height: var(--h); margin: 18px 0 26px; margin-inline-start: 44px; }
 .bc-grid span { position: absolute; inset-inline-start: 0; inset-inline-end: 0; border-top: 1px dashed var(--line); }
 .bc-grid i { position: absolute; inset-inline-start: -46px; top: -8px; width: 40px; text-align: end; font-style: normal; font-size: 10px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .bc-bars { position: absolute; inset: 0; display: flex; align-items: flex-end; }

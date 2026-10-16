@@ -193,6 +193,7 @@
       SA.ui.map.ready().then((ok) => {
         const node = el.querySelector('#pe-map'); if (!ok || !node?.isConnected) return;
         map = SA.ui.map.create(node, { center: lat ? { lat, lng } : SA.config.fallbackLocation, zoom: lat ? 15 : 11 });
+        if (!map) return;
         map.raw.scrollWheelZoom.enable();
         if (lat) setPoint(lat, lng);
         map.raw.on('click', (ev) => setPoint(ev.latlng.lat, ev.latlng.lng));

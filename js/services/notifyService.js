@@ -11,6 +11,7 @@
   const db = () => SA.services.db;
   const DAY = 864e5;
   const CATS = {
+    bookings: { label: 'Bookings', icon: 'calendar' },
     designs: { label: 'Designs & review', icon: 'image' },
     orders: { label: 'Orders', icon: 'package' },
     money: { label: 'Money', icon: 'wallet' },

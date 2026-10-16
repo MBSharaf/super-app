@@ -134,7 +134,7 @@
     ['^The next step \\(“(.+)”\\) is for another role\\.$', 'الخطوة الجاية ("{t1}") لدور تاني.'], ['^(PO-\\S+) → (.+)$', '{1} ← {t2}'], ['^Packed — (.+) booked for (\\S+)$', 'اتغلّف — {1} اتحجزت لـ {2}'],
     ['^(\\d+) jobs moved to printing$', '{1} أمر راحوا للطباعة'], ['^Downloaded (\\d+) tickets?$', 'اتنزّل {1} كارت'], ['^Downloaded the label (\\S+)$', 'البوليصة {1} اتنزّلت'],
     ['^Failed quality check · (PO-\\S+)$', 'رفض الجودة · {1}'], ['^Report a problem · (PO-\\S+)$', 'بلّغ عن مشكلة · {1}'], ['^This job is at “(.+)”\\.$', 'الأمر ده عند "{t1}".'],
-    ['^(\\d+) parcels? waiting for (.+)$', '{1} طرد مستني {2}'], ['^(\\d+) of (\\d+) packed$', '{1} من {2} اتغلّفوا'], ['^(\\d+) people on (.+)$', '{1} شخص في {2}'], ['^(\\d+) people on the team$', '{1} شخص في الفريق'],
+    ['^(\\d+) parcels? waiting for (.+)$', '{1} طرد مستني {2}'], ['^(\\d+) of (\\d+) packed$', '{1} من {2} اتغلّفوا'], ['^(\\d+) people on (.+)$', '{1} شخص في {t2}'], ['^(\\d+) people on the team$', '{1} شخص في الفريق'],
     ['^Edit (.+)$', 'تعديل {1}'], ['^(\\d+) jobs packed$', '{1} أمر اتغلّف'], ['^Deduction — (.+)$', 'خصم — {1}'], ['^Bonus — (.+)$', 'مكافأة — {1}'], ['^Payment from Super App · (.+)$', 'دفعة من Super App · {1}'], ['^Paid · (.+)$', 'اتدفع · {1}'],
     ['^(.+) · last (\\d+) days$', '{1} · آخر {2} يوم'], ['^(\\d+) colours$', '{1} ألوان'], ['^Change the price · (.+)$', 'تغيير السعر · {1}'], ['^Now (\\d+) EGP per piece\\. Super App reviews the request\\.$', 'دلوقتي {1} جنيه للقطعة. Super App هتراجع الطلب.'],
     ['^Enter a price under the shop base price \\((\\d+) EGP\\)\\.$', 'اكتب سعر أقل من سعر المتجر الأساسي ({1} جنيه).'], ['^“(.+)” can’t be printed right now\\. Try again later\\.$', '"{1}" مش هينفع يتطبع دلوقتي. جرّب بعدين.'],

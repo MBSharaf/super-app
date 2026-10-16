@@ -20,7 +20,7 @@
 .cm-hero .btn-glass { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.4); }
 
 .cm-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; padding-top: 22px; padding-bottom: 40px; align-items: start; }
-.cm-main { display: grid; gap: 14px; min-width: 0; }
+.cm-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
 .cm-side { position: sticky; top: calc(var(--header-h) + 16px); }
 .cm-rules { display: grid; gap: 6px; margin-top: 8px; padding-inline-start: 18px; list-style: decimal; }
 @media (max-width: 900px) { .cm-layout { grid-template-columns: minmax(0, 1fr); } .cm-side { position: static; order: -1; } }

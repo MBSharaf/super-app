@@ -36,7 +36,7 @@
 .adm-delta.down { color: var(--danger); }
 
 /* Stacked revenue columns */
-.adm-chart { position: relative; height: 220px; margin: 6px 0 30px 44px; }
+.adm-chart { position: relative; height: 220px; margin: 6px 0 30px; margin-inline-start: 44px; }
 .adm-cols { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 2px; }
 .adm-col { position: relative; flex: 1; height: 100%; display: flex; flex-direction: column-reverse; justify-content: flex-start; cursor: crosshair; }
 .adm-col i { display: block; width: 100%; max-width: 22px; margin-inline: auto; border-top: 1.5px solid var(--surface); transform-origin: 50% 100%; animation: admGrow 900ms var(--ease-spring) backwards; animation-delay: calc(var(--i) * 12ms); }

@@ -6,7 +6,8 @@
   const { money, esc } = SA.core.utils;
 
   const create = (el, { center, zoom = 12, interactive = true } = {}) => {
-    if (!window.L || !el) return null;
+    // A page that re-mounts quickly (fast navigation) can reach the same node twice: Leaflet refuses a second map
+    if (!window.L || !el || el._leaflet_id) return null;
     const map = L.map(el, { zoomControl: interactive, scrollWheelZoom: false, dragging: interactive, attributionControl: true, tap: interactive })
       .setView([center.lat, center.lng], zoom);
     // OpenStreetMap standard tiles (attribution required). Swap for Mapbox/Google with an API key in production.
@@ -45,7 +46,8 @@
       },
       flyTo(loc, z = 13) { if (!el.clientWidth) return; map.flyTo([loc.lat, loc.lng], z, { duration: 0.8 }); },
       invalidate() { setTimeout(() => map.invalidateSize(), 60); },
-      destroy() { map.remove(); },
+      // Leaflet throws if the page already replaced the container; the map is gone either way
+      destroy() { try { map.remove(); } catch { /* already detached */ } },
     };
     return api;
   };

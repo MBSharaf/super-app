@@ -85,6 +85,8 @@
     },
     back(fallback = '/') { if (history.length > 1) history.back(); else router.go(fallback); },
     current: () => current,
+    /** The route pattern a path matches ('/pitches/:id'), for tools like the QA sweep */
+    patternOf(path) { const p = String(path).replace(/^#/, '').split('?')[0]; const r = routes.find((x) => x.path !== '*' && x.re.test(p)); return r ? r.path : null; },
     /** The current route as a string ('/admin/payouts?tab=…'), readable before the first render */
     location: location_,
     /** Full shareable URL for a route: 'https://…/super-app/players/m-1' */
