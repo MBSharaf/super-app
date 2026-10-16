@@ -1,8 +1,7 @@
 /**
- * TEMPORARY — "Sharaf" test section on the home page: every page of the site, the partner dashboard and the admin
- * console in one place, with one-tap sign-in for the demo accounts, so everything can be tested from a phone.
- * To remove it: delete this file, its <script> line in index.html, the ${SA.ui.devLinks?.() || ''} line in
- * js/pages/home.js and the "Sharaf test section" block at the end of css/pages/admin.css.
+ * "Every page" — the map of every page in every system, with one-tap sign-in shortcuts for the demo accounts.
+ * It lives in the CEO system (#/ceo/sitemap): the CEO sees and opens everything from there. Links and shortcuts open
+ * in a new tab so the Command Center stays open. (It used to be the temporary "Sharaf" section on the home page.)
  */
 (function (SA) {
   const { icon } = SA.ui;
@@ -61,17 +60,18 @@
     ] },
   ];
 
-  SA.ui.devLinks = () => `<section class="container section-tight dev-links" data-i18n-skip>
-    <div class="dev-head"><span class="badge badge-blaze">Temporary · test only</span><h2 class="h2">Sharaf</h2><p class="small soft">Every page in one place for testing on the phone. Dashboards: tap an account first to sign in as it, then open the pages.</p></div>
+  const open = (to) => window.open(SA.core.router.url(String(to).replace(/^#/, '')), '_blank', 'noopener');
+  SA.ui.siteMap = () => `<section class="dev-links"></div>
     ${GROUPS.map((g, i) => `<details class="dev-group" ${i === 0 ? 'open' : ''}><summary>${icon(g.icon, 18)}<b class="grow">${g.title}</b><span class="xs muted">${g.links.length}</span>${icon('chevronDown', 16)}</summary>
       ${g.games ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-as="acc-o1" data-dev-go="#/dash/slots">Sign in as Karim (owner)</button><button class="chip" data-dev-game>Create a finished game to rate</button></div>` : ''}
       ${g.seller ? `<div class="dev-as"><span class="xs muted">Seller-only communities need a seller account:</span><button class="chip" data-dev-seller>Make me a test seller</button><button class="chip" data-dev-as="acc-admin" data-dev-go="#/admin/community">Sign in as admin</button></div>` : ''}
-      ${g.ceo ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-ceo>Sign in as the CEO</button><button class="chip" data-dev-agent="acc-ag-payables">Admin console as the Payables agent</button><button class="chip" data-dev-agent="acc-ag-support-agent">Admin console as Echo (support)</button><button class="chip" data-dev-big>Send a 60,000 EGP test request (two approvals)</button></div>` : ''}
+      ${g.ceo ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-agent="acc-ag-payables">Admin console as the Payables agent</button><button class="chip" data-dev-agent="acc-ag-support-agent">Admin console as Echo (support)</button><button class="chip" data-dev-big>Send a 60,000 EGP test request (two approvals)</button></div>` : ''}
       ${g.factory ? `<div class="dev-as"><span class="xs muted">Sign in to the factory as:</span>${g.factory.map(([id, pin, l]) => `<button class="chip" data-dev-fac="${id}" data-pin="${pin}">${l}</button>`).join('')}<button class="chip" data-dev-job>Send a test order to the factory</button></div>` : ''}
       ${g.as ? `<div class="dev-as"><span class="xs muted">Sign in as:</span>${g.as.map(([id, l]) => `<button class="chip" data-dev-as="${id}" data-dev-go="${g.links[0][1]}">${l}</button>`).join('')}</div>` : ''}
-      <div class="dev-grid">${g.links.map(([l, h]) => `<a class="dev-link" href="${h}"><span>${l}</span><span class="xs muted">${h.replace('#', '')}</span></a>`).join('')}</div></details>`).join('')}
+      <div class="dev-grid">${g.links.map(([l, h]) => `<a class="dev-link" href="${h}" target="_blank" rel="noopener"><span>${l}</span><span class="xs muted">${h.replace('#', '')}</span></a>`).join('')}</div></details>`).join('')}
     <p class="xs muted" style="margin-top:10px">Data is stored on this device. Reset it from Admin → Platform settings → Reset platform data.</p>
   </section>`;
+  SA.ui.siteMapGroups = GROUPS;
 
   // One-tap sign-in for the demo accounts (partner dashboard and admin console have separate sessions)
   document.addEventListener('click', (e) => {
@@ -83,7 +83,7 @@
         st.set((s) => ({ publishedMatches: [{ id, pitchId: 'p-maadi-cage', date, hour, duration: 1, total: 10, filled: 7, participants: [{ name: u.name, avatar: u.avatar, role: 'Host', photo: true, isMine: true }, ...['Friend 1', 'Friend 2', 'Friend 3'].map((n, i) => ({ name: n, avatar: i + 4, role: 'Player', photo: false }))],
           level: 'Intermediate', gender: 'Men', type: '5 v 5', pricePerPlayer: 70, notes: 'Test game', needsGK: false, isMine: true, hostName: u.name, bookingId: '', postedAt: Date.now() - 864e5, autoAccept: true, closed: true }, ...s.publishedMatches] }), 'match');
         ['Ziad Khaled', 'Amr Sherif', 'Belal Ehab'].forEach((n, i) => { const p = SA.services.games.simPlayer(n); SA.services.db.insert('gameRequests', { matchId: id, hostName: u.name, pitchName: 'Maadi Cage', date, hour, player: p, position: p.position, message: '', status: 'accepted', by: 'auto', amount: 70, paid: true, at: Date.now() - (5 - i) * 36e5 }, 'gr'); });
-        SA.ui.overlay.toast('Test game created — rate the players'); SA.core.router.go(`/players/${id}`);
+        SA.ui.overlay.toast('Test game created — rate the players'); open(`/players/${id}`);
       } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
       return;
     }
@@ -94,25 +94,26 @@
         let s = S.mine();
         if (!s) s = S.start({ mode: 'both', name: 'Sharaf Test Store', handle: `sharaf-test-${Math.random().toString(36).slice(2, 5)}`, agree: true });
         db.update('sellers', s.id, { status: 'active' }); if (s.storeId) db.update('stores', s.storeId, { status: 'active' });
-        SA.ui.overlay.toast(`You’re a seller now: ${s.name}`); SA.core.router.go('/community/creators');
+        SA.ui.overlay.toast(`You’re a seller now: ${s.name}`); open('/community/creators');
       } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
       return;
     }
     if (e.target.closest('[data-dev-ceo]')) { try { SA.services.ceo.auth.signIn('2026'); SA.core.router.go('/ceo'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
     const ag = e.target.closest('[data-dev-agent]');
-    if (ag) { try { localStorage.setItem('superapp.admin.session', ag.dataset.devAgent); SA.core.router.go('/admin'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+    if (ag) { try { localStorage.setItem('superapp.admin.session', ag.dataset.devAgent); open('/admin'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
     if (e.target.closest('[data-dev-big]')) {
       // A big balance credit asked by the admin manager: it waits for the CEO and the CFO (test only)
       const prev = localStorage.getItem('superapp.admin.session');
+      const back = SA.core.router.location();
       SA.core.router.go('/admin', { replace: true });
       try { localStorage.setItem('superapp.admin.session', 'acc-admin'); SA.services.admin.adjust({ accountId: 'acc-o1', amount: 60000, reason: 'Test: tournament prize money' }); }
       catch (err) { SA.ui.overlay.toast(err.message, { type: err.code === 'needs_approval' ? 'info' : 'error' }); }
       finally { if (prev) localStorage.setItem('superapp.admin.session', prev); }
-      setTimeout(() => SA.core.router.go('/ceo/approvals'), 300);
+      setTimeout(() => SA.core.router.go(back.startsWith('/ceo') ? back : '/ceo/approvals', { replace: true }), 300);
       return;
     }
     const fb = e.target.closest('[data-dev-fac]');
-    if (fb) { try { SA.services.factory.auth.signIn(fb.dataset.devFac, fb.dataset.pin); SA.ui.overlay.toast(`Factory: ${fb.textContent}`); SA.core.router.go('/factory'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+    if (fb) { try { SA.services.factory.auth.signIn(fb.dataset.devFac, fb.dataset.pin); SA.ui.overlay.toast(`Factory: ${fb.textContent}`); open('/factory'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
     if (e.target.closest('[data-dev-job]')) {
       // A two-item printed order from this device's shopper, straight to the factory (test only)
       try {
@@ -126,7 +127,7 @@
       return;
     }
     const b = e.target.closest('[data-dev-as]'); if (!b) return;
-    try { SA.services.dash.auth.signIn(b.dataset.devAs, { as: /^#?\/seller/.test(b.dataset.devGo) ? 'seller' : '' }); SA.ui.overlay.toast(`Signed in as ${b.textContent}`); SA.core.router.go(b.dataset.devGo); }
+    try { SA.services.dash.auth.signIn(b.dataset.devAs, { as: /^#?\/seller/.test(b.dataset.devGo) ? 'seller' : '' }); SA.ui.overlay.toast(`Signed in as ${b.textContent}`); open(b.dataset.devGo); }
     catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
   });
 })(window.SA);

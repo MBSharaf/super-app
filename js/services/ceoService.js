@@ -240,7 +240,9 @@
     const req = db().insert('ceoApprovals', { kind, amount, fn, args, title, detail, ref, why, need, status: 'pending', approvals: isCeo ? [{ by: a.id, name: a.name, at: Date.now(), role: 'ceo' }] : [], requestedBy: { id: a.id, name: a.name, role: r.id, title: r.title }, at: Date.now() }, 'AP');
     db().log(a.id, 'ceo.approval.requested', `${KIND[kind]} of ${amount.toLocaleString()} EGP sent for approval: ${title} (${why.join('; ')})`, req.id);
     if (!isCeo) N()?.toAccount(CEO_ID, { cat: 'money', tone: 'blaze', title: `Approve: ${KIND[kind]} ${amount.toLocaleString()} EGP`, body: `${title} — asked by ${a.name}`, link: '#/ceo/approvals' });
-    if (need === 2) N()?.toAccount('acc-cfo', { cat: 'money', tone: 'blaze', title: `Second approval needed: ${amount.toLocaleString()} EGP`, body: title, link: '#/admin/payouts' });
+    // A withdrawal the payables agent prepared (within the CEO's limit) can be sent by the CFO from the admin console
+    if (need === 1 && !allowed && prepares && amount <= cap) N()?.toAccount('acc-cfo', { cat: 'money', tone: 'blaze', title: `Ready to send: ${amount.toLocaleString()} EGP`, body: `${title} — prepared by ${a.name}`, link: '#/admin/finance-approvals' });
+    if (need === 2) N()?.toAccount('acc-cfo', { cat: 'money', tone: 'blaze', title: `Second approval needed: ${amount.toLocaleString()} EGP`, body: title, link: '#/admin/finance-approvals' });
     queuedMsg = isCeo ? `Over ${L.dual.toLocaleString()} EGP — waiting for the CFO’s confirmation (${req.id}).` : `Sent to the CEO for approval (${req.id}).`;
     throw new ApiError(queuedMsg, 'needs_approval');
   };
@@ -270,6 +272,52 @@
     log('approval.approved', `Approved ${x.id}: ${KIND[x.kind]} of ${x.amount.toLocaleString()} EGP — ${x.title}${approvals_.length > 1 ? ` (${approvals_.map((p) => p.name).join(' + ')})` : ''}`, id);
     tellRequester(x, `Approved: ${x.amount.toLocaleString()} EGP`, x.title);
     return { done: true };
+  };
+  /**
+   * Admin console (finance): what this admin may do with a request.
+   * 'confirm' = second approval over the two-person limit (the CFO) · 'send' = a prepared request within the CEO's
+   * limit and the role's own limit · 'ceo' = only the CEO decides · '' = not for this role
+   */
+  const financeState = (x, a = D().me()) => {
+    if (!a || a.role !== 'admin' || x.status !== 'pending') return '';
+    const r = roleOfAccount(a);
+    if (r.id === 'ceo' || !r.can.includes(ACTION_OF[x.kind])) return '';
+    if (x.requestedBy?.id === a.id) return 'own';
+    if (x.need === 2) return r.id === 'cfo' ? ((x.approvals || []).some((p) => p.role === 'cfo') ? 'done' : 'confirm') : 'ceo';
+    const L = limits(); const cap = ['refund', 'credit'].includes(x.kind) ? L.refund : L.payout;
+    return x.amount <= cap && x.amount <= r.limit ? 'send' : 'ceo';
+  };
+  const financeQueue = () => { const a = D().me(); return approvals({ status: 'pending' }).map((x) => ({ ...x, state: financeState(x, a) })).filter((x) => x.state); };
+  const financeApprove = async (id) => {
+    const a = D().me();
+    const x = findReq(id);
+    const st = financeState(x, a);
+    if (!['confirm', 'send'].includes(st)) throw new ApiError(st === 'own' ? 'You asked for this — someone else must approve it.' : 'Only the CEO can approve this.', 'forbidden');
+    const r = roleOfAccount(a);
+    const approvals_ = [...(x.approvals || []), { by: a.id, name: a.name, at: Date.now(), role: r.id }];
+    const complete = st === 'send' || approvals_.some((p) => p.role === 'ceo');
+    if (!complete) {
+      db().update('ceoApprovals', id, { approvals: approvals_ });
+      db().log(a.id, 'ceo.approval.second', `${r.title} approved ${x.id} (${x.amount.toLocaleString()} EGP) — waiting for the CEO`, id);
+      N()?.toAccount(CEO_ID, { cat: 'money', tone: 'blaze', title: `CFO approved — your turn: ${x.amount.toLocaleString()} EGP`, body: x.title, link: '#/ceo/approvals' });
+      return { waiting: true };
+    }
+    try { await run(x); }
+    catch (e) { db().update('ceoApprovals', id, { approvals: approvals_, lastError: e.message }); throw e; }
+    db().update('ceoApprovals', id, { status: 'approved', approvals: approvals_, doneAt: Date.now() });
+    db().log(a.id, 'ceo.approval.approved', `Approved ${x.id}: ${KIND[x.kind]} of ${x.amount.toLocaleString()} EGP — ${x.title} (${approvals_.map((p) => p.name).join(' + ')})`, id);
+    tellRequester(x, `Approved: ${x.amount.toLocaleString()} EGP`, x.title);
+    return { done: true };
+  };
+  const financeReject = (id, reason) => {
+    const a = D().me();
+    const x = findReq(id);
+    if (!['confirm', 'send'].includes(financeState(x, a))) throw new ApiError('Only the CEO can decide this.', 'forbidden');
+    if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+    db().update('ceoApprovals', id, { status: 'rejected', reason: reason.trim(), doneAt: Date.now(), rejectedBy: a.name });
+    db().log(a.id, 'ceo.approval.rejected', `Rejected ${x.id}: ${KIND[x.kind]} of ${x.amount.toLocaleString()} EGP — ${reason.trim()}`, id);
+    tellRequester(x, `Not approved: ${x.amount.toLocaleString()} EGP`, `${x.title} — ${reason.trim()}`);
+    N()?.toAccount(CEO_ID, { cat: 'money', title: `${a.name} rejected ${x.id}`, body: reason.trim(), link: '#/ceo/approvals?tab=rejected' });
   };
   const reject = (id, reason) => {
     me();
@@ -589,7 +637,7 @@
     SESSION, CEO_ID, CEO_PIN, SWITCHES, SYSTEMS, REPORTS, METRICS, KIND, LIMITS,
     auth, me, ceoMode, log, cfg, limits, setLimits,
     roles, getRole, roleOfAccount, canSee, may, setAgent, stopAll, resumeAll, blockedAccount, activity, agentStats, agentAcc,
-    gate, approvals, approve, reject, isQueued: (msg) => !!queuedMsg && msg === queuedMsg,
+    gate, approvals, approve, reject, financeState, financeQueue, financeApprove, financeReject, isQueued: (msg) => !!queuedMsg && msg === queuedMsg,
     switches, isOn, assertOn, setSwitch,
     kpis, health, metric, goals, saveGoal, removeGoal, budgets, setBudget, addExpense, expenses: () => db().all('ceoExpenses').slice().sort((a, b) => b.at - a.at),
     calendar, doneItem, addItem, briefing, whatIf, applyRates, openAs, report,

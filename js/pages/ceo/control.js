@@ -259,6 +259,15 @@
     },
   });
 
+  /* ---------- Every page (site map with test shortcuts) ---------- */
+  SA.pages.ceoSiteMap = C.guard({
+    title: 'Every page — Super App',
+    render() {
+      const n = (SA.ui.siteMapGroups || []).reduce((t, g) => t + g.links.length, 0);
+      return C.layout('sitemap', { title: 'Every page', subtitle: `${n} pages in every system — each opens in a new tab`, body: `<p class="small muted">${icon('info', 12)} Dashboards need an account: tap a "Sign in as" shortcut first, then open their pages. Test shortcuts (a test order, a finished game, a big request) only change this device’s demo data.</p>${SA.ui.siteMap?.() || ''}` });
+    },
+  });
+
   /* ---------- Company audit log ---------- */
   SA.pages.ceoAudit = C.guard({
     title: 'Company audit log — Super App',

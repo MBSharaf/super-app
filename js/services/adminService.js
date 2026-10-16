@@ -88,6 +88,7 @@
     const out = [];
     const add = (key, icon, tone, count, title, text, href) => count && out.push({ key, icon, tone, count, title, text, href });
     const pay = admin.pendingPayouts ? admin.pendingPayouts() : [];
+    try { const fq = (SA.services.ceo?.financeQueue() || []).filter((x) => ['send', 'confirm'].includes(x.state)); add('fapprovals', 'check', 'blaze', fq.length, `${fq.length} request${fq.length > 1 ? 's' : ''} waiting for your approval`, `${Math.round(sumBy(fq, (x) => x.amount)).toLocaleString()} EGP — prepared withdrawals and second approvals.`, '#/admin/finance-approvals'); } catch { /* CEO system not loaded */ }
     add('payouts', 'wallet', 'blaze', pay.length, `${pay.length} withdrawal${pay.length > 1 ? 's' : ''} to approve`, `${Math.round(sumBy(pay, (p) => p.amount)).toLocaleString()} EGP waiting to be sent.`, '#/admin/payouts');
     if (SA.services.pod) {
       const q = SA.services.pod.queue().length, rep = db().all('reports').filter((r) => r.status === 'open').length;

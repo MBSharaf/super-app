@@ -36,7 +36,7 @@
       duties: ['Sets goals and budgets', 'Approves big payments and refunds', 'Hires, pauses and stops AI agents', 'Owns every kill switch'] },
     { id: 'hq', title: 'Admin manager (HQ)', dept: 'ops', reportsTo: 'ceo', holder: 'human', name: 'Super App HQ', account: 'acc-admin', sections: ['*'], can: ALL.filter((k) => k !== 'payout.prepare'), limit: 10000,
       duties: ['Runs the admin console day to day', 'Steps in when an agent is unsure', 'Second pair of eyes on agents’ work'] },
-    { id: 'cfo', title: 'Finance director (CFO)', dept: 'finance', reportsTo: 'ceo', holder: 'human', name: 'Laila Mansour', account: 'acc-cfo', pin: '7777', sections: ['overview', 'payouts', 'revenue', 'customers', 'partners', 'sellers', 'analytics', 'audit'], can: ['payout.approve', 'settle', 'refund', 'credit', 'adjust', 'audit'], limit: 50000,
+    { id: 'cfo', title: 'Finance director (CFO)', dept: 'finance', reportsTo: 'ceo', holder: 'human', name: 'Laila Mansour', account: 'acc-cfo', pin: '7777', sections: ['overview', 'payouts', 'finance-approvals', 'revenue', 'customers', 'partners', 'sellers', 'analytics', 'audit'], can: ['payout.approve', 'settle', 'refund', 'credit', 'adjust', 'audit'], limit: 50000,
       duties: ['Approves withdrawals the payables agent prepared', 'Second approval on anything over the two-person limit', 'Monthly close and reconciliation', 'Taxes with the legal counsel'], watch: ['admin.payout', 'admin.printer', 'admin.balance'] },
 
     { id: 'coo', title: 'Operations lead', dept: 'ops', reportsTo: 'ceo', holder: 'ai', name: 'Atlas', cost: 2400, sections: ['overview', 'orders', 'approvals', 'factories', 'support', 'analytics'], can: ['orders', 'factory', 'audit'], limit: 0,
