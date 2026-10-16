@@ -32,7 +32,7 @@
     { key: 'football', label: 'Football', items: ['matches', 'news', 'fantasy'] },
     { key: 'shop', label: 'Shop', items: ['shop', 'wishlist', 'sell'] },
   ].map((g) => ({ ...g, items: g.items.map((k) => LINKS[k]) }));
-  const MINE = [['#/bookings', 'ticket', 'My bookings'], ['#/my-games', 'users', 'My games'], ['#/orders', 'package', 'Orders'], ['#/wallet', 'wallet', 'Wallet'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/profile', 'user', 'Profile'], ['#/support', 'help', 'Help & support']];
+  const MINE = [['#/bookings', 'ticket', 'My bookings'], ['#/my-games', 'users', 'My games'], ['#/orders', 'package', 'Orders'], ['#/wallet', 'wallet', 'Wallet'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/profile', 'user', 'Profile'], ['#/help', 'help', 'Help center'], ['#/support', 'message', 'Contact support']];
   // Desktop header: Home · Play ▾ · Fantasy · Matches & news ▾ · Shop ▾
   const DESK = [
     { link: NAV[0] },

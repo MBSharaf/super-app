@@ -55,6 +55,7 @@
       const category = preset ? preset.split(':')[0] : '';
       return `<div class="container section-tight sup-page">
         <div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Help & support</h1><p class="lead">Questions about a booking, an order, a printed item or your wallet — the Super App team answers here.</p></div>
+        <a class="notice turf" href="#/help" style="margin-bottom:16px;display:flex">${icon('help', 18)}<span class="grow"><b>Most answers are in the Help center</b> — cancellations, refunds, delivery, packages, points and more.</span>${icon('arrowRight', 16)}</a>
         <div class="sup-grid">
           <section class="panel panel-pad"><h2 class="h3">${preset ? 'Report a problem' : 'New request'}</h2>${form({ withRef: true, preset, category })}</section>
           <section><h2 class="h3" style="margin-bottom:12px">Your requests</h2>${list(mine, '#/support')}</section>

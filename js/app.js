@@ -131,6 +131,7 @@
     .add('/admin/store/product/new', P.dashProductEdit)
     .add('/admin/store/product/:id', P.dashProductEdit)
     .add('/admin/store-orders', P.dashOrders)
+    .add('/help', P.help)
     .add('/legal', P.legalIndex)
     .add('/legal/:key', P.legalDoc)
     .add('/partner/apply', P.partnerApply)

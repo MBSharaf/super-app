@@ -52,3 +52,4 @@
 .help-more { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; margin-top: 26px; padding: 20px; border-radius: var(--r-lg); background: var(--ink-bg); color: #fff; }
 .help-more .soft { color: rgba(255,255,255,.72); }
 [data-theme="dark"] .help-topic[aria-current="true"] { background: rgba(31,174,110,.14); }
+@media (max-width: 640px) { .help-topics { display: flex; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; } .help-topic { flex: none; padding: 10px 12px; } }
