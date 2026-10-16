@@ -170,7 +170,7 @@
         <ul class="ceo-cal">${list.map((x) => `<li class="dash-card ceo-cal-item is-${x.state}">
           <span class="ceo-cal-date"><b class="num">${SA.core.utils.parseISO(x.due).getDate()}</b><span class="xs">${fmtDate(x.due).split(' ').pop()}</span></span>
           <span class="grow"><b class="small">${esc(x.title)}</b><span class="xs muted" style="display:block">${esc(x.note || '')}</span>
-            <span class="xs muted">${esc(deptName(x.dept))} · ${esc(x.ownerRole?.name || '')} — ${esc(x.ownerRole?.title || '')} ·${EVERY[x.every] || ''}</span></span>
+            <span class="xs muted">${esc(deptName(x.dept))} · ${esc(x.ownerRole?.name || '')} — ${esc(x.ownerRole?.title || '')} · ${EVERY[x.every] || ''}</span></span>
           ${x.done ? '<span class="badge badge-turf">Done</span>' : `<span class="badge ${x.state === 'overdue' ? 'badge-danger' : x.state === 'soon' ? 'badge-gold' : ''}">${x.state === 'overdue' ? `${Math.abs(x.left)} days late` : x.left === 0 ? 'Today' : `In ${x.left} days`}</span><button class="btn btn-outline btn-sm" data-done="${x.id}">${icon('check', 14)} Done</button>`}
         </li>`).join('') || `<li class="dash-card small muted">Nothing here.</li>`}</ul>
         <form class="dash-card" data-cal novalidate><h2 class="h4">Add a deadline</h2>

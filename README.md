@@ -245,3 +245,18 @@ Plan: `docs/PLAN-ceo.md`. A separate system with its own link and session, `/ceo
 | `/ceo/reports` · `/ceo/whatif` | **Reports:** 9 reports for any dates — finance, operations, customers, partners, sellers, marketing, support, AI agents and approvals — as Excel (with a Dashboard sheet) or PDF. **What-if simulator:** change commissions, fees, demand, margins, marketing or agent costs and see next month's net revenue, then apply the new rates. |
 | `/ceo/control` · `/ceo/systems` · `/ceo/audit` | **Kill switches**, enforced across the site: bookings, shop checkout, printed designs, withdrawals, new applications, fantasy, community posting and joining games. Also here: approval limits, company rates and delivery fees, and the permissions matrix. **All systems:** open the site, the admin console (as any role), any partner's or seller's dashboard, or the factory as any staff member, in a new tab, with every opening logged. **Company audit log:** search it, filter it by who did the action, and download it to Excel. |
 | Admin console | Every admin account has a **team role**. The navigation shows only the role's sections, and other sections say "not part of your role". Agents sign in as their role from the "AI agents" list; paused agents can't sign in. Money above a role's limit or outside its permissions goes to the CEO. The payables agent prepares withdrawals and never sends them. |
+
+### Pre-launch round (added in release 10)
+
+Plan: `docs/PLAN-launch.md`. QA tool: `tools/qa-sweep.js` (findings in `docs/PLAN-qa.md`).
+
+| Where | What |
+| --- | --- |
+| `/legal`, `/legal/:key` | Terms, privacy, refunds & returns, injury & conduct waiver, seller agreement, pitch partner agreement, cookies. Arabic and English drafts (`js/data/legal.js`), each marked **draft** until a lawyer reviews it. A cookie banner and cookie settings. Legal links in the footer. Every acceptance is recorded with its version. |
+| Waiver | Required before a booking, a weekly package, joining a game or entering a tournament. Enforced in the services too. |
+| `/help` | Help center: questions by topic in Arabic and English, search, "was this helpful?" votes, and a way to contact support. Linked from support, the menu and the footer. |
+| Returns | Within **14 days** of delivery. **Store products:** return or exchange; "changed my mind" pays the return delivery. **Printed designs:** reprinted or refunded only for a fault or a wrong print. Customers ask from the order page; sellers answer at `/seller/returns`, and Super App at `/admin/returns` (the official store and printed designs). Next comes the courier pickup, then a refund to the wallet with a receipt; the seller pays its share, Super App returns its commission, and stock goes back. |
+| `/sell/bulk` | Bulk design upload: many images with the same product, colours, price, category, tags and side; each design can have its own title and price. Save them as drafts or send them for review, within the level limit. |
+| `/admin/finance-approvals` | The CFO sends withdrawals the payables agent prepared and gives the second approval above the two-person limit. Whoever prepared a request can't approve it. |
+| SEO | Description, canonical URL, Open Graph and Twitter tags (share image `og-image.png`) and JSON-LD for pitches, products, tournaments and news (`js/core/seo.js`). Private systems are marked noindex. `robots.txt` and `sitemap.xml`. |
+| CEO system | **Every page** (`/ceo/sitemap`): the old home-page test section, with sign-in shortcuts. **Legal documents** (`/ceo/legal`): lawyer-review status and acceptances. A **Returns** report. |

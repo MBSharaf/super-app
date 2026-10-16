@@ -8,7 +8,7 @@
  */
 (function () {
   const SA = window.SA;
-  const START = ['/', '/pitches', '/players', '/fantasy', '/fantasy/squad', '/fantasy/leagues', '/fantasy/fixtures', '/fantasy/stats', '/shop', '/cart', '/orders', '/wishlist', '/profile', '/wallet', '/news', '/matches', '/tournaments', '/sell', '/sell/studio', '/support', '/community', '/alerts', '/bookings', '/my-games', '/partner/apply', '/players/new',
+  const START = ['/help', '/legal', '/legal/terms', '/sell/bulk', '/admin/returns', '/admin/finance-approvals', '/seller/returns', '/ceo/legal', '/ceo/sitemap', '/', '/pitches', '/players', '/fantasy', '/fantasy/squad', '/fantasy/leagues', '/fantasy/fixtures', '/fantasy/stats', '/shop', '/cart', '/orders', '/wishlist', '/profile', '/wallet', '/news', '/matches', '/tournaments', '/sell', '/sell/studio', '/support', '/community', '/alerts', '/bookings', '/my-games', '/partner/apply', '/players/new',
     '/dash', '/dash/sell', '/seller', '/admin', '/ceo', '/factory'];
   const SKIP = /^$/;
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));

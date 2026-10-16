@@ -25,7 +25,13 @@
     { title: 'Fantasy', icon: 'trophy', links: [
       ['Fantasy home', '#/fantasy'], ['Pick squad', '#/fantasy/squad'], ['Leagues & Pass', '#/fantasy/leagues'], ['Fixtures', '#/fantasy/fixtures'], ['Stats', '#/fantasy/stats'],
     ] },
+    { title: 'Help, legal & returns', icon: 'help', links: [
+      ['Help center', '#/help'], ['Help: refunds', '#/help?topic=returns'], ['All legal', '#/legal'], ['Terms of use', '#/legal/terms'], ['Privacy policy', '#/legal/privacy'], ['Refunds & returns policy', '#/legal/refunds'],
+      ['Injury & conduct waiver', '#/legal/waiver'], ['Seller agreement', '#/legal/seller'], ['Pitch partner agreement', '#/legal/partner'], ['Cookies', '#/legal/cookies'], ['Order history (return or exchange)', '#/orders'], ['Contact support', '#/support'],
+      ['Seller: returns', '#/seller/returns'], ['Admin: returns', '#/admin/returns'], ['CEO: legal documents', '#/ceo/legal'],
+    ] },
     { title: 'Sell', icon: 'shirt', links: [
+      ['Bulk upload (many designs)', '#/sell/bulk'],
       ['Start selling', '#/sell'], ['Design studio', '#/sell/studio'], ['Store: Koora Ink', '#/s/koora-ink'], ['Store: Nile Lines', '#/s/nile-lines'], ['Store: Cairo Otaku', '#/s/cairo-otaku'],
     ] },
     { title: 'Pitch owner dashboard', icon: 'pitch', as: [['acc-o1', 'Karim · Turf 22'], ['acc-new', 'New partner']], links: [
@@ -35,7 +41,7 @@
     ] },
     { title: 'Seller dashboard', icon: 'image', as: [['acc-s1', 'Koora Ink · Elite'], ['acc-s2', 'Nile Lines · Pro'], ['acc-s3', 'Cairo Otaku · Rising']], links: [
       ['Overview', '#/seller'], ['Store settings', '#/seller/store'], ['Marketing calendar', '#/seller/calendar'], ['Analytics', '#/seller/analytics'], ['Designs & samples', '#/seller/designs'],
-      ['Print orders', '#/seller/orders'], ['Products (own store)', '#/seller/products'], ['Store orders', '#/seller/store-orders'], ['Wallet', '#/seller/wallet'], ['Notifications', '#/seller/notifications'], ['Seller sign-in', '#/seller'],
+      ['Print orders', '#/seller/orders'], ['Products (own store)', '#/seller/products'], ['Store orders', '#/seller/store-orders'], ['Returns', '#/seller/returns'], ['Bulk upload', '#/sell/bulk'], ['Wallet', '#/seller/wallet'], ['Notifications', '#/seller/notifications'], ['Seller sign-in', '#/seller'],
     ] },
     { title: 'Grow: become a seller or a pitch partner', icon: 'sparkle', links: [
       ['Profile (grow cards)', '#/profile'], ['Apply to sell', '#/sell'], ['Apply as a pitch partner', '#/partner/apply'], ['Pitch partner: apply to sell', '#/dash/sell'], ['Karim’s shop (seller dashboard)', '#/seller/products'],
@@ -45,7 +51,7 @@
       ['CEO sign-in (PIN 2026)', '#/ceo'], ['Command overview', '#/ceo'], ['Morning briefing', '#/ceo/briefing'], ['Approvals inbox', '#/ceo/approvals'], ['Departments', '#/ceo/departments'], ['Org chart', '#/ceo/departments?view=chart'],
       ['A department (Finance)', '#/ceo/department/finance'], ['AI workforce', '#/ceo/agents'], ['An agent (Payables)', '#/ceo/agent/payables'], ['Goals (OKRs)', '#/ceo/goals'], ['Budgets', '#/ceo/budgets'], ['Compliance calendar', '#/ceo/calendar'],
       ['Reports', '#/ceo/reports'], ['AI agents report', '#/ceo/reports?kind=agents'], ['What-if simulator', '#/ceo/whatif'], ['Control room (kill switches)', '#/ceo/control'], ['All systems (open as anyone)', '#/ceo/systems'], ['Company audit log', '#/ceo/audit'],
-      ['Admin console sign-in (agents list)', '#/admin'],
+      ['Legal documents', '#/ceo/legal'], ['Every page', '#/ceo/sitemap'], ['Admin console sign-in (agents list)', '#/admin'], ['Admin: finance approvals (CFO)', '#/admin/finance-approvals'],
     ] },
     { title: 'Factory (print-on-demand)', icon: 'truck', factory: [['fs-owner', '1111', 'Owner · Hany'], ['fs-sup', '2222', 'Supervisor · Reem'], ['fs-pr1', '3333', 'Printer · Mahmoud'], ['fs-qc', '4444', 'Quality · Nour'], ['fs-pack', '5555', 'Packing · Islam']], links: [
       ['Factory sign-in', '#/factory'], ['Overview', '#/factory'], ['Production', '#/factory/jobs'], ['New jobs & batches', '#/factory/jobs?tab=new'], ['Quality check', '#/factory/jobs?tab=qc'], ['Packing', '#/factory/jobs?tab=packing'], ['Late', '#/factory/jobs?tab=late'], ['Problems', '#/factory/jobs?tab=issues'],
@@ -53,7 +59,7 @@
       ['Admin: factories', '#/admin/factories'], ['Admin: late & problems', '#/admin/factories?tab=jobs'], ['Admin: courier', '#/admin/factories?tab=shipping'], ['Admin: price requests', '#/admin/factories?tab=prices'], ['Admin: factory money', '#/admin/factories?tab=money'],
     ] },
     { title: 'Admin console', icon: 'shield', as: [['acc-admin', 'Super App HQ']], links: [
-      ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['Revenue', '#/admin/revenue'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
+      ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['Finance approvals', '#/admin/finance-approvals'], ['Returns', '#/admin/returns'], ['Revenue', '#/admin/revenue'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
       ['Approvals', '#/admin/approvals'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super App Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
       ['Design review', '#/admin/designs'], ['Level review', '#/admin/levels'], ['Samples', '#/admin/samples'], ['Print orders', '#/admin/print'], ['Print catalogue', '#/admin/catalog'], ['Broadcasts', '#/admin/broadcast'],
       ['Promo codes', '#/admin/promos'], ['Site content', '#/admin/content'], ['Fantasy', '#/admin/fantasy'], ['Analytics', '#/admin/analytics'], ['Audit log', '#/admin/audit'], ['Platform settings', '#/admin/settings'],
@@ -61,7 +67,8 @@
   ];
 
   const open = (to) => window.open(SA.core.router.url(String(to).replace(/^#/, '')), '_blank', 'noopener');
-  SA.ui.siteMap = () => `<section class="dev-links"></div>
+  // English on purpose: a technical map of routes for testing (labels match the route names)
+  SA.ui.siteMap = () => `<section class="dev-links" data-i18n-skip>
     ${GROUPS.map((g, i) => `<details class="dev-group" ${i === 0 ? 'open' : ''}><summary>${icon(g.icon, 18)}<b class="grow">${g.title}</b><span class="xs muted">${g.links.length}</span>${icon('chevronDown', 16)}</summary>
       ${g.games ? `<div class="dev-as"><span class="xs muted">Shortcuts:</span><button class="chip" data-dev-as="acc-o1" data-dev-go="#/dash/slots">Sign in as Karim (owner)</button><button class="chip" data-dev-game>Create a finished game to rate</button></div>` : ''}
       ${g.seller ? `<div class="dev-as"><span class="xs muted">Seller-only communities need a seller account:</span><button class="chip" data-dev-seller>Make me a test seller</button><button class="chip" data-dev-as="acc-admin" data-dev-go="#/admin/community">Sign in as admin</button></div>` : ''}
