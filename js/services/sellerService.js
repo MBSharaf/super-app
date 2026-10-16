@@ -67,10 +67,13 @@
     byAccount: (accountId) => db().all('sellers').find((s) => s.accountId === accountId),
     /** The seller profile of the shopper on this device, if seller mode is on */
     mine: () => db().all('sellers').find((s) => s.userId === me().id) || null,
-    /** The seller being worked on: the dashboard's signed-in seller account, else this shopper's own seller profile */
+    /** The seller being worked on: the account signed in to the seller dashboard, else the dashboard on this page,
+        else this shopper's own seller profile. (The studio is outside the dashboard, so it must follow the seller session —
+        otherwise a partner session on the same device would save designs to the partner's store.) */
     current() {
+      const sa = SA.services.dash?.auth.sellerAccount?.();
       const a = SA.services.dash?.me();
-      return (a && sellers.byAccount(a.id)) || sellers.mine();
+      return (sa && sellers.byAccount(sa.id)) || (a && sellers.byAccount(a.id)) || sellers.mine();
     },
     /** Open the seller dashboard as this shopper's seller account */
     openDashboard() { const s = sellers.mine(); if (s) SA.services.dash.auth.signIn(s.accountId, { as: 'seller' }); },

@@ -6,7 +6,7 @@
   const D = () => SA.services.dash;
   const P = () => SA.services.pod;
 
-  const KINDS = [['tee', 'T-shirt'], ['hoodie', 'Hoodie'], ['cap', 'Cap']];
+  const KINDS = [['tee', 'T-shirt'], ['hoodie', 'Hoodie']];
   const AREAS = [['front', 'Front'], ['back', 'Back']];
 
   const card = (x) => {

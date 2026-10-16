@@ -66,7 +66,7 @@
     sellers.filter((s) => s.storeId).forEach((s) => data.stores.push({ id: s.storeId, ownerId: s.accountId, name: s.name, slug: s.handle, tagline: 'Printed and packed in Cairo', description: s.bio, logo: null, cover: s.cover, phone: '', status: 'active', createdAt: s.createdAt }));
     const designs = P.designs.map(([sellerId, art, title, category, catalogId, colors, price, tags, desc, status = 'live'], i) => ({
       id: `ds-${i + 1}`, sellerId, title, desc, tags, category, catalogId, colors, price, art: `seed:${art}`,
-      placement: { front: { x: 0.5, y: 0.36, w: catalogId === 'pod-cap' ? 0.34 : 0.42 }, back: null },
+      placement: { front: { x: 0.5, y: 0.36, w: 0.42 }, back: null },
       status, reason: '', views: status === 'live' ? Math.round(300 + seeded(`ds${i}v`) * 2600) : 0, sales: 0,
       createdAt: now - (status === 'live' ? 8 + i * 6 : 1) * DAY, updatedAt: now - (status === 'live' ? 8 + i * 6 : 1) * DAY,
       reviewedAt: status === 'live' ? now - (7 + i * 6) * DAY : 0, submittedAt: status === 'review' ? now - (i % 2 ? 5 : 20) * 36e5 : 0,
@@ -105,7 +105,6 @@
       n('acc-s1', 'money', '420 EGP is ready to withdraw', 'Profit from 3 delivered items has cleared the 7-day hold.', '#/dash/seller/wallet', 20, false, 'turf'),
       n('acc-s1', 'orders', 'Delivered: Cairo Nights FC', 'Profit is released 7 days after delivery.', '#/dash/seller/orders', 30, true),
       n('acc-s1', 'level', 'You reached Elite!', 'New perks: unlimited active designs, 35 EGP off every base price, 8% store commission.', '#/dash/seller', 24 * 9, true, 'gold'),
-      n('acc-s2', 'designs', 'Ya Habibi Cap is in review', 'Pro sellers are reviewed first — usually within a few hours.', '#/dash/seller/designs', 6),
       n('acc-s2', 'orders', 'New order: Giza Run Club', 'Sand · M', '#/dash/seller/orders', 11),
       n('acc-s3', 'designs', 'Press Start Hoodie is in review', 'We review every design, usually within 24 hours.', '#/dash/seller/designs', 18),
       n('acc-s3', 'level', '31 more sales to Pro', 'Keep going — Pro unlocks priority review and team kits.', '#/dash/seller', 24 * 2, true, 'gold'),
@@ -195,6 +194,18 @@
     });
     data.accounts.forEach((a) => { if (!a.taxId) { const r = seeded(`${a.id}|tax`); a.taxId = `${String(100 + Math.floor(r * 899))}-${String(100 + Math.floor(seeded(a.id + 'b') * 899))}-${String(100 + Math.floor(seeded(a.id + 'c') * 899))}`; changed = true; } });
     data.products.forEach((p) => { if (p.lowStockAt == null) { p.lowStockAt = 5; changed = true; } });
+    // Studio round (2026-10): caps leave the catalogue, products get details and size charts, a price may equal the base (0 profit)
+    if (!data.settings.podV2 && Array.isArray(data.podCatalog)) {
+      data.podCatalog.forEach((c) => {
+        const seed = SA.data.pod.catalog.find((x) => x.id === c.id);
+        if (c.kind === 'cap') { c.status = 'retired'; return; }
+        if (seed) { if (!c.details) c.details = structuredClone(seed.details); if (!c.sizeChart) c.sizeChart = structuredClone(seed.sizeChart); }
+        c.minPrice = Math.min(c.minPrice, c.base);
+      });
+      const caps = new Set(data.podCatalog.filter((c) => c.kind === 'cap').map((c) => c.id));
+      (data.designs || []).forEach((d) => { if (caps.has(d.catalogId) && !d.deleted) { d.deleted = true; d.status = 'deleted'; } });
+      data.settings.podV2 = 1; changed = true;
+    }
     if (changed) persist();
   };
 

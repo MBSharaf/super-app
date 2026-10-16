@@ -49,6 +49,8 @@
       localStorage.setItem(key, id);
       db.log(id, 'auth.signin', `${a.name} signed in${a.role === 'admin' ? ' to the admin console' : key === SELLER_SESSION ? ' to the seller dashboard' : ''}`);
     },
+    /** The account signed in to the seller dashboard (whatever page is open) — the studio and the store page use it */
+    sellerAccount: () => { try { const a = db.find('accounts', localStorage.getItem(SELLER_SESSION)); return a && sellsOn(a) && a.status !== 'suspended' ? a : null; } catch { return null; } },
     signOut() { localStorage.removeItem(adminMode() ? ADMIN_SESSION : sellerMode() ? SELLER_SESSION : SESSION); },
     /** Admin opens a partner's or seller's dashboard (logged) */
     openAs(id) { const a = db.find('accounts', id); localStorage.setItem(a?.role === 'seller' ? SELLER_SESSION : SESSION, id); },

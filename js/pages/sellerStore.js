@@ -1,10 +1,32 @@
-/** Site: a seller's public store page — #/s/:handle — designs and own products, follow, level badge. */
+/**
+ * Site: a seller's public store page — #/s/:handle — designs and own products, follow, level badge.
+ * The owner also gets a way back to the seller dashboard and sees their designs that aren't in the shop yet
+ * (in review, drafts, not approved, paused) — only approved designs are public.
+ */
 (function (SA) {
   const { esc, fmtNum, plural } = SA.core.utils;
   const { icon, cards } = SA.ui;
   const c = SA.ui.c;
   const S = SA.services;
   const media = SA.data.media;
+
+  const STATUS = { review: ['In review', 'gold'], draft: ['Draft', ''], rejected: ['Not approved', 'danger'], paused: ['Paused', ''] };
+  /** The owner's designs that customers can't see yet */
+  const pending = (s) => {
+    const list = S.pod.list({ sellerId: s.id, status: ['review', 'draft', 'rejected', 'paused'] });
+    if (!list.length) return '';
+    return `<section class="panel panel-pad sf-pending">
+      <div class="row-between"><div><h2 class="h4">${icon('eye', 16)} Only you can see this</h2><p class="xs muted">These designs aren’t in your store yet. A design shows here for customers once the Super App team approves it (usually within 24 hours).</p></div>
+        <a class="btn btn-ghost btn-sm" href="#/seller/designs">All my designs</a></div>
+      <div class="sf-pending-list">${list.map((d) => {
+        const side = d.placement?.front ? 'front' : 'back';
+        const col = d.product?.colors.find((k) => d.colors.includes(k.name)) || d.product?.colors[0];
+        const [label, tone] = STATUS[d.status] || [d.status, ''];
+        return `<a class="sf-pending-item" href="#/sell/studio/${d.id}"><span class="sf-pm">${SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: side === 'back' ? d.srcBack : d.src, place: d.placement?.[side], side, artRatio: side === 'back' ? d.ratioBack : d.ratioFront, label: d.title })}</span>
+          <span class="grow"><b class="small">${esc(d.title || 'Untitled design')}</b><span class="xs muted" style="display:block">${esc(d.product?.name || '')}</span>${d.status === 'rejected' && d.reason ? `<span class="xs text-danger" style="display:block">${esc(d.reason)}</span>` : ''}</span>
+          <span class="badge ${tone ? `badge-${tone}` : ''}">${label}</span></a>`;
+      }).join('')}</div></section>`;
+  };
 
   SA.pages.sellerStore = {
     title: 'Store — Super App',
@@ -37,12 +59,13 @@
             <p class="soft">${esc(s.bio || '')}</p>
             <div class="sf-stats small"><span><b class="num">${fmtNum(lvl.stats.sales)}</b> sold</span>${lvl.stats.rating ? `<span>${icon('star', 13)} <b class="num">${lvl.stats.rating.toFixed(1)}</b></span>` : ''}<span><b class="num" data-followers>${fmtNum(s.followers || 0)}</b> followers</span></div>
           </div>
-          <div class="sf-actions">${mine ? `<button class="btn btn-primary sf-accent-btn" data-manage>${icon('edit', 15)} Edit store</button>` : `<button class="btn ${following ? 'btn-outline' : 'btn-primary sf-accent-btn'}" data-follow aria-pressed="${following}">${following ? `${icon('check', 15, 2.6)} Following` : `${icon('plus', 15)} Follow`}</button>`}
+          <div class="sf-actions">${mine ? `<button class="btn btn-outline" data-dash>${icon('grid', 15)} Back to dashboard</button><button class="btn btn-primary sf-accent-btn" data-manage>${icon('edit', 15)} Edit store</button>` : `<button class="btn ${following ? 'btn-outline' : 'btn-primary sf-accent-btn'}" data-follow aria-pressed="${following}">${following ? `${icon('check', 15, 2.6)} Following` : `${icon('plus', 15)} Follow`}</button>`}
             <button class="icon-btn" data-share aria-label="Copy store link">${icon('share', 18)}</button></div>
         </div>
         ${brk ? `<div class="sf-break">${icon('clock', 18)}<div><b>${mine ? 'Your store is on a break' : `${esc(s.name)} is taking a break`}</b><span class="small soft" style="display:block">${esc(s.vacationNote || 'Designs are hidden for now.')}${s.vacationUntil ? ` · Back ${SA.core.utils.fmtDate(s.vacationUntil)}` : ''}</span></div>${mine ? '<button class="btn btn-outline btn-sm" data-manage>Open the store</button>' : ''}</div>` : ''}
       </section>
       <div class="container section-tight">
+        ${mine ? pending(s) : ''}
         ${designs.length && products.length ? `<div class="chips" role="tablist" aria-label="Store sections" style="margin-bottom:16px">
           <a class="chip" role="tab" href="#/s/${esc(s.handle)}" aria-pressed="${tab === 'designs'}" aria-selected="${tab === 'designs'}">Designs <span class="chip-count">${designs.length}</span></a>
           <a class="chip" role="tab" href="#/s/${esc(s.handle)}?tab=products" aria-pressed="${tab === 'products'}" aria-selected="${tab === 'products'}">Products <span class="chip-count">${products.length}</span></a></div>` : ''}
@@ -60,6 +83,11 @@
         SA.app.rerender();
       });
       // Owner: full settings in the seller dashboard, or a quick cover/logo change right here
+      // Owner: back to the seller dashboard (signed in as this store's seller account)
+      el.querySelector('[data-dash]')?.addEventListener('click', () => {
+        if (SA.services.dash.auth.sellerAccount()?.id !== s.accountId) SA.services.dash.auth.signIn(s.accountId, { as: 'seller' });
+        SA.core.router.go('/seller');
+      });
       el.querySelectorAll('[data-manage]').forEach((b) => b.addEventListener('click', () => {
         if (SA.services.dash.me()?.role !== 'seller' || SA.services.dash.me()?.id !== s.accountId) SA.services.dash.auth.signIn(s.accountId, { as: 'seller' });
         SA.core.router.go('/dash/seller/store');

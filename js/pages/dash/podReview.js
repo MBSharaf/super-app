@@ -20,7 +20,7 @@
 
   const mock = (d, side = d.placement?.front ? 'front' : 'back') => {
     const col = d.product?.colors.find((k) => k.name === d.colors[0]) || d.product?.colors[0];
-    return SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: d.src, place: d.placement?.[side], side, artRatio: d.artW ? d.artH / d.artW : 1, label: d.title });
+    return SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: side === 'back' ? d.srcBack : d.src, place: d.placement?.[side], side, artRatio: side === 'back' ? d.ratioBack : d.ratioFront, label: d.title });
   };
 
   const queueItem = (d) => {

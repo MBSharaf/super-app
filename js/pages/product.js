@@ -32,7 +32,7 @@
 
             ${p.colors.length ? `<div class="pdp-opt"><span class="field-label">Colour: <span class="soft" data-color-name>${esc(p.colors[0].name)}</span></span>
               <div class="row" style="--gap:10px;margin-top:10px">${p.colors.map((col, i) => `<button class="swatch ${i === 0 ? 'is-active' : ''}" data-color="${esc(col.name)}" style="--sw:${col.hex}" aria-label="${esc(col.name)}" aria-pressed="${i === 0}"></button>`).join('')}</div></div>` : ''}
-            ${p.sizes.length > 1 ? `<div class="pdp-opt"><div class="row-between"><span class="field-label">${p.service ? 'Option' : 'Size'}</span>${['boots', 'running', 'kits'].includes(p.cat) ? '<button class="link small" data-sizeguide>Size guide</button>' : ''}</div>
+            ${p.sizes.length > 1 ? `<div class="pdp-opt"><div class="row-between"><span class="field-label">${p.service ? 'Option' : 'Size'}</span>${['boots', 'running', 'kits'].includes(p.cat) || p.sizeChart ? `<button class="link small" data-sizeguide>${p.sizeChart ? 'Size chart' : 'Size guide'}</button>` : ''}</div>
               <div class="size-grid" style="margin-top:10px" role="radiogroup">${p.sizes.map((s) => `<button class="size-btn" role="radio" aria-checked="false" data-size="${esc(s)}">${esc(s)}</button>`).join('')}</div><p class="field-error" data-size-err></p></div>` : ''}
 
             <div class="pdp-buy">
@@ -53,6 +53,7 @@
               <li>${icon('shield', 16)} 100% original — authorised retailer</li>
             </ul>`}
             <details class="pdp-details" open><summary>Specifications</summary><dl class="kv">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></details>
+            ${p.sizeChart ? `<details class="pdp-details"><summary>Size chart (cm)</summary>${SA.ui.sizeChart(p)}</details>` : ''}
             ${p.pod ? `<button class="link xs muted pdp-report" data-report>${icon('flag', 13)} Report this design</button>` : ''}
           </div>
         </div>
@@ -82,7 +83,7 @@
       if (p.pod) {
         const d = S.pod.get(p.designId);
         const g3 = el.querySelector('[data-g3d]');
-        viewer = SA.ui.garment3d.mount(g3, { kind: d.product.kind, hex: p.colors[0]?.hex, art: d.src, place: d.placement, artRatio: d.artW ? d.artH / d.artW : 1, label: p.name, cacheKey: `${d.id}|${d.updatedAt}` });
+        viewer = SA.ui.garment3d.mount(g3, { kind: d.product.kind, hex: p.colors[0]?.hex, art: d.src, artBack: d.srcBack !== d.src ? d.srcBack : '', place: d.placement, artRatio: d.ratioFront, artRatioBack: d.ratioBack, label: p.name, cacheKey: `${d.id}|${d.updatedAt}` });
         el.querySelectorAll('[data-img]').forEach((b) => b.addEventListener('click', () => {
           el.querySelectorAll('[data-img]').forEach((x) => x.classList.toggle('is-active', x === b));
           const [, , color, side] = b.dataset.img.split(':');
@@ -143,7 +144,9 @@
       };
       el.querySelectorAll('[data-add]').forEach((b) => b.addEventListener('click', () => { if (add()) { const html0 = b.innerHTML; b.classList.add('is-added'); b.innerHTML = 'Added to cart ✓'; setTimeout(() => { b.classList.remove('is-added'); b.innerHTML = html0; }, 1600); } if (sel.size && !sel.limitedShown) SA.ui.overlay.toast(`Added ${sel.added ?? sel.qty} × ${esc(p.name)}`, { action: 'View cart', onAction: () => SA.core.router.go('/cart') }); }));
       el.querySelector('[data-buynow]').addEventListener('click', () => { if (add()) SA.core.router.go('/checkout'); });
-      el.querySelector('[data-sizeguide]')?.addEventListener('click', () => SA.ui.overlay.open({
+      el.querySelector('[data-sizeguide]')?.addEventListener('click', () => SA.ui.overlay.open(p.sizeChart ? {
+        title: 'Size chart', subtitle: `${p.productName} · in centimetres. Lay a T-shirt you like flat and compare.`, body: SA.ui.sizeChart(p),
+      } : {
         title: 'Size guide', subtitle: 'EU sizes. If you’re between sizes, go up for turf boots.',
         body: `<table class="table"><thead><tr><th>EU</th><th>UK</th><th>US</th><th>Foot length</th></tr></thead><tbody>${[[39, 6, 6.5, 24.5], [40, 6.5, 7, 25], [41, 7.5, 8, 25.8], [42, 8, 8.5, 26.5], [43, 9, 9.5, 27.3], [44, 9.5, 10, 28], [45, 10.5, 11, 28.8]].map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]} cm</td></tr>`).join('')}</tbody></table>`,
       }));

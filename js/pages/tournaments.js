@@ -70,7 +70,7 @@
     if (t.format === 'league') {
       const rows = S.tournaments.standings(t);
       const mine = new Set(t.mine.map((x) => x.id));
-      return `<div class="table-wrap"><table class="table standings"><thead><tr><th>#</th><th>Team</th><th class="r">P</th><th class="r">W</th><th class="r">D</th><th class="r">L</th><th class="r">GD</th><th class="r">Pts</th><th>Form</th></tr></thead><tbody>
+      return `<div class="table-wrap"><table class="table standings"><thead><tr><th>#</th><th>Team</th><th class="r">P</th><th class="r">W</th><th class="r">D</th><th class="r">${SA.i18n?.isAr ? "خسارة" : "L"}</th><th class="r">GD</th><th class="r">Pts</th><th>Form</th></tr></thead><tbody>
         ${rows.map((r, i) => `<tr class="${mine.has(r.id) ? 'is-mine' : ''} ${i === 0 && r.p ? 'is-top' : ''}"><td class="num">${i + 1}</td><td><b>${esc(r.name)}</b></td><td class="r num">${r.p}</td><td class="r num">${r.w}</td><td class="r num">${r.d}</td><td class="r num">${r.l}</td><td class="r num">${r.gd > 0 ? '+' : ''}${r.gd}</td><td class="r num strong">${r.pts}</td><td><span class="form">${r.form.map((x) => `<i class="f-${x}" title="${{ W: 'Win', D: 'Draw', L: 'Loss' }[x]}">${x}</i>`).join('')}</span></td></tr>`).join('')}
       </tbody></table></div>`;
     }

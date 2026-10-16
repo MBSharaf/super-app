@@ -64,7 +64,7 @@
         const col = d.product?.colors.find((k) => k.name === d.colors[0]) || d.product?.colors[0];
         const side = d.placement?.front ? 'front' : 'back';
         return `<article class="my-design">
-          <a class="md-media" href="#/sell/studio/${d.id}">${SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: d.src, place: d.placement?.[side], side, artRatio: d.artW ? d.artH / d.artW : 1, label: d.title })}</a>
+          <a class="md-media" href="#/sell/studio/${d.id}">${SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: side === 'back' ? d.srcBack : d.src, place: d.placement?.[side], side, artRatio: side === 'back' ? d.ratioBack : d.ratioFront, label: d.title })}</a>
           <div class="md-body"><div class="row-between" style="--gap:6px"><b class="small truncate">${esc(d.title || 'Untitled')}</b>${designStatus(d)}</div>
             <span class="xs muted">${esc(d.product?.name || '')} · ${money(d.price)} · you earn ${money(d.profit)}</span>
             ${d.status === 'rejected' ? `<span class="xs text-danger">${esc(d.reason)}</span>` : ''}
@@ -195,9 +195,9 @@
       const calcUpdate = () => {
         const x = S.pod.catalogItem(item.value);
         const p = Math.round(+price.value || 0);
-        const ok = p >= x.minPrice && p <= x.maxPrice;
+        const ok = p >= x.base && p <= x.maxPrice;
         out.innerHTML = `<div class="sell-split"><span style="flex:${x.base}"><b class="num">${money(x.base)}</b><small>Base price</small></span><span class="is-you" style="flex:${Math.max(1, p - x.base)}"><b class="num">${money(Math.max(0, p - x.base))}</b><small>You earn</small></span></div>
-          <p class="xs ${ok ? 'muted' : 'text-danger'}">${ok ? `Per item, before any level discount. Price range ${money(x.minPrice)} – ${money(x.maxPrice)}.` : `Set a price between ${money(x.minPrice)} and ${money(x.maxPrice)}.`}</p>`;
+          <p class="xs ${ok ? 'muted' : 'text-danger'}">${ok ? `Per item, before any level discount. Price range ${money(x.base)} – ${money(x.maxPrice)}.` : `Set a price between ${money(x.base)} and ${money(x.maxPrice)}.`}</p>`;
       };
       item.addEventListener('change', () => { price.value = S.pod.catalogItem(item.value).base + 200; calcUpdate(); });
       price.addEventListener('input', calcUpdate);

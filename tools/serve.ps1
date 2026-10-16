@@ -5,7 +5,7 @@
 param([int]$Port = 5173, [string]$Root = (Split-Path -Parent $PSScriptRoot))
 $Root = (Resolve-Path $Root).Path
 $mime = @{ '.html'='text/html; charset=utf-8'; '.css'='text/css; charset=utf-8'; '.js'='text/javascript; charset=utf-8';
-  '.json'='application/json'; '.svg'='image/svg+xml'; '.png'='image/png'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg';
+  '.json'='application/json'; '.glb'='model/gltf-binary'; '.svg'='image/svg+xml'; '.png'='image/png'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg';
   '.webp'='image/webp'; '.ico'='image/x-icon'; '.woff2'='font/woff2' }
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$Port/")

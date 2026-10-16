@@ -164,6 +164,8 @@
    */
   const garment3d = {
     mount(el, opts) {
+      // A real 3D model (SA.ui.model3d) when there is one for this garment; this flip view otherwise
+      if (!opts.flat && SA.ui.model3d?.has(opts.kind)) return SA.ui.model3d.mount(el, opts);
       let o = { ...opts };
       let angle = 0, target = 0, drag = null, raf = 0, idleT = 0, last = performance.now();
       const reduced = () => !SA.core.motion?.enabled?.() || matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -179,7 +181,7 @@
         const ar = pm?.isReady() ? pm.aspect(o.kind, 'front') : 420 / 466;
         el.innerHTML = `<div class="g3d-stage"><div class="g3d-obj" style="aspect-ratio:${ar}">
             <div class="g3d-face g3d-front">${V({ kind: o.kind, hex: o.hex, art: o.art, place: o.place?.front, side: 'front', artRatio: o.artRatio, label: `${o.label || ''} front`, shadow: false, cacheKey: o.cacheKey ? `${o.cacheKey}|f` : '' })}</div>
-            <div class="g3d-face g3d-back">${back ? V({ kind: o.kind, hex: o.hex, art: o.art, place: o.place?.back, side: 'back', artRatio: o.artRatio, label: `${o.label || ''} back`, shadow: false, cacheKey: o.cacheKey ? `${o.cacheKey}|b` : '' }) : ''}</div>
+            <div class="g3d-face g3d-back">${back ? V({ kind: o.kind, hex: o.hex, art: o.artBack || o.art, place: o.place?.back, side: 'back', artRatio: o.artBack ? o.artRatioBack || 1 : o.artRatio, label: `${o.label || ''} back`, shadow: false, cacheKey: o.cacheKey ? `${o.cacheKey}|b` : '' }) : ''}</div>
             <div class="g3d-sheen"></div></div></div>
           <div class="g3d-shadow"></div>
           <div class="g3d-hint xs">${SA.ui.icon('swap', 13)} <span>Drag to turn</span></div>`;

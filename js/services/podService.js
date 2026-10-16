@@ -18,6 +18,10 @@
   const cfg = () => db().settings().pod;
   const catalogItem = (id) => db().find('podCatalog', id);
   const artSrc = (d) => (String(d.art || '').startsWith('seed:') ? SA.data.pod.art[d.art.slice(5)] : d.art);
+  /** Artwork for one side: the back can have its own design (artBack), otherwise it repeats the front one */
+  const sideArt = (d, side) => (side === 'back' && d.artBack
+    ? { src: artSrc({ art: d.artBack }), ratio: d.artBackW ? d.artBackH / d.artBackW : 1 }
+    : { src: artSrc(d), ratio: d.artW ? d.artH / d.artW : 1 });
 
   /** Platform base for one item: catalogue base + back print + big size − the seller's level discount */
   const baseFor = (catalogId, { size, back = false, sellerId } = {}) => {
@@ -36,21 +40,22 @@
   const enrich = (d) => {
     const c = catalogItem(d.catalogId);
     const s = S().get(d.sellerId);
-    return { ...d, src: artSrc(d), product: c, seller: s ? { id: s.id, name: s.name, handle: s.handle } : null, profit: profitFor(d), base: baseFor(d.catalogId, { back: !!d.placement?.back, sellerId: d.sellerId }) };
+    return { ...d, src: artSrc(d), srcBack: sideArt(d, 'back').src, ratioFront: sideArt(d, 'front').ratio, ratioBack: sideArt(d, 'back').ratio, product: c, seller: s ? { id: s.id, name: s.name, handle: s.handle } : null, profit: profitFor(d), base: baseFor(d.catalogId, { back: !!d.placement?.back, sellerId: d.sellerId }) };
   };
 
   const validate = (d, { submit } = {}) => {
     const c = catalogItem(d.catalogId);
     if (!c || c.status !== 'active') throw new ApiError('Choose a product from the catalogue.', 'validation');
     if (submit) {
-      if (!d.art) throw new ApiError('Upload your design first.', 'validation');
+      if (!d.art && !d.artBack) throw new ApiError('Upload your design first.', 'validation');
       if (String(d.title || '').trim().length < 3) throw new ApiError('Give the design a title (at least 3 characters).', 'validation');
       if (!d.category) throw new ApiError('Choose a category.', 'validation');
       if (!d.colors?.length) throw new ApiError('Pick at least one colour.', 'validation');
     }
     const base = baseFor(d.catalogId, { back: !!d.placement?.back, sellerId: d.sellerId });
-    if (!(d.price >= c.minPrice) || d.price > c.maxPrice) throw new ApiError(`Price must be between ${c.minPrice} and ${c.maxPrice} EGP.`, 'validation');
-    if (d.price <= base) throw new ApiError(`Price must be above the base price (${base} EGP) so you make a profit.`, 'validation');
+    // The price can equal the base price: 0 profit is allowed (e.g. a seller ordering their own design)
+    if (!(d.price >= base)) throw new ApiError(`The price can’t be below the base price (${base} EGP).`, 'validation');
+    if (d.price > c.maxPrice) throw new ApiError(`The price can’t be above ${c.maxPrice} EGP.`, 'validation');
     (d.colors || []).forEach((n) => { if (!c.colors.some((x) => x.name === n)) throw new ApiError(`${n} isn’t available for ${c.name}.`, 'validation'); });
   };
 
@@ -67,13 +72,13 @@
     // Real product photo with the print, once the photos and the artwork have loaded
     const pm = SA.ui.photoMock;
     if (pm && pm.isReady() && pm.hasSide(c?.kind || 'tee', sd)) {
-      const photo = pm.compose({ kind: c?.kind || 'tee', side: sd, hex: col?.hex, art: artSrc(d), place: d.placement?.[sd], artRatio: d.artW ? d.artH / d.artW : 1, key: `${d.id}|${d.updatedAt}|${sd}` });
+      const photo = pm.compose({ kind: c?.kind || 'tee', side: sd, hex: col?.hex, art: sideArt(d, sd).src, place: d.placement?.[sd], artRatio: sideArt(d, sd).ratio, key: `${d.id}|${d.updatedAt}|${sd}` });
       if (photo) return photo;
     }
     // Drawn mockup while the photos load (cached separately; the photo above has its own cache)
     if (mocks.has(key)) return mocks.get(key);
     const light = SA.ui.garment.lum(col?.hex || '#fff') > 0.6;
-    const svgStr = SA.ui.garment({ kind: c?.kind || 'tee', hex: col?.hex, art: artSrc(d), place: d.placement?.[sd], side: sd, artRatio: d.artW ? d.artH / d.artW : 1, label: d.title, bg: light ? '#E4E7E2' : '#F1F0EB' });
+    const svgStr = SA.ui.garment({ kind: c?.kind || 'tee', hex: col?.hex, art: sideArt(d, sd).src, place: d.placement?.[sd], side: sd, artRatio: sideArt(d, sd).ratio, label: d.title, bg: light ? '#E4E7E2' : '#F1F0EB' });
     const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgStr)}`;
     mocks.set(key, url);
     if (mocks.size > 200) mocks.delete(mocks.keys().next().value);
@@ -81,10 +86,10 @@
   };
 
   const pod = {
-    STATUSES, artSrc, baseFor, priceFor, profitFor, enrich, mockUrl,
+    STATUSES, artSrc, sideArt, baseFor, priceFor, profitFor, enrich, mockUrl,
     cfg,
     /* ---------- Catalogue (admin) ---------- */
-    catalog: ({ all = false } = {}) => db().all('podCatalog').filter((c) => all || c.status === 'active'),
+    catalog: ({ all = false } = {}) => db().all('podCatalog').filter((c) => c.status !== 'retired' && (all || c.status === 'active')),
     catalogItem,
     saveCatalogItem(item) {
       const n = (v) => Math.round(Number(v));
@@ -143,9 +148,9 @@
       const d = {
         sellerId, title: String(draft.title || '').trim().slice(0, 60), desc: String(draft.desc || '').trim().slice(0, 500), tags: (draft.tags || []).slice(0, 10),
         category: draft.category || '', catalogId: draft.catalogId, colors: draft.colors || [], price: Math.round(Number(draft.price) || (c ? c.base + 100 : 0)),
-        art: draft.art || '', artW: draft.artW || 0, artH: draft.artH || 0, placement: draft.placement || { front: { x: 0.5, y: 0.36, w: 0.42 }, back: null },
+        art: draft.art || '', artW: draft.artW || 0, artH: draft.artH || 0, artBack: draft.artBack || '', artBackW: draft.artBackW || 0, artBackH: draft.artBackH || 0, placement: draft.placement || { front: { x: 0.5, y: 0.36, w: 0.42 }, back: null },
       };
-      validate({ ...d, price: d.price || c?.minPrice }, { submit: false });
+      validate({ ...d, price: d.price || baseFor(d.catalogId, { back: !!d.placement?.back, sellerId }) }, { submit: false });
       if (draft.id) {
         const cur = db().find('designs', draft.id);
         if (!cur || cur.sellerId !== sellerId) throw new ApiError('Design not found.', 'not_found');

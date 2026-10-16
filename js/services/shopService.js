@@ -37,7 +37,9 @@
       images, colors, sizes: x.sizes, stock: 99, badges: levelBadge ? [levelBadge, 'Made to order'] : ['Made to order'], desc: d.desc || x.desc, tags: d.tags || [],
       rank, levelId: lvl?.id || 'new',
       bigSizes: x.bigSizes, bigSizeExtra: x.bigSizeExtra,
-      specs: [['Product', x.name], ['Fabric', x.desc], ['Print', d.placement?.front && d.placement?.back ? 'Front and back' : d.placement?.back ? 'Back' : 'Front'], ['Made to order', 'Printed after you order · ships in 3–5 days'], ['Designed by', s?.name || '']],
+      // Fabric, fit, print method and care come from the catalogue, so every design on the product shows them
+      specs: [['Product', x.name], ...(x.details?.length ? x.details : [['Fabric', x.desc]]), ['Printed on', d.placement?.front && d.placement?.back ? 'Front and back' : d.placement?.back ? 'Back' : 'Front'], ['Made to order', 'Printed after you order · ships in 3–5 days'], ['Designed by', s?.name || '']],
+      sizeChart: x.sizeChart || null,
       status: 'active', createdAt: d.reviewedAt || d.createdAt,
     };
   };

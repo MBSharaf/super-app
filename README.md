@@ -260,3 +260,14 @@ Plan: `docs/PLAN-launch.md`. QA tool: `tools/qa-sweep.js` (findings in `docs/PLA
 | `/admin/finance-approvals` | The CFO sends withdrawals the payables agent prepared and gives the second approval above the two-person limit. Whoever prepared a request can't approve it. |
 | SEO | Description, canonical URL, Open Graph and Twitter tags (share image `og-image.png`) and JSON-LD for pitches, products, tournaments and news (`js/core/seo.js`). Private systems are marked noindex. `robots.txt` and `sitemap.xml`. |
 | CEO system | **Every page** (`/ceo/sitemap`): the old home-page test section, with sign-in shortcuts. **Legal documents** (`/ceo/legal`): lawyer-review status and acceptances. A **Returns** report. |
+
+### Design studio round (added in release 11)
+
+Plan: `docs/PLAN-studio.md`.
+
+| Where | What |
+| --- | --- |
+| 3D garments | The blank garments are real 3D models (`models/*.glb`) made from photos with Microsoft TRELLIS (image → 3D). The site shows them with three.js (`vendor/three/`, loaded only when a 3D view opens) in `js/components/model3d.js`. The garment takes the chosen colour, and the artwork is projected onto the fabric, front and back. The T-shirt model is ready. A garment without a model (the hoodie, for now) falls back to the photo flip view. The source photos and the scripts that call TRELLIS and slim the model are in `models/source/`. |
+| `/sell/studio` | The 3D view is the studio itself: Front / Back turn it, and you drag the print to move it. There's no separate 3D button. **Artwork** has a slot per side with the uploaded image, and the back can be a different design (`artBack` on the design; the factory gets both files). **Product** shows the fabric, fit, print method, care and a size chart in cm. **Price**: the breakdown is product + back print − level discount = base. Adding the back raises the price by the back-print cost, so the profit stays the same. A price equal to the base (0 profit) is allowed. |
+| Catalogue | Caps are removed. Old cap designs are hidden by a migration. Each product has `details` and `sizeChart`, shown on the product page too (Specifications and Size chart). |
+| `/s/:handle` | The owner gets **Back to dashboard**, and sees their designs that aren't public yet (in review, draft, not approved, paused). The studio follows the seller dashboard sign-in, so designs are saved to the right store. |

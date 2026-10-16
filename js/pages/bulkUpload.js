@@ -58,7 +58,7 @@
       const paintColors = () => {
         const p = prod(); if (!p) return;
         $('[data-colors]').innerHTML = p.colors.map((k, i) => `<label class="bu-color"><input type="checkbox" name="color" value="${esc(k.name)}" ${i < 2 ? 'checked' : ''} /><span style="--c:${k.hex}"></span>${esc(k.name)}</label>`).join('');
-        $('[data-price-hint]').textContent = `${SA.i18n.t('Between')} ${p.minPrice} – ${p.maxPrice} EGP`;
+        $('[data-price-hint]').textContent = `${SA.i18n.t('Between')} ${p.base} – ${p.maxPrice} EGP`;
       };
       const paintRows = () => {
         $('[data-rows]').innerHTML = rows.map((r, i) => `<li class="bu-row ${r.state || ''}"><img src="${r.src}" alt="" /><span class="grow"><input class="input" data-title="${i}" maxlength="60" value="${esc(r.title)}" aria-label="Title ${i + 1}" />${r.msg ? `<span class="xs ${r.state === 'bad' ? 't-danger' : 'muted'}" style="display:block">${esc(r.msg)}</span>` : `<span class="xs muted" style="display:block">${r.w}×${r.h}px${r.w < 2400 && !r.vector ? ' · low resolution for a full print' : ''}</span>`}</span>

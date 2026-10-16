@@ -191,7 +191,7 @@
   const mock = (o, side, size = '') => {
     const d = o.design; if (!d) return '';
     const col = d.product?.colors.find((k) => k.name === o.color) || d.product?.colors[0];
-    return `<div class="pr-mock ${size}">${SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: d.src, place: d.placement?.[side], side, artRatio: d.artW ? d.artH / d.artW : 1, label: `${d.title} ${side}` })}<span class="xs muted">${side === 'front' ? 'Front' : 'Back'}</span></div>`;
+    return `<div class="pr-mock ${size}">${SA.ui.garmentView({ kind: d.product?.kind, hex: col?.hex, art: side === 'back' ? d.srcBack : d.src, place: d.placement?.[side], side, artRatio: side === 'back' ? d.ratioBack : d.ratioFront, label: `${d.title} ${side}` })}<span class="xs muted">${side === 'front' ? 'Front' : 'Back'}</span></div>`;
   };
   const sides = (o) => (o.design ? ['front', 'back'].filter((x) => o.design.placement?.[x]) : []);
   /** The buttons this person may press on a job right now */
@@ -224,8 +224,12 @@
     const job = { job: o.id, order: o.orderId, product: d.product?.name, technique: 'DTF', colour: o.color, size: o.size, qty: o.qty,
       placement: Object.fromEntries(['front', 'back'].filter((x) => d.placement?.[x]).map((x) => [x, { centreX: d.placement[x].x, centreY: d.placement[x].y, width: d.placement[x].w, unit: 'fraction of the 400×440 garment template' }])),
       artwork: { width: d.artW || 'vector', height: d.artH || 'vector' } };
-    const ext = /^data:image\/(\w+)/.exec(d.src)?.[1]?.replace('svg+xml', 'svg') || 'png';
-    const a = document.createElement('a'); a.href = d.src; a.download = `${o.id}-artwork.${ext}`; a.click();
+    // A different design on the back comes as a second file
+    const ownBack = d.placement?.back && d.artBack;
+    if (ownBack) job.artworkBack = { width: d.artBackW || 'vector', height: d.artBackH || 'vector', file: `${o.id}-artwork-back` };
+    const ext = (src) => /^data:image\/(\w+)/.exec(src)?.[1]?.replace('svg+xml', 'svg') || 'png';
+    const a = document.createElement('a'); a.href = d.src; a.download = `${o.id}-artwork${ownBack ? '-front' : ''}.${ext(d.src)}`; a.click();
+    if (ownBack) { const k = document.createElement('a'); k.href = d.srcBack; k.download = `${o.id}-artwork-back.${ext(d.srcBack)}`; k.click(); }
     const b = document.createElement('a'); b.href = URL.createObjectURL(new Blob([JSON.stringify(job, null, 2)], { type: 'application/json' })); b.download = `${o.id}-job.json`; b.click();
     setTimeout(() => URL.revokeObjectURL(b.href), 2000);
   };

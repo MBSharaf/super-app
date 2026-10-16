@@ -287,6 +287,16 @@ html[data-motion="reduced"] .sell-tile { animation: none; }
 @keyframes g-sweep { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
 .studio-3d-btn { position: absolute; top: 12px; inset-inline-end: 12px; z-index: 2; }
 
+/* Real 3D garments (SA.ui.model3d) */
+.m3d { width: 100%; perspective: none; touch-action: none; }
+.m3d-stage { position: relative; width: 100%; aspect-ratio: 1 / 1.08; max-height: min(66vh, 600px); display: grid; place-items: center; }
+.m3d-stage canvas { width: 100% !important; height: 100% !important; display: block; }
+.m3d .g3d-shadow { margin-top: -34px; width: 46%; }
+.m3d-loading { display: inline-flex; gap: 6px; align-items: center; animation: pulse 1.4s ease-in-out infinite; }
+.studio-canvas.is-3d { padding: 8px 4%; }
+.studio-canvas.is-3d::after { display: none; }
+.pdp-main.m3d { background: radial-gradient(85% 75% at 50% 38%, #FBFBF9 0%, #E9EBE7 55%, #D5D9D3 100%); border-radius: var(--r-lg); }
+
 /* Product picker: floating thumbnails */
 .sp-media { width: 84px; transition: transform 500ms var(--ease-spring); }
 .studio-product:hover .sp-media, .studio-product:has(input:checked) .sp-media { transform: translateY(-4px) rotateY(-14deg) scale(1.06); }
@@ -397,3 +407,39 @@ img.garment { display: block; width: 100%; height: auto; object-fit: contain; bo
 .nt-switch:disabled { opacity: .55; cursor: not-allowed; }
 .nt-switch:focus-visible { box-shadow: var(--ring); }
 @media (max-width: 960px) { .nt-layout { grid-template-columns: minmax(0, 1fr); } .nt-prefs { position: static; } }
+/* Studio round: 3D view with overlay buttons, artwork slots per side, product details, size chart, price breakdown */
+.studio-view { position: relative; }
+.studio-cta-layer { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.studio-canvas-ctas { display: grid; gap: 8px; justify-items: center; pointer-events: auto; }
+.studio-cta-layer .studio-canvas-cta { position: static; }
+.studio-arts { display: grid; gap: 10px; margin-top: 12px; }
+.studio-art { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px; border: 1.5px dashed var(--line); border-radius: var(--r-md); transition: border-color var(--t-fast), background var(--t-fast); }
+.studio-art.has-art { border-style: solid; }
+.studio-art.is-current { border-color: var(--turf); }
+.studio-art.is-over { border-color: var(--turf); background: var(--turf-tint); }
+.sa-thumb { width: 88px; aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--r-sm); cursor: pointer; color: var(--turf);
+  background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--surface) 0 50%) 0 0 / 14px 14px; overflow: hidden; }
+.sa-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.sa-thumb:focus-visible { box-shadow: var(--ring); }
+.sa-body { display: grid; gap: 2px; min-width: 0; }
+.sa-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.studio-info { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.studio-details { gap: 8px; }
+.studio-details > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); }
+.studio-details dd { text-align: start; font-weight: 500; color: var(--ink-2); }
+.studio-chart summary { cursor: pointer; font-weight: 650; font-size: .9rem; display: inline-flex; gap: 6px; align-items: center; color: var(--turf); }
+.studio-chart[open] summary { margin-bottom: 8px; }
+.size-chart { font-size: .85rem; }
+.size-chart th, .size-chart td { text-align: center; padding: 6px 8px; }
+.studio-bd { margin: 4px 0 10px; font-size: .88rem; }
+.studio-bd .is-total { border-top: 1px solid var(--line); padding-top: 6px; font-weight: 700; }
+@media (max-width: 520px) { .studio-art { grid-template-columns: 64px minmax(0, 1fr); } .sa-thumb { width: 64px; } }
+
+/* Store page: the owner's designs that aren't public yet */
+.sf-pending { margin-bottom: 18px; display: grid; gap: 12px; border: 1.5px dashed var(--line); }
+.sf-pending-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.sf-pending-item { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: var(--r-md); background: var(--surface-2); color: inherit; text-decoration: none; }
+.sf-pending-item:hover { background: var(--turf-tint); }
+.sf-pm { width: 56px; flex: none; }
+.sf-pm .garment, .sf-pm svg, .sf-pm img { width: 100%; height: auto; display: block; }
+.sf-actions { flex-wrap: wrap; }

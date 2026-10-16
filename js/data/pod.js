@@ -8,19 +8,24 @@
   const C = (name, hex) => ({ name, hex });
   const SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
 
+  /** Size charts in cm, measured flat: chest = armpit to armpit, length = shoulder to hem, sleeve = shoulder seam to cuff */
+  const chart = (rows) => ({ cols: ['Chest', 'Length', 'Sleeve'], rows: Object.fromEntries(SIZES.map((sz, i) => [sz, rows[i]])) });
   const catalog = [
     { id: 'pod-tee', name: 'Classic T-shirt', kind: 'tee', desc: '180 g combed cotton, regular fit, DTF print that survives the wash.', base: 300, partnerCost: 210, backExtra: 60, bigSizeExtra: 30, bigSizes: ['2XL', '3XL'],
-      minPrice: 330, maxPrice: 900, sizes: SIZES, areas: ['front', 'back'], status: 'active',
+      minPrice: 300, maxPrice: 900, sizes: SIZES, areas: ['front', 'back'], status: 'active',
+      details: [['Fabric', '100% combed cotton, 180 g/m² single jersey'], ['Fit', 'Regular fit, true to size'], ['Print', 'DTF transfer — bright colours, soft feel, doesn’t crack'], ['Neck', 'Ribbed crew neck, taped shoulder seams'], ['Care', 'Wash inside out at 30°C, don’t iron on the print, no tumble dryer']],
+      sizeChart: chart([[48, 69, 19], [51, 71, 20], [54, 73, 21], [57, 75, 22], [60, 77, 23], [63, 79, 24]]),
       colors: [C('White', '#F7F7F5'), C('Black', '#141414'), C('Navy', '#1C2541'), C('Heather Grey', '#9A9DA2'), C('Bottle Green', '#1F4D3A'), C('Sand', '#D8C7A6')] },
     { id: 'pod-oversized', name: 'Oversized T-shirt', kind: 'tee', desc: '240 g heavyweight cotton, dropped shoulders, boxy streetwear fit.', base: 380, partnerCost: 270, backExtra: 60, bigSizeExtra: 30, bigSizes: ['2XL', '3XL'],
-      minPrice: 420, maxPrice: 1000, sizes: SIZES, areas: ['front', 'back'], status: 'active',
+      minPrice: 380, maxPrice: 1000, sizes: SIZES, areas: ['front', 'back'], status: 'active',
+      details: [['Fabric', '100% heavyweight cotton, 240 g/m², pre-shrunk'], ['Fit', 'Oversized and boxy with dropped shoulders — take your usual size for the loose look'], ['Print', 'DTF transfer — bright colours, soft feel, doesn’t crack'], ['Neck', 'Thick 2.5 cm ribbed collar'], ['Care', 'Wash inside out at 30°C, don’t iron on the print, no tumble dryer']],
+      sizeChart: chart([[56, 70, 23], [59, 72, 24], [62, 74, 25], [65, 76, 26], [68, 78, 27], [71, 80, 28]]),
       colors: [C('Black', '#141414'), C('Off-white', '#EFEBE1'), C('Sage', '#8FA58A'), C('Brown', '#5A4032'), C('Washed Blue', '#5E7E9E')] },
     { id: 'pod-hoodie', name: 'Hoodie', kind: 'hoodie', desc: '320 g brushed fleece, double-lined hood, kangaroo pocket.', base: 600, partnerCost: 430, backExtra: 70, bigSizeExtra: 40, bigSizes: ['2XL', '3XL'],
-      minPrice: 650, maxPrice: 1600, sizes: SIZES, areas: ['front', 'back'], status: 'active',
+      minPrice: 600, maxPrice: 1600, sizes: SIZES, areas: ['front', 'back'], status: 'active',
+      details: [['Fabric', '80% cotton, 20% polyester brushed fleece, 320 g/m² — warm and soft inside'], ['Fit', 'Relaxed fit with dropped shoulders'], ['Print', 'DTF transfer — bright colours, soft feel, doesn’t crack'], ['Details', 'Double-lined hood, kangaroo pocket, ribbed cuffs and waistband'], ['Care', 'Wash inside out at 30°C, don’t iron on the print, no tumble dryer']],
+      sizeChart: chart([[56, 67, 60], [59, 69, 61], [62, 71, 62], [65, 73, 63], [68, 75, 64], [71, 77, 65]]),
       colors: [C('Black', '#141414'), C('Heather Grey', '#9A9DA2'), C('Navy', '#1C2541'), C('Maroon', '#5B1A24'), C('Off-white', '#EFEBE1')] },
-    { id: 'pod-cap', name: 'Baseball Cap', kind: 'cap', desc: 'Six-panel cotton twill, adjustable strap, embroidered-look print on the front.', base: 220, partnerCost: 150, backExtra: 0, bigSizeExtra: 0, bigSizes: [],
-      minPrice: 250, maxPrice: 600, sizes: ['One size'], areas: ['front'], status: 'active',
-      colors: [C('Black', '#141414'), C('White', '#F7F7F5'), C('Navy', '#1C2541'), C('Khaki', '#B9A77F')] },
   ];
 
   const categories = [
@@ -68,7 +73,6 @@
     ['sl-koora', 'press', 'Keep Calm & Press High', 'football', 'pod-tee', ['Black', 'Navy', 'White'], 420, ['tactics', 'pressing', 'funny'], 'A tee for the midfielder who never stops running.'],
     ['sl-koora', 'keeper', 'Safe Hands No.1', 'football', 'pod-hoodie', ['Navy', 'Black'], 890, ['goalkeeper', 'keeper'], 'Every team needs one. Gift it to yours.'],
     ['sl-koora', 'yalla', 'Yalla Nel3ab', 'egyptian', 'pod-tee', ['Bottle Green', 'White', 'Black'], 400, ['arabic', 'football', 'yalla'], 'The two words that start every game in Egypt.'],
-    ['sl-koora', 'nights', 'Cairo Nights FC Cap', 'football', 'pod-cap', ['Black', 'Navy'], 320, ['cap', 'cairo'], 'Match the crew — the Cairo Nights badge on a cap.'],
     ['sl-nile', 'habibi', 'Ya Habibi', 'egyptian', 'pod-oversized', ['Off-white', 'Black'], 480, ['arabic', 'love', 'gift'], 'Big heart, bigger fit.'],
     ['sl-nile', 'pyramids', 'Giza Run Club', 'sports', 'pod-tee', ['Sand', 'White', 'Black'], 390, ['running', 'giza', 'club'], 'Sunrise runs with a view nobody else has.'],
     ['sl-nile', 'retro', 'Retro 90', 'retro', 'pod-hoodie', ['Off-white', 'Black'], 820, ['90s', 'vintage', 'stripes'], 'Four stripes, one decade.'],
@@ -76,7 +80,6 @@
     ['sl-otaku', 'otaku', 'Cairo Otaku', 'anime', 'pod-oversized', ['Black', 'Off-white'], 500, ['anime', 'kawaii'], 'An original character drawn in Cairo.'],
     ['sl-otaku', 'pixel', 'GG No Re', 'gaming', 'pod-tee', ['Black', 'Navy'], 380, ['gaming', 'pixel', 'retro'], 'Good game. No rematch.'],
     ['sl-otaku', 'pixel', 'Press Start Hoodie', 'gaming', 'pod-hoodie', ['Black', 'Navy'], 780, ['gaming', 'pixel'], 'Pixel art for the late-night gaming crew.', 'review'],
-    ['sl-nile', 'habibi', 'Ya Habibi Cap', 'egyptian', 'pod-cap', ['White', 'Black'], 300, ['arabic', 'cap'], 'The heart, now on a cap.', 'review'],
   ];
 
   SA.data.pod = { catalog, categories, levels, sellers, designs, art, svg };
