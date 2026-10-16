@@ -287,16 +287,16 @@ html.reduce-motion .ticker-track { animation: none !important; }
 
 /* ---------- 3D soccer ball (home page) ---------- */
 .ball3d { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
-.ball3d-body { position: absolute; inset-inline-start: 0; top: 0; transform-origin: 50% 100%; will-change: transform; pointer-events: auto; cursor: grab; border-radius: 50%; filter: drop-shadow(0 6px 10px rgba(13,20,17,.28)); }
+.ball3d-body { position: absolute; left: 0; top: 0; transform-origin: 50% 100%; will-change: transform; pointer-events: auto; cursor: grab; border-radius: 50%; filter: drop-shadow(0 6px 10px rgba(13,20,17,.28)); }
 .ball3d-body:active { cursor: grabbing; }
 .ball3d-body canvas { display: block; border-radius: 50%; }
 .ball3d-gloss { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 34% 26%, rgba(255,255,255,.35), transparent 32%); mix-blend-mode: screen; }
-.ball3d-shadow { position: absolute; inset-inline-start: 0; top: 0; width: 2.2em; height: .44em; font-size: 46px; border-radius: 50%; background: radial-gradient(closest-side, rgba(13,20,17,.55), rgba(13,20,17,0)); transform-origin: 50% 50%; will-change: transform, opacity; }
+.ball3d-shadow { position: absolute; left: 0; top: 0; width: 2.2em; height: .44em; font-size: 46px; border-radius: 50%; background: radial-gradient(closest-side, rgba(13,20,17,.55), rgba(13,20,17,0)); transform-origin: 50% 50%; will-change: transform, opacity; }
 @media (max-width: 1099px) { .ball3d-shadow { font-size: 38px; } }
 @media (max-width: 639px) { .ball3d-shadow { font-size: 30px; } }
 .ball3d-impact { position: fixed; z-index: 94; width: 0; height: 0; pointer-events: none; }
-.ball3d-impact::before { content: ""; position: absolute; inset-inline-start: -40px; top: -8px; width: 80px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,91,20,.7); animation: impactRing 600ms var(--ease) forwards; }
-.ball3d-impact i { position: absolute; inset-inline-start: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--turf-2); animation: dust 620ms var(--ease) forwards; }
+.ball3d-impact::before { content: ""; position: absolute; left: -40px; top: -8px; width: 80px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,91,20,.7); animation: impactRing 600ms var(--ease) forwards; }
+.ball3d-impact i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--turf-2); animation: dust 620ms var(--ease) forwards; }
 .ball3d-impact i:nth-child(odd) { background: var(--blaze); width: 4px; height: 4px; }
 @keyframes impactRing { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
 @keyframes dust { to { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
