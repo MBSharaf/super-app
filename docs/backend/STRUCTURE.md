@@ -1,7 +1,7 @@
 # Project Structure and Setup
 Subtitle: How the ASP.NET Core solution is organised, which packages it uses and why, and how to run, migrate, seed and test it from VS Code.
 Document: STRUCTURE — backend phase
-Version: 1.0 (draft for review)
+Version: 1.1 (review fixes applied)
 Date: 17 October 2026
 Owner: Sharaf (CEO)
 Status: For review — the solution is created from this document after approval
@@ -325,7 +325,7 @@ The **seed** runs automatically in development: lookups, settings, the CEO accou
 Every endpoint is tested in the **normal case and its edge cases** (the matrix in the API document, section 11). A change is not finished until its tests pass.
 
 # 7. The existing site inside the project
-1. The current site files (`index.html`, `css/`, `js/`, `models/`, `vendor/`, `og-image.png`, `robots.txt`…) are **copied unchanged** into `src/SuperApp.Api/wwwroot/`. No HTML or CSS is edited, so **the design does not change**.
+1. The current site files (`index.html`, `css/`, `js/`, `models/`, `vendor/`, `og-image.png`, `robots.txt`…) are **copied unchanged** into `src/SuperApp.Api/wwwroot/`. **Existing screens keep their design exactly.** New screens that the backend needs are **added** in the same design (same layout, components and CSS classes) — the first ones are the CEO screens `/ceo/integrations`, `/ceo/api-catalogue` and `/ceo/webhooks` (PRD FR-CEO-07a).
 2. The site's routes keep working through `MapFallbackToFile("index.html")`. The GitHub Pages base path (`/super-app/`) becomes `/`; links that hard-code it are updated in one place.
 3. The site already talks to its data through `js/services/*` (and `SA.services.http`). Those services are switched **one at a time** from browser storage to `fetch('/api/v1/…')` calls with the CSRF header — screens stay the same. Until a service is switched, it keeps working on browser storage, so the site never breaks during the move.
 4. Rules that existed only in the browser are now **enforced on the server** (permissions, prices, limits, availability); the browser checks stay only for a fast user experience.
@@ -356,7 +356,9 @@ services:
     volumes: [n8ndata:/home/node/.n8n]
   proxy:
     image: caddy        # HTTPS certificates automatically, reverse proxy to api and n8n
-volumes: { sqldata: {}, n8ndata: {} }
+    ports: ["80:80", "443:443"]
+    volumes: [./Caddyfile:/etc/caddy/Caddyfile, caddy_data:/data, caddy_config:/config]   # certificates survive restarts
+volumes: { sqldata: {}, n8ndata: {}, caddy_data: {}, caddy_config: {} }
 ```
 
 Steps: create the VPS (Ubuntu) → install Docker → copy the project and `.env` → `docker compose up -d` → point the domain's DNS to the VPS → HTTPS is issued automatically → set `SEED__DEMODATA=false` before the real launch → daily backups of the database and `storage/` to off-server storage.

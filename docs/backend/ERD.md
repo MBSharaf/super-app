@@ -1,7 +1,7 @@
 # Entity Relationship Design (ERD)
 Subtitle: Every table, column, relationship, constraint and index of the Super App database — SQL Server, EF Core Code-First.
 Document: ERD — backend phase
-Version: 1.0 (draft for review)
+Version: 1.1 (review fixes applied)
 Date: 16 October 2026
 Owner: Sharaf (CEO)
 Status: For review — the entities and Fluent API configurations are written from this document
@@ -323,7 +323,7 @@ Indexes: `IX_Users_Status`, `IX_Users_CreatedAt`.
 ### A7 ops.FeatureFlags — [B]
 | Column | Type | Null | Rules |
 |---|---|---|---|
-| Key | varchar(80) | NO | UQ (e.g. `kill.bookings`, `kill.payouts`, `api.fantasy`, `api.agents`) |
+| Key | varchar(80) | NO | UQ — seeded kill switches: `kill.bookings`, `kill.shop`, `kill.pod`, `kill.payouts`, `kill.applications`, `kill.fantasy`, `kill.community`, `kill.games`, `kill.agents`; API groups such as `api.fantasy`, `api.agents` |
 | Kind | tinyint | NO | CK 0–1 (0 Kill switch, 1 API group) |
 | IsEnabled | bit | NO | DF 1 |
 | Reason | nvarchar(400) | YES | why it was switched off |
@@ -1537,7 +1537,7 @@ Append-only. Every money movement is a row; balances are sums.
 | WalletId | bigint | NO | FK → money.Wallets (NO ACTION) |
 | Amount | decimal(14,2) | NO | CK ≠ 0 (positive = in, negative = out) |
 | Bucket | tinyint | NO | CK 0–2 (Pending, Available, Settled) |
-| Kind | tinyint | NO | CK 0–12 (Booking earning, Store earning, POD profit, Commission, Service fee, Refund, Payout, Adjustment, Release from hold, Factory earning, Deduction, Voucher, Points redemption) |
+| Kind | tinyint | NO | CK 0–14 (Booking earning, Store earning, POD profit, Commission, Service fee, Refund, Payout, Adjustment, Release from hold, Factory earning, Deduction, Voucher, Points redemption, **Wallet top-up**, **Wallet payment**) |
 | RefType | varchar(30) | NO | e.g. `booking`, `orderItem`, `payout` |
 | RefId | bigint | NO | |
 | AvailableAt | datetime2(0) | YES | when a pending amount becomes available (holds) |
@@ -2241,14 +2241,14 @@ The seed runs at start-up in development (and on demand in other environments). 
 | 1 | Governorates (27) and main areas (Cairo, Giza, Alexandria first) | `js/data/pitches.js` areas + full governorate list |
 | 2 | Permissions (all codes) and system roles (CEO, Admin manager, Support, Finance/CFO, Content, Marketing, Moderator, Agent base, Customer, PitchOwner, Seller, FactoryOwner, FactoryStaff) with their permissions | the permission matrix of the CEO system |
 | 3 | **CEO user** — email, name and password from environment variables (`SEED_CEO_EMAIL`, `SEED_CEO_PASSWORD`); 2FA set up at first sign-in | — |
-| 4 | Departments and the org chart positions (no agents) | `js/data/org.js` |
+| 4 | Departments and the org chart positions (humans: CEO, admin manager, CFO, legal counsel) | `js/data/org.js` |
 | 5 | Settings (commissions, VAT, fees, holds, limits 10,000 / 1,000 / 50,000, package max discount, loyalty, delivery, pop-up timing) and feature flags | `js/services/db.js` settings |
 | 6 | Integrations registry (all `Simulated`, disabled where a contract is needed; API-FOOTBALL with quota 100) | INTEGRATIONS document |
 | 7 | Facilities, cancellation policies, shop categories, design categories, seller levels | front-end data files |
 | 8 | POD catalogue with colours, sizes + size charts, details and print areas | `js/data/pod.js` |
 | 9 | Legal documents with version 1 (Arabic and English drafts), help topics and articles, banners, pop-ups, communities, banned words | `js/data/legal.js`, `help.js`, content |
 | 10 | Fantasy competitions (EGY, EPL); clubs, players and fixtures come from the **first API-FOOTBALL sync** (the seed only creates the competitions) | API-FOOTBALL |
-| 11 | **Demo data** (switch `Seed:DemoData=true`): partners, venues, pitches, stores, products, sellers, designs, bookings, orders, tournaments, community posts — today's front-end demo data, so the site is not empty | `js/data/*.js` |
+| 11 | **Demo data** (switch `Seed:DemoData=true`): partners, venues, pitches, stores, products, sellers, designs, bookings, orders, tournaments, community posts — today's front-end demo data, so the site is not empty — **plus the 18 AI agents** (service accounts, positions under their 8 departments, permissions, money limits, status **Paused**, no API keys) | `js/data/*.js`, `js/data/org.js` |
 
 Set `Seed:DemoData=false` (and run the cleanup command) before the real launch.
 

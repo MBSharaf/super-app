@@ -1,7 +1,7 @@
 # API Specification
 Subtitle: Every endpoint of the Super App Web API — who may call it, what it does, how it answers, and how to test it.
 Document: API — backend phase
-Version: 1.0 (draft for review)
+Version: 1.1 (review fixes applied)
 Date: 17 October 2026
 Owner: Sharaf (CEO)
 Status: For review — controllers, routes and Postman tests are written from this document
@@ -144,6 +144,8 @@ Never `200` with an error inside.
 | PUT | `/me/password` | Change password (current + new) | Customer | 400 · 401 |
 | GET/POST/PUT/DELETE | `/me/addresses[/{id}]` | Address book | Customer | one default |
 | GET | `/me/wallet` | Wallet balance, vouchers, points | Customer | |
+| POST | `/me/wallet/top-up` `{ amount }` | Add money to my Super App wallet → payment session (card, wallet app, InstaPay) | Customer + `Idempotency-Key` | 201 + payment session · 422 amount outside the limits in settings (default 50 – 10,000 EGP) · 423 payments paused. The balance is credited **only** by the gateway's signed webhook, then a top-up receipt PDF is issued |
+| GET | `/me/wallet/transactions` | My wallet movements (top-ups, payments with the wallet, refunds to the wallet, vouchers) | Customer | paged |
 | GET | `/me/receipts` · `/me/receipts/{number}/pdf` | Receipts list and PDF | Customer | own only |
 | GET | `/me/data-export` | Download my data (law 151) | Customer | 202 → email link |
 | DELETE | `/me` | Request account deletion | Customer | 202; blocked while orders/bookings are open (422) |
@@ -586,7 +588,7 @@ CEO only (2FA), unless noted. Every write is audited.
 | API catalogue | GET | `/ceo/api-catalogue` | Every endpoint group: purpose, permission, callers, calls and errors in 24 h |
 | | PUT | `/ceo/api-catalogue/{group}` `{ enabled, reason }` | Switch an endpoint group off/on (feature flag; 423 to callers) |
 | Webhooks | GET/POST/PUT/DELETE | `/ceo/webhooks[/{id}]` · GET `/{id}/deliveries` · POST `/{id}/test` | n8n subscriptions |
-| Kill switches | GET/PUT | `/ceo/switches[/{key}]` | Bookings, shop, printed designs, payouts, applications, fantasy, community posting, agents |
+| Kill switches | GET/PUT | `/ceo/switches[/{key}]` | The 9 switches — `kill.bookings`, `kill.shop`, `kill.pod`, `kill.payouts`, `kill.applications`, `kill.fantasy`, `kill.community`, `kill.games`, `kill.agents`. Bookings, shop, printed designs, payouts, applications, fantasy, community posting, agents |
 | Limits | GET/PUT | `/ceo/limits` | Payout, refund, two-person thresholds; package max discount; commissions, fees, points, payout day |
 | Goals | GET/POST/PUT | `/ceo/goals`, `/ceo/budgets`, `/ceo/compliance` | OKRs, budgets, compliance calendar |
 | What-if | POST | `/ceo/simulate` | Simulator (no data changes) |
@@ -752,6 +754,7 @@ X-Api-Key: sa_9f3a1c2e…
 | Shop | add → checkout → paid | last item bought by two users → one 201, one 409 · COD for a must-prepay customer → 422 · expired code → 422 · shop paused → 423 |
 | Designs | draft → submit → approve → live | price below base → 422 · price = base → 201 (0 profit allowed) · no artwork → 422 · design limit reached → 422 · editing a live design → back to review |
 | Factory | job through all stages | printer trying QC → 403 · skipping a stage → 409 · wrong PIN ×5 → 423 · catalogue change → waits for admin, not visible to sellers until approved |
+| Wallet top-up | top-up → webhook → balance up + receipt | amount 0 or over the maximum → 422 · same Idempotency-Key twice → one top-up · browser says paid but no webhook → balance unchanged · failed payment → no credit |
 | Payments | webhook paid → order paid | bad signature → 401, no change · same webhook twice → 200, no double credit · browser says paid but no webhook → still pending |
 | Payouts | request → prepare → send | under 500 → 422 · over available → 422 · no ID check → 422 · preparer tries to send → 403 · over 10,000 → 202 approval · over 50,000 → needs CEO + CFO · same person twice → 409 |
 | Fantasy | squad → lineup → scored | 4 players from one club → 422 · over budget → 422 · change after deadline → 423 · paid group before payments are live → hidden / 423 |

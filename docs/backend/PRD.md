@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 Subtitle: Super App — the Egyptian sports super app: pitches, players, fantasy, shop, print on demand, and the systems that run the company.
 Document: PRD — backend phase
-Version: 1.0 (draft for review)
+Version: 1.1 (review fixes applied)
 Date: 16 October 2026
 Owner: Sharaf (CEO)
 Status: For review — no code is written until this is approved
@@ -330,6 +330,7 @@ Level-ups are immediate. A drop below a level's requirements gives a **grace mon
 | FR-WAL-06 | **CEO limits** (editable): payouts and settlements over **10,000 EGP** and customer refunds or credits over **1,000 EGP** need the CEO; anything over **50,000 EGP** needs **two approvals** (CEO + CFO). The person who prepared a request cannot approve it | Must |
 | FR-WAL-07 | Adjustments (credit or debit a balance) need a reason and are logged; the counterparty is notified | Must |
 | FR-WAL-08 | Payouts through the gateway's disbursement API when available; manual bank transfer with a reference otherwise | Should |
+| FR-WAL-09 | **Customer wallet top-up:** customers add money to their Super App wallet (quick amounts 200 / 500 / 1,000 or any amount within the limits in settings, default 50 – 10,000 EGP) through the payment gateway; the wallet is credited only after the gateway's signed webhook; a top-up receipt PDF is issued; the wallet balance can pay bookings, orders, game shares, tournaments and the Fantasy Pass; wallet money is not withdrawable as cash | Must |
 
 ## 6.3 Points, vouchers and codes
 | ID | Requirement | Priority |
@@ -456,7 +457,8 @@ Every page and action below requires the matching permission; every action is wr
 | FR-CEO-06 | **Org chart:** a pyramid drawn from the data (humans and AI agents), showing who reports to whom; clicking a box opens the person or agent | Must |
 | FR-CEO-07 | **Integrations registry:** every external service (payments, courier, email, SMS, API-FOOTBALL, n8n, AI model, storage, e-receipts) with status, mode (test/live), last call, error rate, usage, on/off switch; secrets are shown only as "set / not set" and can be replaced but never read | Must |
 | FR-CEO-08 | **API catalogue:** every Super App endpoint (generated from OpenAPI), grouped by system, with purpose, permission, callers (site, dashboards, agents, n8n), calls and errors in the last 24 h; an endpoint group can be **switched off** with a feature flag (code is never deleted at runtime) | Must |
-| FR-CEO-09 | **Kill switches:** bookings, shop, printed designs, payouts, new applications, fantasy, community posting, AI agents (all or one) | Must |
+| FR-CEO-07a | **New CEO screens in the front end:** `/ceo/integrations` (registry, usage bars, secrets status, test call), `/ceo/api-catalogue` (endpoint groups, switch on/off) and `/ceo/webhooks` (n8n subscriptions, delivery log). They are added to the existing CEO system with **the same design** (same layout, components and styles), in Arabic and English, and linked from the CEO navigation and the Every page map | Must |
+| FR-CEO-09 | **Kill switches (9):** bookings, shop, printed designs, payouts, new applications, fantasy, community posting, **joining games (free-slot games)**, AI agents (all or one) | Must |
 | FR-CEO-10 | **Limits:** payout, refund, two-person thresholds; maximum package discount; company settings (commissions, fees, points, payout day) | Must |
 | FR-CEO-11 | Goals (OKRs), department budgets, compliance calendar, what-if simulator | Should |
 | FR-CEO-12 | Reports: finance, operations, customers, partners, sellers, marketing, support, agents — date range, Excel (with a dashboard sheet), PDF | Must |
@@ -494,7 +496,7 @@ flowchart LR
 | FR-AI-05 | Emergency stop: pause one agent or all agents at once | Must |
 | FR-AI-06 | Cost tracking: tokens and money per agent per day; budget alerts | Should |
 | FR-AI-07 | An **MCP server** exposing safe Super App tools to Claude | Later |
-| FR-AI-08 | No agents exist at launch; the panel starts empty and the CEO adds them | Must |
+| FR-AI-08 | **With demo data on** (`SEED__DEMODATA=true`) the seed creates the **18 AI agents** of today's front end (`js/data/org.js`) in their 8 departments, **paused**, with their duties, permissions and money limits, so testing matches the preview. **With demo data off** (real launch) the panel starts empty and the CEO adds the real agents | Must |
 
 **Separation of duties for agents** (from the org design): the payables agent prepares payouts but never sends them; the AI supervisor stays separate so it can watch and stop the others; trust & safety is never merged with customer service.
 

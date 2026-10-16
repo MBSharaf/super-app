@@ -10,5 +10,7 @@ Language: English (it goes to engineers). Decisions: see the memory file backend
 - [x] 4. INTEGRATIONS.md → pdf/INTEGRATIONS.pdf — payments, shipping, email, SMS, API-FOOTBALL, n8n, AI agents (Claude), ETA e-receipt; questions for each company
 - [x] 5. STRUCTURE.md → pdf/STRUCTURE.pdf — solution and folder layout, packages and why, how to run it, migrations, testing
 
+- [x] Review fixes v1.1 (CHANGES-v1.1.md): wallet top-up, CEO screens, 18 demo agents, 9 kill switches, Caddy volumes
+
 ## After approval (not started — waiting for the owner to approve the five documents)
 - Code: solution setup → Domain → Infrastructure (DbContext, configurations, seed) → Application → Api → wiring the site → tests and Postman collection
