@@ -67,6 +67,10 @@ blockquote { margin: 10px 0; padding: 8px 12px; border-left: 4px solid var(--bla
 blockquote p { margin: 4px 0; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 18px 0; }
 td.rid { white-space: nowrap; font-weight: 650; color: var(--turf); }
+@page land { size: A4 landscape; margin: 12mm 14mm 16mm; }
+.land { page: land; break-before: page; break-after: page; }
+.land .mermaid svg { width: 100% !important; height: 158mm !important; max-width: 100% !important; }
+.land .mermaid { break-inside: avoid; }
 .mermaid { text-align: center; margin: 12px 0; page-break-inside: avoid; }
 .mermaid svg { max-width: 100%; height: auto; }
 """
@@ -100,6 +104,8 @@ def render(md_path: pathlib.Path) -> pathlib.Path:
     content = md.convert(body)
     content = re.sub(r"<td>(N?FR-[A-Z]+-[0-9]+)</td>", lambda m: '<td class="rid">' + m.group(1) + '</td>', content)
     has_mermaid = 'class="mermaid"' in content
+    # Entity diagrams are wide: give each one (with its heading) a landscape page of its own
+    content = re.sub(r'(<h2[^>]*>[^<]*</h2>)\s*(<div class="mermaid">\s*erDiagram.*?</div>)', lambda m: '<section class="land">' + m.group(1) + m.group(2) + '</section>', content, flags=re.S)
     sub = meta.pop("Subtitle", "")
     doc_name = md_path.stem
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{html.escape(title)}</title>
@@ -107,7 +113,7 @@ def render(md_path: pathlib.Path) -> pathlib.Path:
       {cover(title, sub, meta)}
       <section class="toc-page"><h2>Contents</h2><div class="toc">{md.toc.replace('<div class="toc">', '').rsplit('</div>', 1)[0]}</div></section>
       {content}
-      {'<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,theme:"neutral",er:{useMaxWidth:true},flowchart:{useMaxWidth:true}});</script>' if has_mermaid else ''}
+      {'<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,theme:"neutral",themeVariables:{fontSize:"16px"},er:{useMaxWidth:true},flowchart:{useMaxWidth:true}});</script>' if has_mermaid else ''}
       </body></html>"""
     out_dir = md_path.parent / "pdf"
     out_dir.mkdir(exist_ok=True)
