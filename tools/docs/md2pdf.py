@@ -71,6 +71,8 @@ td.rid { white-space: nowrap; font-weight: 650; color: var(--turf); }
 .land { page: land; break-before: page; break-after: page; }
 .land .mermaid svg { width: 100% !important; height: 158mm !important; max-width: 100% !important; }
 .land .mermaid { break-inside: avoid; }
+[dir="rtl"] { direction: rtl; text-align: right; font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
+.ar-box { background: #F3F5F2; border-right: 4px solid var(--turf); padding: 8px 14px; margin: 10px 0; }
 .mermaid { text-align: center; margin: 12px 0; page-break-inside: avoid; }
 .mermaid svg { max-width: 100%; height: auto; }
 """
@@ -100,7 +102,7 @@ def render(md_path: pathlib.Path) -> pathlib.Path:
     # python-markdown needs a blank line before a list; Markdown written for GitHub often has none
     body = re.sub(r"(?m)^(?!\s*(?:[-*+]|\d+\.)\s)(\S.*)\n(\s*(?:[-*+]|\d+\.)\s)", r"\1\n\n\2", body)
     body = re.sub(r"```mermaid\n(.*?)```", lambda m: f'<div class="mermaid">\n{m.group(1)}</div>', body, flags=re.S)
-    md = markdown.Markdown(extensions=["tables", "fenced_code", "toc", "sane_lists", "attr_list"], extension_configs={"toc": {"toc_depth": "1-2"}})
+    md = markdown.Markdown(extensions=["tables", "fenced_code", "toc", "sane_lists", "attr_list", "md_in_html"], extension_configs={"toc": {"toc_depth": "1-2"}})
     content = md.convert(body)
     content = re.sub(r"<td>(N?FR-[A-Z]+-[0-9]+)</td>", lambda m: '<td class="rid">' + m.group(1) + '</td>', content)
     has_mermaid = 'class="mermaid"' in content

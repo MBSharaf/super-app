@@ -7,7 +7,7 @@ Language: English (it goes to engineers). Decisions: see the memory file backend
 - [x] 1. PRD.md → pdf/PRD.pdf — product requirements: 7 systems, roles and permissions, flows, business rules
 - [x] 2. ERD.md → pdf/ERD.pdf — every table (lookup → child → junction), 5 constraints, ON DELETE, indexes, Mermaid diagram
 - [x] 3. API.md → pdf/API.pdf — endpoints per system, who calls them and with which permission, unified response
-- [ ] 4. INTEGRATIONS.md → pdf/INTEGRATIONS.pdf — payments, shipping, email, SMS, API-FOOTBALL, n8n, AI agents (Claude), ETA e-receipt; questions for each company
+- [x] 4. INTEGRATIONS.md → pdf/INTEGRATIONS.pdf — payments, shipping, email, SMS, API-FOOTBALL, n8n, AI agents (Claude), ETA e-receipt; questions for each company
 - [ ] 5. STRUCTURE.md → pdf/STRUCTURE.pdf — solution and folder layout, packages and why, how to run it, migrations, testing
 
 ## After approval (not started)
