@@ -578,6 +578,7 @@
     ['sellers', 'Sellers', 'Designs, sales and levels', 'users'],
     ['marketing', 'Marketing', 'Promo codes, broadcasts and costs', 'megaphone'],
     ['support', 'Support', 'Tickets, refunds and response', 'message'],
+    ['returns', 'Returns & exchanges', 'Every return, why, and the money', 'refresh'],
     ['agents', 'AI agents', 'Work, errors and cost of every agent', 'bolt'],
     ['approvals', 'Approvals', 'Everything that needed the CEO', 'check'],
   ];
@@ -621,6 +622,10 @@
     if (kind === 'support') {
       const rows = (db().all('tickets') || []).filter((t) => inR(t.createdAt || t.at || Date.now(), from, to)).map((t) => ({ id: t.id, date: isoDate(new Date(t.createdAt || Date.now())), from: t.from?.name || '', kind: t.from?.kind || '', topic: t.topic || t.category || '', subject: t.subject, status: t.status, refund: t.refund?.amount || 0, replies: (t.messages || []).length }));
       return r([['id', 'Ticket'], ['date', 'Date', 'date'], ['from', 'From'], ['kind', 'Type'], ['topic', 'Topic'], ['subject', 'Subject'], ['status', 'Status'], ['refund', 'Refund', 'money'], ['replies', 'Messages', 'n']], rows, { kpis: [['Tickets', rows.length, 'n'], ['Refunded', rows.reduce((t, x) => t + x.refund, 0), 'money']], group: 'status' });
+    }
+    if (kind === 'returns') {
+      const rows = (db().all('returns') || []).filter((x) => inR(x.createdAt, from, to)).map((x) => ({ id: x.id, date: isoDate(new Date(x.createdAt)), order: x.orderId, seller: x.storeName, customer: x.customer?.name || '', items: x.items.map((i) => `${i.qty}× ${i.name}`).join(', '), action: [...new Set(x.items.map((i) => i.action))].join(' + '), reason: x.reasonLabel, status: x.status, amount: x.amount || 0 }));
+      return r([['id', 'Return'], ['date', 'Date', 'date'], ['order', 'Order'], ['seller', 'Seller'], ['customer', 'Customer'], ['items', 'Items'], ['action', 'Asked for'], ['reason', 'Reason'], ['status', 'Status'], ['amount', 'Refunded', 'money']], rows, { kpis: [['Returns', rows.length, 'n'], ['Refunded', rows.reduce((t, x) => t + x.amount, 0), 'money']], group: 'reason' });
     }
     if (kind === 'agents') {
       const rows = roles().filter((x) => x.id !== 'ceo').map((x) => { const s = agentStats(x.id); return { name: x.name, title: x.title, dept: x.deptInfo?.name || '', holder: x.holder === 'ai' ? 'AI agent' : 'Human', status: x.status, tasks: s.tasks, errors: s.errors, accuracy: s.accuracy ?? '', limit: x.limit === Infinity ? '' : x.limit, cost: s.cost }; });

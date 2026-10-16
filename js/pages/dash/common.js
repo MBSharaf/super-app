@@ -50,6 +50,7 @@
         { key: 'seller-calendar', label: 'Marketing calendar', href: '#/dash/seller/calendar', icon: 'calendar' },
         { key: 'seller-analytics', label: 'Analytics', href: '#/dash/seller/analytics', icon: 'chart' },
         { key: 'seller-orders', label: 'Orders', href: '#/dash/seller/orders', icon: 'package', badge: 'orders' },
+        ...(s?.storeId ? [{ key: 'seller-returns', label: 'Returns', href: '#/dash/seller/returns', icon: 'refresh', badge: 'returns' }] : []),
         ...(s?.mode !== 'store' ? [{ group: 'Print on demand' }, { key: 'seller-designs', label: 'Designs', href: '#/dash/seller/designs', icon: 'image' }] : []),
         ...(s?.storeId ? [{ group: 'My products' }, { key: 'store', label: 'Products', href: '#/dash/store', icon: 'bag', badge: 'stock' }] : []),
         { group: 'Money' }, { key: 'seller-wallet', label: 'Wallet', href: '#/dash/seller/wallet', icon: 'wallet' }, ...(s?.storeId ? [{ key: 'codes', label: 'Discount codes', href: '#/dash/codes', icon: 'tag' }] : []),

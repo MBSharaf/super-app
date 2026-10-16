@@ -193,11 +193,13 @@
             </div>
           </div>
         </article>
+        ${SA.ui.returns?.orderBlock(o) || ''}
         <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button><a class="btn btn-outline" href="#/orders">Order history</a><a class="btn btn-ghost" href="#/support?ref=order:${encodeURIComponent(o.id)}">${icon('help', 16)} Get help</a></div>
       </div>`;
     },
     mount(el, ctx) {
       if (ctx.query.new) setTimeout(() => { const m = el.querySelector('.success-mark')?.getBoundingClientRect(); SA.core.motion.confetti(m ? { x: m.left + m.width / 2, y: m.top + m.height / 2 } : {}); }, 350);
+      el.querySelector('[data-rt-new]')?.addEventListener('click', async () => SA.ui.returns.openForm(await S.shop.order(ctx.params.id)));
       el.querySelector('[data-invoice]')?.addEventListener('click', async (e) => {
         const btn = e.currentTarget; btn.disabled = true;
         try { await SA.ui.docs.orderInvoice(await S.shop.order(ctx.params.id)); } catch (err) { console.error(err); SA.ui.overlay.toast('Couldn’t create the invoice. Try again.', { type: 'error' }); }

@@ -22,6 +22,7 @@
     { group: 'Operations' },
     { key: 'approvals', page: 'adminApprovals', label: 'Approvals', href: '#/admin/approvals', icon: 'check', badge: 'approvals' },
     { key: 'orders', page: 'adminOrders', label: 'Orders & bookings', href: '#/admin/orders', icon: 'ticket' },
+    { key: 'returns', page: 'adminReturns', label: 'Returns & exchanges', href: '#/admin/returns', icon: 'refresh', badge: 'returns' },
     { key: 'tournaments', page: 'dashTournaments', label: 'Tournaments', href: '#/admin/tournaments', icon: 'trophy' },
     { key: 'support', page: 'adminSupport', label: 'Support & disputes', href: '#/admin/support', icon: 'message', badge: 'support' },
     { key: 'store', page: 'dashStore', label: 'Super App Store', href: '#/admin/store', icon: 'bag', badge: 'stock' },

@@ -979,6 +979,7 @@
         const open = dash.orders({ ownerId, from: isoDate(addDays(today(), -14)) }).filter((o) => o.storeId === st.id && ['confirmed', 'packed'].includes(o.status));
         if (open.length) out.push({ key: 'orders', icon: 'package', tone: 'blaze', count: open.length, title: `${open.length} order${open.length > 1 ? 's' : ''} to send`, text: 'Pack and ship them so the money reaches your store wallet.', href: '#/dash/orders?status=open' });
       }
+      try { const me_ = ownerId || auth.current()?.id; const rt = (SA.services.returns?.list({ ownerId: me_ }) || []).filter((r) => ['requested', 'approved'].includes(r.status)); if (rt.length) out.push({ key: 'returns', icon: 'refresh', tone: 'gold', count: rt.length, title: `${rt.length} return${rt.length > 1 ? 's' : ''} to handle`, text: 'Answer within 2 working days.', href: '#/seller/returns' }); } catch { /* returns not loaded */ }
       const low = dash.lowStock(ownerId);
       if (low.length) out.push({ key: 'stock', icon: 'alert', tone: 'gold', count: low.length, title: `${low.length} product${low.length > 1 ? 's' : ''} low on stock`, text: low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), href: '#/dash/store?low=1' });
       const since = Date.now() - 30 * DAY;
