@@ -1,0 +1,14 @@
+# Super App — search engines
+# Note: on GitHub Pages (a project site under /super-app/) search engines read robots.txt only from the domain root,
+# so this file takes effect once the site moves to its own domain.
+User-agent: *
+Disallow: /super-app/dash
+Disallow: /super-app/seller
+Disallow: /super-app/admin
+Disallow: /super-app/factory
+Disallow: /super-app/ceo
+Disallow: /super-app/checkout
+Disallow: /super-app/cart
+Allow: /
+
+Sitemap: https://mbsharaf.github.io/super-app/sitemap.xml
