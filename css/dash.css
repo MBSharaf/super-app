@@ -386,3 +386,5 @@ body.dash-mode .app { min-height: 100vh; }
 .kpi { container-type: inline-size; }
 .kpi-value { overflow: visible; text-overflow: clip; font-size: clamp(1rem, 12cqi, 1.7rem); }
 .kpi-sm .kpi-value { font-size: clamp(1rem, 11cqi, 1.35rem); }
+
+.adm-pp-dot { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #fff; flex: none; }

@@ -581,6 +581,35 @@
       log('announcement', on ? `Announcement on: “${a.text}”` : 'Announcement switched off');
       SA.ui.shell?.render();
     },
+    /* ---------- Pop-up ads (SA.ui.promoPop) ---------- */
+    setPopupRhythm(d) {
+      me();
+      const n = (v, lo, hi) => Math.min(hi, Math.max(lo, Math.round(Number(v) || 0)));
+      const cur = SA.services.content.promoPops();
+      const cfg = { ...cur, on: !!d.on && d.on !== 'off', first: n(d.first, 2, 120), interval: n(d.interval, 5, 600), stay: n(d.stay, 4, 30), max: n(d.max, 1, 50) };
+      db().setSettings({ promoPops: cfg });
+      log('promo.rhythm', cfg.on ? `Pop-ups on: every ${cfg.interval}s, ${cfg.stay}s each, up to ${cfg.max} a visit` : 'Pop-ups switched off');
+    },
+    savePopup(d, id = null) {
+      me();
+      const e = {};
+      if (!d.title || d.title.trim().length < 4) e.title = 'Write a title (4+ characters).';
+      if (!d.text || d.text.trim().length < 10) e.text = 'Write a line about the offer (10+ characters).';
+      if (!/^#\//.test(String(d.link || '').trim())) e.link = 'Use a link inside Super App, like #/fantasy';
+      if (!/^#[0-9a-f]{6}$/i.test(d.color || '')) e.color = 'Pick a colour.';
+      if (Object.keys(e).length) throw new ApiError(Object.values(e)[0], 'invalid', e);
+      const cur = SA.services.content.promoPops();
+      const item = { id: id || `pp-${Date.now().toString(36)}`, active: true, ...(id ? cur.items.find((x) => x.id === id) : {}),
+        title: d.title.trim().slice(0, 60), text: d.text.trim().slice(0, 140), cta: (d.cta || '').trim().slice(0, 24) || 'See more', link: d.link.trim(), color: d.color,
+        badge: (d.badge || '').trim().slice(0, 24), shape: ['cube', 'coin', 'tee'].includes(d.shape) ? d.shape : 'cube', icons: String(d.icons || '').split(',').map((x) => x.trim()).filter((x) => SA.ui.iconNames.includes(x)).slice(0, 6), forNonSellers: !!d.forNonSellers };
+      if (!item.icons.length) delete item.icons;
+      const items = id ? cur.items.map((x) => (x.id === id ? item : x)) : [...cur.items, item];
+      db().setSettings({ promoPops: { ...cur, items } });
+      log('promo.saved', `${id ? 'Edited' : 'Added'} pop-up “${item.title}”`, item.id);
+      return item;
+    },
+    togglePopup(id) { me(); const cur = SA.services.content.promoPops(); const it = cur.items.find((x) => x.id === id); db().setSettings({ promoPops: { ...cur, items: cur.items.map((x) => (x.id === id ? { ...x, active: !x.active } : x)) } }); log('promo.toggled', `${it?.active ? 'Paused' : 'Turned on'} pop-up “${it?.title}”`, id); },
+    deletePopup(id) { me(); const cur = SA.services.content.promoPops(); const it = cur.items.find((x) => x.id === id); db().setSettings({ promoPops: { ...cur, items: cur.items.filter((x) => x.id !== id) } }); log('promo.deleted', `Deleted pop-up “${it?.title}”`, id); },
     saveNews(d, id = null) {
       me();
       const e = {};

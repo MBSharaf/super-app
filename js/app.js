@@ -240,6 +240,7 @@
     SA.ui.photoMock.load();
   }
   SA.ui.whatsapp.init();
+  SA.ui.promoPop?.init();
   router.onChange((m) => render(m));
   router.start();
 })(window.SA);

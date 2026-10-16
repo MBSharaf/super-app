@@ -29,3 +29,9 @@ The user's list (2026-10-16), plus real 3D models of the blank garments.
 ## Also fixed on the way
 - **Studio saved designs to the wrong store.** If the same device had a pitch-partner session, the studio (which is outside the seller dashboard) used the partner's store. That can be why a test design "didn't show". It now follows the seller dashboard sign-in.
 - **Size "L" showed as "خسارة" (loss) in Arabic.** The league-table "L" was in the dictionary. The tables now print it themselves, and sizes stay as they are.
+
+## Pop-up ads with 3D (user request, 2026-10-16)
+- [x] Rotating pop-ups for our services and offers (seller, fantasy, discount codes, shop, pitches, weekly packages, tournaments, players, points, partners)
+- [x] 3D elements: spinning icon cube, discount coin with thickness, the real 3D T-shirt, orbiting sparks; 3D flip in/out and pointer tilt
+- [x] Every 10 s by default (admin can change), limits so it isn't annoying, close / mute for 7 days, reduced motion
+- [x] Admin tab with stats; Arabic; CEO Every page link

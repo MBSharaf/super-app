@@ -5,7 +5,7 @@
  *
  * SA.ui.model3d.has(kind) → a model exists for this garment and the browser has WebGL
  * SA.ui.model3d.mount(el, opts) → same API as SA.ui.garment3d: { update(opts), show(side), destroy() }
- *   opts: { kind, hex, art, artBack, place: { front, back }, artRatio, artRatioBack, label,
+ *   opts: { kind, hex, art, artBack, place: { front, back }, artRatio, artRatioBack, label, spin (keeps turning), hint: false,
  *           edit: true → dragging the print moves it (onPlace(side, place)); turning the garment calls onSide(side) }
  * Placements use the same template numbers as the 2D mockups ({ x, y, w } in the 400×440 canvas).
  */
@@ -70,7 +70,7 @@
     el.setAttribute('role', 'img');
     el.setAttribute('aria-label', `${o.label || 'Product'} — 3D view. Drag ${o.edit ? 'the garment to turn it, or the print to move it' : 'or use the arrow keys to turn it'}.`);
     el.innerHTML = `<div class="m3d-stage"><div class="m3d-loading xs muted">${SA.ui.icon('sparkle', 14)} <span>Loading 3D…</span></div></div><div class="g3d-shadow"></div>
-      <div class="g3d-hint xs">${SA.ui.icon('swap', 13)} <span>${o.edit ? 'Drag to turn · drag the print to move it' : 'Drag to turn'}</span></div>`;
+      ${o.hint === false ? '' : `<div class="g3d-hint xs">${SA.ui.icon('swap', 13)} <span>${o.edit ? 'Drag to turn · drag the print to move it' : 'Drag to turn'}</span></div>`}`;
     const stage = el.querySelector('.m3d-stage');
 
     const texCache = new Map();
@@ -185,6 +185,8 @@
     const loop = (now) => {
       if (dead) return;
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      // spin: turns slowly on its own (pop-up ads); otherwise it eases to the front or back
+      if (!drag && o.spin && !reduced()) target += dt * 0.9;
       if (!drag) { angle += (target - angle) * Math.min(1, dt * 7); idleT = Math.min(1, idleT + dt * 0.4); }
       apply();
       renderer.render(scene, camera);

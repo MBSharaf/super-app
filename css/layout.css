@@ -190,3 +190,59 @@ html.reduce-motion .wa-fab::before { display: none; }
 /* Footer settings (theme, language) sit on their own lines like the links above them */
 .footer-grid .footer-link { display: block; width: 100%; text-align: start; font: inherit; font-size: var(--fs-sm); padding: 4px 0; color: #aab2ad; background: none; border: 0; cursor: pointer; }
 .footer-grid .footer-link:hover { color: #fff; }
+
+/* ============ Pop-up ads with 3D (SA.ui.promoPop) ============ */
+.pp-root { position: fixed; inset-inline-start: max(16px, env(safe-area-inset-left)); bottom: calc(var(--tabbar-h) + 18px + env(safe-area-inset-bottom)); z-index: 129; perspective: 1100px; pointer-events: none; }
+.pp { width: min(360px, calc(100vw - 32px)); pointer-events: auto; transform-style: preserve-3d; transform-origin: 50% 100%;
+  opacity: 0; transform: translateY(40px) rotateX(-75deg) rotateY(18deg) translateZ(-120px); transition: transform 760ms var(--ease-spring), opacity 380ms; }
+.pp.is-in { opacity: 1; transform: none; }
+.pp.is-out { position: absolute; bottom: 0; inset-inline-start: 0; pointer-events: none; opacity: 0; transform: translateY(20px) rotateY(-80deg) translateZ(-160px); transition: transform 500ms var(--ease), opacity 420ms; }
+.pp.is-still, .pp.is-still.is-out { transform: none; transition: opacity 200ms; }
+.pp-card { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; align-items: center; padding: 14px 14px 16px; border-radius: var(--r-lg); overflow: hidden;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--pp-c) 16%, var(--surface)) 0%, var(--surface) 55%); border: 1px solid color-mix(in srgb, var(--pp-c) 30%, var(--line-2));
+  box-shadow: 0 30px 60px -24px color-mix(in srgb, var(--pp-c) 55%, transparent), var(--shadow-3);
+  transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 240ms var(--ease); }
+.pp-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 80% at calc(50% + var(--ry, 0deg) * 3) 0%, rgba(255,255,255,.35), transparent 60%); mix-blend-mode: soft-light; }
+.pp-x { position: absolute; top: 6px; inset-inline-end: 6px; width: 28px; height: 28px; z-index: 3; background: var(--glass); }
+.pp-stage { position: relative; height: 112px; display: grid; place-items: center; transform: translateZ(40px); transform-style: preserve-3d; }
+.pp-obj { transform-style: preserve-3d; animation: ppFloat 3.4s ease-in-out infinite; }
+.pp-body { display: grid; gap: 4px; min-width: 0; transform: translateZ(24px); padding-inline-end: 18px; }
+.pp-badge { justify-self: start; font-size: 11px; font-weight: 750; padding: 2px 8px; border-radius: var(--r-pill); color: #fff; background: var(--pp-c); }
+.pp-title { font-size: 1rem; line-height: 1.25; }
+.pp-text { font-size: var(--fs-xs); color: var(--ink-2); line-height: 1.45; margin: 0; }
+.pp-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.pp-cta { background: var(--pp-c); color: #fff; transform: translateZ(18px); box-shadow: 0 10px 18px -8px var(--pp-c); }
+.pp-cta:hover { filter: brightness(1.08); }
+.pp-mute { color: var(--ink-3); text-decoration: underline; text-underline-offset: 2px; }
+.pp-timer { position: absolute; inset-inline-start: 0; bottom: 0; height: 3px; width: 100%; background: var(--pp-c); transform-origin: 0 50%; animation: ppTimer linear forwards; opacity: .7; }
+[dir="rtl"] .pp-timer { transform-origin: 100% 50%; }
+.pp.is-held .pp-timer { animation-play-state: paused; }
+@keyframes ppTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes ppFloat { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(5px); } }
+/* Cube */
+.pp-cube { --s: 62px; width: var(--s); height: var(--s); position: relative; transform-style: preserve-3d; animation: ppSpin 9s linear infinite; }
+.pp-face { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; border-radius: 12px; background: linear-gradient(145deg, color-mix(in srgb, var(--pp-c) 82%, #fff), var(--pp-c)); box-shadow: inset 0 0 0 2px rgba(255,255,255,.25), inset 0 -10px 18px rgba(0,0,0,.18); backface-visibility: hidden; }
+.pp-front { transform: translateZ(calc(var(--s) / 2)); } .pp-back { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.pp-right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); } .pp-left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.pp-top { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); filter: brightness(1.15); } .pp-bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); filter: brightness(.8); }
+@keyframes ppSpin { from { transform: rotateX(-22deg) rotateY(0deg); } to { transform: rotateX(-22deg) rotateY(360deg); } }
+/* Coin */
+.pp-coin { --d: 76px; width: var(--d); height: var(--d); position: relative; transform-style: preserve-3d; animation: ppCoin 4.5s ease-in-out infinite; }
+.pp-coin i { position: absolute; inset: 0; border-radius: 50%; background: color-mix(in srgb, var(--pp-c) 70%, #000); transform: translateZ(var(--z)); }
+.pp-coin-face { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--pp-c) 55%, #fff), var(--pp-c) 70%); box-shadow: inset 0 0 0 4px rgba(255,255,255,.35); backface-visibility: hidden; }
+.pp-coin-f { transform: translateZ(6px); } .pp-coin-b { transform: rotateY(180deg) translateZ(6px); }
+.pp-coin-f b { font-size: 1.35rem; font-weight: 850; letter-spacing: -.02em; text-shadow: 0 2px 0 rgba(0,0,0,.2); }
+@keyframes ppCoin { 0% { transform: rotateY(0deg) rotateX(10deg); } 45% { transform: rotateY(0deg) rotateX(10deg); } 70% { transform: rotateY(180deg) rotateX(10deg); } 100% { transform: rotateY(360deg) rotateX(10deg); } }
+/* 3D T-shirt (three.js) */
+.pp-tee { width: 112px; height: 112px; }
+.pp-tee.m3d .m3d-stage { aspect-ratio: 1; max-height: 112px; }
+.pp-tee .g3d-shadow { display: none; }
+/* Sparks orbiting in depth */
+.pp-sparks { position: absolute; inset: 0; transform-style: preserve-3d; animation: ppOrbit 7s linear infinite; pointer-events: none; }
+.pp-sparks i { position: absolute; top: 50%; left: 50%; width: 7px; height: 7px; border-radius: 2px; background: var(--pp-c); opacity: .75;
+  transform: rotateY(calc(var(--i) * 51deg)) translateZ(52px) translateY(calc((var(--i) - 3) * 9px)) rotate(45deg); }
+.pp-sparks i:nth-child(odd) { background: #F2C14E; width: 5px; height: 5px; }
+@keyframes ppOrbit { to { transform: rotateY(360deg); } }
+.pp.is-still .pp-obj, .pp.is-still .pp-cube, .pp.is-still .pp-coin, .pp.is-still .pp-sparks { animation: none; }
+@media (max-width: 860px) { .pp-root { bottom: calc(var(--tabbar-h) + 92px + env(safe-area-inset-bottom)); inset-inline-end: max(16px, env(safe-area-inset-right)); } .pp { width: 100%; } .pp-card { grid-template-columns: 92px minmax(0, 1fr); } .pp-stage { height: 92px; } .pp-cube { --s: 52px; } .pp-coin { --d: 64px; } .pp-tee { width: 92px; height: 92px; } }
+@media print { .pp-root { display: none; } }

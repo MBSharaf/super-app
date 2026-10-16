@@ -1,4 +1,4 @@
-/** Admin console: site content — home banners, the announcement bar, news, and pickup-game moderation. */
+/** Admin console: site content — home banners, the announcement bar, pop-up ads, news, and pickup-game moderation. */
 (function (SA) {
   const { esc, fmtDate, fmtHour, timeAgo, isoDate, addDays, today } = SA.core.utils;
   const { icon } = SA.ui;
@@ -57,6 +57,25 @@
     },
   });
 
+  /** Pop-up ad editor: what it says, where it goes, its colour and its 3D object */
+  const popupDialog = (p = null) => SA.ui.overlay.open({
+    wide: true, title: p ? 'Edit pop-up' : 'New pop-up', subtitle: 'A small card with a 3D object that slides in on the public site. Visitors can close it or turn offers off.',
+    body: `<form class="form-grid" data-popup novalidate>
+      <div class="field span-2"><label for="pp-t">Title</label><input class="input" id="pp-t" name="title" maxlength="60" value="${esc(p?.title || '')}" placeholder="e.g. Join as a seller and earn" /><p class="field-error" data-err="title"></p></div>
+      <div class="field span-2"><label for="pp-x">Text</label><input class="input" id="pp-x" name="text" maxlength="140" value="${esc(p?.text || '')}" placeholder="One line about the offer" /><p class="field-error" data-err="text"></p></div>
+      <div class="field"><label for="pp-c">Button text</label><input class="input" id="pp-c" name="cta" maxlength="24" value="${esc(p?.cta || '')}" placeholder="See more" /></div>
+      <div class="field"><label for="pp-l">Opens</label><input class="input" id="pp-l" name="link" value="${esc(p?.link || '#/')}" placeholder="#/fantasy" /><p class="field-error" data-err="link"></p></div>
+      <div class="field"><label for="pp-b">Badge (on the coin keep it short, e.g. 10%)</label><input class="input" id="pp-b" name="badge" maxlength="24" value="${esc(p?.badge || '')}" /></div>
+      <div class="field"><label for="pp-k">Colour</label><input class="input" id="pp-k" name="color" type="color" value="${esc(p?.color || '#E8590C')}" /><p class="field-error" data-err="color"></p></div>
+      <div class="field"><label for="pp-s">3D object</label><select class="select" id="pp-s" name="shape">${[['cube', 'Spinning cube with icons'], ['coin', 'Coin with the badge'], ['tee', '3D T-shirt']].map(([v, l]) => `<option value="${v}" ${(p?.shape || 'cube') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="field"><label for="pp-i">Cube icons (comma separated)</label><input class="input" id="pp-i" name="icons" value="${esc((p?.icons || []).join(', '))}" placeholder="trophy, ball, star" /></div>
+      <label class="choice span-2"><input type="checkbox" name="forNonSellers" ${p?.forNonSellers ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Don’t show to people who already sell</b></span></label>
+      <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${p ? 'Save pop-up' : 'Add pop-up'}</button></div></form>`,
+    onMount(m, close) {
+      m.querySelector('[data-popup]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().savePopup(SA.core.utils.formData(e.target), p?.id); close(); toast('Pop-up saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); toast(err.message, 'error'); } });
+    },
+  });
+
   SA.pages.adminContent = A.guard({
     title: 'Site content — Super App Admin',
     render(ctx) {
@@ -79,6 +98,21 @@
             <div class="field"><label for="an-s">Style</label><select class="select" id="an-s" name="tone">${[['info', 'Dark — information'], ['promo', 'Orange — offer'], ['alert', 'Red — warning']].map(([v, l]) => `<option value="${v}" ${a.tone === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
             <div class="field"><label for="an-u">Show until (optional)</label><input class="input" id="an-u" name="until" type="date" value="${esc(a.until || '')}" /></div>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save announcement</button></div></form></section>`;
+      } else if (tab === 'popups') {
+        const cfg = CT().promoPops(), stats = CT().promoStats();
+        const SH = { cube: 'Cube', coin: 'Coin', tee: '3D T-shirt' };
+        section = `<section class="dash-card"><h2 class="h4">Pop-up ads</h2><p class="small soft" style="margin-top:4px">Small cards with a 3D object for Super App’s own services and offers. They take turns on the public site — never on checkout, dashboards or the studio, never over a dialog, and never for the page the visitor is already on. Visitors can close one or turn offers off for 7 days.</p>
+          <form class="form-grid" data-popup-rhythm novalidate style="margin-top:14px">
+            <label class="choice span-2"><input type="checkbox" name="on" ${cfg.on ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Show pop-ups</b></span></label>
+            <div class="field"><label for="pr-f">First one after (seconds)</label><input class="input num" id="pr-f" name="first" type="number" min="2" max="120" value="${cfg.first}" /></div>
+            <div class="field"><label for="pr-i">Then one every (seconds)</label><input class="input num" id="pr-i" name="interval" type="number" min="5" max="600" value="${cfg.interval}" /></div>
+            <div class="field"><label for="pr-s">Each stays (seconds)</label><input class="input num" id="pr-s" name="stay" type="number" min="4" max="30" value="${cfg.stay}" /></div>
+            <div class="field"><label for="pr-m">At most per visit</label><input class="input num" id="pr-m" name="max" type="number" min="1" max="50" value="${cfg.max}" /></div>
+            <div class="span-2"><button class="btn btn-primary" type="submit">Save</button></div></form></section>
+          <section class="dash-card"><div class="row-between"><div><h2 class="h4">Pop-ups</h2><p class="xs muted" style="margin-top:4px">They take turns in this order, one at a time.</p></div><button class="btn btn-primary btn-sm" data-new-popup>${icon('plus', 15)} New pop-up</button></div>
+            <ul class="adm-banners" style="margin-top:12px">${cfg.items.map((p) => { const s2 = stats[p.id] || { shown: 0, clicked: 0 }; return `<li class="${p.active ? '' : 'is-off'}"><span class="adm-pp-dot" style="background:${esc(p.color)}">${icon(p.shape === 'coin' ? 'percent' : p.shape === 'tee' ? 'shirt' : (p.icons || [])[0] || 'sparkle', 18)}</span>
+              <span class="grow"><b class="small">${esc(p.title)}</b><span class="xs muted" style="display:block">${esc(p.text)}</span><span class="xs muted" style="display:block"><span>${SH[p.shape] || 'Cube'}</span> · <span translate="no">${esc(p.link)}</span> · <span>shown ${s2.shown} · clicked ${s2.clicked}${s2.shown ? ` (${Math.round((s2.clicked / s2.shown) * 100)}%)` : ''}</span></span></span>
+              <span class="adm-row-tools"><button class="btn btn-ghost btn-sm" data-preview-popup="${p.id}">Preview</button><button class="btn btn-ghost btn-sm" data-toggle-popup="${p.id}">${p.active ? 'Pause' : 'Turn on'}</button><button class="icon-btn" data-edit-popup="${p.id}" aria-label="Edit">${icon('edit', 15)}</button><button class="icon-btn" data-del-popup="${p.id}" aria-label="Delete">${icon('trash', 15)}</button></span></li>`; }).join('')}</ul></section>`;
       } else if (tab === 'news') {
         const all = CT().allStories();
         section = `<section class="dash-card table-card"><div class="row-between" style="padding:18px 18px 0"><div><h2 class="h4">News</h2><p class="xs muted" style="margin-top:4px">Your stories plus the news feed. Hide anything that shouldn’t be on Super App.</p></div><button class="btn btn-primary btn-sm" data-new-news>${icon('edit', 14)} Write a story</button></div>
@@ -112,10 +146,11 @@
             <td>${hidden[m.id] ? `<span class="badge badge-danger" title="${esc(hidden[m.id].reason || '')}">Hidden</span>` : '<span class="badge badge-turf">Live</span>'}</td><td class="r"><button class="btn btn-ghost btn-sm" data-hide-match="${m.id}" data-on="${hidden[m.id] ? '' : '1'}">${hidden[m.id] ? 'Restore' : 'Hide'}</button></td></tr>`).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">No upcoming games.</td></tr>'}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/content', [['', 'Home banners'], ['announce', 'Announcement bar'], ['news', 'News'], ['games', 'Pickup games'], ['categories', 'Shop categories']], tab)}${section}`;
-      return C.layout('content', { title: 'Site content', subtitle: 'What visitors see: home banners, the announcement bar, news and pickup games', actions: '<a class="btn btn-ghost btn-sm" href="#/" target="_blank" rel="noopener">Open the site ' + icon('arrowUpRight', 14) + '</a>', body });
+      const body = `${A.tabs('/admin/content', [['', 'Home banners'], ['announce', 'Announcement bar'], ['popups', 'Pop-ups'], ['news', 'News'], ['games', 'Pickup games'], ['categories', 'Shop categories']], tab)}${section}`;
+      return C.layout('content', { title: 'Site content', subtitle: 'What visitors see: home banners, the announcement bar, pop-ups, news and pickup games', actions: '<a class="btn btn-ghost btn-sm" href="#/" target="_blank" rel="noopener">Open the site ' + icon('arrowUpRight', 14) + '</a>', body });
     },
     mount(el) {
+      el.querySelector('[data-popup-rhythm]')?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().setPopupRhythm(SA.core.utils.formData(e.target)); toast('Pop-up settings saved'); SA.app.rerender(); } catch (err) { toast(err.message, 'error'); } });
       el.querySelector('[data-announce]')?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().setAnnouncement(SA.core.utils.formData(e.target)); toast('Announcement saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } });
       const cf = el.querySelector('[data-cats]');
       const readCats = () => [...cf.querySelectorAll('[data-cat]')].map((li) => ({ id: li.dataset.cat, name: li.querySelector('[name=name]').value, icon: li.querySelector('[name=icon]').value, hidden: li.querySelector('[name=hidden]').checked }));
@@ -126,6 +161,11 @@
         if (t('[data-cat-del]')) { t('[data-cat]').remove(); return; }
         if (t('[data-cat-add]')) { const ul = cf.querySelector('.adm-cats'); const li = ul.lastElementChild.cloneNode(true); li.dataset.cat = ''; li.classList.remove('is-dim'); li.querySelector('[name=name]').value = ''; li.querySelector('[name=hidden]').checked = false; li.querySelector('.nowrap').textContent = 'new'; ul.appendChild(li); li.querySelector('[name=name]').focus(); return; }
         if (t('[data-cat-reset]')) { SA.services.db.setSettings({ shopCategories: null }); AD().log('shop.categories', 'Restored the default shop categories'); toast('Default categories restored', 'info'); SA.app.rerender(); return; }
+        if (t('[data-new-popup]')) return popupDialog();
+        if (t('[data-edit-popup]')) return popupDialog(CT().promoPops().items.find((x) => x.id === t('[data-edit-popup]').dataset.editPopup));
+        if (t('[data-toggle-popup]')) { AD().togglePopup(t('[data-toggle-popup]').dataset.togglePopup); SA.app.rerender(); return; }
+        if (t('[data-preview-popup]')) { SA.ui.promoPop?.show(t('[data-preview-popup]').dataset.previewPopup); return; }
+        if (t('[data-del-popup]')) { if (!(await SA.ui.overlay.confirm({ title: 'Delete this pop-up?', text: 'It stops showing on the site.', confirmLabel: 'Delete', danger: true }))) return; AD().deletePopup(t('[data-del-popup]').dataset.delPopup); toast('Pop-up deleted', 'info'); SA.app.rerender(); return; }
         if (t('[data-new-banner]')) return bannerDialog();
         if (t('[data-edit-banner]')) return bannerDialog(db().find('banners', t('[data-edit-banner]').dataset.editBanner));
         if (t('[data-toggle-banner]')) { AD().toggleBanner(t('[data-toggle-banner]').dataset.toggleBanner); SA.app.rerender(); return; }
