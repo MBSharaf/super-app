@@ -1,0 +1,17 @@
+<Project>
+  <!-- Shared settings for every project in the solution -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Package advisories and compatibility notices stay warnings so a new advisory does not block the build -->
+    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904;NU1608;NU1701</WarningsNotAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Company>Super App</Company>
+    <Product>Super App</Product>
+  </PropertyGroup>
+</Project>

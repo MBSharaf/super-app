@@ -20,3 +20,23 @@ desktop.ini
 # Dependencies and builds (when a build step is added)
 node_modules/
 dist/
+# Planning documents are shared as PDFs (exception to the *.pdf rule above)
+!docs/backend/pdf/*.pdf
+
+# .NET backend
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+coverage*/
+# Runtime folders of the backend (uploads, emails saved as files in development, data-protection keys, logs)
+src/SuperApp.Api/storage/
+src/SuperApp.Api/emails/
+src/SuperApp.Api/keys/
+src/SuperApp.Api/logs/
+storage/
+emails/
+keys/
+logs/

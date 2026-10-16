@@ -1,0 +1,63 @@
+# Code style for the Super App backend (enforced at build time)
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.cs]
+indent_size = 4
+# Namespaces and usings
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:warning
+# Braces and expressions
+csharp_prefer_braces = when_multiline:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+# Naming: interfaces start with I, private fields with _, async methods end with Async
+dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_start_with_i.style = prefix_i
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_style.prefix_i.required_prefix = I
+dotnet_naming_style.prefix_i.capitalization = pascal_case
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_rule.private_fields_underscore.severity = suggestion
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+# Analyzer noise that does not fit this codebase
+dotnet_diagnostic.CA1848.severity = none   # LoggerMessage delegates — plain structured logging is enough here
+dotnet_diagnostic.CA1716.severity = none   # names like "Shared" in namespaces
+dotnet_diagnostic.CA1711.severity = none   # suffixes like "Collection"
+dotnet_diagnostic.CA1002.severity = none   # List<T> in entities (EF navigation collections)
+dotnet_diagnostic.CA2227.severity = none   # settable collection properties (EF navigation collections)
+dotnet_diagnostic.CA1819.severity = none   # arrays in properties (row versions, hashes)
+dotnet_diagnostic.CA1056.severity = none   # URL properties as string
+dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1055.severity = none
+dotnet_diagnostic.CA1062.severity = none   # nullable reference types already guard arguments
+dotnet_diagnostic.CA1515.severity = none   # public types in an application (not a library)
+dotnet_diagnostic.CA1724.severity = none   # type names that match namespaces (e.g. Booking)
+dotnet_diagnostic.CA1707.severity = none   # underscores in test method names
+dotnet_diagnostic.IDE0005.severity = none  # unnecessary usings (needs XML docs to report)
+dotnet_diagnostic.CA1861.severity = none   # constant arrays in seed data
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1309.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+dotnet_diagnostic.CA1311.severity = suggestion
+dotnet_diagnostic.CA1304.severity = suggestion
+dotnet_diagnostic.CA1307.severity = suggestion
+dotnet_diagnostic.CA2007.severity = none   # ConfigureAwait — ASP.NET Core has no sync context
+
+[*.{json,yml,yaml,props,csproj,sln,xml}]
+indent_size = 2
