@@ -1,0 +1,20 @@
+/* Bulk design upload (#/sell/bulk) */
+.bu-grid { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 18px; align-items: start; margin-bottom: 40px; }
+@media (max-width: 900px) { .bu-grid { grid-template-columns: minmax(0, 1fr); } }
+.bu-settings { display: grid; gap: 12px; }
+.bu-colors { display: flex; flex-wrap: wrap; gap: 8px; }
+.bu-color { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line-2); font-size: var(--fs-xs); cursor: pointer; }
+.bu-color span { width: 16px; height: 16px; border-radius: 50%; background: var(--c); border: 1px solid var(--line); }
+.bu-color:has(input:checked) { border-color: var(--turf); background: var(--turf-tint); }
+.bu-color input { accent-color: var(--turf); }
+.bu-drop { display: grid; place-items: center; gap: 6px; text-align: center; padding: 28px 16px; border: 2px dashed var(--line); border-radius: var(--r-lg); cursor: pointer; }
+.bu-drop.is-over { border-color: var(--turf); background: var(--turf-tint); }
+.bu-rows { display: grid; gap: 8px; margin: 14px 0; }
+.bu-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--r-md); border: 1px solid var(--line-2); background: var(--surface-2); }
+.bu-row img { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; background: repeating-conic-gradient(var(--surface-3) 0 25%, transparent 0 50%) 50% / 12px 12px; flex: none; }
+.bu-row .grow { min-width: 0; }
+.bu-row .input { height: 38px; }
+.bu-row .bu-price { width: 92px; flex: none; }
+.bu-row.ok { border-color: var(--turf); }
+.bu-row.bad { border-color: var(--danger); }
+@media (max-width: 520px) { .bu-row { flex-wrap: wrap; } .bu-row .grow { flex: 1 1 calc(100% - 70px); } .bu-row .bu-price { margin-inline-start: 66px; } }

@@ -49,6 +49,7 @@
   const notSeller = () => `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Design studio']], title: 'Design studio' })}
     <div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Turn on seller mode first', text: 'The studio is for sellers. It takes a minute to open your store.', action: c.cta('Start selling', { href: '#/sell' }) })}</div></div>`;
 
+  SA.ui.readArt = readArt; // shared with the bulk upload (#/sell/bulk)
   SA.pages.studio = {
     title: 'Design studio — Super App',
     render(ctx) {

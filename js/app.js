@@ -40,6 +40,7 @@
     .add('/tournaments/:id', P.tournament)
     .add('/sell', P.sell)
     .add('/sell/studio', P.studio)
+    .add('/sell/bulk', P.bulkUpload)
     .add('/sell/studio/:id', P.studio)
     .add('/s/:handle', P.sellerStore)
     .add('/support', P.support)
