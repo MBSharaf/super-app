@@ -1,0 +1,1967 @@
+{
+  "stores": [
+    {
+      "handle": "super-app-store",
+      "name": "Super App Store",
+      "owner": null,
+      "type": "Official",
+      "tagline": "Official gear, delivered across Egypt",
+      "about": "The official Super App shop: original boots, balls, kits and training gear.",
+      "cover": "photo-1579952363873-27f3bade9f55"
+    },
+    {
+      "handle": "turf-22-pro-shop",
+      "name": "Turf 22 Pro Shop",
+      "owner": "acc-o1",
+      "type": "PitchPartner",
+      "tagline": "Matchday kit from the Turf 22 team",
+      "about": "Bibs, balls and grip socks we use on our own pitches every night.",
+      "cover": "photo-1551958219-acbc608c6377"
+    },
+    {
+      "handle": "nile-lines",
+      "name": "Nile Lines",
+      "owner": "acc-s2",
+      "type": "Seller",
+      "tagline": "Printed and packed in Cairo",
+      "about": "Egyptian phrases, retro posters and gym tees. We also sell our own printed tote bags.",
+      "cover": "photo-1719659018185-8a239c35fb4a"
+    },
+    {
+      "handle": "koora-ink",
+      "name": "Koora Ink",
+      "owner": "acc-s1",
+      "type": "Seller",
+      "tagline": null,
+      "about": "Football streetwear drawn in Cairo — five-a-side culture, terrace chants and late-night games.",
+      "cover": "photo-1489944440615-453fc2b6a9a9"
+    },
+    {
+      "handle": "cairo-otaku",
+      "name": "Cairo Otaku",
+      "owner": "acc-s3",
+      "type": "Seller",
+      "tagline": null,
+      "about": "Original anime-style and gaming designs. No copied characters — everything drawn by us.",
+      "cover": "photo-1782974396379-c86aa9cf3c1c"
+    }
+  ],
+  "products": [
+    {
+      "slug": "sh-predator",
+      "store": "super-app-store",
+      "category": "boots",
+      "name": "Predator League FG Football Boots",
+      "brand": "adidas",
+      "description": "Grippy rubber strike zone for control and swerve, a snug knit collar and a firm-ground outsole made for natural grass and quality turf.",
+      "price": 4299,
+      "compareAt": 5199,
+      "lowStockAt": 5,
+      "rating": 4.8,
+      "images": [
+        "photo-1511886929837-354d827aae26",
+        "photo-1768696082282-df2812a4f7d8",
+        "photo-1579952363873-27f3bade9f55"
+      ],
+      "specs": [
+        {
+          "label": "Surface",
+          "value": "Firm ground (FG)"
+        },
+        {
+          "label": "Upper",
+          "value": "Synthetic with rubber strike elements"
+        },
+        {
+          "label": "Fit",
+          "value": "True to size"
+        },
+        {
+          "label": "Weight",
+          "value": "230 g (size 42)"
+        }
+      ],
+      "variants": [
+        {
+          "size": "40",
+          "color": "Core Black",
+          "hex": "#141414",
+          "sku": "SH-PREDATOR-40-CORE-BLACK",
+          "stock": 2
+        },
+        {
+          "size": "40",
+          "color": "Solar Red",
+          "hex": "#E03A2F",
+          "sku": "SH-PREDATOR-40-SOLAR-RED",
+          "stock": 2
+        },
+        {
+          "size": "41",
+          "color": "Core Black",
+          "hex": "#141414",
+          "sku": "SH-PREDATOR-41-CORE-BLACK",
+          "stock": 2
+        },
+        {
+          "size": "41",
+          "color": "Solar Red",
+          "hex": "#E03A2F",
+          "sku": "SH-PREDATOR-41-SOLAR-RED",
+          "stock": 2
+        },
+        {
+          "size": "42",
+          "color": "Core Black",
+          "hex": "#141414",
+          "sku": "SH-PREDATOR-42-CORE-BLACK",
+          "stock": 2
+        },
+        {
+          "size": "42",
+          "color": "Solar Red",
+          "hex": "#E03A2F",
+          "sku": "SH-PREDATOR-42-SOLAR-RED",
+          "stock": 2
+        },
+        {
+          "size": "43",
+          "color": "Core Black",
+          "hex": "#141414",
+          "sku": "SH-PREDATOR-43-CORE-BLACK",
+          "stock": 2
+        },
+        {
+          "size": "43",
+          "color": "Solar Red",
+          "hex": "#E03A2F",
+          "sku": "SH-PREDATOR-43-SOLAR-RED",
+          "stock": 2
+        },
+        {
+          "size": "44",
+          "color": "Core Black",
+          "hex": "#141414",
+          "sku": "SH-PREDATOR-44-CORE-BLACK",
+          "stock": 2
+        },
+        {
+          "size": "44",
+          "color": "Solar Red",
+          "hex": "#E03A2F",
+          "sku": "SH-PREDATOR-44-SOLAR-RED",
+          "stock": 2
+        },
+        {
+          "size": "45",
+          "color": "Core Black",
+          "hex": "#141414",
+          "sku": "SH-PREDATOR-45-CORE-BLACK",
+          "stock": 2
+        },
+        {
+          "size": "45",
+          "color": "Solar Red",
+          "hex": "#E03A2F",
+          "sku": "SH-PREDATOR-45-SOLAR-RED",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "slug": "sh-copa",
+      "store": "super-app-store",
+      "category": "boots",
+      "name": "Copa Pure 2 League TF Turf Boots",
+      "brand": "adidas",
+      "description": "Soft leather-feel upper and a rubber turf outsole with short studs — built for the artificial pitches you book every week.",
+      "price": 3599,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.7,
+      "images": [
+        "photo-1529900748604-07564a03e7a6",
+        "photo-1684355414454-ed132f6c41cd"
+      ],
+      "specs": [
+        {
+          "label": "Surface",
+          "value": "Artificial turf (TF)"
+        },
+        {
+          "label": "Upper",
+          "value": "Synthetic leather"
+        },
+        {
+          "label": "Fit",
+          "value": "Roomy toe box"
+        },
+        {
+          "label": "Weight",
+          "value": "260 g (size 42)"
+        }
+      ],
+      "variants": [
+        {
+          "size": "40",
+          "color": "Solar Orange",
+          "hex": "#F2681F",
+          "sku": "SH-COPA-40-SOLAR-ORANGE",
+          "stock": 2
+        },
+        {
+          "size": "41",
+          "color": "Solar Orange",
+          "hex": "#F2681F",
+          "sku": "SH-COPA-41-SOLAR-ORANGE",
+          "stock": 2
+        },
+        {
+          "size": "42",
+          "color": "Solar Orange",
+          "hex": "#F2681F",
+          "sku": "SH-COPA-42-SOLAR-ORANGE",
+          "stock": 2
+        },
+        {
+          "size": "43",
+          "color": "Solar Orange",
+          "hex": "#F2681F",
+          "sku": "SH-COPA-43-SOLAR-ORANGE",
+          "stock": 2
+        },
+        {
+          "size": "44",
+          "color": "Solar Orange",
+          "hex": "#F2681F",
+          "sku": "SH-COPA-44-SOLAR-ORANGE",
+          "stock": 2
+        },
+        {
+          "size": "45",
+          "color": "Solar Orange",
+          "hex": "#F2681F",
+          "sku": "SH-COPA-45-SOLAR-ORANGE",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "slug": "sh-tiempo",
+      "store": "super-app-store",
+      "category": "boots",
+      "name": "Tiempo Legend 10 Academy MG",
+      "brand": "Nike",
+      "description": "Multi-ground studs that work on grass and turf, with a soft synthetic upper that moulds to your foot after a couple of games.",
+      "price": 3899,
+      "compareAt": 4499,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1620650663852-9ff13eb84d8f",
+        "photo-1612387049565-d8022fe99fe1"
+      ],
+      "specs": [
+        {
+          "label": "Surface",
+          "value": "Multi-ground (MG)"
+        },
+        {
+          "label": "Upper",
+          "value": "FlyTouch Lite synthetic"
+        },
+        {
+          "label": "Fit",
+          "value": "True to size"
+        },
+        {
+          "label": "Weight",
+          "value": "245 g (size 42)"
+        }
+      ],
+      "variants": [
+        {
+          "size": "40",
+          "color": "White / Red",
+          "hex": "#F4F4F4",
+          "sku": "SH-TIEMPO-40-WHITE-RED",
+          "stock": 2
+        },
+        {
+          "size": "41",
+          "color": "White / Red",
+          "hex": "#F4F4F4",
+          "sku": "SH-TIEMPO-41-WHITE-RED",
+          "stock": 2
+        },
+        {
+          "size": "42",
+          "color": "White / Red",
+          "hex": "#F4F4F4",
+          "sku": "SH-TIEMPO-42-WHITE-RED",
+          "stock": 2
+        },
+        {
+          "size": "43",
+          "color": "White / Red",
+          "hex": "#F4F4F4",
+          "sku": "SH-TIEMPO-43-WHITE-RED",
+          "stock": 2
+        },
+        {
+          "size": "44",
+          "color": "White / Red",
+          "hex": "#F4F4F4",
+          "sku": "SH-TIEMPO-44-WHITE-RED",
+          "stock": 2
+        },
+        {
+          "size": "45",
+          "color": "White / Red",
+          "hex": "#F4F4F4",
+          "sku": "SH-TIEMPO-45-WHITE-RED",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "slug": "sh-phantom",
+      "store": "super-app-store",
+      "category": "boots",
+      "name": "Phantom GX 2 Club TF",
+      "brand": "Nike",
+      "description": "Textured upper for close control and a turf outsole with rubber pegs. A dependable pair for weekly cage football.",
+      "price": 2799,
+      "compareAt": 3299,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1600679472829-3044539ce8ed",
+        "photo-1579952363861-ecaf6df2c23a"
+      ],
+      "specs": [
+        {
+          "label": "Surface",
+          "value": "Artificial turf (TF)"
+        },
+        {
+          "label": "Upper",
+          "value": "Textured synthetic"
+        },
+        {
+          "label": "Fit",
+          "value": "Narrow"
+        },
+        {
+          "label": "Weight",
+          "value": "255 g (size 42)"
+        }
+      ],
+      "variants": [
+        {
+          "size": "40",
+          "color": "Blue Fury",
+          "hex": "#2563EB",
+          "sku": "SH-PHANTOM-40-BLUE-FURY",
+          "stock": 4
+        },
+        {
+          "size": "41",
+          "color": "Blue Fury",
+          "hex": "#2563EB",
+          "sku": "SH-PHANTOM-41-BLUE-FURY",
+          "stock": 4
+        },
+        {
+          "size": "42",
+          "color": "Blue Fury",
+          "hex": "#2563EB",
+          "sku": "SH-PHANTOM-42-BLUE-FURY",
+          "stock": 4
+        },
+        {
+          "size": "43",
+          "color": "Blue Fury",
+          "hex": "#2563EB",
+          "sku": "SH-PHANTOM-43-BLUE-FURY",
+          "stock": 4
+        },
+        {
+          "size": "44",
+          "color": "Blue Fury",
+          "hex": "#2563EB",
+          "sku": "SH-PHANTOM-44-BLUE-FURY",
+          "stock": 4
+        },
+        {
+          "size": "45",
+          "color": "Blue Fury",
+          "hex": "#2563EB",
+          "sku": "SH-PHANTOM-45-BLUE-FURY",
+          "stock": 4
+        }
+      ]
+    },
+    {
+      "slug": "sh-furon",
+      "store": "super-app-store",
+      "category": "boots",
+      "name": "Furon v7 Dispatch FG",
+      "brand": "New Balance",
+      "description": "A lightweight speed boot with a stable heel counter. Pairs well with wide feet thanks to the forgiving forefoot.",
+      "price": 3199,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.4,
+      "images": [
+        "photo-1511426463457-0571e247d816",
+        "photo-1511167814253-23b850fcd859"
+      ],
+      "specs": [
+        {
+          "label": "Surface",
+          "value": "Firm ground (FG)"
+        },
+        {
+          "label": "Upper",
+          "value": "Hypoknit mesh"
+        },
+        {
+          "label": "Fit",
+          "value": "Wide"
+        },
+        {
+          "label": "Weight",
+          "value": "220 g (size 42)"
+        }
+      ],
+      "variants": [
+        {
+          "size": "40",
+          "color": "Navy / Black",
+          "hex": "#1E2A4A",
+          "sku": "SH-FURON-40-NAVY-BLACK",
+          "stock": 1
+        },
+        {
+          "size": "41",
+          "color": "Navy / Black",
+          "hex": "#1E2A4A",
+          "sku": "SH-FURON-41-NAVY-BLACK",
+          "stock": 1
+        },
+        {
+          "size": "42",
+          "color": "Navy / Black",
+          "hex": "#1E2A4A",
+          "sku": "SH-FURON-42-NAVY-BLACK",
+          "stock": 1
+        },
+        {
+          "size": "43",
+          "color": "Navy / Black",
+          "hex": "#1E2A4A",
+          "sku": "SH-FURON-43-NAVY-BLACK",
+          "stock": 1
+        },
+        {
+          "size": "44",
+          "color": "Navy / Black",
+          "hex": "#1E2A4A",
+          "sku": "SH-FURON-44-NAVY-BLACK",
+          "stock": 1
+        },
+        {
+          "size": "45",
+          "color": "Navy / Black",
+          "hex": "#1E2A4A",
+          "sku": "SH-FURON-45-NAVY-BLACK",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "slug": "sh-ucl-ball",
+      "store": "super-app-store",
+      "category": "balls",
+      "name": "UCL League Ball 25/26 — Size 5",
+      "brand": "adidas",
+      "description": "Thermally bonded seamless surface for true flight and lower water uptake. FIFA Quality certified.",
+      "price": 1899,
+      "compareAt": 2199,
+      "lowStockAt": 5,
+      "rating": 4.9,
+      "images": [
+        "photo-1614632537190-23e4146777db",
+        "photo-1570498839593-e565b39455fc"
+      ],
+      "specs": [
+        {
+          "label": "Size",
+          "value": "5"
+        },
+        {
+          "label": "Construction",
+          "value": "Thermally bonded"
+        },
+        {
+          "label": "Certification",
+          "value": "FIFA Quality"
+        },
+        {
+          "label": "Bladder",
+          "value": "Butyl"
+        }
+      ],
+      "variants": [
+        {
+          "size": "5",
+          "color": "Starball White",
+          "hex": "#F1F5F9",
+          "sku": "SH-UCL-BALL-5-STARBALL-WHITE",
+          "stock": 40
+        }
+      ]
+    },
+    {
+      "slug": "sh-match-ball",
+      "store": "super-app-store",
+      "category": "balls",
+      "name": "Tiro Club Training Ball",
+      "brand": "adidas",
+      "description": "Machine-stitched TPU cover that takes a beating on turf and concrete. The everyday ball for training and kickabouts.",
+      "price": 749,
+      "compareAt": 899,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1486286701208-1d58e9338013",
+        "photo-1575361204480-aadea25e6e68"
+      ],
+      "specs": [
+        {
+          "label": "Construction",
+          "value": "Machine-stitched"
+        },
+        {
+          "label": "Cover",
+          "value": "TPU"
+        },
+        {
+          "label": "Use",
+          "value": "Training, all surfaces"
+        }
+      ],
+      "variants": [
+        {
+          "size": "4",
+          "color": "White / Silver",
+          "hex": "#E5E7EB",
+          "sku": "SH-MATCH-BALL-4-WHITE-SILVER",
+          "stock": 32
+        },
+        {
+          "size": "5",
+          "color": "White / Silver",
+          "hex": "#E5E7EB",
+          "sku": "SH-MATCH-BALL-5-WHITE-SILVER",
+          "stock": 32
+        }
+      ]
+    },
+    {
+      "slug": "sh-futsal-ball",
+      "store": "super-app-store",
+      "category": "balls",
+      "name": "Futsal Super Low-Bounce Ball",
+      "brand": "Select",
+      "description": "Reduced-bounce futsal ball for fast, controlled passing on hard indoor courts.",
+      "price": 1150,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.7,
+      "images": [
+        "photo-1587384474964-3a06ce1ce699",
+        "photo-1606925797300-0b35e9d1794e"
+      ],
+      "specs": [
+        {
+          "label": "Size",
+          "value": "4 (futsal)"
+        },
+        {
+          "label": "Bounce",
+          "value": "Low"
+        },
+        {
+          "label": "Certification",
+          "value": "FIFA Basic"
+        }
+      ],
+      "variants": [
+        {
+          "size": "4",
+          "color": "Yellow / Black",
+          "hex": "#FACC15",
+          "sku": "SH-FUTSAL-BALL-4-YELLOW-BLACK",
+          "stock": 15
+        }
+      ]
+    },
+    {
+      "slug": "sh-hivis-ball",
+      "store": "super-app-store",
+      "category": "balls",
+      "name": "Hi-Vis Night Ball",
+      "brand": "Super App Gear",
+      "description": "Bright orange panels you can track under floodlights. Our own label, tested on Cairo turf.",
+      "price": 499,
+      "compareAt": 650,
+      "lowStockAt": 5,
+      "rating": 4.4,
+      "images": [
+        "photo-1516567727245-ad8c68f3ec93"
+      ],
+      "specs": [
+        {
+          "label": "Size",
+          "value": "5"
+        },
+        {
+          "label": "Cover",
+          "value": "PU"
+        },
+        {
+          "label": "Use",
+          "value": "Night games, training"
+        }
+      ],
+      "variants": [
+        {
+          "size": "5",
+          "color": "Fluo Orange",
+          "hex": "#FB6A1A",
+          "sku": "SH-HIVIS-BALL-5-FLUO-ORANGE",
+          "stock": 80
+        }
+      ]
+    },
+    {
+      "slug": "sh-ball-pack",
+      "store": "super-app-store",
+      "category": "balls",
+      "name": "Training Ball Pack ×3 + Mesh Bag",
+      "brand": "Super App Gear",
+      "description": "Three size-5 training balls in a drawstring mesh bag — enough for warm-ups and drills.",
+      "price": 1290,
+      "compareAt": 1590,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1551958219-acbc608c6377"
+      ],
+      "specs": [
+        {
+          "label": "Includes",
+          "value": "3 balls, mesh bag, needle"
+        },
+        {
+          "label": "Size",
+          "value": "5"
+        }
+      ],
+      "variants": [
+        {
+          "size": "5",
+          "color": "White / Black",
+          "hex": "#F4F4F4",
+          "sku": "SH-BALL-PACK-5-WHITE-BLACK",
+          "stock": 22
+        }
+      ]
+    },
+    {
+      "slug": "sh-red-home",
+      "store": "super-app-store",
+      "category": "kits",
+      "name": "Arsenal 19/20 Home Shirt — Classic",
+      "brand": "adidas",
+      "description": "The 2019/20 home shirt in breathable recycled polyester. Personalise with a name and number at checkout.",
+      "price": 1450,
+      "compareAt": 2400,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1577212017184-80cc0da11082",
+        "photo-1577212017308-55c4d60d2609"
+      ],
+      "specs": [
+        {
+          "label": "Material",
+          "value": "100% recycled polyester"
+        },
+        {
+          "label": "Fit",
+          "value": "Regular"
+        },
+        {
+          "label": "Personalisation",
+          "value": "Available"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "Scarlet",
+          "hex": "#D01E2B",
+          "sku": "SH-RED-HOME-S-SCARLET",
+          "stock": 2
+        },
+        {
+          "size": "M",
+          "color": "Scarlet",
+          "hex": "#D01E2B",
+          "sku": "SH-RED-HOME-M-SCARLET",
+          "stock": 2
+        },
+        {
+          "size": "L",
+          "color": "Scarlet",
+          "hex": "#D01E2B",
+          "sku": "SH-RED-HOME-L-SCARLET",
+          "stock": 2
+        },
+        {
+          "size": "XL",
+          "color": "Scarlet",
+          "hex": "#D01E2B",
+          "sku": "SH-RED-HOME-XL-SCARLET",
+          "stock": 2
+        },
+        {
+          "size": "XXL",
+          "color": "Scarlet",
+          "hex": "#D01E2B",
+          "sku": "SH-RED-HOME-XXL-SCARLET",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "slug": "sh-yellow-kit",
+      "store": "super-app-store",
+      "category": "kits",
+      "name": "Dri-FIT Academy Training Jersey",
+      "brand": "Nike",
+      "description": "Sweat-wicking training top with mesh panels. Bright enough to double as a team bib.",
+      "price": 899,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1552066379-e7bfd22155c5"
+      ],
+      "specs": [
+        {
+          "label": "Material",
+          "value": "Dri-FIT polyester"
+        },
+        {
+          "label": "Fit",
+          "value": "Standard"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "Tour Yellow",
+          "hex": "#F6D33C",
+          "sku": "SH-YELLOW-KIT-S-TOUR-YELLOW",
+          "stock": 4
+        },
+        {
+          "size": "S",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-YELLOW-KIT-S-BLACK",
+          "stock": 4
+        },
+        {
+          "size": "M",
+          "color": "Tour Yellow",
+          "hex": "#F6D33C",
+          "sku": "SH-YELLOW-KIT-M-TOUR-YELLOW",
+          "stock": 4
+        },
+        {
+          "size": "M",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-YELLOW-KIT-M-BLACK",
+          "stock": 4
+        },
+        {
+          "size": "L",
+          "color": "Tour Yellow",
+          "hex": "#F6D33C",
+          "sku": "SH-YELLOW-KIT-L-TOUR-YELLOW",
+          "stock": 4
+        },
+        {
+          "size": "L",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-YELLOW-KIT-L-BLACK",
+          "stock": 4
+        },
+        {
+          "size": "XL",
+          "color": "Tour Yellow",
+          "hex": "#F6D33C",
+          "sku": "SH-YELLOW-KIT-XL-TOUR-YELLOW",
+          "stock": 4
+        },
+        {
+          "size": "XL",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-YELLOW-KIT-XL-BLACK",
+          "stock": 4
+        },
+        {
+          "size": "XXL",
+          "color": "Tour Yellow",
+          "hex": "#F6D33C",
+          "sku": "SH-YELLOW-KIT-XXL-TOUR-YELLOW",
+          "stock": 4
+        },
+        {
+          "size": "XXL",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-YELLOW-KIT-XXL-BLACK",
+          "stock": 4
+        }
+      ]
+    },
+    {
+      "slug": "sh-striped",
+      "store": "super-app-store",
+      "category": "kits",
+      "name": "Team Kit — Striped Shirt (Custom)",
+      "brand": "Super App Gear",
+      "description": "Order a matching set for your five-a-side team. Numbers and names printed in Cairo within 5 days.",
+      "price": 650,
+      "compareAt": 790,
+      "lowStockAt": 5,
+      "rating": 4.4,
+      "images": [
+        "photo-1616124619460-ff4ed8f4683c"
+      ],
+      "specs": [
+        {
+          "label": "Minimum order",
+          "value": "1"
+        },
+        {
+          "label": "Printing",
+          "value": "Heat-press, numbers included"
+        },
+        {
+          "label": "Delivery",
+          "value": "5 working days"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "Red / Black",
+          "hex": "#B91C1C",
+          "sku": "SH-STRIPED-S-RED-BLACK",
+          "stock": 24
+        },
+        {
+          "size": "M",
+          "color": "Red / Black",
+          "hex": "#B91C1C",
+          "sku": "SH-STRIPED-M-RED-BLACK",
+          "stock": 24
+        },
+        {
+          "size": "L",
+          "color": "Red / Black",
+          "hex": "#B91C1C",
+          "sku": "SH-STRIPED-L-RED-BLACK",
+          "stock": 24
+        },
+        {
+          "size": "XL",
+          "color": "Red / Black",
+          "hex": "#B91C1C",
+          "sku": "SH-STRIPED-XL-RED-BLACK",
+          "stock": 24
+        },
+        {
+          "size": "XXL",
+          "color": "Red / Black",
+          "hex": "#B91C1C",
+          "sku": "SH-STRIPED-XXL-RED-BLACK",
+          "stock": 24
+        }
+      ]
+    },
+    {
+      "slug": "sh-albiceleste",
+      "store": "super-app-store",
+      "category": "kits",
+      "name": "Argentina Home Shirt — Messi 10",
+      "brand": "adidas",
+      "description": "Sky-blue and white stripes with the number 10 printed on the back.",
+      "price": 2350,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.9,
+      "images": [
+        "photo-1671016233693-53162078ca1c"
+      ],
+      "specs": [
+        {
+          "label": "Material",
+          "value": "Recycled polyester"
+        },
+        {
+          "label": "Print",
+          "value": "Messi 10 included"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "Sky / White",
+          "hex": "#7CC0EB",
+          "sku": "SH-ALBICELESTE-S-SKY-WHITE",
+          "stock": 1
+        },
+        {
+          "size": "M",
+          "color": "Sky / White",
+          "hex": "#7CC0EB",
+          "sku": "SH-ALBICELESTE-M-SKY-WHITE",
+          "stock": 1
+        },
+        {
+          "size": "L",
+          "color": "Sky / White",
+          "hex": "#7CC0EB",
+          "sku": "SH-ALBICELESTE-L-SKY-WHITE",
+          "stock": 1
+        },
+        {
+          "size": "XL",
+          "color": "Sky / White",
+          "hex": "#7CC0EB",
+          "sku": "SH-ALBICELESTE-XL-SKY-WHITE",
+          "stock": 1
+        },
+        {
+          "size": "XXL",
+          "color": "Sky / White",
+          "hex": "#7CC0EB",
+          "sku": "SH-ALBICELESTE-XXL-SKY-WHITE",
+          "stock": 1
+        }
+      ]
+    },
+    {
+      "slug": "sh-gk-gloves",
+      "store": "super-app-store",
+      "category": "goalkeeping",
+      "name": "Attrakt Gold X Goalkeeper Gloves",
+      "brand": "Reusch",
+      "description": "Gold X latex palm for grip in dry and wet conditions, with a negative cut for a close fit.",
+      "price": 2650,
+      "compareAt": 2990,
+      "lowStockAt": 5,
+      "rating": 4.8,
+      "images": [
+        "photo-1632072820781-79f3a064f640",
+        "photo-1760177379284-b68471fdd217"
+      ],
+      "specs": [
+        {
+          "label": "Palm",
+          "value": "Gold X latex 4 mm"
+        },
+        {
+          "label": "Cut",
+          "value": "Negative"
+        },
+        {
+          "label": "Closure",
+          "value": "Full wrap strap"
+        }
+      ],
+      "variants": [
+        {
+          "size": "7",
+          "color": "Black / Gold",
+          "hex": "#1F1F1F",
+          "sku": "SH-GK-GLOVES-7-BLACK-GOLD",
+          "stock": 3
+        },
+        {
+          "size": "8",
+          "color": "Black / Gold",
+          "hex": "#1F1F1F",
+          "sku": "SH-GK-GLOVES-8-BLACK-GOLD",
+          "stock": 3
+        },
+        {
+          "size": "9",
+          "color": "Black / Gold",
+          "hex": "#1F1F1F",
+          "sku": "SH-GK-GLOVES-9-BLACK-GOLD",
+          "stock": 3
+        },
+        {
+          "size": "10",
+          "color": "Black / Gold",
+          "hex": "#1F1F1F",
+          "sku": "SH-GK-GLOVES-10-BLACK-GOLD",
+          "stock": 3
+        },
+        {
+          "size": "11",
+          "color": "Black / Gold",
+          "hex": "#1F1F1F",
+          "sku": "SH-GK-GLOVES-11-BLACK-GOLD",
+          "stock": 3
+        }
+      ]
+    },
+    {
+      "slug": "sh-shin",
+      "store": "super-app-store",
+      "category": "goalkeeping",
+      "name": "Mercurial Lite Shin Guards",
+      "brand": "Nike",
+      "description": "Low-profile shell with a foam backing. Slides under your socks without bulk.",
+      "price": 450,
+      "compareAt": 550,
+      "lowStockAt": 5,
+      "rating": 4.3,
+      "images": [
+        "photo-1789925941480-aebc24c038af"
+      ],
+      "specs": [
+        {
+          "label": "Shell",
+          "value": "Polypropylene"
+        },
+        {
+          "label": "Backing",
+          "value": "EVA foam"
+        },
+        {
+          "label": "Certification",
+          "value": "EN 13061"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-SHIN-S-BLACK",
+          "stock": 15
+        },
+        {
+          "size": "M",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-SHIN-M-BLACK",
+          "stock": 15
+        },
+        {
+          "size": "L",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-SHIN-L-BLACK",
+          "stock": 15
+        }
+      ]
+    },
+    {
+      "slug": "sh-airzoom",
+      "store": "super-app-store",
+      "category": "running",
+      "name": "Free Run Flyknit",
+      "brand": "Nike",
+      "description": "Flexible, sock-like trainer for easy runs and recovery days between matches.",
+      "price": 4150,
+      "compareAt": 4900,
+      "lowStockAt": 5,
+      "rating": 4.7,
+      "images": [
+        "photo-1542291026-7eec264c27ff"
+      ],
+      "specs": [
+        {
+          "label": "Drop",
+          "value": "8 mm"
+        },
+        {
+          "label": "Upper",
+          "value": "Flyknit"
+        },
+        {
+          "label": "Use",
+          "value": "Road running, gym"
+        }
+      ],
+      "variants": [
+        {
+          "size": "39",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-39-UNIVERSITY-RED",
+          "stock": 2
+        },
+        {
+          "size": "40",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-40-UNIVERSITY-RED",
+          "stock": 2
+        },
+        {
+          "size": "41",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-41-UNIVERSITY-RED",
+          "stock": 2
+        },
+        {
+          "size": "42",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-42-UNIVERSITY-RED",
+          "stock": 2
+        },
+        {
+          "size": "43",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-43-UNIVERSITY-RED",
+          "stock": 2
+        },
+        {
+          "size": "44",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-44-UNIVERSITY-RED",
+          "stock": 2
+        },
+        {
+          "size": "45",
+          "color": "University Red",
+          "hex": "#D2252F",
+          "sku": "SH-AIRZOOM-45-UNIVERSITY-RED",
+          "stock": 2
+        }
+      ]
+    },
+    {
+      "slug": "sh-neon",
+      "store": "super-app-store",
+      "category": "running",
+      "name": "SuperRep Go 3 Training Shoes",
+      "brand": "Nike",
+      "description": "Cushioned, stable trainer for circuits, HIIT and pre-season conditioning.",
+      "price": 3450,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1606107557195-0e29a4b5b4aa"
+      ],
+      "specs": [
+        {
+          "label": "Use",
+          "value": "Gym, HIIT"
+        },
+        {
+          "label": "Midsole",
+          "value": "Foam with forefoot flex grooves"
+        }
+      ],
+      "variants": [
+        {
+          "size": "39",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-39-VOLT",
+          "stock": 3
+        },
+        {
+          "size": "40",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-40-VOLT",
+          "stock": 3
+        },
+        {
+          "size": "41",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-41-VOLT",
+          "stock": 3
+        },
+        {
+          "size": "42",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-42-VOLT",
+          "stock": 3
+        },
+        {
+          "size": "43",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-43-VOLT",
+          "stock": 3
+        },
+        {
+          "size": "44",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-44-VOLT",
+          "stock": 3
+        },
+        {
+          "size": "45",
+          "color": "Volt",
+          "hex": "#C9F23D",
+          "sku": "SH-NEON-45-VOLT",
+          "stock": 3
+        }
+      ]
+    },
+    {
+      "slug": "sh-puma-white",
+      "store": "super-app-store",
+      "category": "running",
+      "name": "Smash 3.0 Leather Trainers",
+      "brand": "Puma",
+      "description": "Clean leather court trainer for after the match — goes with everything.",
+      "price": 2390,
+      "compareAt": 2790,
+      "lowStockAt": 5,
+      "rating": 4.4,
+      "images": [
+        "photo-1608231387042-66d1773070a5"
+      ],
+      "specs": [
+        {
+          "label": "Upper",
+          "value": "Leather"
+        },
+        {
+          "label": "Outsole",
+          "value": "Rubber"
+        }
+      ],
+      "variants": [
+        {
+          "size": "39",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-39-WHITE",
+          "stock": 4
+        },
+        {
+          "size": "40",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-40-WHITE",
+          "stock": 4
+        },
+        {
+          "size": "41",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-41-WHITE",
+          "stock": 4
+        },
+        {
+          "size": "42",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-42-WHITE",
+          "stock": 4
+        },
+        {
+          "size": "43",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-43-WHITE",
+          "stock": 4
+        },
+        {
+          "size": "44",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-44-WHITE",
+          "stock": 4
+        },
+        {
+          "size": "45",
+          "color": "White",
+          "hex": "#F8F8F8",
+          "sku": "SH-PUMA-WHITE-45-WHITE",
+          "stock": 4
+        }
+      ]
+    },
+    {
+      "slug": "sh-grey-run",
+      "store": "super-app-store",
+      "category": "running",
+      "name": "Revolution 7 Road Running",
+      "brand": "Nike",
+      "description": "Soft foam midsole and a breathable mesh upper — an easy first running shoe.",
+      "price": 2190,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.3,
+      "images": [
+        "photo-1491553895911-0055eca6402d"
+      ],
+      "specs": [
+        {
+          "label": "Drop",
+          "value": "10 mm"
+        },
+        {
+          "label": "Use",
+          "value": "Road running"
+        }
+      ],
+      "variants": [
+        {
+          "size": "39",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-39-SMOKE-GREY",
+          "stock": 5
+        },
+        {
+          "size": "40",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-40-SMOKE-GREY",
+          "stock": 5
+        },
+        {
+          "size": "41",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-41-SMOKE-GREY",
+          "stock": 5
+        },
+        {
+          "size": "42",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-42-SMOKE-GREY",
+          "stock": 5
+        },
+        {
+          "size": "43",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-43-SMOKE-GREY",
+          "stock": 5
+        },
+        {
+          "size": "44",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-44-SMOKE-GREY",
+          "stock": 5
+        },
+        {
+          "size": "45",
+          "color": "Smoke Grey",
+          "hex": "#6B7280",
+          "sku": "SH-GREY-RUN-45-SMOKE-GREY",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "slug": "sh-dumbbells",
+      "store": "super-app-store",
+      "category": "training",
+      "name": "Home Strength Kit — Dumbbells + Bands",
+      "brand": "Super App Gear",
+      "description": "Hex dumbbells with three resistance bands — everything for a 30-minute strength session at home.",
+      "price": 1890,
+      "compareAt": 2290,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1584735935682-2f2b69dff9d2"
+      ],
+      "specs": [
+        {
+          "label": "Includes",
+          "value": "2 dumbbells, 3 bands, door anchor"
+        }
+      ],
+      "variants": [
+        {
+          "size": "2 × 5 kg",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-DUMBBELLS-2-5-KG-BLACK",
+          "stock": 8
+        },
+        {
+          "size": "2 × 8 kg",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-DUMBBELLS-2-8-KG-BLACK",
+          "stock": 8
+        }
+      ]
+    },
+    {
+      "slug": "sh-cones",
+      "store": "super-app-store",
+      "category": "training",
+      "name": "Agility Set — Hurdles, Cones & Ladder",
+      "brand": "Super App Gear",
+      "description": "6 mini hurdles, 20 disc cones and a 4 m speed ladder in a carry bag.",
+      "price": 990,
+      "compareAt": 1250,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1781520421507-829bb44a66e7"
+      ],
+      "specs": [
+        {
+          "label": "Includes",
+          "value": "6 hurdles, 20 cones, 4 m ladder, bag"
+        }
+      ],
+      "variants": [
+        {
+          "size": "One size",
+          "color": "Fluo Yellow",
+          "hex": "#FDE047",
+          "sku": "SH-CONES-ONE-SIZE-FLUO-YELLOW",
+          "stock": 25
+        }
+      ]
+    },
+    {
+      "slug": "sh-padel-pro",
+      "store": "super-app-store",
+      "category": "padel",
+      "name": "Vertex 04 Padel Racket",
+      "brand": "Bullpadel",
+      "description": "Diamond-shaped power racket with a carbon face for advanced players.",
+      "price": 6900,
+      "compareAt": 7900,
+      "lowStockAt": 5,
+      "rating": 4.8,
+      "images": [
+        "photo-1612534847738-b3af9bc31f0c",
+        "photo-1657704358775-ed705c7388d2"
+      ],
+      "specs": [
+        {
+          "label": "Shape",
+          "value": "Diamond"
+        },
+        {
+          "label": "Face",
+          "value": "18K carbon"
+        },
+        {
+          "label": "Weight",
+          "value": "360–375 g"
+        }
+      ],
+      "variants": [
+        {
+          "size": "One size",
+          "color": "Orange / Blue",
+          "hex": "#F97316",
+          "sku": "SH-PADEL-PRO-ONE-SIZE-ORANGE-BLUE",
+          "stock": 8
+        }
+      ]
+    },
+    {
+      "slug": "sh-padel-set",
+      "store": "super-app-store",
+      "category": "padel",
+      "name": "Padel Starter Set — 4 Rackets + Balls",
+      "brand": "Head",
+      "description": "Four round-shape rackets and a tube of balls — everything a group needs for the first booking.",
+      "price": 8400,
+      "compareAt": 9600,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1658723826297-fe4d1b1e6600"
+      ],
+      "specs": [
+        {
+          "label": "Includes",
+          "value": "4 rackets, 3 balls"
+        },
+        {
+          "label": "Shape",
+          "value": "Round (control)"
+        }
+      ],
+      "variants": [
+        {
+          "size": "One size",
+          "color": "Mixed",
+          "hex": "#3B82F6",
+          "sku": "SH-PADEL-SET-ONE-SIZE-MIXED",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "slug": "sh-backpack",
+      "store": "super-app-store",
+      "category": "accessories",
+      "name": "Matchday Backpack 28L",
+      "brand": "Super App Gear",
+      "description": "Separate ventilated boot compartment, padded laptop sleeve and a water-resistant base.",
+      "price": 1350,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.7,
+      "images": [
+        "photo-1622260614153-03223fb72052"
+      ],
+      "specs": [
+        {
+          "label": "Capacity",
+          "value": "28 L"
+        },
+        {
+          "label": "Boot pocket",
+          "value": "Ventilated"
+        },
+        {
+          "label": "Laptop",
+          "value": "Up to 15\""
+        }
+      ],
+      "variants": [
+        {
+          "size": "28L",
+          "color": "Forest Green",
+          "hex": "#3F6F5A",
+          "sku": "SH-BACKPACK-28L-FOREST-GREEN",
+          "stock": 33
+        }
+      ]
+    },
+    {
+      "slug": "sh-duffel",
+      "store": "super-app-store",
+      "category": "accessories",
+      "name": "Weekend Duffel 40L",
+      "brand": "Super App Gear",
+      "description": "A sturdy kit bag with a wet pocket for post-match gear.",
+      "price": 1590,
+      "compareAt": 1890,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1708622833152-924c6e364138"
+      ],
+      "specs": [
+        {
+          "label": "Capacity",
+          "value": "40 L"
+        },
+        {
+          "label": "Pockets",
+          "value": "Wet pocket, shoe tunnel"
+        }
+      ],
+      "variants": [
+        {
+          "size": "40L",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-DUFFEL-40L-BLACK",
+          "stock": 14
+        }
+      ]
+    },
+    {
+      "slug": "sh-bottle",
+      "store": "super-app-store",
+      "category": "accessories",
+      "name": "Insulated Squeeze Bottle 750 ml",
+      "brand": "Super App Gear",
+      "description": "Keeps water cold for the whole match. One-hand squeeze valve.",
+      "price": 320,
+      "compareAt": 390,
+      "lowStockAt": 5,
+      "rating": 4.4,
+      "images": [
+        "photo-1623789658209-00c06091e6eb"
+      ],
+      "specs": [
+        {
+          "label": "Volume",
+          "value": "750 ml"
+        },
+        {
+          "label": "BPA",
+          "value": "Free"
+        }
+      ],
+      "variants": [
+        {
+          "size": "750 ml",
+          "color": "Blue / Black",
+          "hex": "#1D4ED8",
+          "sku": "SH-BOTTLE-750-ML-BLUE-BLACK",
+          "stock": 140
+        }
+      ]
+    },
+    {
+      "slug": "sh-socks",
+      "store": "super-app-store",
+      "category": "accessories",
+      "name": "Grip Socks (2 pairs)",
+      "brand": "Super App Gear",
+      "description": "Silicone grip pads stop your foot sliding inside the boot. Wear under team socks.",
+      "price": 290,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1774414048830-bff390f869a4"
+      ],
+      "specs": [
+        {
+          "label": "Material",
+          "value": "Cotton blend, silicone grip"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "White",
+          "hex": "#FAFAFA",
+          "sku": "SH-SOCKS-S-WHITE",
+          "stock": 67
+        },
+        {
+          "size": "M",
+          "color": "White",
+          "hex": "#FAFAFA",
+          "sku": "SH-SOCKS-M-WHITE",
+          "stock": 67
+        },
+        {
+          "size": "L",
+          "color": "White",
+          "hex": "#FAFAFA",
+          "sku": "SH-SOCKS-L-WHITE",
+          "stock": 67
+        }
+      ]
+    },
+    {
+      "slug": "sh-headphones",
+      "store": "super-app-store",
+      "category": "accessories",
+      "name": "WH-CH720N Noise Cancelling Headphones",
+      "brand": "Sony",
+      "description": "Lightweight noise-cancelling headphones for the commute to training.",
+      "price": 4990,
+      "compareAt": 5990,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1505740106531-4243f3831c78"
+      ],
+      "specs": [
+        {
+          "label": "Battery",
+          "value": "Up to 35 h"
+        },
+        {
+          "label": "Weight",
+          "value": "192 g"
+        }
+      ],
+      "variants": [
+        {
+          "size": "One size",
+          "color": "Black",
+          "hex": "#141414",
+          "sku": "SH-HEADPHONES-ONE-SIZE-BLACK",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "slug": "sh-watch",
+      "store": "super-app-store",
+      "category": "accessories",
+      "name": "Apple Watch SE (GPS) 44 mm — Sport Band",
+      "brand": "Apple",
+      "description": "Track distance, heart rate and workouts on match nights.",
+      "price": 13999,
+      "compareAt": 14999,
+      "lowStockAt": 5,
+      "rating": 4.8,
+      "images": [
+        "photo-1434494878577-86c23bcb06b9"
+      ],
+      "specs": [
+        {
+          "label": "Case",
+          "value": "44 mm aluminium"
+        },
+        {
+          "label": "Water resistance",
+          "value": "50 m"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S/M",
+          "color": "Silver",
+          "hex": "#D1D5DB",
+          "sku": "SH-WATCH-S-M-SILVER",
+          "stock": 3
+        },
+        {
+          "size": "M/L",
+          "color": "Silver",
+          "hex": "#D1D5DB",
+          "sku": "SH-WATCH-M-L-SILVER",
+          "stock": 3
+        }
+      ]
+    },
+    {
+      "slug": "sv-coaching",
+      "store": "super-app-store",
+      "category": "services",
+      "name": "Private Coaching Session — 60 min",
+      "brand": "Super App Coaching",
+      "description": "One-to-one session with a CAF-licensed coach at a pitch of your choice. Focus on finishing, first touch or fitness.",
+      "price": 750,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.9,
+      "images": [
+        "photo-1526232761682-d26e03ac148e",
+        "photo-1575361204480-aadea25e6e68"
+      ],
+      "specs": [
+        {
+          "label": "Duration",
+          "value": "60 minutes"
+        },
+        {
+          "label": "Coach licence",
+          "value": "CAF C or above"
+        },
+        {
+          "label": "Location",
+          "value": "Any partner pitch"
+        }
+      ],
+      "variants": [
+        {
+          "size": "Adult",
+          "color": "Individual",
+          "hex": "#0B6E4F",
+          "sku": "SV-COACHING-ADULT-INDIVIDUAL",
+          "stock": 50
+        },
+        {
+          "size": "Under 16",
+          "color": "Individual",
+          "hex": "#0B6E4F",
+          "sku": "SV-COACHING-UNDER-16-INDIVIDUAL",
+          "stock": 50
+        }
+      ]
+    },
+    {
+      "slug": "sv-team-photo",
+      "store": "super-app-store",
+      "category": "services",
+      "name": "Match Recording & Highlights Pack",
+      "brand": "Super App Studio",
+      "description": "Full-match video plus a 2-minute highlights reel sent to your team within 24 hours.",
+      "price": 400,
+      "compareAt": 500,
+      "lowStockAt": 5,
+      "rating": 4.7,
+      "images": [
+        "photo-1628891890467-b79f2c8ba9dc"
+      ],
+      "specs": [
+        {
+          "label": "Delivery",
+          "value": "Within 24 hours"
+        },
+        {
+          "label": "Format",
+          "value": "1080p MP4"
+        }
+      ],
+      "variants": [
+        {
+          "size": "1 match",
+          "color": "Standard",
+          "hex": "#0D1411",
+          "sku": "SV-TEAM-PHOTO-1-MATCH-STANDARD",
+          "stock": 50
+        },
+        {
+          "size": "4 matches",
+          "color": "Standard",
+          "hex": "#0D1411",
+          "sku": "SV-TEAM-PHOTO-4-MATCHES-STANDARD",
+          "stock": 50
+        }
+      ]
+    },
+    {
+      "slug": "tp-bibs",
+      "store": "turf-22-pro-shop",
+      "category": "training",
+      "name": "Training Bibs — Set of 10",
+      "brand": "Turf 22",
+      "description": "Lightweight mesh bibs, numbered 1–10. The same set our staff hand out before every game.",
+      "price": 450,
+      "compareAt": 520,
+      "lowStockAt": 5,
+      "rating": 4.6,
+      "images": [
+        "photo-1552066379-e7bfd22155c5"
+      ],
+      "specs": [
+        {
+          "label": "Includes",
+          "value": "10 numbered bibs"
+        },
+        {
+          "label": "Material",
+          "value": "Polyester mesh"
+        }
+      ],
+      "variants": [
+        {
+          "size": "One size",
+          "color": "Fluo Yellow",
+          "hex": "#F6D33C",
+          "sku": "TP-BIBS-ONE-SIZE-FLUO-YELLOW",
+          "stock": 40
+        }
+      ]
+    },
+    {
+      "slug": "tp-ball",
+      "store": "turf-22-pro-shop",
+      "category": "balls",
+      "name": "Turf 22 Match Ball — Size 5",
+      "brand": "Turf 22",
+      "description": "The ball used on every Turf 22 pitch. Built for artificial turf.",
+      "price": 690,
+      "compareAt": null,
+      "lowStockAt": 5,
+      "rating": 4.7,
+      "images": [
+        "photo-1575361204480-aadea25e6e68"
+      ],
+      "specs": [
+        {
+          "label": "Size",
+          "value": "5"
+        },
+        {
+          "label": "Cover",
+          "value": "PU"
+        }
+      ],
+      "variants": [
+        {
+          "size": "5",
+          "color": "White / Black",
+          "hex": "#F4F4F4",
+          "sku": "TP-BALL-5-WHITE-BLACK",
+          "stock": 25
+        }
+      ]
+    },
+    {
+      "slug": "tp-socks",
+      "store": "turf-22-pro-shop",
+      "category": "accessories",
+      "name": "Turf 22 Grip Socks",
+      "brand": "Turf 22",
+      "description": "Anti-slip grip socks in Turf 22 colours.",
+      "price": 260,
+      "compareAt": 300,
+      "lowStockAt": 5,
+      "rating": 4.5,
+      "images": [
+        "photo-1774414048830-bff390f869a4"
+      ],
+      "specs": [
+        {
+          "label": "Material",
+          "value": "Cotton blend, silicone grip"
+        }
+      ],
+      "variants": [
+        {
+          "size": "S",
+          "color": "White",
+          "hex": "#FAFAFA",
+          "sku": "TP-SOCKS-S-WHITE",
+          "stock": 1
+        },
+        {
+          "size": "M",
+          "color": "White",
+          "hex": "#FAFAFA",
+          "sku": "TP-SOCKS-M-WHITE",
+          "stock": 1
+        },
+        {
+          "size": "L",
+          "color": "White",
+          "hex": "#FAFAFA",
+          "sku": "TP-SOCKS-L-WHITE",
+          "stock": 1
+        }
+      ]
+    }
+  ]
+}

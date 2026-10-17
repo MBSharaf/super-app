@@ -1,0 +1,934 @@
+{
+  "people": [
+    {
+      "key": "acc-admin",
+      "name": "Super App HQ",
+      "email": "admin@superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "AdminManager"
+      ]
+    },
+    {
+      "key": "acc-o1",
+      "name": "Karim Adel",
+      "email": "karim@turf22.example",
+      "accountType": "Person",
+      "roles": [
+        "PitchOwner"
+      ]
+    },
+    {
+      "key": "acc-o2",
+      "name": "Hazem Tarek",
+      "email": "hazem@gezira.example",
+      "accountType": "Person",
+      "roles": [
+        "PitchOwner"
+      ]
+    },
+    {
+      "key": "acc-o3",
+      "name": "Mariam Fathy",
+      "email": "mariam@maadisports.example",
+      "accountType": "Person",
+      "roles": [
+        "PitchOwner"
+      ]
+    },
+    {
+      "key": "acc-o4",
+      "name": "Ali Reda",
+      "email": "ali@coastline.example",
+      "accountType": "Person",
+      "roles": [
+        "PitchOwner"
+      ]
+    },
+    {
+      "key": "acc-new",
+      "name": "Youssef Adel",
+      "email": "youssef.adel@example.com",
+      "accountType": "Person",
+      "roles": [
+        "PitchOwner"
+      ]
+    },
+    {
+      "key": "acc-s1",
+      "name": "Omar Hany",
+      "email": "omar@kooraink.example",
+      "accountType": "Person",
+      "roles": [
+        "Seller"
+      ]
+    },
+    {
+      "key": "acc-s2",
+      "name": "Salma Nabil",
+      "email": "salma@nilelines.example",
+      "accountType": "Person",
+      "roles": [
+        "Seller"
+      ]
+    },
+    {
+      "key": "acc-s3",
+      "name": "Nour Khaled",
+      "email": "nour@cairootaku.example",
+      "accountType": "Person",
+      "roles": [
+        "Seller"
+      ]
+    },
+    {
+      "key": "acc-print",
+      "name": "Hany Mostafa",
+      "email": "orders@niledtf.example",
+      "accountType": "Person",
+      "roles": [
+        "FactoryOwner"
+      ]
+    },
+    {
+      "key": "acc-cfo",
+      "name": "Laila Mansour",
+      "email": "finance@superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Finance"
+      ]
+    },
+    {
+      "key": "acc-ag-coo",
+      "name": "Atlas (AI)",
+      "email": "coo@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-bookings-ops",
+      "name": "Kick (AI)",
+      "email": "bookings-ops@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-orders-ops",
+      "name": "Loom (AI)",
+      "email": "orders-ops@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-logistics",
+      "name": "Route (AI)",
+      "email": "logistics@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-support-lead",
+      "name": "Haven (AI)",
+      "email": "support-lead@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-support-agent",
+      "name": "Echo (AI)",
+      "email": "support-agent@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-trust",
+      "name": "Shield (AI)",
+      "email": "trust@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-partners-agent",
+      "name": "Bridge (AI)",
+      "email": "partners-agent@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-sellers-agent",
+      "name": "Spark (AI)",
+      "email": "sellers-agent@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-payables",
+      "name": "Ledger (AI)",
+      "email": "payables@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-analyst",
+      "name": "Abacus (AI)",
+      "email": "analyst@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-compliance",
+      "name": "Clause (AI)",
+      "email": "compliance@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-cmo",
+      "name": "Pulse (AI)",
+      "email": "cmo@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-social",
+      "name": "Buzz (AI)",
+      "email": "social@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-arena",
+      "name": "Arena (AI)",
+      "email": "arena@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-cto",
+      "name": "Forge (AI)",
+      "email": "cto@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-qa",
+      "name": "Probe (AI)",
+      "email": "qa@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "acc-ag-conductor",
+      "name": "Conductor (AI)",
+      "email": "conductor@agents.superapp.example",
+      "accountType": "AiAgentServiceAccount",
+      "roles": [
+        "AgentBase"
+      ]
+    },
+    {
+      "key": "c-fac-12",
+      "name": "Amr Sherif",
+      "email": "amr-sherif@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-10",
+      "name": "Youssef Mahmoud",
+      "email": "youssef-mahmoud@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-8",
+      "name": "Nour El Din",
+      "email": "nour-el-din@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-7",
+      "name": "Hassan Wael",
+      "email": "hassan-wael@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-6",
+      "name": "Seif Ashraf",
+      "email": "seif-ashraf@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-5",
+      "name": "Omar Hassan",
+      "email": "omar-hassan@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-4",
+      "name": "Habiba Osama",
+      "email": "habiba-osama@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-3",
+      "name": "Marwan Hany",
+      "email": "marwan-hany@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-2",
+      "name": "Tamer Nabil",
+      "email": "tamer-nabil@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-1",
+      "name": "Hazem Tarek",
+      "email": "hazem-tarek@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-fac-0",
+      "name": "Karim Adel",
+      "email": "karim-adel@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-3-2",
+      "name": "Hazem Tarek",
+      "email": "hazem-tarek.c-pod-3-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-3-3",
+      "name": "Amr Sherif",
+      "email": "amr-sherif.c-pod-3-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-3-4",
+      "name": "Farida Ayman",
+      "email": "farida-ayman@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-8-2",
+      "name": "Seif Ashraf",
+      "email": "seif-ashraf.c-pod-8-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-5-0",
+      "name": "Omar Hassan",
+      "email": "omar-hassan.c-pod-5-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-0-1",
+      "name": "Ali Reda",
+      "email": "ali-reda@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-8-0",
+      "name": "Nour El Din",
+      "email": "nour-el-din.c-pod-8-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-9-1",
+      "name": "Mostafa Gamal",
+      "email": "mostafa-gamal@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-1-1",
+      "name": "Amr Sherif",
+      "email": "amr-sherif.c-pod-1-1@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-2-0",
+      "name": "Tamer Nabil",
+      "email": "tamer-nabil.c-pod-2-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-2-3",
+      "name": "Ali Reda",
+      "email": "ali-reda.c-pod-2-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-6-0",
+      "name": "Seif Ashraf",
+      "email": "seif-ashraf.c-pod-6-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-6-1",
+      "name": "Islam Magdy",
+      "email": "islam-magdy@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-9-4",
+      "name": "Omar Hassan",
+      "email": "omar-hassan.c-pod-9-4@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-7-1",
+      "name": "Salma Yasser",
+      "email": "salma-yasser@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-8-3",
+      "name": "Islam Magdy",
+      "email": "islam-magdy.c-pod-8-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-0-2",
+      "name": "Khaled Ezzat",
+      "email": "khaled-ezzat@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-2-1",
+      "name": "Mariam Fathy",
+      "email": "mariam-fathy@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-5-3",
+      "name": "Adham Lotfy",
+      "email": "adham-lotfy@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-3-0",
+      "name": "Marwan Hany",
+      "email": "marwan-hany.c-pod-3-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-3-1",
+      "name": "Adham Lotfy",
+      "email": "adham-lotfy.c-pod-3-1@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-4-3",
+      "name": "Mariam Fathy",
+      "email": "mariam-fathy.c-pod-4-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-5-1",
+      "name": "Mohamed Fawzy",
+      "email": "mohamed-fawzy@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-5-4",
+      "name": "Hazem Tarek",
+      "email": "hazem-tarek.c-pod-5-4@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-2-4",
+      "name": "Khaled Ezzat",
+      "email": "khaled-ezzat.c-pod-2-4@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-4-4",
+      "name": "Karim Adel",
+      "email": "karim-adel.c-pod-4-4@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-9-0",
+      "name": "Yassin Fouad",
+      "email": "yassin-fouad@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-8-1",
+      "name": "Belal Ehab",
+      "email": "belal-ehab@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-9-2",
+      "name": "Hassan Wael",
+      "email": "hassan-wael.c-pod-9-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-2-2",
+      "name": "Karim Adel",
+      "email": "karim-adel.c-pod-2-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-1-2",
+      "name": "Farida Ayman",
+      "email": "farida-ayman.c-pod-1-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-4-1",
+      "name": "Ahmed Samir",
+      "email": "ahmed-samir@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-4-2",
+      "name": "Tamer Nabil",
+      "email": "tamer-nabil.c-pod-4-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-9-3",
+      "name": "Salma Yasser",
+      "email": "salma-yasser.c-pod-9-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-0-0",
+      "name": "Karim Adel",
+      "email": "karim-adel.c-pod-0-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-1-3",
+      "name": "Youssef Mahmoud",
+      "email": "youssef-mahmoud.c-pod-1-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-4-0",
+      "name": "Habiba Osama",
+      "email": "habiba-osama.c-pod-4-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-5-2",
+      "name": "Marwan Hany",
+      "email": "marwan-hany.c-pod-5-2@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-7-0",
+      "name": "Hassan Wael",
+      "email": "hassan-wael.c-pod-7-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-0-3",
+      "name": "Yassin Fouad",
+      "email": "yassin-fouad.c-pod-0-3@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "c-pod-1-0",
+      "name": "Hazem Tarek",
+      "email": "hazem-tarek.c-pod-1-0@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-youssef-mahmoud",
+      "name": "Youssef Mahmoud",
+      "email": "youssef-mahmoud.cap-youssef-mahmoud@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-ziad-khaled",
+      "name": "Ziad Khaled",
+      "email": "ziad-khaled@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-nour-el-din",
+      "name": "Nour El Din",
+      "email": "nour-el-din.cap-nour-el-din@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-belal-ehab",
+      "name": "Belal Ehab",
+      "email": "belal-ehab.cap-belal-ehab@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-seif-ashraf",
+      "name": "Seif Ashraf",
+      "email": "seif-ashraf.cap-seif-ashraf@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-islam-magdy",
+      "name": "Islam Magdy",
+      "email": "islam-magdy.cap-islam-magdy@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-habiba-osama",
+      "name": "Habiba Osama",
+      "email": "habiba-osama.cap-habiba-osama@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-ahmed-samir",
+      "name": "Ahmed Samir",
+      "email": "ahmed-samir.cap-ahmed-samir@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-tamer-nabil",
+      "name": "Tamer Nabil",
+      "email": "tamer-nabil.cap-tamer-nabil@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-mariam-fathy",
+      "name": "Mariam Fathy",
+      "email": "mariam-fathy.cap-mariam-fathy@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-karim-adel",
+      "name": "Karim Adel",
+      "email": "karim-adel.cap-karim-adel@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "cap-ali-reda",
+      "name": "Ali Reda",
+      "email": "ali-reda.cap-ali-reda@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-salma",
+      "name": "Salma Nabil",
+      "email": "salma-nabil@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-omar",
+      "name": "Omar Hany",
+      "email": "omar-hany@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-islam",
+      "name": "Islam Magdy",
+      "email": "islam-magdy.seed-islam@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-farida",
+      "name": "Farida Ayman",
+      "email": "farida-ayman.seed-farida@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-nour",
+      "name": "Nour Khaled",
+      "email": "nour-khaled@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-mostafa",
+      "name": "Mostafa Gamal",
+      "email": "mostafa-gamal.seed-mostafa@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-ahmed",
+      "name": "Ahmed Samir",
+      "email": "ahmed-samir.seed-ahmed@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-spam",
+      "name": "Spam Seller",
+      "email": "spam-seller@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    },
+    {
+      "key": "seed-karim",
+      "name": "Karim Adel",
+      "email": "karim-adel.seed-karim@demo.superapp.example",
+      "accountType": "Person",
+      "roles": [
+        "Customer"
+      ]
+    }
+  ],
+  "staffLimits": [
+    {
+      "user": "acc-admin",
+      "limit": 10000,
+      "secondApprove": false
+    },
+    {
+      "user": "acc-cfo",
+      "limit": 50000,
+      "secondApprove": true
+    }
+  ]
+}

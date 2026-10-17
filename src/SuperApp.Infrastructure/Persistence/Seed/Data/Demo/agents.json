@@ -1,0 +1,352 @@
+[
+  {
+    "position": "coo",
+    "user": "acc-ag-coo",
+    "name": "Atlas",
+    "titleEn": "Operations lead",
+    "duties": [
+      "Watches bookings, orders and the factory every hour",
+      "Escalates late jobs and problems",
+      "Writes the daily operations summary"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 2400,
+    "permissions": [
+      "analytics.read",
+      "audit.read",
+      "bookings.manage",
+      "bookings.read",
+      "factories.manage",
+      "factories.read",
+      "orders.manage",
+      "orders.read",
+      "shipping.manage",
+      "support.read"
+    ]
+  },
+  {
+    "position": "bookings-ops",
+    "user": "acc-ag-bookings-ops",
+    "name": "Kick",
+    "titleEn": "Pitch & bookings agent",
+    "duties": [
+      "Checks double bookings and no-shows",
+      "Weekly packages and make-up games",
+      "Tournaments and free-slot games"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1500,
+    "permissions": [
+      "bookings.manage",
+      "bookings.read",
+      "games.moderate",
+      "orders.manage",
+      "orders.read"
+    ]
+  },
+  {
+    "position": "orders-ops",
+    "user": "acc-ag-orders-ops",
+    "name": "Loom",
+    "titleEn": "Orders & factory agent",
+    "duties": [
+      "Sends printed orders to the factory",
+      "Chases late jobs and quality problems",
+      "Keeps the Super App Store stocked"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1500,
+    "permissions": [
+      "bookings.manage",
+      "bookings.read",
+      "factories.manage",
+      "factories.read",
+      "orders.manage",
+      "orders.read",
+      "returns.manage",
+      "shipping.manage"
+    ]
+  },
+  {
+    "position": "logistics",
+    "user": "acc-ag-logistics",
+    "name": "Route",
+    "titleEn": "Courier & delivery agent",
+    "duties": [
+      "Books the courier when an order is packed",
+      "Follows every parcel to delivery",
+      "Handles refused parcels"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1100,
+    "permissions": [
+      "bookings.read",
+      "factories.manage",
+      "factories.read",
+      "orders.read",
+      "shipping.manage"
+    ]
+  },
+  {
+    "position": "support-lead",
+    "user": "acc-ag-support-lead",
+    "name": "Haven",
+    "titleEn": "Support & trust lead",
+    "duties": [
+      "Answers disputes and decides refunds up to 1,000 EGP",
+      "Blocks abusive customers",
+      "Reviews the frontline agent’s answers"
+    ],
+    "moneyLimit": 1000,
+    "monthlyBudget": 2000,
+    "permissions": [
+      "bookings.read",
+      "community.moderate",
+      "credits.issue",
+      "customers.manage",
+      "customers.read",
+      "orders.read",
+      "refunds.issue",
+      "returns.manage",
+      "support.read"
+    ]
+  },
+  {
+    "position": "support-agent",
+    "user": "acc-ag-support-agent",
+    "name": "Echo",
+    "titleEn": "Frontline support agent",
+    "duties": [
+      "Replies to every ticket within 2 hours",
+      "Refunds up to 300 EGP",
+      "Hands harder cases to the lead"
+    ],
+    "moneyLimit": 300,
+    "monthlyBudget": 1800,
+    "permissions": [
+      "bookings.read",
+      "customers.read",
+      "orders.read",
+      "refunds.issue",
+      "returns.manage",
+      "support.read"
+    ]
+  },
+  {
+    "position": "trust",
+    "user": "acc-ag-trust",
+    "name": "Shield",
+    "titleEn": "Trust & safety agent",
+    "duties": [
+      "Checks designs for copyright",
+      "Moderates reviews and communities",
+      "Gives sellers strikes"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1300,
+    "permissions": [
+      "community.moderate",
+      "designs.reports",
+      "designs.review",
+      "partners.manage",
+      "sellers.manage",
+      "sellers.read"
+    ]
+  },
+  {
+    "position": "partners-agent",
+    "user": "acc-ag-partners-agent",
+    "name": "Bridge",
+    "titleEn": "Partnerships agent",
+    "duties": [
+      "Reviews pitch partner applications",
+      "Onboards new pitches",
+      "Talks commission deals (the CEO signs)"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1400,
+    "permissions": [
+      "approvals.partners",
+      "partners.read"
+    ]
+  },
+  {
+    "position": "sellers-agent",
+    "user": "acc-ag-sellers-agent",
+    "name": "Spark",
+    "titleEn": "Sellers agent",
+    "duties": [
+      "Checks seller IDs and approves sellers",
+      "Runs the monthly level review",
+      "Helps new sellers make their first sale"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1400,
+    "permissions": [
+      "approvals.sellers",
+      "sellers.read"
+    ]
+  },
+  {
+    "position": "payables",
+    "user": "acc-ag-payables",
+    "name": "Ledger",
+    "titleEn": "Payables agent",
+    "duties": [
+      "Checks every withdrawal (ID, disputes, balance)",
+      "Prepares withdrawals — never sends them",
+      "Prepares the factory settlement"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1600,
+    "permissions": [
+      "partners.read",
+      "payouts.prepare",
+      "payouts.read",
+      "sellers.read"
+    ]
+  },
+  {
+    "position": "analyst",
+    "user": "acc-ag-analyst",
+    "name": "Abacus",
+    "titleEn": "Revenue analyst",
+    "duties": [
+      "Daily revenue and cost report",
+      "Reconciles payments with the bank",
+      "Flags unusual numbers"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1200,
+    "permissions": [
+      "analytics.read",
+      "revenue.read"
+    ]
+  },
+  {
+    "position": "compliance",
+    "user": "acc-ag-compliance",
+    "name": "Clause",
+    "titleEn": "Compliance agent",
+    "duties": [
+      "Keeps the compliance calendar",
+      "Checks seller and partner IDs",
+      "Reads the audit log for rule breaks"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1000,
+    "permissions": [
+      "audit.read",
+      "partners.read",
+      "sellers.read"
+    ]
+  },
+  {
+    "position": "cmo",
+    "user": "acc-ag-cmo",
+    "name": "Pulse",
+    "titleEn": "Marketing lead",
+    "duties": [
+      "Plans campaigns within the budget",
+      "Creates promo codes",
+      "Sends broadcasts to the right people"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 2200,
+    "permissions": [
+      "analytics.read",
+      "broadcasts.send",
+      "codes.manage",
+      "content.banners",
+      "content.news",
+      "content.popups"
+    ]
+  },
+  {
+    "position": "social",
+    "user": "acc-ag-social",
+    "name": "Buzz",
+    "titleEn": "Social media & content agent",
+    "duties": [
+      "Posts on social media every day",
+      "News, banners and the announcement bar",
+      "Runs the official communities"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1700,
+    "permissions": [
+      "community.moderate",
+      "content.banners",
+      "content.news",
+      "content.popups"
+    ]
+  },
+  {
+    "position": "arena",
+    "user": "acc-ag-arena",
+    "name": "Arena",
+    "titleEn": "Fantasy & games agent",
+    "duties": [
+      "Runs fantasy leagues and prizes",
+      "Free-slot games and player safety",
+      "Match-day content"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 900,
+    "permissions": [
+      "community.moderate",
+      "fantasy.manage",
+      "games.moderate"
+    ]
+  },
+  {
+    "position": "cto",
+    "user": "acc-ag-cto",
+    "name": "Forge",
+    "titleEn": "Technology lead",
+    "duties": [
+      "Keeps the platform up and fast",
+      "Releases new features",
+      "Security and backups"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 2600,
+    "permissions": [
+      "analytics.read",
+      "audit.read",
+      "settings.platform"
+    ]
+  },
+  {
+    "position": "qa",
+    "user": "acc-ag-qa",
+    "name": "Probe",
+    "titleEn": "Quality & monitoring agent",
+    "duties": [
+      "Tests every flow every night",
+      "Watches errors and speed",
+      "Reports bugs to the technology lead"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 900,
+    "permissions": [
+      "analytics.read"
+    ]
+  },
+  {
+    "position": "conductor",
+    "user": "acc-ag-conductor",
+    "name": "Conductor",
+    "titleEn": "AI agents supervisor",
+    "duties": [
+      "Watches every agent’s work and cost",
+      "Pauses an agent that makes mistakes",
+      "Weekly agents report to the CEO"
+    ],
+    "moneyLimit": 0,
+    "monthlyBudget": 1300,
+    "permissions": [
+      "audit.read"
+    ]
+  }
+]

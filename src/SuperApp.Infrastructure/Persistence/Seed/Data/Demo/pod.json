@@ -1,0 +1,379 @@
+{
+  "sellers": [
+    {
+      "key": "sl-koora",
+      "user": "acc-s1",
+      "store": "koora-ink",
+      "level": "elite",
+      "mode": "PrintOnDemand",
+      "sales": 236,
+      "rating": 4.8,
+      "payoutMethod": "InstaPay",
+      "payoutDetail": "koora-ink@instapay"
+    },
+    {
+      "key": "sl-nile",
+      "user": "acc-s2",
+      "store": "nile-lines",
+      "level": "pro",
+      "mode": "Both",
+      "sales": 61,
+      "rating": 4.5,
+      "payoutMethod": "InstaPay",
+      "payoutDetail": "nile-lines@instapay"
+    },
+    {
+      "key": "sl-otaku",
+      "user": "acc-s3",
+      "store": "cairo-otaku",
+      "level": "rising",
+      "mode": "PrintOnDemand",
+      "sales": 12,
+      "rating": 4.3,
+      "payoutMethod": "InstaPay",
+      "payoutDetail": "cairo-otaku@instapay"
+    }
+  ],
+  "designs": [
+    {
+      "key": "ds-1",
+      "seller": "sl-koora",
+      "catalogue": "pod-oversized",
+      "category": "football",
+      "title": "Cairo Nights FC",
+      "description": "For the crews that only play after 11 PM.",
+      "price": 520,
+      "status": "Live",
+      "frontArt": "seed:nights",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Black",
+        "Washed Blue"
+      ],
+      "tags": [
+        "five-a-side",
+        "cairo",
+        "night games"
+      ],
+      "views": 2393,
+      "sales": 4,
+      "submittedAt": "2026-10-08T23:51:54Z",
+      "reviewedAt": "2026-10-09T23:51:54Z"
+    },
+    {
+      "key": "ds-2",
+      "seller": "sl-koora",
+      "catalogue": "pod-tee",
+      "category": "football",
+      "title": "Keep Calm & Press High",
+      "description": "A tee for the midfielder who never stops running.",
+      "price": 420,
+      "status": "Live",
+      "frontArt": "seed:press",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Black",
+        "Navy",
+        "White"
+      ],
+      "tags": [
+        "tactics",
+        "pressing",
+        "funny"
+      ],
+      "views": 2694,
+      "sales": 4,
+      "submittedAt": "2026-10-02T23:51:54Z",
+      "reviewedAt": "2026-10-03T23:51:54Z"
+    },
+    {
+      "key": "ds-3",
+      "seller": "sl-koora",
+      "catalogue": "pod-hoodie",
+      "category": "football",
+      "title": "Safe Hands No.1",
+      "description": "Every team needs one. Gift it to yours.",
+      "price": 890,
+      "status": "Live",
+      "frontArt": "seed:keeper",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Navy",
+        "Black"
+      ],
+      "tags": [
+        "goalkeeper",
+        "keeper"
+      ],
+      "views": 1855,
+      "sales": 5,
+      "submittedAt": "2026-09-26T23:51:54Z",
+      "reviewedAt": "2026-09-27T23:51:54Z"
+    },
+    {
+      "key": "ds-4",
+      "seller": "sl-koora",
+      "catalogue": "pod-tee",
+      "category": "egyptian",
+      "title": "Yalla Nel3ab",
+      "description": "The two words that start every game in Egypt.",
+      "price": 400,
+      "status": "Live",
+      "frontArt": "seed:yalla",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Bottle Green",
+        "White",
+        "Black"
+      ],
+      "tags": [
+        "arabic",
+        "football",
+        "yalla"
+      ],
+      "views": 517,
+      "sales": 1,
+      "submittedAt": "2026-09-20T23:51:54Z",
+      "reviewedAt": "2026-09-21T23:51:54Z"
+    },
+    {
+      "key": "ds-5",
+      "seller": "sl-nile",
+      "catalogue": "pod-oversized",
+      "category": "egyptian",
+      "title": "Ya Habibi",
+      "description": "Big heart, bigger fit.",
+      "price": 480,
+      "status": "Live",
+      "frontArt": "seed:habibi",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Off-white",
+        "Black"
+      ],
+      "tags": [
+        "arabic",
+        "love",
+        "gift"
+      ],
+      "views": 1154,
+      "sales": 5,
+      "submittedAt": "2026-09-14T23:51:54Z",
+      "reviewedAt": "2026-09-15T23:51:54Z"
+    },
+    {
+      "key": "ds-6",
+      "seller": "sl-nile",
+      "catalogue": "pod-tee",
+      "category": "sports",
+      "title": "Giza Run Club",
+      "description": "Sunrise runs with a view nobody else has.",
+      "price": 390,
+      "status": "Live",
+      "frontArt": "seed:pyramids",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Sand",
+        "White",
+        "Black"
+      ],
+      "tags": [
+        "running",
+        "giza",
+        "club"
+      ],
+      "views": 587,
+      "sales": 3,
+      "submittedAt": "2026-09-08T23:51:54Z",
+      "reviewedAt": "2026-09-09T23:51:54Z"
+    },
+    {
+      "key": "ds-7",
+      "seller": "sl-nile",
+      "catalogue": "pod-hoodie",
+      "category": "retro",
+      "title": "Retro 90",
+      "description": "Four stripes, one decade.",
+      "price": 820,
+      "status": "Live",
+      "frontArt": "seed:retro",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Off-white",
+        "Black"
+      ],
+      "tags": [
+        "90s",
+        "vintage",
+        "stripes"
+      ],
+      "views": 1825,
+      "sales": 2,
+      "submittedAt": "2026-09-02T23:51:54Z",
+      "reviewedAt": "2026-09-03T23:51:54Z"
+    },
+    {
+      "key": "ds-8",
+      "seller": "sl-nile",
+      "catalogue": "pod-tee",
+      "category": "motivation",
+      "title": "No Days Off",
+      "description": "For the 6 AM gym crowd.",
+      "price": 380,
+      "status": "Live",
+      "frontArt": "seed:lift",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Black",
+        "Heather Grey"
+      ],
+      "tags": [
+        "gym",
+        "lifting"
+      ],
+      "views": 2830,
+      "sales": 2,
+      "submittedAt": "2026-08-27T23:51:54Z",
+      "reviewedAt": "2026-08-28T23:51:54Z"
+    },
+    {
+      "key": "ds-9",
+      "seller": "sl-otaku",
+      "catalogue": "pod-oversized",
+      "category": "anime",
+      "title": "Cairo Otaku",
+      "description": "An original character drawn in Cairo.",
+      "price": 500,
+      "status": "Live",
+      "frontArt": "seed:otaku",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Black",
+        "Off-white"
+      ],
+      "tags": [
+        "anime",
+        "kawaii"
+      ],
+      "views": 2773,
+      "sales": 3,
+      "submittedAt": "2026-08-21T23:51:54Z",
+      "reviewedAt": "2026-08-22T23:51:54Z"
+    },
+    {
+      "key": "ds-10",
+      "seller": "sl-otaku",
+      "catalogue": "pod-tee",
+      "category": "gaming",
+      "title": "GG No Re",
+      "description": "Good game. No rematch.",
+      "price": 380,
+      "status": "Live",
+      "frontArt": "seed:pixel",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Black",
+        "Navy"
+      ],
+      "tags": [
+        "gaming",
+        "pixel",
+        "retro"
+      ],
+      "views": 610,
+      "sales": 5,
+      "submittedAt": "2026-08-15T23:51:54Z",
+      "reviewedAt": "2026-08-16T23:51:54Z"
+    },
+    {
+      "key": "ds-11",
+      "seller": "sl-otaku",
+      "catalogue": "pod-hoodie",
+      "category": "gaming",
+      "title": "Press Start Hoodie",
+      "description": "Pixel art for the late-night gaming crew.",
+      "price": 780,
+      "status": "InReview",
+      "frontArt": "seed:pixel",
+      "backArt": null,
+      "front": {
+        "x": 0.5,
+        "y": 0.36,
+        "w": 0.42
+      },
+      "back": null,
+      "colors": [
+        "Black",
+        "Navy"
+      ],
+      "tags": [
+        "gaming",
+        "pixel"
+      ],
+      "views": 0,
+      "sales": 0,
+      "submittedAt": "2026-10-16T03:51:54Z",
+      "reviewedAt": null
+    }
+  ]
+}

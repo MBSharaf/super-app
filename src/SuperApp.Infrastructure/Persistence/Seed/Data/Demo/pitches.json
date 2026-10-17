@@ -1,0 +1,430 @@
+{
+  "partners": [
+    {
+      "user": "acc-o1",
+      "business": "Turf 22 Group",
+      "payoutMethod": "Bank",
+      "payoutDetail": "NBE •••• 7731"
+    },
+    {
+      "user": "acc-o2",
+      "business": "Gezira Sports Co.",
+      "payoutMethod": "InstaPay",
+      "payoutDetail": "hazem.tarek@instapay"
+    },
+    {
+      "user": "acc-o3",
+      "business": "Maadi Sports Ventures",
+      "payoutMethod": "Bank",
+      "payoutDetail": "QNB •••• 1180"
+    },
+    {
+      "user": "acc-o4",
+      "business": "Coastline Sports",
+      "payoutMethod": "InstaPay",
+      "payoutDetail": "ali.reda@instapay"
+    }
+  ],
+  "pitches": [
+    {
+      "key": "zayed-22",
+      "partner": "acc-o1",
+      "name": "Turf 22 Arena",
+      "area": "Sheikh Zayed",
+      "address": "Beverly Hills Rd, off 26th of July Corridor",
+      "lat": 30.0396,
+      "lng": 30.9876,
+      "format": 5,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 650,
+      "peakPrice": 800,
+      "about": "Two FIFA Quality turf pitches with LED floodlights, a rooftop café and free match recording on every booking after 8 PM.",
+      "policy": "standard",
+      "rating": 4.8,
+      "reviews": 412,
+      "open": 9,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "lockers",
+        "cafe",
+        "camera",
+        "bibs"
+      ],
+      "photos": [
+        "photo-1431324155629-1a6deb1dec8d",
+        "photo-1785528469373-1103f69c2943",
+        "photo-1782974396379-c86aa9cf3c1c",
+        "photo-1779288440792-f47b71179e21"
+      ]
+    },
+    {
+      "key": "gezira-fives",
+      "partner": "acc-o2",
+      "name": "Gezira Fives",
+      "area": "Zamalek",
+      "address": "26th of July St, Gezira Island",
+      "lat": 30.0566,
+      "lng": 31.2215,
+      "format": 5,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 750,
+      "peakPrice": 950,
+      "about": "A riverside cage on Gezira Island — the city lights come on as you kick off. Popular for after-work games.",
+      "policy": "standard",
+      "rating": 4.7,
+      "reviews": 288,
+      "open": 8,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "showers",
+        "lockers",
+        "water",
+        "wc",
+        "bibs"
+      ],
+      "photos": [
+        "photo-1493038950213-29266628eb06",
+        "photo-1711447395363-5595964fd7ab",
+        "photo-1574676581439-89ee9f0a7bf1"
+      ]
+    },
+    {
+      "key": "maadi-cage",
+      "partner": "acc-o3",
+      "name": "Maadi Cage",
+      "area": "Maadi",
+      "address": "Road 233, Degla",
+      "lat": 29.9612,
+      "lng": 31.2753,
+      "format": 5,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 550,
+      "peakPrice": 700,
+      "about": "Three side-by-side cages in Degla with string-lit seating and a juice bar. Great value for regular weekly games.",
+      "policy": "standard",
+      "rating": 4.6,
+      "reviews": 351,
+      "open": 8,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "water",
+        "wc",
+        "bibs",
+        "cafe"
+      ],
+      "photos": [
+        "photo-1779288440792-f47b71179e21",
+        "photo-1782974396379-c86aa9cf3c1c",
+        "photo-1551958219-acbc608c6377"
+      ]
+    },
+    {
+      "key": "fifth-arena",
+      "partner": "acc-o1",
+      "name": "Fifth Settlement Arena",
+      "area": "New Cairo",
+      "address": "90th St North, Fifth Settlement",
+      "lat": 30.0283,
+      "lng": 31.4713,
+      "format": 7,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 1100,
+      "peakPrice": 1350,
+      "about": "A full-service 7-a-side complex on 90th Street with professional floodlighting, spectator stands and a referee on request.",
+      "policy": "flexible",
+      "rating": 4.9,
+      "reviews": 527,
+      "open": 9,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "lockers",
+        "cafe",
+        "seats",
+        "camera",
+        "prayer",
+        "firstaid"
+      ],
+      "photos": [
+        "photo-1487466365202-1afdb86c764e",
+        "photo-1509077613385-f89402467146",
+        "photo-1551385093-ad3fb362dc43",
+        "photo-1543351611-58f69d7c1781"
+      ]
+    },
+    {
+      "key": "helio-night",
+      "partner": "acc-o2",
+      "name": "Heliopolis Night Pitch",
+      "area": "Heliopolis",
+      "address": "El Merghany St, Korba",
+      "lat": 30.0911,
+      "lng": 31.3253,
+      "format": 7,
+      "surface": "NaturalGrass",
+      "indoor": false,
+      "price": 1250,
+      "peakPrice": 1500,
+      "about": "One of the few natural-grass 7-a-side pitches in East Cairo. Evening-only, watered daily.",
+      "policy": "standard",
+      "rating": 4.5,
+      "reviews": 198,
+      "open": 15,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "lockers",
+        "wc",
+        "seats"
+      ],
+      "photos": [
+        "photo-1621058567697-7673eef9ce28",
+        "photo-1431324155629-1a6deb1dec8d",
+        "photo-1632684363781-c82fe0e357c8"
+      ]
+    },
+    {
+      "key": "nasr-hub",
+      "partner": "acc-o3",
+      "name": "Nasr City Sports Hub",
+      "area": "Nasr City",
+      "address": "Makram Ebeid St, 6th District",
+      "lat": 30.0626,
+      "lng": 31.3459,
+      "format": 5,
+      "surface": "IndoorCourt",
+      "indoor": true,
+      "price": 600,
+      "peakPrice": 750,
+      "about": "Air-conditioned indoor futsal hall — the summer favourite. Low-bounce balls provided.",
+      "policy": "moderate",
+      "rating": 4.4,
+      "reviews": 233,
+      "open": 10,
+      "close": 24,
+      "facilities": [
+        "ac",
+        "lockers",
+        "showers",
+        "water",
+        "wc",
+        "prayer",
+        "wifi"
+      ],
+      "photos": [
+        "photo-1763775594018-4a84eeadd83d",
+        "photo-1553627220-92f0446b6a5f",
+        "photo-1606925797300-0b35e9d1794e"
+      ]
+    },
+    {
+      "key": "dokki-river",
+      "partner": "acc-o2",
+      "name": "Dokki Riverside Pitch",
+      "area": "Dokki",
+      "address": "Nile Corniche, El Galaa",
+      "lat": 30.0385,
+      "lng": 31.2154,
+      "format": 7,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 950,
+      "peakPrice": 1150,
+      "about": "A central 7-a-side pitch two minutes from the Corniche. Easy to reach from Downtown, Mohandessin and Giza.",
+      "policy": "flexible",
+      "rating": 4.3,
+      "reviews": 164,
+      "open": 8,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "wc",
+        "water"
+      ],
+      "photos": [
+        "photo-1556056504-5c7696c4c28d",
+        "photo-1630420598913-44208d36f9af",
+        "photo-1459865264687-595d652de67e"
+      ]
+    },
+    {
+      "key": "october-dome",
+      "partner": "acc-o1",
+      "name": "October Dome",
+      "area": "6th of October",
+      "address": "Central Axis, 2nd District",
+      "lat": 29.9687,
+      "lng": 30.9492,
+      "format": 5,
+      "surface": "ArtificialTurf",
+      "indoor": true,
+      "price": 500,
+      "peakPrice": 650,
+      "about": "A covered turf dome — no sun, no wind, no cancellations. Student discounts on weekday mornings.",
+      "policy": "flexible",
+      "rating": 4.4,
+      "reviews": 141,
+      "open": 9,
+      "close": 24,
+      "facilities": [
+        "ac",
+        "lockers",
+        "showers",
+        "parking",
+        "cafe",
+        "wc"
+      ],
+      "photos": [
+        "photo-1789060121008-a310f690c742",
+        "photo-1785528469373-1103f69c2943",
+        "photo-1551958219-acbc608c6377"
+      ]
+    },
+    {
+      "key": "mokattam-hill",
+      "partner": "acc-o3",
+      "name": "Mokattam Hilltop Turf",
+      "area": "Mokattam",
+      "address": "Street 9, Upper Plateau",
+      "lat": 30.0128,
+      "lng": 31.3051,
+      "format": 5,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 520,
+      "peakPrice": 650,
+      "about": "A breezy hilltop pitch with a view over the city — cooler than downtown on summer nights.",
+      "policy": "strict",
+      "rating": 4.2,
+      "reviews": 97,
+      "open": 8,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "water",
+        "wc"
+      ],
+      "photos": [
+        "photo-1543351611-58f69d7c1781",
+        "photo-1459865264687-595d652de67e",
+        "photo-1782974396379-c86aa9cf3c1c"
+      ]
+    },
+    {
+      "key": "rehab-club",
+      "partner": "acc-o4",
+      "name": "Rehab Club Turf",
+      "area": "Al Rehab",
+      "address": "Gate 13, Rehab City",
+      "lat": 30.0588,
+      "lng": 31.4925,
+      "format": 11,
+      "surface": "NaturalGrass",
+      "indoor": false,
+      "price": 2600,
+      "peakPrice": 3100,
+      "about": "Full-size natural-grass pitch for 11-a-side company leagues and academy matches. Referee and linesmen bookable.",
+      "policy": "moderate",
+      "rating": 4.7,
+      "reviews": 86,
+      "open": 14,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "lockers",
+        "seats",
+        "firstaid",
+        "wc"
+      ],
+      "photos": [
+        "photo-1521217078329-f8fc1becab68",
+        "photo-1517747614396-d21a78b850e8",
+        "photo-1628891890467-b79f2c8ba9dc"
+      ]
+    },
+    {
+      "key": "madinaty-park",
+      "partner": "acc-o4",
+      "name": "Madinaty Sports Park",
+      "area": "Madinaty",
+      "address": "Sports Club Rd, Madinaty",
+      "lat": 30.1067,
+      "lng": 31.6372,
+      "format": 7,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 900,
+      "peakPrice": 1100,
+      "about": "Four 7-a-side pitches inside Madinaty with a family café. Quiet, clean and easy parking.",
+      "policy": "standard",
+      "rating": 4.6,
+      "reviews": 122,
+      "open": 9,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "lockers",
+        "cafe",
+        "prayer"
+      ],
+      "photos": [
+        "photo-1517747614396-d21a78b850e8",
+        "photo-1487466365202-1afdb86c764e",
+        "photo-1494177310973-4841f7d5a882"
+      ]
+    },
+    {
+      "key": "smouha-seven",
+      "partner": "acc-o4",
+      "name": "Smouha Seven",
+      "area": "Smouha",
+      "address": "Victor Emmanuel Sq, Smouha",
+      "lat": 31.2156,
+      "lng": 29.9418,
+      "format": 7,
+      "surface": "ArtificialTurf",
+      "indoor": false,
+      "price": 800,
+      "peakPrice": 950,
+      "about": "Alexandria’s busiest 7-a-side venue, a short drive from the Corniche. Sea breeze included.",
+      "policy": "flexible",
+      "rating": 4.5,
+      "reviews": 176,
+      "open": 9,
+      "close": 24,
+      "facilities": [
+        "lights",
+        "parking",
+        "showers",
+        "wc",
+        "cafe"
+      ],
+      "photos": [
+        "photo-1711447395363-5595964fd7ab",
+        "photo-1556056504-5c7696c4c28d",
+        "photo-1574676581439-89ee9f0a7bf1"
+      ]
+    }
+  ]
+}
