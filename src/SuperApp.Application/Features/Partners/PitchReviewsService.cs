@@ -17,7 +17,7 @@ public sealed record PitchReviewRowDto(long Id, string Slug, string Name, string
     decimal PricePerHour, string Status, int PhotosCount, DateTime CreatedAt);
 
 /// <summary>A pitch as the reviewer sees it: the partner, the venue and the whole form.</summary>
-public sealed record PitchReviewDto(PitchReviewRowDto Summary, string Address, PitchEditDto Pitch);
+public sealed record PitchReviewDto(PitchReviewRowDto Summary, string Address, decimal Lat, decimal Lng, PitchEditDto Pitch);
 
 public sealed record PitchRejectRequest(string Reason);
 
@@ -28,7 +28,7 @@ public interface IPitchReviewRepository
 {
     Task<PagedResult<PitchReviewRowDto>> ListAsync(PitchStatus status, PageRequest page, CancellationToken ct);
 
-    Task<(PitchReviewRowDto Row, string Address, PitchOwner Owner)?> SummaryAsync(long pitchId, CancellationToken ct);
+    Task<(PitchReviewRowDto Row, string Address, decimal Lat, decimal Lng, PitchOwner Owner)?> SummaryAsync(long pitchId, CancellationToken ct);
 
     /// <summary>The pitch, tracked for changes.</summary>
     Task<Pitch?> FindAsync(long pitchId, CancellationToken ct);
@@ -65,7 +65,7 @@ public sealed class PitchReviewsService(
     {
         var summary = await reviews.SummaryAsync(id, ct) ?? throw new NotFoundException("Pitch not found.");
         var form = await partners.PitchForEditAsync(summary.Owner.PartnerId, id, ct) ?? throw new NotFoundException("Pitch not found.");
-        return new PitchReviewDto(summary.Row, summary.Address, form);
+        return new PitchReviewDto(summary.Row, summary.Address, summary.Lat, summary.Lng, form);
     }
 
     public async Task<PitchReviewDto> ApproveAsync(long id, CancellationToken ct)

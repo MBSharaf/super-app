@@ -17,19 +17,19 @@ public sealed class PitchReviewRepository(AppDbContext db) : IPitchReviewReposit
         return new PagedResult<PitchReviewRowDto>(rows.Select(r => r.Row).ToList(), page.SafePage, page.SafePageSize, total);
     }
 
-    public async Task<(PitchReviewRowDto Row, string Address, PitchOwner Owner)?> SummaryAsync(long pitchId, CancellationToken ct)
+    public async Task<(PitchReviewRowDto Row, string Address, decimal Lat, decimal Lng, PitchOwner Owner)?> SummaryAsync(long pitchId, CancellationToken ct)
     {
         var r = await Rows(db.Set<Pitch>().Where(p => p.Id == pitchId)).FirstOrDefaultAsync(ct);
-        return r is null ? null : (r.Row, r.Address, r.Owner);
+        return r is null ? null : (r.Row, r.Address, r.Lat, r.Lng, r.Owner);
     }
 
     public Task<Pitch?> FindAsync(long pitchId, CancellationToken ct) => db.Set<Pitch>().FirstOrDefaultAsync(p => p.Id == pitchId, ct);
 
-    private sealed record Raw(PitchReviewRowDto Row, string Address, PitchOwner Owner);
+    private sealed record Raw(PitchReviewRowDto Row, string Address, decimal Lat, decimal Lng, PitchOwner Owner);
 
     private static IQueryable<Raw> Rows(IQueryable<Pitch> q) => q.Select(p => new Raw(
         new PitchReviewRowDto(p.Id, p.Slug, p.Name, p.Venue.Partner.BusinessName, p.Venue.Name, p.Venue.Area.NameEn, p.Format, p.PricePerHour, p.Status.ToString(),
             p.Photos.Count, p.CreatedAt),
-        p.Venue.Address,
+        p.Venue.Address, p.Venue.Lat, p.Venue.Lng,
         new PitchOwner(p.Venue.PartnerId, p.Venue.Partner.UserId, p.Venue.Partner.BusinessName)));
 }

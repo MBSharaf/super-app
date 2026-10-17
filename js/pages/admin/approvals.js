@@ -37,13 +37,40 @@
     const get = (type) => API().get(`/admin/approvals?type=${type}&pageSize=100`).then((r) => r.items).catch(() => null);
     const [partners, sellers, areas] = await Promise.all([get('PitchOwner'), get('Seller'), API().get('/lookups/areas')]);
     const names = Object.fromEntries(areas.map((x) => [x.id, SA.i18n?.isAr ? x.nameAr : x.nameEn]));
-    return { partners, sellers, areaName: (id) => names[id] || '' };
+    const pitchCount = await API().get('/admin/pitches?status=WaitingForReview&pageSize=1').then((r) => r.meta.total).catch(() => null);
+    return { partners, sellers, pitchCount, areaName: (id) => names[id] || '' };
   };
   const liveSection = (list, areaName, emptyIcon, emptyTitle) => (list == null
     ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Not part of your permissions', text: 'Ask the CEO for the approvals permission for this type.' })}</div>`
     : list.length ? `<div class="adm-approve-grid">${list.map((a) => liveCard(a, areaName)).join('')}</div>`
       : `<div class="dash-card">${SA.ui.c.empty({ icon: emptyIcon, title: emptyTitle, text: 'New applications wait here.' })}</div>`);
   const pendingCount = (list) => (list || []).filter((a) => a.status === 'Pending').length;
+
+  /** A pitch waiting for review (a demo record, or one built from GET /admin/pitches/{id} in API mode) */
+  const pitchCard = (p, owner, liveTag = '') => `<article class="dash-card adm-approve">
+            <div class="adm-approve-img">${(p.images || []).slice(0, 3).map((im) => `<img src="${media.photo(im, 360, 240)}" alt="" loading="lazy" />`).join('')}</div>
+            <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(p.name)}</h2><span class="badge ${RV[p.review][0]}">${RV[p.review][1]}</span></div>
+            <p class="small soft">${esc(p.address)}, ${esc(p.area)}, ${esc(p.city)} · ${esc(p.format)} · ${p.indoor ? 'Indoor' : 'Outdoor'} · ${esc(p.surface)}</p>
+            <dl class="kv"><div><dt>Owner</dt><dd>${esc(owner)}</dd></div><div><dt>Price</dt><dd class="num">${money(p.price)} · peak ${money(p.peakPrice)}</dd></div><div><dt>Hours</dt><dd class="num">${p.open[0]}:00 – ${p.open[1] % 24}:00</dd></div><div><dt>Sent</dt><dd>${timeAgo(p.submittedAt || p.createdAt)}</dd></div></dl>
+            <p class="small">${esc(p.about)}</p>
+            ${p.review === 'rejected' ? `<p class="xs" style="color:var(--danger)">${icon('alert', 12)} ${esc(p.reviewReason || '')}</p>` : ''}
+            <div class="row wrap" style="--gap:8px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener">${icon('map', 14)} Map</a>${p.review === 'pending' ? `<button class="btn btn-outline btn-sm" data-reject-pitch${liveTag}="${p.id}">Don’t approve</button>` : ''}<button class="btn btn-primary btn-sm" data-approve-pitch${liveTag}="${p.id}">${icon('check', 14, 2.6)} Approve and publish</button></div>
+          </article>`;
+  /** API mode: the server's pitch → the fields the card reads */
+  const fromReview = (r) => {
+    const d = r.pitch, day = d.openingHours.find((h) => !h.isClosed) || { openHour: 0, closeHour: 0 };
+    return { id: r.summary.id, name: d.name, address: r.address, area: r.summary.venueName, city: r.summary.areaEn, format: `${d.format}-a-side`, indoor: d.isIndoor,
+      surface: d.surface.replace(/([a-z])([A-Z])/g, '$1 $2'), images: d.photos.map((ph) => (ph.url ? `${location.origin}${ph.url}` : ph.key)),
+      price: d.pricePerHour, peakPrice: d.peakPricePerHour ?? d.pricePerHour, open: [day.openHour, day.closeHour], submittedAt: Date.parse(r.summary.createdAt),
+      about: d.descriptionEn || '', review: { WaitingForReview: 'pending', Rejected: 'rejected' }[d.status] || 'approved', reviewReason: d.rejectReason, lat: r.lat, lng: r.lng };
+  };
+  /** Pitches waiting for review with their whole form; null without the approvals.pitches permission */
+  const loadLivePitches = async () => {
+    try {
+      const rows = (await API().get('/admin/pitches?status=WaitingForReview&pageSize=50')).items;
+      return await Promise.all(rows.map((x) => API().get(`/admin/pitches/${x.id}`)));
+    } catch { return null; }
+  };
 
   SA.pages.adminApprovals = A.guard({
     title: 'Approvals — Super App Admin',
@@ -59,15 +86,9 @@
       } else if (L && tab === 'sellers') {
         section = liveSection(L.sellers, L.areaName, 'users', 'No sellers waiting');
       } else if (!tab) {
-        section = pitches.length ? `<div class="adm-approve-grid">${pitches.map((p) => { const o = db().find('accounts', p.ownerId); return `<article class="dash-card adm-approve">
-            <div class="adm-approve-img">${(p.images || []).slice(0, 3).map((im) => `<img src="${media.photo(im, 360, 240)}" alt="" loading="lazy" />`).join('')}</div>
-            <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(p.name)}</h2><span class="badge ${RV[p.review][0]}">${RV[p.review][1]}</span></div>
-            <p class="small soft">${esc(p.address)}, ${esc(p.area)}, ${esc(p.city)} · ${esc(p.format)} · ${p.indoor ? 'Indoor' : 'Outdoor'} · ${esc(p.surface)}</p>
-            <dl class="kv"><div><dt>Owner</dt><dd>${esc(o?.company || '')} · ${esc(o?.name || '')}</dd></div><div><dt>Price</dt><dd class="num">${money(p.price)} · peak ${money(p.peakPrice)}</dd></div><div><dt>Hours</dt><dd class="num">${p.open[0]}:00 – ${p.open[1] % 24}:00</dd></div><div><dt>Sent</dt><dd>${timeAgo(p.submittedAt || p.createdAt)}</dd></div></dl>
-            <p class="small">${esc(p.about)}</p>
-            ${p.review === 'rejected' ? `<p class="xs" style="color:var(--danger)">${icon('alert', 12)} ${esc(p.reviewReason || '')}</p>` : ''}
-            <div class="row wrap" style="--gap:8px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener">${icon('map', 14)} Map</a>${p.review === 'pending' ? `<button class="btn btn-outline btn-sm" data-reject-pitch="${p.id}">Don’t approve</button>` : ''}<button class="btn btn-primary btn-sm" data-approve-pitch="${p.id}">${icon('check', 14, 2.6)} Approve and publish</button></div>
-          </article>`; }).join('')}</div>`
+        const LP = L ? await loadLivePitches() : null;
+        section = L && LP == null ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Not part of your permissions', text: 'Ask the CEO for the approvals permission for this type.' })}</div>`
+          : (L ? LP.length : pitches.length) ? `<div class="adm-approve-grid">${L ? LP.map((r) => pitchCard(fromReview(r), r.summary.businessName, '-live')).join('') : pitches.map((p) => { const o = db().find('accounts', p.ownerId); return pitchCard(p, `${o?.company || ''} · ${o?.name || ''}`); }).join('')}</div>`
           : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No pitches waiting', text: 'New pitches partners add wait here until you approve them.' })}</div>`;
       } else if (tab === 'partners') {
         const AS = { pending: ['badge-gold', 'Waiting'], approved: ['badge-turf', 'Approved'], rejected: ['badge-danger', 'Not approved'] };
@@ -90,7 +111,7 @@
             || `<tr><td colspan="6">${SA.ui.c.empty({ icon: 'users', title: 'No sellers waiting', text: on ? 'New sellers wait here until you approve them.' : 'Approval is off — new sellers go live straight away.' })}</td></tr>`}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length]], tab)}${section}`;
+      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', L ? (L.pitchCount ?? 0) : pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length]], tab)}${section}`;
       return C.layout('approvals', { title: 'Approvals', subtitle: 'Check new pitches and sellers before they go live on Super App', body });
     },
     mount(el) {
@@ -100,6 +121,8 @@
         try {
           if (t('[data-approve-pitch]')) { AD().approvePitch(t('[data-approve-pitch]').dataset.approvePitch); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
           if (t('[data-reject-pitch]')) { const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; AD().rejectPitch(t('[data-reject-pitch]').dataset.rejectPitch, r.reason); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
+          if (t('[data-approve-pitch-live]')) { await API().post(`/admin/pitches/${t('[data-approve-pitch-live]').dataset.approvePitchLive}/approve`); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
+          if (t('[data-reject-pitch-live]')) { const id = t('[data-reject-pitch-live]').dataset.rejectPitchLive; const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/pitches/${id}/reject`, { reason: r.reason }); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-live]')) { await API().post(`/admin/approvals/applications/${t('[data-approve-live]').dataset.approveLive}/approve`); toast('Approved — the applicant was notified'); SA.app.rerender(); return; }
           if (t('[data-reject-live]')) { const r = await A.reason({ title: 'Don’t approve this application?', text: 'The applicant sees the reason and can fix it and send it again.', label: 'Reason the applicant sees', placeholder: 'e.g. The ID photo isn’t clear', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/approvals/applications/${t('[data-reject-live]').dataset.rejectLive}/reject`, { reason: r.reason }); toast('Applicant told', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-app]')) { SA.services.partners.approve(t('[data-approve-app]').dataset.approveApp); toast('Approved — the pitch partner account and the pitch are live'); SA.app.rerender(); return; }
