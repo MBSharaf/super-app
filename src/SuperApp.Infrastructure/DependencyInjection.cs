@@ -88,6 +88,7 @@ public static class DependencyInjection
         services.AddScoped<IPartnerRepository, PartnerRepository>();
         services.AddScoped<IPartnerBookingsRepository, PartnerBookingsRepository>();
         services.AddScoped<IPitchReviewRepository, PitchReviewRepository>();
+        services.AddScoped<IPartnerStaffRepository, PartnerStaffRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
         services.AddSingleton<IQrTokens, QrTokens>();

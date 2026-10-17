@@ -69,3 +69,4 @@ decisions here (with the date) from any window.
 - The 3D hoodie model: the GPU quota ran out (the tee is done).
 - Referral and gift cards.
 - The PWA: after the backend.
+- 2026-10-17 — Partner staff are added by the email or mobile of an existing Super App account (they sign up first); one partner business per person. Walk-ins pay at the venue with no service fee and no commission.
