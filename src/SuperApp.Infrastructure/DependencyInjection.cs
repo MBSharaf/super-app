@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Abstractions.Services;
@@ -24,6 +25,8 @@ public static class DependencyInjection
         services.AddScoped<AuditableSaveChangesInterceptor>();
         services.AddDbContext<AppDbContext>((sp, options) => options
             .UseSqlServer(connection, sql => sql.EnableRetryOnFailure(3))
+            // Soft delete puts a filter on parents that have required children; that is intended, so EF's warning is muted
+            .ConfigureWarnings(w => w.Ignore(CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning))
             .AddInterceptors(sp.GetRequiredService<AuditableSaveChangesInterceptor>()));
 
         // Keys for cookies, reset links and anti-forgery tokens; kept on disk so sign-ins survive a restart
