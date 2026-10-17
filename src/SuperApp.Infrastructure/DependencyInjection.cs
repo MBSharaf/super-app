@@ -60,6 +60,7 @@ public static class DependencyInjection
             .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>();
         services.AddSessionRules();
         services.AddAccountServices();
+        Shop.ShopInfrastructure.AddShopInfrastructure(services);
 
         services.AddSeed(configuration);
         return services;

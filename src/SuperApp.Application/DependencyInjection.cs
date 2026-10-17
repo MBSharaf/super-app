@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<ICheckInService, CheckInService>();
         services.AddScoped<IPackageOptionsService, PackageOptionsService>();
         services.AddScoped<IPackagesService, PackagesService>();
+        Features.Shop.ShopRegistration.AddShop(services);
         return services;
     }
 }
