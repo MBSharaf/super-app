@@ -24,6 +24,10 @@ public sealed class PartnerStaffTests(AccountsApiFactory api) : IClassFixture<Ac
         added.Status.ShouldBe(HttpStatusCode.Created, added.Body.ToString());
         added.Body.Data().GetProperty("role").GetString().ShouldBe("CheckIn");
         (await desk.GetAsync("/api/v1/partner/pitches")).Body.Data().GetArrayLength().ShouldBe(1);
+        var who = (await desk.GetAsync("/api/v1/partner/me")).Body.Data();
+        who.GetProperty("role").GetString().ShouldBe("CheckIn");
+        who.GetProperty("canManage").GetBoolean().ShouldBeFalse();
+        (await owner.GetAsync("/api/v1/partner/me")).Body.Data().GetProperty("role").GetString().ShouldBe("Owner");
         (await api.DbAsync(db => db.Set<Notification>().AnyAsync(n => n.UserId == deskId && n.Title == "You joined Test Arena Co as check-in staff"))).ShouldBeTrue();
 
         (await owner.PostAsync("/api/v1/partner/staff", new { login = email, role = "CheckIn" })).Body.Code().ShouldBe("already_staff");

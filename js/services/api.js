@@ -59,6 +59,7 @@
     post: (path, body = {}) => call('POST', path, body),
     put: (path, body = {}) => call('PUT', path, body),
     patch: (path, body = {}) => call('PATCH', path, body),
+    del: (path) => call('DELETE', path),
     /** multipart/form-data (file uploads): pass a FormData */
     form: (path, formData, method = 'POST') => call(method, path, formData, { form: true }),
     /** A data: URL (photos the site already reads) → a Blob to upload (decoded here: the security policy blocks fetch on data: URLs) */

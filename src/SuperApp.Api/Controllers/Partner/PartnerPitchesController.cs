@@ -18,9 +18,14 @@ public sealed class PartnerPitchesController(
     IPartnerPitchesService pitches,
     IPartnerClosuresService closures,
     IPartnerPhotosService photos,
-    IPartnerPitchRemovalService removal) : ApiControllerBase
+    IPartnerPitchRemovalService removal,
+    IPartnerAccess access) : ApiControllerBase
 {
     private const long MaxUpload = 30 * 1024 * 1024;
+
+    /// <summary>Who the caller is in the business (not a partner → 403 not_partner).</summary>
+    [HttpGet("me")]
+    public async Task<ActionResult<object>> Me(CancellationToken ct) => Ok(PartnerMeDto.From(await access.ViewAsync(ct)));
 
     [HttpGet("venues")]
     public async Task<ActionResult<object>> Venues(CancellationToken ct) => Ok(await venues.ListAsync(ct));

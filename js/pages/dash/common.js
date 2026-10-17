@@ -213,6 +213,12 @@
     return () => { off(); clearTimeout(t); document.removeEventListener('click', onDoc); document.removeEventListener('keydown', onKey); };
   };
 
+  /** API mode, no partner business for this visitor: sign in, or apply to list a pitch */
+  const liveGate = (kind) => `<div class="container section-tight"><div class="page-head"><h1 class="h1">Partner dashboard</h1></div>
+    <section class="panel panel-pad acc-real">${icon('lock', 26)}<div class="grow">${kind === 'signin'
+      ? '<h2 class="h4">Sign in to your partner account</h2><p class="small soft">Use the account you applied with. Staff use their own account.</p></div><a class="btn btn-primary" href="#/auth/sign-in?next=/dash">Sign in</a>'
+      : '<h2 class="h4">This account has no pitch business yet</h2><p class="small soft">Apply to list your pitch, or ask the owner to add you as staff.</p></div><a class="btn btn-primary" href="#/partner/apply">Apply</a>'}</section></div>`;
+
   /** Wrap a dashboard page so it requires a signed-in partner */
   const guard = (page) => ({
     ...page,
@@ -224,6 +230,15 @@
         if (SA.services.api.isLive()) {
           if (!SA.services.session.loaded()) await SA.services.session.load();
           if (!SA.services.session.has('admin')) D().auth.signOut();
+        }
+      }
+      // API mode: the partner dashboard shows the signed-in account's business from the server
+      if (!isAdminUI() && !isSellerUI()) {
+        await SA.services.api.ready;
+        if (SA.services.api.isLive()) {
+          const gate = await SA.services.livePartner.enter();
+          this._gate = gate !== 'ok';
+          if (this._gate) return liveGate(gate);
         }
       }
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).render(ctx);
@@ -246,6 +261,7 @@
       }
     },
     mount(el, ctx) {
+      if (this._gate) { this._gate = false; return undefined; }
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).mount(el, ctx);
       if (this._denied) { this._denied = false; return bindLayout(el); }
       if (this._as) { const as = this._as; this._as = null; return as.mount(el, ctx); }

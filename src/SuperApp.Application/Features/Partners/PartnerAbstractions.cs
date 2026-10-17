@@ -16,6 +16,13 @@ public sealed record PartnerScope(long PartnerId, Guid OwnerUserId, string Busin
     public bool CanManage => Role is null or PartnerStaffRole.Manager;
 }
 
+/// <summary>GET /partner/me — the business and what this person may do (Role: Owner, Manager, CheckIn, Accountant).</summary>
+public sealed record PartnerMeDto(long PartnerId, string BusinessName, string Status, string Role, bool CanManage, bool CanDesk)
+{
+    public static PartnerMeDto From(PartnerScope s) => new(s.PartnerId, s.BusinessName, s.Status.ToString(), s.Role?.ToString() ?? "Owner",
+        s.CanManage, s.Role != PartnerStaffRole.Accountant);
+}
+
 /// <summary>A partner's venues, pitches and closures in the database. Ids from other partners are never returned.</summary>
 public interface IPartnerRepository
 {

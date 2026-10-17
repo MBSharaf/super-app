@@ -49,7 +49,7 @@
         m.querySelectorAll('[data-act]').forEach((btn) => btn.addEventListener('click', async () => {
           const act = btn.dataset.act;
           if (act === 'cancel' && !(await SA.ui.overlay.confirm({ title: 'Cancel this booking?', text: `${esc(b.customer.name)} gets a full refund of ${money(b.amount + (b.fee || 0))} and the time becomes bookable again.`, confirmLabel: 'Cancel booking', cancelLabel: 'Keep booking', danger: true }))) return;
-          await D().bookingAction(b.id, act);
+          try { await D().bookingAction(b.id, act); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
           close();
           SA.ui.overlay.toast({ 'check-in': 'Checked in', 'no-show': 'Marked as no-show', cancel: 'Booking cancelled and refunded' }[act]);
           SA.app.rerender();

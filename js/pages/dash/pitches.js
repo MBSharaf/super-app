@@ -66,11 +66,11 @@
               footer: `<button class="btn btn-outline" data-close>Keep open</button><button class="btn btn-blaze" form="close-form" type="submit">Close pitch</button>`,
               onMount(m, close) {
                 m.querySelectorAll('[data-reason]').forEach((b) => b.addEventListener('click', () => { m.querySelector('#cr').value = b.dataset.reason; m.querySelectorAll('[data-reason]').forEach((x) => x.setAttribute('aria-pressed', x === b)); }));
-                m.querySelector('#close-form').addEventListener('submit', (ev) => { ev.preventDefault(); D().setPitchStatus(p.id, 'closed', ev.target.reason.value.trim()); close(); SA.ui.overlay.toast(`${p.name} is closed for booking`, { type: 'info' }); SA.app.rerender(); });
+                m.querySelector('#close-form').addEventListener('submit', async (ev) => { ev.preventDefault(); try { await D().setPitchStatus(p.id, 'closed', ev.target.reason.value.trim()); close(); SA.ui.overlay.toast(`${p.name} is closed for booking`, { type: 'info' }); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } });
               },
             });
           } else {
-            D().setPitchStatus(p.id, 'active');
+            try { await D().setPitchStatus(p.id, 'active'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
             SA.ui.overlay.toast(`${p.name} is open for booking again`); SA.app.rerender();
           }
           return;
@@ -81,7 +81,8 @@
           const up = D().upcomingFor(p.id).length;
           const ok = await SA.ui.overlay.confirm({ title: `Delete ${esc(p.name)}?`, text: `The pitch is removed from Super App.${up ? ` <b>${up} upcoming booking${up > 1 ? 's' : ''} will be cancelled</b> and customers refunded in full.` : ''} Past bookings and earnings stay in your reports. This can’t be undone.`, confirmLabel: 'Delete pitch', cancelLabel: 'Keep pitch', danger: true });
           if (!ok) return;
-          const r = await D().deletePitch(p.id);
+          let r;
+          try { r = await D().deletePitch(p.id); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
           SA.ui.overlay.toast(`${p.name} deleted${r.cancelled ? ` — ${r.cancelled} booking${r.cancelled > 1 ? 's' : ''} cancelled and refunded` : ''}`);
           SA.app.rerender();
         }
@@ -199,23 +200,26 @@
         map.raw.on('click', (ev) => setPoint(ev.latlng.lat, ev.latlng.lng));
       });
 
-      el.querySelector('.pe-side [data-toggle]')?.addEventListener('click', (e) => {
+      el.querySelector('.pe-side [data-toggle]')?.addEventListener('click', async (e) => {
         e.preventDefault();
         const cur = D().pitch(p.id);
-        D().setPitchStatus(p.id, cur.status === 'active' ? 'closed' : 'active', cur.status === 'active' ? 'Closed from the editor' : '');
+        try { await D().setPitchStatus(p.id, cur.status === 'active' ? 'closed' : 'active', cur.status === 'active' ? 'Closed from the editor' : ''); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
         SA.ui.overlay.toast(cur.status === 'active' ? 'Pitch closed for booking' : 'Pitch open for booking', { type: 'info' });
         SA.app.rerender();
       });
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const d = read();
+        const save = form.querySelector('[type="submit"]');
         try {
-          const out = ctx.params.id ? D().updatePitch(p.id, d) : D().createPitch(d, d.ownerId);
+          if (save) save.disabled = true;
+          const out = await (ctx.params.id ? D().updatePitch(p.id, d) : D().createPitch(d, d.ownerId));
           SA.core.motion.confetti({ count: 50, spread: 0.6 });
-          SA.ui.overlay.toast(ctx.params.id ? 'Changes saved — live on Super App' : `${out.name} is live on Super App`, { action: 'View', onAction: () => window.open(`#/pitches/${out.id}`, '_blank') });
+          SA.ui.overlay.toast(out.review === 'pending' ? `${out.name} was sent for Super App review` : ctx.params.id ? 'Changes saved — live on Super App' : `${out.name} is live on Super App`, { action: 'View', onAction: () => window.open(`#/pitches/${out.id}`, '_blank') });
           SA.core.router.go('/dash/pitches');
         } catch (err) {
+          if (save) save.disabled = false;
           if (err.details) C.showErrors(form, err.details);
           SA.ui.overlay.toast(err.message === 'storage_full' ? 'Not enough storage on this device — use fewer or smaller photos.' : err.message, { type: 'error' });
         }

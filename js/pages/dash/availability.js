@@ -20,12 +20,12 @@
       onMount(m, close) {
         const f = m.querySelector('#blk');
         f.addEventListener('change', () => (m.querySelector('.hour-picks').hidden = f.scope.value !== 'some'));
-        f.addEventListener('submit', (e) => {
+        f.addEventListener('submit', async (e) => {
           e.preventDefault();
           const fd = new FormData(f);
           const hrs = fd.get('scope') === 'some' ? fd.getAll('hours').map(Number) : [];
           if (fd.get('scope') === 'some' && !hrs.length) { m.querySelector('[data-err="form"]').textContent = 'Pick at least one hour.'; return; }
-          try { D().addClosure({ pitchId: p.id, from: fd.get('from'), to: fd.get('to'), hours: hrs, reason: fd.get('reason') }); close(); resolve(true); }
+          try { await D().addClosure({ pitchId: p.id, from: fd.get('from'), to: fd.get('to'), hours: hrs, reason: fd.get('reason') }); close(); resolve(true); }
           catch (err) { m.querySelector('[data-err="form"]').textContent = err.message; }
         });
       },
@@ -49,10 +49,10 @@
       onMount(m, close) {
         const f = m.querySelector('#wi');
         f.duration.addEventListener('change', () => { let t = 0; for (let h = hour; h < hour + +f.duration.value; h++) t += PS().priceAt(p, date, h); f.amount.value = t; });
-        f.addEventListener('submit', (e) => {
+        f.addEventListener('submit', async (e) => {
           e.preventDefault();
           const fd = SA.core.utils.formData(f);
-          try { const b = D().walkIn({ pitchId: p.id, date, hour, duration: +fd.duration, name: fd.name, phone: fd.phone, amount: +fd.amount, payment: fd.payment }); close(); resolve(b); }
+          try { const b = await D().walkIn({ pitchId: p.id, date, hour, duration: +fd.duration, name: fd.name, phone: fd.phone, amount: +fd.amount, payment: fd.payment }); close(); resolve(b); }
           catch (err) { if (err.details) C.showErrors(f, err.details); m.querySelector('[data-err="form"]').textContent = err.message; }
         });
       },
@@ -132,7 +132,8 @@
           const cl = SA.services.db.find('closures', ub.dataset.unblock);
           const wide = cl && (cl.from !== cl.to || (cl.hours?.length || 0) !== 1);
           if (wide && !(await SA.ui.overlay.confirm({ title: 'Remove this block?', text: `This hour is part of a block from ${fmtDate(cl.from)} to ${fmtDate(cl.to)} (${cl.hours ? cl.hours.map(fmtHour).join(', ') : 'whole day'}). The whole block will be removed.`, confirmLabel: 'Remove block' }))) return;
-          D().removeClosure(ub.dataset.unblock); SA.ui.overlay.toast('Time is bookable again'); SA.app.rerender(); return;
+          try { await D().removeClosure(ub.dataset.unblock); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
+          SA.ui.overlay.toast('Time is bookable again'); SA.app.rerender(); return;
         }
         const wi = e.target.closest('[data-walkin]');
         if (wi) { const b = await walkInDialog(p, date, +wi.dataset.walkin); if (b) { SA.core.motion.confetti({ count: 40, spread: 0.5 }); SA.ui.overlay.toast(`Walk-in ${b.id} added`); SA.app.rerender(); } return; }

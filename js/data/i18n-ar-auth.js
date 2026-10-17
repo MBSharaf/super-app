@@ -45,9 +45,15 @@
     'Reviews open soon on the live site.': 'التقييمات هتفتح قريب على الموقع.', 'Booking not found.': 'الحجز مش موجود.',
     'Pay at the venue': 'الدفع في الملعب', 'Paid in the app': 'مدفوع في التطبيق',
     'We couldn’t find that pitch. It may have been removed.': 'ما لقيناش الملعب ده. ممكن يكون اتشال.',
+    /* ---------- Partner dashboard from the server ---------- */
+    'Sign in to your partner account': 'ادخل بحساب الشريك بتاعك', 'Use the account you applied with. Staff use their own account.': 'استخدم الحساب اللي قدّمت بيه. الموظفين يدخلوا بحساباتهم.',
+    'This account has no pitch business yet': 'الحساب ده لسه مالوش ملاعب', 'Apply to list your pitch, or ask the owner to add you as staff.': 'قدّم عشان تضيف ملعبك، أو اطلب من صاحب الملعب يضيفك كموظف.',
+    'QR check-in on the live site arrives in the next step.': 'تسجيل الحضور بالـ QR على الموقع هييجي في الخطوة الجاية.',
+    'Choose an area from the list.': 'اختار المنطقة من القايمة.', 'A photo could not be loaded. Try another one.': 'صورة ماتحملتش. جرّب صورة تانية.',
   });
   D.patterns.push(
     ['^Back to (.+)$', 'رجوع لـ {1}'],
+    ['^(.+) was sent for Super App review$', '{1} اتبعت لمراجعة Super App'],
     ['^If (.+) has an account, a link is on its way\\. It works for 30 minutes\\.$', 'لو {1} ليه حساب، اللينك في الطريق. شغال نص ساعة.'],
   );
 })(window.SA);
