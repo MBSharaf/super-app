@@ -12,6 +12,9 @@ public interface IPartnerAccess
 
     /// <summary>The owner or a manager, and the business is not suspended (→ 423 <c>partner_suspended</c>).</summary>
     Task<PartnerScope> ManageAsync(CancellationToken ct);
+
+    /// <summary>Work at the venue (walk-ins, no-shows, check-in): owner, manager or check-in staff; not accountants.</summary>
+    Task<PartnerScope> DeskAsync(CancellationToken ct);
 }
 
 public sealed class PartnerAccess(IPartnerRepository partners, ICurrentUser currentUser) : IPartnerAccess
@@ -33,10 +36,20 @@ public sealed class PartnerAccess(IPartnerRepository partners, ICurrentUser curr
         {
             throw new ForbiddenException("Only the owner or a manager can change this.", "manager_only");
         }
-        if (s.Status == PartnerStatus.Suspended)
-        {
-            throw new FeatureDisabledException("Your partner account is suspended. Contact Super App support.", "partner_suspended");
-        }
-        return s;
+        return NotSuspended(s);
     }
+
+    public async Task<PartnerScope> DeskAsync(CancellationToken ct)
+    {
+        var s = await ViewAsync(ct);
+        if (s.Role == PartnerStaffRole.Accountant)
+        {
+            throw new ForbiddenException("Accountants can see bookings but not change them.", "desk_only");
+        }
+        return NotSuspended(s);
+    }
+
+    private static PartnerScope NotSuspended(PartnerScope s) => s.Status == PartnerStatus.Suspended
+        ? throw new FeatureDisabledException("Your partner account is suspended. Contact Super App support.", "partner_suspended")
+        : s;
 }

@@ -12,7 +12,9 @@ using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Lookups;
+using SuperApp.Application.Abstractions.Documents;
 using SuperApp.Application.Features.Partners;
+using SuperApp.Infrastructure.Documents;
 using SuperApp.Application.Features.Pitches;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Infrastructure.Email;
@@ -84,6 +86,8 @@ public static class DependencyInjection
         services.AddScoped<IAvailabilityReader, AvailabilityReader>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IPartnerRepository, PartnerRepository>();
+        services.AddScoped<IPartnerBookingsRepository, PartnerBookingsRepository>();
+        services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
         services.AddSingleton<IQrTokens, QrTokens>();
         return services;

@@ -16,7 +16,9 @@ public sealed record BookingPlan(BookablePitch Pitch, IReadOnlyList<PriceLine> L
 /// </summary>
 public sealed class BookingPlanner(IBookingRepository bookings, IAvailabilityReader availability, ISettingsReader settings, IClock clock)
 {
-    public async Task<BookingPlan> PlanAsync(string slug, DateOnly date, int hour, int duration, CancellationToken ct)
+    /// <param name="allowStarted">Walk-ins: the hour that is being played now can still be booked at the venue
+    /// (the database's unique index still stops a double booking).</param>
+    public async Task<BookingPlan> PlanAsync(string slug, DateOnly date, int hour, int duration, CancellationToken ct, bool allowStarted = false)
     {
         var pitch = await bookings.PitchAsync(slug, ct) ?? throw new NotFoundException("This pitch does not exist or is not open for booking.");
         var data = await availability.ReadAsync(slug, date, date.AddDays(1), clock.UtcNow, ct) ?? throw new NotFoundException();
@@ -26,7 +28,8 @@ public sealed class BookingPlanner(IBookingRepository bookings, IAvailabilityRea
         {
             throw new BusinessRuleException("The pitch is not open at these hours.", "outside_hours");
         }
-        foreach (var h in hours)
+        var now = CairoTime.Now(clock);
+        foreach (var h in hours.Where(h => !(allowStarted && h.Status == "past" && h.Date.ToDateTime(new TimeOnly(h.CalendarHour, 0)) > now.AddHours(-1))))
         {
             CheckStatus(h.Status);
         }

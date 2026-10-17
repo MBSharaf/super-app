@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IPartnerVenuesService, PartnerVenuesService>();
         services.AddScoped<IPartnerPitchesService, PartnerPitchesService>();
         services.AddScoped<IPartnerClosuresService, PartnerClosuresService>();
+        services.AddScoped<IPartnerBookingsService, PartnerBookingsService>();
         return services;
     }
 }

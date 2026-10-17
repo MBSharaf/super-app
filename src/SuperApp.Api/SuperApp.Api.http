@@ -113,6 +113,27 @@ X-CSRF-TOKEN: {{csrf}}
 
 { "fromDate": "2026-11-01", "toDate": "2026-11-01", "fromHour": 9, "toHour": 12, "reason": "Maintenance" }
 
+### Partner: bookings (status=upcoming|past|cancelled|noshow|all, q = code / name / phone)
+GET {{api}}/partner/bookings?status=upcoming
+Accept: application/json
+
+### Partner: bookings as Excel (dashboard sheet first)
+GET {{api}}/partner/bookings/export.xlsx?status=all
+
+### Partner: walk-in (no fee, no commission)
+POST {{api}}/partner/bookings/walk-in
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "pitchId": 1, "date": "2026-11-01", "hour": 20, "duration": 1, "name": "Captain Karim", "phone": "01012345678" }
+
+### Partner: cancel a booking (the player gets a full refund)
+POST {{api}}/partner/bookings/SA-XXXXXXXX/cancel
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "reason": "Floodlights repair" }
+
 ### Sign out
 POST {{api}}/auth/sign-out
 X-CSRF-TOKEN: {{csrf}}
