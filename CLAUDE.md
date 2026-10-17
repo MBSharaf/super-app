@@ -17,6 +17,9 @@ Read this before making any design, social post, reel, video, ad or marketing co
 7b. **Styled and with sound, always:** use the collage language in `docs/brand/references.md` (torn paper, grid paper, cut-outs with a colour halo, ransom-note word blocks, tape, stamps, hand-drawn marks, stop-motion jitter) and a full sound bed (beat + paper/tape/stamp/whoosh foley, loudness -14 LUFS). Never deliver a silent or flat video.
 8. Red lines: no club crests, official kits or player photos without rights; no betting framing (fantasy prizes are sponsor vouchers, never cash); no unverified claims.
 
+## Competitor: Yalla Hagz
+Read `docs/brand/competitors/yalla-hagz.md` before designing. They own **black-and-white photos + neon green + brush X marks**. We never use neon green or their scribble look; we use paper collage with `blaze` as the accent, real people only, no brand logos.
+
 ## Fantasy positioning
 Egyptian league fantasy is **not** a first in Egypt (FilGoal fantasy has run since about 2020/21; independent apps exist too). Never say "first Egyptian league fantasy". Angles: Egyptian + English fantasy in one app, connected to your real games, sponsor prizes. Re-check before any launch in case the league releases an official game.
 
