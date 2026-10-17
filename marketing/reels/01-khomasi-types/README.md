@@ -5,12 +5,13 @@
 
 | File | What |
 |---|---|
-| `reel-01-khomasi-types.mp4` | Final reel with the synthesized whistle/paper/ding sound layer |
-| `reel-01-khomasi-types-silent.mp4` | Same reel without sound, for adding trending audio inside Instagram/TikTok |
-| `cover.png` | Suggested cover frame (hook) |
+| `reel-01-khomasi-types-v2.mp4` | **Current version (v2):** collage style from `docs/brand/references.md`, full 104 BPM beat + paper/tape/stamp/whoosh foley, -14.5 LUFS |
+| `reel-01-khomasi-types-v2-silent.mp4` | v2 without sound, for adding trending audio inside Instagram/TikTok |
+| `cover-v2.png` | v2 cover frame (hook) |
+| `reel-01-khomasi-types.mp4`, `-silent.mp4`, `cover.png` | v1 (flat style, effects only) — kept for comparison |
 | `index.html` | The composition: `window.render(t)` draws any frame; open it in a browser to scrub |
 | `render.js` | `node render.js` → MP4 (Playwright frames + ffmpeg); `--frames=1.3,5` saves stills |
-| `sfx.py` | Generates `sfx.wav` (no licensed audio used) |
+| `sfx.py` | Generates `sfx.wav`: the beat and foley (no licensed audio used) |
 
 ## Beats
 | Time | On screen |
