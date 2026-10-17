@@ -39,7 +39,7 @@ const stills = (process.argv.find((a) => a.startsWith('--frames=')) || '').slice
 
   const sfx = path.join(dir, 'sfx.wav');
   const args = ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', path.join(frames, 'f%04d.png')];
-  if (fs.existsSync(sfx)) args.push('-i', sfx, '-c:a', 'aac', '-b:a', '160k', '-shortest');
+  if (fs.existsSync(sfx)) args.push('-i', sfx, '-af', 'loudnorm=I=-14:TP=-1:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest');
   args.push('-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'slow', '-movflags', '+faststart', out);
   execFileSync('ffmpeg', args, { stdio: 'inherit' });
   fs.rmSync(frames, { recursive: true, force: true });

@@ -4,7 +4,7 @@ Read this before making any design, social post, reel, video, ad or marketing co
 
 ## Sources of truth
 - **Design system (tokens, components, logos, icons, social templates):** https://claude.ai/artifact/65e1JyQRGpGN3JMgobxF2f — read its `project/README.md` and the sections below with the Artifact tool.
-- **In this repo:** `css/tokens.css` + `css/dark.css` (tokens), `docs/brand/audiences.md`, `docs/brand/content-strategy.md`, `docs/brand/social-video.md`, `docs/brand/prompts.md` (ready video prompts, the code-video stack and approved styles).
+- **In this repo:** `css/tokens.css` + `css/dark.css` (tokens), `docs/brand/audiences.md`, `docs/brand/content-strategy.md`, `docs/brand/social-video.md`, `docs/brand/prompts.md` (ready video prompts, the code-video stack and approved styles), `docs/brand/references.md` + `docs/brand/references/` (the visual moodboard: paper-collage style, recoloured to our tokens — inspiration only, never repost).
 
 ## Always, for every piece of content
 1. Write for **one** audience from `docs/brand/audiences.md`.
@@ -14,6 +14,7 @@ Read this before making any design, social post, reel, video, ad or marketing co
 5. **SEO + GEO:** the main keyword on screen, spoken, and in the first caption line; 3–5 checked hashtags; burned-in captions.
 6. Brand look from the design system: `paper`/`ink-bg` grounds, `turf` for pitch and success, `blaze` once per design, Archivo + Cairo, pills, spring motion. Sizes and safe zones in `social-video.md`.
 7. One CTA.
+7b. **Styled and with sound, always:** use the collage language in `docs/brand/references.md` (torn paper, grid paper, cut-outs with a colour halo, ransom-note word blocks, tape, stamps, hand-drawn marks, stop-motion jitter) and a full sound bed (beat + paper/tape/stamp/whoosh foley, loudness -14 LUFS). Never deliver a silent or flat video.
 8. Red lines: no club crests, official kits or player photos without rights; no betting framing (fantasy prizes are sponsor vouchers, never cash); no unverified claims.
 
 ## Fantasy positioning

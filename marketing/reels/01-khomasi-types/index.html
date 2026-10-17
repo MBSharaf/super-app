@@ -2,204 +2,241 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>Reel 01 — أنواع اللاعيبة في ماتش الخماسي</title>
-<!-- Super App reel 01 · collage style (docs/brand/prompts.md P5) · 1080×1920 · 15 s.
+<title>Reel 01 v2 — أنواع اللاعيبة في ماتش الخماسي</title>
+<!-- Super App reel 01 v2 · collage style from docs/brand/references (recoloured to brand tokens) · 1080×1920 · 15 s.
      Deterministic: window.render(t) draws the frame at t seconds; render.js steps it at 30 fps. -->
 <style>
 @font-face { font-family: "Archivo"; src: url(../../../vendor/fonts/archivo-latin.woff2) format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
 @font-face { font-family: "Cairo"; src: url(../../../vendor/fonts/cairo-arabic.woff2) format("woff2"); font-weight: 400 800; }
 :root {
-  --paper: #F1F2EE; --surface: #FFFFFF; --ink: #0D1411; --ink-2: #46514B; --ink-bg: #0D1411;
-  --turf: #0B6E4F; --turf-tint: #E1F0E8; --blaze: #FF5B14; --gold-tint: #FBF1D6;
+  --paper: #F1F2EE; --cream: #F4EEDF; --surface: #FFFFFF; --ink: #0D1411; --ink-2: #46514B;
+  --turf: #0B6E4F; --turf-fill: #0B6E4F; --turf-tint: #E1F0E8; --blaze: #FF5B14; --gold: #C9920F; --gold-tint: #FBF1D6;
   --font: "Cairo", "Archivo", system-ui, sans-serif;
 }
 * { box-sizing: border-box; margin: 0; }
-html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
 body { font-family: var(--font); color: var(--ink); position: relative; }
-#stage { position: absolute; inset: 0; overflow: hidden; }
 .abs { position: absolute; }
-.grain { inset: 0; opacity: .5; mix-blend-mode: multiply; pointer-events: none; }
-.chalk { inset: 0; }
-.chalk * { fill: none; stroke: var(--ink); stroke-width: 4; opacity: .06; }
-.tag { top: 270px; right: 60px; height: 72px; padding: 0 32px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 34px; display: flex; align-items: center; gap: 14px; }
+.scene { position: absolute; inset: 0; overflow: hidden; }
+.bg-ink { background: var(--ink); }
+.bg-turf { background-color: var(--turf-fill); background-image: linear-gradient(rgba(255,255,255,.16) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.16) 2px, transparent 2px); background-size: 54px 54px; }
+.bg-cream { background-color: var(--cream); background-image: linear-gradient(rgba(13,20,17,.05) 2px, transparent 2px), linear-gradient(90deg, rgba(13,20,17,.05) 2px, transparent 2px); background-size: 54px 54px; }
+.halftone { inset: 0; opacity: .14; background-image: radial-gradient(rgba(255,255,255,.9) 1.6px, transparent 2px); background-size: 14px 14px; }
+.block { display: inline-block; font-weight: 800; line-height: 1.12; padding: 6px 30px 18px; box-shadow: 0 16px 24px -14px rgba(0,0,0,.55); }
+.b-ink { background: var(--ink); color: #fff; }
+.b-paper { background: var(--surface); color: var(--ink); }
+.b-blaze { background: var(--blaze); color: #fff; }
+.b-cream { background: var(--cream); color: var(--ink); }
+.note { background: var(--gold-tint); background-image: repeating-linear-gradient(transparent 0 58px, rgba(11,110,79,.22) 58px 60px); color: var(--ink); font-weight: 700; padding: 22px 40px 30px; box-shadow: 0 18px 26px -16px rgba(0,0,0,.5); line-height: 60px; }
+.note mark { background: linear-gradient(transparent 55%, rgba(255,91,20,.55) 55%); color: inherit; padding: 0 4px; }
+.tape { width: 170px; height: 52px; background: rgba(251,241,214,.78); box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.stampbox { width: 190px; height: 230px; background: var(--surface); border: 12px dotted currentColor; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 14px 20px -12px rgba(0,0,0,.5); }
+.stampbox b { font: 800 84px "Archivo", sans-serif; line-height: 1; color: var(--ink); direction: ltr; }
+.stampbox span { font: 800 20px "Archivo", sans-serif; letter-spacing: .12em; color: var(--ink-2); direction: ltr; }
+.tag { top: 270px; right: 60px; height: 70px; padding: 0 30px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 34px; display: flex; align-items: center; gap: 14px; z-index: 50; box-shadow: 0 8px 16px -10px rgba(0,0,0,.5); }
 .tag i { width: 14px; height: 14px; border-radius: 50%; background: var(--turf); display: block; }
-.count { top: 276px; left: 60px; height: 60px; padding: 0 24px; border-radius: 999px; background: var(--ink-bg); color: #fff; font: 800 30px "Archivo", sans-serif; display: flex; align-items: center; direction: ltr; }
-.strip { background: var(--surface); padding: 34px 48px 40px; box-shadow: 0 18px 30px -18px rgba(13,20,17,.45); }
-.strip h1, .strip h2 { font-weight: 800; line-height: 1.22; letter-spacing: normal; }
-.tape { width: 170px; height: 54px; background: rgba(251,241,214,.82); box-shadow: 0 2px 6px rgba(13,20,17,.12); }
-.w { display: inline-block; }
-.quote { left: 60px; right: 140px; bottom: 470px; display: flex; justify-content: center; }
-.quote span { background: rgba(13,20,17,.88); color: #fff; font-weight: 700; font-size: 56px; line-height: 1.35; padding: 16px 34px 22px; border-radius: 28px; text-align: center; }
-.quote b { color: var(--blaze); font-weight: 800; }
-.note { left: 60px; right: 140px; bottom: 380px; display: flex; justify-content: center; }
-.note span { background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 36px; padding: 10px 28px 14px; border-radius: 999px; }
+.count { top: 270px; left: 60px; z-index: 50; height: 70px; padding: 0 26px; background: var(--cream); color: var(--ink); font: 800 34px "Archivo", sans-serif; letter-spacing: .06em; display: flex; align-items: center; direction: ltr; box-shadow: 0 8px 16px -10px rgba(0,0,0,.5); }
+.mark-x { width: 34px; height: 34px; z-index: 40; }
+.grain { inset: 0; z-index: 60; pointer-events: none; mix-blend-mode: multiply; opacity: .55; }
+.pill { display: inline-flex; align-items: center; height: 76px; padding: 0 34px 6px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 38px; box-shadow: 0 10px 18px -12px rgba(0,0,0,.5); }
 </style>
 </head>
 <body>
-<div id="stage">
-  <svg class="abs grain" width="1080" height="1920" aria-hidden="true">
-    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .05  0 0 0 0 .08  0 0 0 0 .07  0 0 0 .09 0"/></filter>
-    <rect width="1080" height="1920" filter="url(#n)"/>
-  </svg>
-  <svg class="abs chalk" width="1080" height="1920" viewBox="0 0 1080 1920" aria-hidden="true">
-    <line x1="0" y1="960" x2="1080" y2="960"/><circle cx="540" cy="960" r="230"/>
-    <rect x="290" y="-10" width="500" height="250"/><rect x="290" y="1680" width="500" height="250"/>
-  </svg>
-  <div class="abs tag"><i></i>ماتش خماسي</div>
-  <div class="abs count" id="count">1/5</div>
-  <div id="scenes"></div>
-</div>
+<div id="root"></div>
 <script>
-const W = 1080, H = 1920, DUR = 15;
+const DUR = 15, HOOK_END = 1.6, SCENE0 = 1.6, SCENE = 2.4, END = 13.6, WIPE = .32;
 const BODY = 'M14 6 L22 3 Q32 8 42 3 L50 6 L60 16 L52 25 L48 22 L48 60 L16 60 L16 22 L12 25 L4 16 Z';
 
-// Brand easing: cubic-bezier(.2,.8,.2,1) and the spring cubic-bezier(.34,1.56,.64,1)
+// Brand easing
 function bezier(p1x, p1y, p2x, p2y) {
-  const cx = 3 * p1x, bx = 3 * (p2x - p1x) - cx, ax = 1 - cx - bx;
-  const cy = 3 * p1y, by = 3 * (p2y - p1y) - cy, ay = 1 - cy - by;
+  const cx = 3 * p1x, bx = 3 * (p2x - p1x) - cx, ax = 1 - cx - bx, cy = 3 * p1y, by = 3 * (p2y - p1y) - cy, ay = 1 - cy - by;
   const sx = (t) => ((ax * t + bx) * t + cx) * t, sy = (t) => ((ay * t + by) * t + cy) * t;
-  return (x) => {
-    if (x <= 0) return 0; if (x >= 1) return 1;
-    let t = x;
-    for (let i = 0; i < 8; i++) { const d = (3 * ax * t + 2 * bx) * t + cx; const e = sx(t) - x; if (Math.abs(e) < 1e-5 || !d) break; t -= e / d; }
-    return sy(Math.min(1, Math.max(0, t)));
-  };
+  return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
+    for (let i = 0; i < 8; i++) { const d = (3 * ax * t + 2 * bx) * t + cx, e = sx(t) - x; if (Math.abs(e) < 1e-5 || !d) break; t -= e / d; }
+    return sy(Math.min(1, Math.max(0, t))); };
 }
 const ease = bezier(.2, .8, .2, 1), spring = bezier(.34, 1.56, .64, 1);
-const clamp = (v) => Math.min(1, Math.max(0, v));
-const prog = (t, a, d) => clamp((t - a) / d);
-const lerp = (a, b, p) => a + (b - a) * p;
+const clamp = (v) => Math.min(1, Math.max(0, v)), prog = (t, a, d) => clamp((t - a) / d), lerp = (a, b, p) => a + (b - a) * p;
+// Stop-motion jitter: a new random offset 12 times a second, like hand-moved paper
+const jit = (seed, t, amp) => { const k = Math.floor(t * 12) * 97 + seed * 131; const r = Math.sin(k * 12.9898) * 43758.5453; return ((r - Math.floor(r)) - .5) * 2 * amp; };
 
-// Jagged torn-paper edges, seeded so every frame is identical
-function torn(seed, w, h, amp = 10, step = 28) {
+function torn(seed, w, h, amp = 12, step = 26, sides = 'tblr') {
   let s = seed; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
-  const pts = [];
-  for (let x = 0; x <= w; x += step) pts.push(`${x}px ${r() * amp}px`);
-  for (let y = 0; y <= h; y += step) pts.push(`${w - r() * amp * .6}px ${y}px`);
-  for (let x = w; x >= 0; x -= step) pts.push(`${x}px ${h - r() * amp}px`);
-  for (let y = h; y >= 0; y -= step) pts.push(`${r() * amp * .6}px ${y}px`);
-  return `polygon(${pts.join(',')})`;
+  const p = [];
+  for (let x = 0; x <= w; x += step) p.push(`${x}px ${sides.includes('t') ? r() * amp : 0}px`);
+  for (let y = 0; y <= h; y += step) p.push(`${w - (sides.includes('r') ? r() * amp : 0)}px ${y}px`);
+  for (let x = w; x >= 0; x -= step) p.push(`${x}px ${h - (sides.includes('b') ? r() * amp : 0)}px`);
+  for (let y = h; y >= 0; y -= step) p.push(`${sides.includes('l') ? r() * amp * 2.2 : 0}px ${y}px`);
+  return `polygon(${p.join(',')})`;
 }
 
 const KITS = [
-  { n: '10', a: '#1E3A8A', b: '#F8D24A', p: 'stripes', ink: '#fff', label: 'اللي مبيباصيش', quote: 'الكورة بتاعته <b>من البيت</b>' },
-  { n: '1', a: '#9BE15D', b: '#0D1411', p: 'solid', ink: '#0D1411', label: 'الحارس بالدور', quote: '<b>خمس دقايق</b> بس وراجع قدام' },
-  { n: '7', a: '#0B6E4F', b: '#FFFFFF', p: 'hoops', ink: '#fff', label: 'اللي جاي متأخر', quote: 'أنا تحت البيت… <b>من ساعة</b>' },
-  { n: '8', a: '#334155', b: '#94A3B8', p: 'half', ink: '#fff', label: 'المحلل', quote: 'لو كنت باصيت <b>شمال</b> كان جول' },
-  { n: '5', a: '#0E7490', b: '#FFFFFF', p: 'solid', ink: '#fff', label: 'اللي بيلم الفلوس', quote: 'يا رجالة اللي مدفعش <b>الـ 45 جنيه</b>', note: 'على Super App كل واحد بيدفع نصيبه' },
+  { n: '10', a: '#1E3A8A', b: '#F8D24A', p: 'stripes', ink: '#fff', bg: 'turf', halo: 'var(--blaze)', words: ['اللي', 'مبيباصيش'], quote: 'الكورة بتاعته <mark>من البيت</mark>' },
+  { n: '1', a: '#9BE15D', b: '#0D1411', p: 'solid', ink: '#0D1411', bg: 'cream', halo: 'var(--turf-fill)', words: ['الحارس', 'بالدور'], quote: '<mark>خمس دقايق</mark> بس وراجع قدام' },
+  { n: '7', a: '#E5E7EB', b: '#0B6E4F', p: 'hoops', ink: '#0D1411', bg: 'ink', halo: 'var(--blaze)', words: ['اللي', 'جاي', 'متأخر'], quote: 'أنا تحت البيت… <mark>من ساعة</mark>' },
+  { n: '8', a: '#334155', b: '#94A3B8', p: 'half', ink: '#fff', bg: 'turf', halo: 'var(--gold)', words: ['المحلل'], quote: 'لو كنت باصيت <mark>شمال</mark> كان جول' },
+  { n: '5', a: '#0E7490', b: '#FFFFFF', p: 'solid', ink: '#fff', bg: 'cream', halo: 'var(--blaze)', words: ['اللي', 'بيلم', 'الفلوس'], quote: 'يا رجالة اللي مدفعش <mark>الـ 45 جنيه</mark>', stamp: '45', note: 'على Super App كل واحد بيدفع نصيبه' },
 ];
+const STYLES = { turf: ['b-blaze', 'b-paper', 'b-ink'], cream: ['b-ink', 'b-blaze', 'b-paper'], ink: ['b-paper', 'b-blaze', 'b-cream'] };
+const CHALK = { turf: '#FFFFFF', cream: '#0D1411', ink: '#FFFFFF' };
+
 function kitSvg(k, i) {
   const id = 'k' + i;
-  const pat = {
-    solid: '',
-    stripes: [18, 28, 38].map((x) => `<rect x="${x}" y="0" width="5" height="64" fill="${k.b}"/>`).join(''),
+  const pat = { solid: '', stripes: [18, 28, 38].map((x) => `<rect x="${x}" y="0" width="5" height="64" fill="${k.b}"/>`).join(''),
     hoops: [24, 36, 48].map((y) => `<rect x="0" y="${y}" width="64" height="5" fill="${k.b}"/>`).join(''),
-    half: `<rect x="32" y="0" width="32" height="64" fill="${k.b}"/>`,
-    sash: `<path d="M10 10 L22 6 L56 60 L44 64 Z" fill="${k.b}"/>`,
-  }[k.p];
-  return `<svg width="600" height="600" viewBox="-4 -4 72 72" style="overflow:visible">
-    <defs><clipPath id="${id}"><path d="${BODY}"/></clipPath></defs>
-    <path d="${BODY}" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
-    <path d="${BODY}" fill="${k.a}"/><g clip-path="url(#${id})">${pat}</g>
+    half: `<rect x="32" y="0" width="32" height="64" fill="${k.b}"/>`, sash: `<path d="M10 10 L22 6 L56 60 L44 64 Z" fill="${k.b}"/>` }[k.p];
+  // printed-photo look: halftone dots and a soft shade, clipped to the shirt
+  return `<svg width="560" height="560" viewBox="-4 -4 72 72" style="overflow:visible">
+    <defs><clipPath id="${id}"><path d="${BODY}"/></clipPath>
+      <pattern id="${id}h" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx=".8" cy=".8" r=".42" fill="rgba(13,20,17,.28)"/></pattern>
+      <linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>
+    <path d="${BODY}" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+    <g clip-path="url(#${id})"><rect x="-4" y="-4" width="72" height="72" fill="${k.a}"/>${pat}<rect x="-4" y="-4" width="72" height="72" fill="url(#${id}h)"/><rect x="-4" y="-4" width="72" height="72" fill="url(#${id}g)"/></g>
     <path d="M24 4.2 Q32 10 40 4.2" fill="none" stroke="${k.p === 'solid' ? k.b : 'rgba(0,0,0,.35)'}" stroke-width="2.4"/>
-    <text x="32" y="44" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="20" fill="${k.ink}" >${k.n}</text>
+    <text x="32" y="44" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="20" fill="${k.ink}">${k.n}</text>
   </svg>`;
 }
+const markX = (x, y, c) => `<svg class="abs mark-x" style="left:${x}px;top:${y}px" viewBox="0 0 34 34"><circle cx="17" cy="17" r="10" fill="none" stroke="${c}" stroke-width="2.5"/><path d="M17 0v34M0 17h34" stroke="${c}" stroke-width="2.5"/></svg>`;
+const brandMark = (s) => `<svg width="${s}" height="${s}" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>`;
 
-// Timeline
-const HOOK = [0, 1.6], SCENE0 = 1.6, SCENE = 2.4, END = 13.6;
-const scenesEl = document.getElementById('scenes');
-const words = (s) => s.split(' ').map((w) => `<span class="w">${w}</span>`).join(' ');
+// ---------- build ----------
+const root = document.getElementById('root');
+let html = '';
 
-scenesEl.innerHTML = `
-  <div class="abs" id="hook" style="left:90px;right:90px;top:620px">
-    <div class="strip" style="clip-path:${torn(3, 900, 470)};transform:rotate(-2.5deg)">
-      <h1 style="font-size:96px">${words('في كل ماتش خماسي')}</h1>
-      <h1 style="font-size:96px;color:var(--turf);padding-bottom:10px">${words('فيه الخمسة دول')}</h1>
-    </div>
-    <div class="abs tape" style="top:-22px;right:60px;transform:rotate(6deg)"></div>
-    <div class="abs tape" style="bottom:-34px;left:-10px;transform:rotate(-8deg)"></div>
+// Hook (ink, Vox-like)
+html += `<div class="scene bg-ink" id="hook" style="z-index:1">
+  <div class="abs halftone"></div>
+  ${markX(90, 420, '#ffffff55')}${markX(960, 1460, '#ffffff55')}
+  <div class="abs" style="right:70px;left:70px;top:520px;display:flex;flex-direction:column;align-items:flex-start;gap:22px">
+    <span class="block b-paper hw" style="font-size:92px;transform:rotate(-3deg)">في كل</span>
+    <span class="block b-blaze hw" style="font-size:150px;transform:rotate(2deg);margin-inline-start:120px">ماتش</span>
+    <span class="block b-paper hw" style="font-size:170px;transform:rotate(-1.5deg);clip-path:${torn(5, 760, 260, 10)}">خماسي</span>
+    <span class="note hw" style="font-size:54px;transform:rotate(1.5deg);margin-top:16px">فيه <mark>الخمسة دول</mark>… انت واحد منهم</span>
   </div>
-  ${KITS.map((k, i) => `
-  <div class="abs scene" id="s${i}" style="inset:0">
-    <div class="abs sticker" style="left:240px;top:420px;width:600px;height:600px;filter:drop-shadow(0 26px 28px rgba(13,20,17,.28))">${kitSvg(k, i)}</div>
+  <div class="abs" id="film" style="left:-40px;bottom:470px;width:620px;height:150px;background:#111;transform:rotate(-4deg);display:flex;gap:18px;padding:26px 40px;align-items:center;box-shadow:0 14px 22px -12px #000">
+    ${KITS.map((k, i) => `<div style="width:96px;height:96px;background:#2a2f2d;display:grid;place-items:center;filter:grayscale(1) contrast(1.2)">${kitSvg(k, 'f' + i).replace('width="560" height="560"', 'width="80" height="80"')}</div>`).join('')}
+    <div class="abs" style="inset:6px 0 auto;height:12px;background:repeating-linear-gradient(90deg,#fff 0 14px,transparent 14px 34px);opacity:.75"></div>
+    <div class="abs" style="inset:auto 0 6px;height:12px;background:repeating-linear-gradient(90deg,#fff 0 14px,transparent 14px 34px);opacity:.75"></div>
+  </div>
+</div>`;
+
+// Five scenes
+KITS.forEach((k, i) => {
+  const st = STYLES[k.bg], chalk = CHALK[k.bg];
+  html += `<div class="scene bg-${k.bg}" id="s${i}" style="z-index:${2 + i};clip-path:${torn(20 + i, 1080, 1920, 28, 34, 'l')}">
+    ${k.bg === 'ink' ? '<div class="abs halftone"></div>' : ''}
+    ${markX(80, 1480, chalk + '66')}${markX(966, 410, chalk + '66')}
+    <div class="abs halo" style="left:250px;top:400px;width:580px;height:580px;border-radius:50%;background:${k.halo}"></div>
+    <div class="abs sticker" style="left:260px;top:380px;width:560px;height:560px;filter:drop-shadow(0 28px 26px rgba(0,0,0,.38))">${kitSvg(k, i)}
+      <div class="abs tape" style="top:30px;left:70px;transform:rotate(-24deg)"></div>
+      <div class="abs tape" style="top:46px;right:40px;transform:rotate(28deg);width:140px"></div>
+    </div>
     <svg class="abs scribble" width="1080" height="1920" viewBox="0 0 1080 1920" style="inset:0">
-      <path d="M200 1150 C 150 1080, 170 980, 250 940" fill="none" stroke="var(--blaze)" stroke-width="12" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
-      <path d="M222 958 L 252 938 L 238 972" fill="none" stroke="var(--blaze)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+      <path d="M470 630 C 600 570, 700 650, 655 750 C 610 835, 455 810, 448 720 C 444 665, 500 620, 560 618" fill="none" stroke="${chalk}" stroke-width="9" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
     </svg>
-    <div class="abs label" style="right:90px;top:1080px">
-      <div class="strip" style="clip-path:${torn(11 + i * 5, 840, 200)};width:840px;padding:36px 50px 44px;text-align:center">
-        <h2 style="font-size:92px;white-space:nowrap">${k.label}</h2>
-      </div>
-      <div class="abs tape" style="top:-20px;left:40px;transform:rotate(-7deg);width:140px"></div>
+    <div class="abs stampbox" style="left:70px;top:390px;color:${k.bg === 'cream' ? 'var(--cream)' : k.bg === 'ink' ? 'var(--ink)' : 'var(--turf-fill)'}">
+      <b>${k.stamp ? k.stamp : '#' + k.n}</b><span>${k.stamp ? 'EGP' : 'SUPER APP'}</span>
     </div>
-    <div class="abs quote"><span>${k.quote}</span></div>
-    ${k.note ? `<div class="abs note"><span>${k.note}</span></div>` : ''}
-  </div>`).join('')}
-  <div class="abs" id="end" style="left:90px;right:90px;top:640px">
-    <div class="strip" style="clip-path:${torn(41, 900, 420)};transform:rotate(1.8deg);text-align:center">
-      <h1 style="font-size:104px;white-space:nowrap">${words('منشن صاحبك ده')}</h1>
-      <p style="font-size:44px;font-weight:700;color:var(--ink-2);margin-top:14px">وانت… رقم كام فيهم؟</p>
+    <div class="abs words" style="right:70px;left:70px;top:990px;display:flex;flex-wrap:wrap;gap:16px 18px;justify-content:flex-start;align-items:flex-end">
+      ${k.words.map((w, j) => `<span class="block ${st[j % 3]} w" style="font-size:${w.length > 6 ? 104 : 112}px">${w}</span>`).join('')}
     </div>
-    <div class="abs tape" style="top:-24px;left:70px;transform:rotate(-5deg)"></div>
-  </div>
-  <div class="abs" id="brand" style="left:0;right:0;top:1250px;display:flex;flex-direction:column;align-items:center;gap:18px">
-    <svg width="120" height="120" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>
-    <div style="font:800 40px Archivo, sans-serif;letter-spacing:-.02em;font-stretch:125%;direction:ltr">SUPER APP</div>
-    <div style="font-size:34px;font-weight:700;color:var(--ink-2)">كل الكورة في مكان واحد</div>
+    <div class="abs quote" style="right:90px;left:150px;top:1345px;display:flex">
+      <div class="note" style="font-size:52px;clip-path:${torn(60 + i, 900, 160, 8)}">${k.quote}</div>
+    </div>
+    ${k.note ? `<div class="abs pnote" style="right:90px;top:1460px"><span class="pill">${k.note}</span></div>` : ''}
   </div>`;
+});
 
-const $ = (s) => document.querySelector(s);
-const show = (el, o, tf) => { el.style.opacity = o; if (tf !== undefined) el.style.transform = tf; };
+// End card
+html += `<div class="scene bg-turf" id="end" style="z-index:9;clip-path:${torn(90, 1080, 1920, 28, 34, 'l')}">
+  ${markX(80, 420, '#ffffff66')}${markX(966, 1480, '#ffffff66')}
+  <div class="abs" style="right:70px;left:70px;top:560px;display:flex;flex-direction:column;align-items:flex-start;gap:20px">
+    <span class="block b-blaze ew" style="font-size:170px;transform:rotate(-2deg)">منشن</span>
+    <span class="block b-paper ew" style="font-size:150px;transform:rotate(1.5deg);margin-inline-start:140px">صاحبك</span>
+    <span class="block b-ink ew" style="font-size:150px;transform:rotate(-1deg)">ده</span>
+    <span class="note ew" style="font-size:54px;transform:rotate(1.5deg);margin-top:10px">وانت… <mark>رقم كام</mark> فيهم؟</span>
+  </div>
+  <div class="abs" id="seal" style="left:90px;top:1150px;width:300px;height:300px">
+    <svg width="300" height="300" viewBox="0 0 300 300" class="abs" id="ring">
+      <defs><path id="circ" d="M150 150 m-112 0 a112 112 0 1 1 224 0 a112 112 0 1 1 -224 0"/></defs>
+      <circle cx="150" cy="150" r="146" fill="var(--cream)"/><circle cx="150" cy="150" r="138" fill="none" stroke="#0D1411" stroke-width="3" stroke-dasharray="2 7"/>
+      <text font-family="Cairo" font-weight="800" font-size="27" fill="#0D1411"><textPath href="#circ">كل الكورة في مكان واحد · SUPER APP · </textPath></text>
+    </svg>
+    <div class="abs" style="left:90px;top:90px">${brandMark(120)}</div>
+  </div>
+</div>`;
+
+// Persistent overlays
+html += `<div class="abs tag"><i></i>ماتش خماسي</div><div class="abs count" id="count">01 / 05</div>
+<svg class="abs grain" width="1080" height="1920" aria-hidden="true">
+  <filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .2 0"/></filter>
+  <rect width="1080" height="1920" filter="url(#n)"/>
+</svg>`;
+root.innerHTML = html;
+
+// ---------- animate ----------
+const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const baseTf = new Map();
+$$('.hw, .ew').forEach((el) => baseTf.set(el, el.style.transform || ''));
+
+function wipeIn(el, at, t) { // torn-paper sheet slides in from the right (reading direction)
+  const p = ease(prog(t, at - WIPE, WIPE));
+  el.style.display = t < at - WIPE ? 'none' : 'block';
+  el.style.transform = `translateX(${(1 - p) * 1160}px)`;
+}
 
 window.render = function (t) {
-  // Hook: words rise in one by one, then the strip flies off
+  // Hook
   const hook = $('#hook');
-  const hookOut = prog(t, HOOK[1] - .25, .3);
-  show(hook, t < HOOK[1] + .1 ? 1 - hookOut : 0, `translateX(${-ease(hookOut) * 1100}px) rotate(${-ease(hookOut) * 12}deg)`);
-  hook.querySelectorAll('.w').forEach((w, i) => {
-    const p = ease(prog(t, .05 + i * .1, .45));
-    w.style.opacity = p; w.style.transform = `translateY(${(1 - p) * 70}px) rotate(${(1 - p) * 6}deg)`;
+  $$('.hw', hook).forEach((el, i) => {
+    const p = spring(prog(t, .04 + i * .16, .32));
+    el.style.opacity = clamp(p * 4);
+    el.style.transform = `${baseTf.get(el)} translate(${jit(i, t, 3)}px, ${jit(i + 9, t, 3)}px) scale(${lerp(1.6, 1, p)})`;
   });
+  const fp = ease(prog(t, .5, .5));
+  $('#film').style.transform = `rotate(-4deg) translateX(${(fp - 1) * 700}px)`;
 
-  // Five player types
+  // Scenes
   let active = -1;
   KITS.forEach((k, i) => {
-    const a = SCENE0 + i * SCENE, b = a + SCENE, el = $('#s' + i);
-    if (t < a - .05 || t > b + .05) { el.style.opacity = 0; return; }
-    active = i; el.style.opacity = 1;
-    const out = prog(t, b - .28, .28), oe = ease(out);
-    const pin = spring(prog(t, a, .5));
-    const tilt = [-6, 5, -4, 7, -5][i];
-    const bob = Math.sin((t - a) * 3.2) * 6;
-    el.querySelector('.sticker').style.transform =
-      `translate(${-oe * 1150}px, ${bob - (1 - pin) * 160}px) rotate(${tilt + (1 - pin) * -18 - oe * 20}deg) scale(${lerp(.55, 1, pin)})`;
-    el.querySelector('.sticker').style.opacity = clamp(pin * 3);
-    const lp = spring(prog(t, a + .25, .45));
-    el.querySelector('.label').style.transform = `translate(${-oe * 1150}px, ${(1 - lp) * 120}px) rotate(${[2, -2.5, 1.5, -2, 2.5][i] - oe * 10}deg) scale(${lerp(.8, 1, lp)})`;
-    el.querySelector('.label').style.opacity = clamp(lp * 3);
-    const paths = el.querySelectorAll('.scribble path');
-    paths[0].style.strokeDashoffset = 1 - ease(prog(t, a + .45, .35));
-    paths[1].style.strokeDashoffset = 1 - ease(prog(t, a + .75, .15));
-    el.querySelector('.scribble').style.opacity = 1 - out;
-    const q = ease(prog(t, a + .55, .3));
-    show(el.querySelector('.quote'), q * (1 - out), `translateY(${(1 - q) * 40}px)`);
-    const note = el.querySelector('.note');
-    if (note) { const n = spring(prog(t, a + 1.1, .4)); show(note, clamp(n * 2) * (1 - out), `scale(${lerp(.6, 1, n)})`); }
+    const a = SCENE0 + i * SCENE, el = $('#s' + i);
+    wipeIn(el, a, t);
+    if (t < a - WIPE || t > a + SCENE + .05 + WIPE) return;
+    if (t >= a - .1) active = i;
+    const s = spring(prog(t, a - .05, .45));
+    $('.halo', el).style.transform = `scale(${lerp(.2, 1, ease(prog(t, a - .15, .4)))})`;
+    $('.sticker', el).style.transform = `translate(${jit(i, t, 4)}px, ${jit(i + 3, t, 4) - (1 - s) * 220}px) rotate(${[-6, 5, -4, 7, -5][i] + jit(i + 5, t, 1.2) + (1 - s) * -22}deg) scale(${lerp(.5, 1, s)})`;
+    $('.sticker', el).style.opacity = clamp(s * 3);
+    $('.scribble path', el).style.strokeDashoffset = 1 - ease(prog(t, a + .5, .4));
+    const sp = spring(prog(t, a + .9, .3));
+    $('.stampbox', el).style.transform = `rotate(${-8 + jit(i + 7, t, 1)}deg) scale(${lerp(1.8, 1, sp)})`;
+    $('.stampbox', el).style.opacity = clamp(sp * 3);
+    $$('.w', el).forEach((w, j) => {
+      const p = spring(prog(t, a + .22 + j * .1, .3));
+      w.style.opacity = clamp(p * 4);
+      w.style.transform = `rotate(${[2.5, -2, 1.5][j % 3] + jit(j + i * 3, t, .8)}deg) scale(${lerp(1.7, 1, p)})`;
+    });
+    const q = ease(prog(t, a + .6, .3));
+    $('.quote', el).style.opacity = q;
+    $('.quote', el).style.transform = `translateY(${(1 - q) * 50}px) rotate(${-1.2 + jit(i + 11, t, .5)}deg)`;
+    const pn = $('.pnote', el);
+    if (pn) { const n = spring(prog(t, a + 1.15, .35)); pn.style.opacity = clamp(n * 3); pn.style.transform = `scale(${lerp(.5, 1, n)}) rotate(1.5deg)`; }
   });
-  const count = $('#count');
-  count.textContent = active >= 0 ? `${active + 1}/5` : '';
-  count.style.opacity = active >= 0 ? 1 : 0;
+  $('#count').textContent = active >= 0 ? `0${active + 1} / 05` : '';
+  $('#count').style.opacity = active >= 0 && t < END - .1 ? 1 : 0;
 
-  // End card
-  const end = $('#end'), e = spring(prog(t, END, .5));
-  show(end, t >= END ? clamp(e * 3) : 0, `translateY(${(1 - e) * 160}px) rotate(${(1 - e) * 8}deg) scale(${lerp(.8, 1, e)})`);
-  end.querySelectorAll('.w').forEach((w, i) => {
-    const p = ease(prog(t, END + .1 + i * .08, .4));
-    w.style.opacity = p; w.style.transform = `translateY(${(1 - p) * 50}px)`;
+  // End
+  const end = $('#end');
+  wipeIn(end, END, t);
+  $$('.ew', end).forEach((el, i) => {
+    const p = spring(prog(t, END + .05 + i * .12, .32));
+    el.style.opacity = clamp(p * 4);
+    el.style.transform = `${baseTf.get(el)} translate(${jit(i + 20, t, 3)}px, ${jit(i + 29, t, 3)}px) scale(${lerp(1.6, 1, p)})`;
   });
-  const br = ease(prog(t, END + .45, .4));
-  show($('#brand'), br, `translateY(${(1 - br) * 40}px)`);
+  const sl = spring(prog(t, END + .55, .4));
+  $('#seal').style.opacity = clamp(sl * 3);
+  $('#seal').style.transform = `scale(${lerp(1.8, 1, sl)}) rotate(${-10 + (t - END) * 6}deg)`;
+  $('#ring').style.transform = `rotate(${(t - END) * 30}deg)`;
 };
 window.DURATION = DUR;
 render(0);
