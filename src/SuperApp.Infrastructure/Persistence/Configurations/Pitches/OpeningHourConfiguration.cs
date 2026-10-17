@@ -14,7 +14,7 @@ internal sealed class OpeningHourConfiguration : IEntityTypeConfiguration<Openin
             t.HasCheckConstraint("CK_OpeningHours_Hours", "[CloseHour] > [OpenHour]");
             t.HasCheckConstraint("CK_OpeningHours_DayOfWeek", "[DayOfWeek] <= 6");
             t.HasCheckConstraint("CK_OpeningHours_OpenHour", "[OpenHour] <= 23");
-            t.HasCheckConstraint("CK_OpeningHours_CloseHour", "[CloseHour] BETWEEN 1 AND 24");
+            t.HasCheckConstraint("CK_OpeningHours_CloseHour", "[CloseHour] BETWEEN 1 AND 30");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.IsClosed).HasDefaultValue(false).ValueGeneratedNever();

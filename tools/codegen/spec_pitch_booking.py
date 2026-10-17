@@ -44,7 +44,7 @@ T("pitch", "PitchPhotos", "PitchPhoto", "B", doc="A photo of a pitch.") \
 T("pitch", "OpeningHours", "OpeningHour", "P", doc="Opening hours of a pitch on one weekday.") \
     .c("PitchId", "bigint", fk="pitch.Pitches", on="Cascade", collection="OpeningHours") \
     .c("DayOfWeek", "tinyint", check="[DayOfWeek] <= 6").c("OpenHour", "tinyint", check="[OpenHour] <= 23") \
-    .c("CloseHour", "tinyint", check="[CloseHour] BETWEEN 1 AND 24").c("IsClosed", "bit", default=False) \
+    .c("CloseHour", "tinyint", check="[CloseHour] BETWEEN 1 AND 30").c("IsClosed", "bit", default=False) \
     .ck("Hours", "[CloseHour] > [OpenHour]").ix("PitchId DayOfWeek", unique=True)
 
 T("pitch", "Closures", "Closure", "B", "A", doc="Blocked hours or days of a pitch.") \

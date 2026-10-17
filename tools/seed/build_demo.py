@@ -100,7 +100,7 @@ class Demo:
                  "lat": p["lat"], "lng": p["lng"], "format": int(p["format"].split("-")[0]), "surface": self.surface(p["surface"]),
                  "indoor": p["indoor"], "price": p["price"], "peakPrice": p["peakPrice"] if p["peakPrice"] != p["price"] else None,
                  "about": p["about"], "policy": p.get("cancelPolicy", "standard"), "rating": p["rating"], "reviews": p["reviews"],
-                 "open": p["open"][0], "close": min(p["open"][1], 24), "facilities": p["facilities"], "photos": [self.photo(i) for i in p["images"]]}
+                 "open": p["open"][0], "close": p["open"][1], "facilities": p["facilities"], "photos": [self.photo(i) for i in p["images"]]}
                 for p in self.db["pitches"]]
 
     @staticmethod

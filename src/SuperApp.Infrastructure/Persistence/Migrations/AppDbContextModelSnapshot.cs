@@ -6894,7 +6894,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("OpeningHours", "pitch", t =>
                         {
-                            t.HasCheckConstraint("CK_OpeningHours_CloseHour", "[CloseHour] BETWEEN 1 AND 24");
+                            t.HasCheckConstraint("CK_OpeningHours_CloseHour", "[CloseHour] BETWEEN 1 AND 30");
 
                             t.HasCheckConstraint("CK_OpeningHours_DayOfWeek", "[DayOfWeek] <= 6");
 

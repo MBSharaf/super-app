@@ -7,8 +7,7 @@ namespace SuperApp.Infrastructure.Persistence.Seed.Demo;
 
 /// <summary>
 /// Demo 13: the pitch partners and their 12 pitches (one venue each) with facilities, photos and opening hours.
-/// Hours after midnight (the site shows some pitches open until 2 AM) are cut at midnight for now — the
-/// bookings phase decides how overnight hours are stored.
+/// A pitch open after midnight keeps one row per day with a closing hour above 24 (26 = 2 AM of the next night).
 /// </summary>
 public sealed class DemoPitchesSeeder(AppDbContext db) : ISeeder
 {
