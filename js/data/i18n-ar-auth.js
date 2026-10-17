@@ -56,9 +56,19 @@
     'Too early or too late: check-in opens 60 minutes before kick-off and closes when the booking ends.': 'بدري أو متأخر: تسجيل الحضور بيفتح قبل الماتش بساعة وبيقفل لما الحجز يخلص.',
     'This booking was cancelled.': 'الحجز ده اتلغى.', 'Already checked in.': 'الحضور متسجل قبل كده.', 'Every match of this package was used.': 'كل ماتشات الباقة دي اتلعبت.',
     'This player’s account is blocked. Contact Super App support.': 'حساب اللاعب ده موقوف. كلّم دعم Super App.',
+    /* ---------- Weekly packages from the server ---------- */
+    'Package discounts': 'خصومات الباقات', 'No package discounts waiting': 'مفيش خصومات باقات مستنية', 'Weekly package discounts partners ask for wait here.': 'خصومات الباقات الأسبوعية اللي الشركاء بيطلبوها بتستنى هنا.',
+    'Package discount approved': 'خصم الباقة اتوافق عليه', 'Don’t approve this discount?': 'مش هتوافق على الخصم ده؟', 'The partner sees the reason and can change the discount.': 'الشريك هيشوف السبب ويقدر يغيّر الخصم.',
+    'Reason the partner sees': 'السبب اللي الشريك هيشوفه', 'Partner told': 'الشريك اتبلّغ', 'Each match after discount': 'الماتش بعد الخصم', 'Waiting': 'مستني',
+    'This pitch doesn’t offer this package.': 'الملعب ده مش بيقدّم الباقة دي.', 'This pitch doesn’t offer this package size.': 'الملعب ده مش بيقدّم الباقة بالحجم ده.',
+    'Someone just booked one of these weeks. Please check the dates again.': 'حد لسه حاجز أسبوع من دول. راجع المواعيد تاني.',
   });
   D.patterns.push(
     ['^Back to (.+)$', 'رجوع لـ {1}'],
+    ['^(\\d+) weekly matches$', '{1} ماتشات أسبوعية'],
+    ['^Only (\\d+) of the (\\d+) weeks are free at this time\\. Choose another hour or day\\.$', '{1} بس من {2} أسابيع فاضيين في الميعاد ده. اختار ساعة أو يوم تاني.'],
+    ['^The highest package discount is (.+)$', 'أعلى خصم للباقات {1}'],
+    ['^(.+) Match (\\d+) of (\\d+)\\.$', '{t1} الماتش {2} من {3}.'],
     ['^(.+) was sent for Super App review$', '{1} اتبعت لمراجعة Super App'],
     ['^If (.+) has an account, a link is on its way\\. It works for 30 minutes\\.$', 'لو {1} ليه حساب، اللينك في الطريق. شغال نص ساعة.'],
   );

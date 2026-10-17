@@ -110,6 +110,9 @@ public sealed class BookingRepository(AppDbContext db, IClock clock) : IBookingR
         return (p.Slug, p.Name, p.Address);
     }
 
+    public Task<string?> PackageCodeAsync(long packageId, CancellationToken ct) =>
+        db.Set<Package>().Where(p => p.Id == packageId).Select(p => p.Code).FirstOrDefaultAsync(ct);
+
     /// <summary>A unique-index clash (2601 / 2627) means someone else got the hour first.</summary>
     private async Task SaveOrConflictAsync(string message, string code, CancellationToken ct)
     {

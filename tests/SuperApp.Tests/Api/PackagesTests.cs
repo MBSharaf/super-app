@@ -77,6 +77,8 @@ public sealed class PackagesTests(AccountsApiFactory api) : IClassFixture<Accoun
         package.GetProperty("qrToken").GetString().ShouldNotBeNullOrEmpty();
         (await player.PostAsync("/api/v1/packages", buy)).Body.Data().GetProperty("code").GetString().ShouldBe(package.GetProperty("code").GetString());
         (await player.GetAsync("/api/v1/packages/mine")).Body.Data().GetArrayLength().ShouldBe(1);
+        var match = package.GetProperty("matches")[0].GetProperty("code").GetString();
+        (await player.GetAsync($"/api/v1/bookings/{match}")).Body.Data().GetProperty("packageCode").GetString().ShouldBe(package.GetProperty("code").GetString());
 
         (await other.PostAsync("/api/v1/bookings", new { pitchSlug = slug, date = start, hour = 20, duration = 1, payAtVenue = false, acceptWaiver = true })).Body.Code().ShouldBe("slot_taken");
         (await other.GetAsync($"/api/v1/packages/{package.GetProperty("code").GetString()}")).Status.ShouldBe(HttpStatusCode.NotFound);

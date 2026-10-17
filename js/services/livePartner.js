@@ -65,6 +65,18 @@
     };
   };
 
+  /** Package sizes → the editor's "play every week" switch and discount (the sizes offered are 4, 8 and 12 weeks) */
+  const WEEKS = [4, 8, 12];
+  const weeklyOf = (options) => {
+    const on = options.filter((o) => o.status !== 'Rejected');
+    return { weekly: { enabled: on.length > 0, discount: (on[0]?.discountPercent ?? 10) / 100 }, packageOptions: options };
+  };
+  const savePackages = async (apiId, d) => {
+    const on = d.weeklyEnabled !== false && d.weeklyEnabled !== 'off';
+    const pct = Math.max(0, Math.min(100, Math.round(+(d.weeklyDiscount ?? 10))));
+    await api.put(`/partner/pitches/${apiId}/package-options`, { options: on ? WEEKS.map((w) => ({ matchCount: w, discountPercent: pct })) : [] });
+  };
+
   const toClosure = (c, pitchId) => ({
     id: `cl-live-${c.id}`, live: true, apiId: c.id, pitchId, from: c.fromDate, to: c.toDate, reason: c.reason, createdAt: Date.parse(c.createdAt),
     hours: c.fromHour == null ? null : Array.from({ length: c.toHour - c.fromHour }, (_, i) => c.fromHour + i),
@@ -100,10 +112,11 @@
     const [venues, cards] = await Promise.all([api.get('/partner/venues'), api.get('/partner/pitches')]);
     const details = await Promise.all(cards.map((c) => api.get(`/partner/pitches/${c.id}`)));
     const closures = await Promise.all(details.map((d) => api.get(`/partner/pitches/${d.id}/closures`)));
+    const options = await Promise.all(details.map((d) => api.get(`/partner/pitches/${d.id}/package-options`)));
     const bookings = await loadBookings();
     const data = db.raw();
     const prev = Object.fromEntries(data.pitches.filter((p) => p.live).map((p) => [p.id, p]));
-    const pitches = details.map((d, i) => toPitch(d, cards[i], venues.find((v) => v.id === d.venueId), prev[`p-${d.slug}`]));
+    const pitches = details.map((d, i) => ({ ...toPitch(d, cards[i], venues.find((v) => v.id === d.venueId), prev[`p-${d.slug}`]), ...weeklyOf(options[i]) }));
     const byApiId = Object.fromEntries(pitches.map((p) => [p.apiId, p]));
     const ids = new Set(pitches.map((p) => p.id));
     data.pitches = [...pitches, ...data.pitches.filter((p) => !p.live && !ids.has(p.id))];
@@ -192,6 +205,7 @@
       const venue = await api.post('/partner/venues', venueBody(d));
       const created = await api.post('/partner/pitches', pitchBody(d, venue.id, null));
       await syncPhotos({ apiId: created.id, photoIds: {} }, d.images);
+      await savePackages(created.id, d);
       await reload();
       return dash.pitch(`p-${created.slug}`);
     } catch (err) { throw formError(err); }
@@ -205,9 +219,15 @@
       if (d.area !== p.area || d.address !== p.address || +d.lat !== p.lat || +d.lng !== p.lng) await api.put(`/partner/venues/${p.venueId}`, venueBody(d));
       await api.put(`/partner/pitches/${p.apiId}`, { ...pitchBody(d, p.venueId, p), rowVersion: p.rowVersion });
       await syncPhotos(p, d.images);
-    } catch (err) { throw formError(err); }
-    // Highlights and weekly settings are kept on this device until their phase
-    db.update('pitches', id, { tags: (d.tags || []).slice(0, 3), weekly: { enabled: false, discount: 0.1 } });
+      const was = p.weekly || {};
+      const on = d.weeklyEnabled !== false && d.weeklyEnabled !== 'off';
+      if (on !== !!was.enabled || Math.round(+(d.weeklyDiscount ?? 10)) !== Math.round((was.discount ?? 0.1) * 100)) await savePackages(p.apiId, d);
+    } catch (err) {
+      if (err.code === 'discount_over_max') err.details = { weeklyDiscount: err.message };
+      throw formError(err);
+    }
+    // Highlights are kept on this device until their phase
+    db.update('pitches', id, { tags: (d.tags || []).slice(0, 3) });
     await reload();
     return dash.pitch(id);
   };

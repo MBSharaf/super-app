@@ -38,7 +38,8 @@
     const [partners, sellers, areas] = await Promise.all([get('PitchOwner'), get('Seller'), API().get('/lookups/areas')]);
     const names = Object.fromEntries(areas.map((x) => [x.id, SA.i18n?.isAr ? x.nameAr : x.nameEn]));
     const pitchCount = await API().get('/admin/pitches?status=WaitingForReview&pageSize=1').then((r) => r.meta.total).catch(() => null);
-    return { partners, sellers, pitchCount, areaName: (id) => names[id] || '' };
+    const packages = await API().get('/admin/package-options?pageSize=100').then((r) => r.items).catch(() => null);
+    return { partners, sellers, pitchCount, packages, areaName: (id) => names[id] || '' };
   };
   const liveSection = (list, areaName, emptyIcon, emptyTitle) => (list == null
     ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Not part of your permissions', text: 'Ask the CEO for the approvals permission for this type.' })}</div>`
@@ -83,6 +84,15 @@
       let section;
       if (L && tab === 'partners') {
         section = liveSection(L.partners, L.areaName, 'pitch', 'No applications');
+      } else if (L && tab === 'packages') {
+        section = L.packages == null ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Not part of your permissions', text: 'Ask the CEO for the approvals permission for this type.' })}</div>`
+          : L.packages.length ? `<div class="adm-approve-grid">${L.packages.map((o) => `<article class="dash-card adm-approve">
+            <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(o.pitchName)}</h2><span class="badge badge-gold">Waiting</span></div>
+            <p class="small soft">${esc(o.businessName)} · ${o.matchCount} weekly matches · <b>${o.discountPercent}% off</b></p>
+            <dl class="kv"><div><dt>Price per hour</dt><dd class="num">${money(o.pricePerHour)}</dd></div><div><dt>Each match after discount</dt><dd class="num">${money(Math.round(o.pricePerHour * (100 - o.discountPercent) / 100))}</dd></div><div><dt>Sent</dt><dd>${timeAgo(Date.parse(o.createdAt))}</dd></div></dl>
+            <div class="row wrap" style="--gap:8px;justify-content:flex-end"><button class="btn btn-outline btn-sm" data-reject-option="${o.id}">Don’t approve</button><button class="btn btn-primary btn-sm" data-approve-option="${o.id}">${icon('check', 14, 2.6)} Approve</button></div>
+          </article>`).join('')}</div>`
+            : `<div class="dash-card">${SA.ui.c.empty({ icon: 'tag', title: 'No package discounts waiting', text: 'Weekly package discounts partners ask for wait here.' })}</div>`;
       } else if (L && tab === 'sellers') {
         section = liveSection(L.sellers, L.areaName, 'users', 'No sellers waiting');
       } else if (!tab) {
@@ -111,7 +121,7 @@
             || `<tr><td colspan="6">${SA.ui.c.empty({ icon: 'users', title: 'No sellers waiting', text: on ? 'New sellers wait here until you approve them.' : 'Approval is off — new sellers go live straight away.' })}</td></tr>`}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', L ? (L.pitchCount ?? 0) : pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length]], tab)}${section}`;
+      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', L ? (L.pitchCount ?? 0) : pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length], ...(L ? [['packages', 'Package discounts', (L.packages || []).length]] : [])], tab)}${section}`;
       return C.layout('approvals', { title: 'Approvals', subtitle: 'Check new pitches and sellers before they go live on Super App', body });
     },
     mount(el) {
@@ -121,6 +131,8 @@
         try {
           if (t('[data-approve-pitch]')) { AD().approvePitch(t('[data-approve-pitch]').dataset.approvePitch); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
           if (t('[data-reject-pitch]')) { const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; AD().rejectPitch(t('[data-reject-pitch]').dataset.rejectPitch, r.reason); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
+          if (t('[data-approve-option]')) { await API().post(`/admin/package-options/${t('[data-approve-option]').dataset.approveOption}/approve`, { approvedDiscount: null }); toast('Package discount approved'); SA.app.rerender(); return; }
+          if (t('[data-reject-option]')) { const id = t('[data-reject-option]').dataset.rejectOption; const r = await A.reason({ title: 'Don’t approve this discount?', text: 'The partner sees the reason and can change the discount.', label: 'Reason the partner sees', placeholder: 'e.g. Keep weekly discounts at 15% or less.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/package-options/${id}/reject`, { reason: r.reason }); toast('Partner told', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-pitch-live]')) { await API().post(`/admin/pitches/${t('[data-approve-pitch-live]').dataset.approvePitchLive}/approve`); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
           if (t('[data-reject-pitch-live]')) { const id = t('[data-reject-pitch-live]').dataset.rejectPitchLive; const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/pitches/${id}/reject`, { reason: r.reason }); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-live]')) { await API().post(`/admin/approvals/applications/${t('[data-approve-live]').dataset.approveLive}/approve`); toast('Approved — the applicant was notified'); SA.app.rerender(); return; }

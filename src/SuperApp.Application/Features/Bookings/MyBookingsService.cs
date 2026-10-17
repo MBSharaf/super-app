@@ -114,7 +114,8 @@ public sealed class MyBookingsService(
     {
         var info = await bookings.PitchInfoAsync(b.PitchId, ct);
         var token = withQr && b.Status == BookingStatus.Confirmed ? qr.Create(b.Code) : null;
-        return BookingMapper.ToResponse(b, info.Slug, info.Name, info.Address, token);
+        var package = b.PackageId is { } id ? await bookings.PackageCodeAsync(id, ct) : null;
+        return BookingMapper.ToResponse(b, info.Slug, info.Name, info.Address, token, package);
     }
 
     private Guid Me() => currentUser.UserId ?? throw new UnauthorizedException();

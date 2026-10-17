@@ -14,7 +14,7 @@
   const P = SA.services.pitches;
   const B = SA.services.bookings;
   const { ApiError } = SA.services.http;
-  const { haversineKm, isoDate, today, parseISO } = SA.core.utils;
+  const { haversineKm, isoDate, today, parseISO, addDays } = SA.core.utils;
   const store = SA.core.store;
 
   const demo = { pitches: { ...P }, bookings: { ...B } };
@@ -62,6 +62,10 @@
       address: d.address, about: (ar() ? d.descriptionAr : d.descriptionEn) || d.descriptionEn || '',
       images: d.photos.length ? d.photos.map(photo) : p.images, cancelPolicy: d.cancellationPolicy.key,
       open: openToday(d.openingHours), allowCash: d.allowCash, company: d.partnerName, ownerId: null,
+      // Weekly packages: the sizes the admin approved (each with its own discount)
+      weekly: d.packageOptions.length
+        ? { enabled: true, discount: Math.max(...d.packageOptions.map((o) => +o.discountPercent)) / 100, sizes: d.packageOptions.map((o) => o.matchCount), options: d.packageOptions }
+        : { enabled: false, discount: 0 },
     });
     return p;
   };
@@ -151,7 +155,10 @@
       status: r.status.startsWith('Cancelled') ? 'cancelled' : 'confirmed', checkedIn: ['CheckedIn', 'Played'].includes(r.status),
       refund: +r.refundAmount, createdAt: Date.parse(r.createdAt), cancelledAt: r.cancelledAt ? Date.parse(r.cancelledAt) : 0,
       policy: r.policyKey, qrToken: r.qrToken || prev.qrToken || null,
+      seriesId: r.packageCode || null, sessionNo: prev.sessionNo || null, seriesSize: prev.seriesSize || null,
     };
+    const pk = r.packageCode && packs.get(r.packageCode);
+    if (pk) Object.assign(b, { sessionNo: pk.matches.find((m) => m.code === r.code)?.number || null, seriesSize: pk.matchCount, discountAmount: +(pk.matches.find((m) => m.code === r.code)?.discountAmount || 0) });
     b.startsAt = startsAt(b);
     bookings.set(b.id, b);
     return b;
@@ -201,9 +208,104 @@
       if (err.status === 404) throw new ApiError('Booking not found.', 'not_found');
       throw err;
     }
-    // The ticket shows the pitch's address and photo
+    // The ticket shows the pitch's address and photo, and a package match shows its package
     if (!pitches.has(idOf(r.pitchSlug))) await getPitch(idOf(r.pitchSlug)).catch(() => null);
+    if (r.packageCode) await loadPackage(r.packageCode).catch(() => null);
     return { ...fromBooking(r) };
+  };
+
+  /* ---------------- Weekly packages ---------------- */
+
+  const packs = new Map();   // package code → GET /packages/{code}
+  const loadPackage = async (code) => { const pk = await api.get(`/packages/${encodeURIComponent(code)}`); packs.set(code, pk); return pk; };
+  const optionFor = (p, weeks) => p?.weekly?.options?.find((o) => o.matchCount === +weeks);
+
+  /** Estimate for the pitch page (hours not loaded yet count as free; checkout asks the server for the exact quote) */
+  const quoteSeries = ({ pitchId, date, hour, duration, weeks }) => {
+    const p = pitches.get(pitchId);
+    const option = optionFor(p, weeks);
+    if (!option) throw new ApiError('This pitch doesn’t offer this package.', 'not_allowed');
+    const discount = +option.discountPercent / 100, rate = SA.services.db.settings().serviceFee;
+    const sessions = [];
+    for (let k = 0; sessions.filter((s) => s.available).length < weeks && k < weeks + 4; k++) {
+      const d = isoDate(addDays(parseISO(date), 7 * k));
+      const slots = days.get(`${pitchId}|${d}`);
+      let list = 0, free = true;
+      for (let h = hour; h < hour + duration; h++) {
+        const s = slots?.find((x) => x.hour === h);
+        if (slots && (!s || s.status !== 'available')) free = false;
+        list += s?.price ?? (h >= 18 || [5, 6].includes(parseISO(d).getDay()) ? p.peakPrice : p.price);
+      }
+      const pitchTotal = Math.round(list * (1 - discount)), serviceFee = Math.round(pitchTotal * rate);
+      sessions.push(free ? { date: d, available: true, listPrice: list, discountAmount: list - pitchTotal, pitchTotal, serviceFee, total: pitchTotal + serviceFee } : { date: d, available: false });
+    }
+    return seriesTotals(sessions, discount);
+  };
+
+  const seriesTotals = (sessions, discount) => {
+    const ok = sessions.filter((s) => s.available);
+    const sum = (k) => ok.reduce((t, s) => t + s[k], 0);
+    return { sessions, booked: ok.length, skipped: sessions.length - ok.length, discount, listPrice: sum('listPrice'), discountAmount: sum('discountAmount'), pitchTotal: sum('pitchTotal'), serviceFee: sum('serviceFee'), total: sum('total') };
+  };
+
+  /** The server's exact quote (checkout) in the same shape */
+  const quoteSeriesExact = async ({ pitchId, date, hour, duration, weeks }) => {
+    const option = optionFor(pitches.get(pitchId), weeks);
+    if (!option) throw new ApiError('This pitch doesn’t offer this package.', 'not_allowed');
+    const q = await api.get(`/packages/quote?pitchSlug=${slugOf(pitchId)}&optionId=${option.id}&startsOn=${date}&hour=${hour}&duration=${duration}`);
+    const rate = SA.services.db.settings().serviceFee;
+    const sessions = q.weeks.map((w) => (w.available
+      ? { date: w.date, available: true, listPrice: +w.listPrice, discountAmount: +w.listPrice - +w.price, pitchTotal: +w.price, serviceFee: Math.round(+w.price * rate), total: +w.price + Math.round(+w.price * rate) }
+      : { date: w.date, available: false }));
+    return { ...seriesTotals(sessions, +q.discountPercent / 100), listPrice: +q.listPrice, discountAmount: +q.discountAmount, serviceFee: +q.serviceFee, total: +q.total, pitchTotal: +q.listPrice - +q.discountAmount };
+  };
+
+  const createSeries = async ({ pitchId, date, hour, duration, weeks, waiver = false }) => {
+    SA.services.legal?.requireWaiver(waiver, 'weekly package');
+    const option = optionFor(pitches.get(pitchId), weeks);
+    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver });
+    packs.set(pk.code, pk);
+    [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
+    return { seriesId: pk.code, bookings: pk.matches.map((m) => ({ id: m.code })) };
+  };
+
+  const MATCH_STATUS = { CancelledByCustomer: 'cancelled', CancelledByVenue: 'cancelled' };
+  /** A package's matches in the site's booking shape */
+  const seriesOf = (code) => {
+    const pk = packs.get(code);
+    if (!pk) return [];
+    const p = pitches.get(idOf(pk.pitchSlug)) || {};
+    return pk.matches.map((m) => {
+      const b = bookings.get(m.code) || {};
+      return { ...b, id: m.code, live: true, pitchId: idOf(pk.pitchSlug), pitchName: pk.pitchName, date: m.date, hour: m.startHour, duration: pk.duration,
+        total: +m.total, discountAmount: +m.discountAmount, status: MATCH_STATUS[m.status] || 'confirmed', seriesId: code, sessionNo: m.number, seriesSize: pk.matchCount,
+        policy: b.policy || p.cancelPolicy || 'standard', checkedIn: !!m.checkedInAt };
+    });
+  };
+
+  /** The package card: played / missed / left, and whether its QR still works */
+  const packageStatus = (code) => {
+    const pk = packs.get(code);
+    if (!pk) return null;
+    const now = Date.now();
+    const sessions = pk.matches.map((m) => {
+      const start = parseISO(m.date).getTime() + m.startHour * 36e5, end = start + pk.duration * 36e5;
+      const state = MATCH_STATUS[m.status] ? 'cancelled' : m.checkedInAt || ['CheckedIn', 'Played'].includes(m.status) ? 'played' : m.status === 'NoShow' || end < now ? 'missed' : 'upcoming';
+      return { id: m.code, date: m.date, hour: m.startHour, duration: pk.duration, makeup: false, checkedInAt: m.checkedInAt ? Date.parse(m.checkedInAt) : 0, state, start, no: m.number };
+    });
+    const n = (st) => sessions.filter((x) => x.state === st).length;
+    const counted = sessions.filter((x) => x.state !== 'cancelled');
+    const played = n('played'), missed = n('missed'), left = n('upcoming');
+    return { id: pk.code, series: { pitchId: idOf(pk.pitchSlug) }, sessions, total: counted.length, played, missed, excused: 0, cancelled: n('cancelled'), left,
+      used: played + missed, expired: pk.status !== 'Active' || left === 0, scans: [], exception: null, next: sessions.find((x) => x.state === 'upcoming') || null };
+  };
+
+  const cancelSeries = async (code) => {
+    const list = seriesOf(code).filter((b) => b.status === 'confirmed' && startsAt(b) > Date.now());
+    let refund = 0;
+    for (const b of list) refund += (await cancel(b.id)).refund;
+    await loadPackage(code);
+    return { count: list.length, refund };
   };
 
   const cancel = async (id) => {
@@ -215,7 +317,15 @@
 
   const isLiveBooking = (id) => live() && bookings.has(id);
 
+  const isLivePackage = (code) => live() && packs.has(code);
   Object.assign(B, {
+    quoteSeries: (args) => (isLivePitch(args.pitchId) ? quoteSeries(args) : demo.bookings.quoteSeries(args)),
+    quoteSeriesExact: ready((args) => (live() ? quoteSeriesExact(args) : demo.bookings.quoteSeries(args))),
+    createSeries: ready((args) => (live() ? createSeries(args) : demo.bookings.createSeries(args))),
+    seriesOf: (code) => (isLivePackage(code) ? seriesOf(code) : demo.bookings.seriesOf(code)),
+    packageStatus: (code) => (isLivePackage(code) ? packageStatus(code) : demo.bookings.packageStatus(code)),
+    packageCode: (code) => (isLivePackage(code) ? packs.get(code).qrToken || code : demo.bookings.packageCode(code)),
+    cancelSeries: (code) => (isLivePackage(code) ? cancelSeries(code) : demo.bookings.cancelSeries(code)),
     hold: ready((args) => (live() ? hold(args) : null)),
     quote: (args) => (isLivePitch(args.pitchId) ? quote(args) : demo.bookings.quote(args)),
     create: ready((args) => (live() ? create(args) : demo.bookings.create(args))),

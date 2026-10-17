@@ -30,6 +30,9 @@ public interface IBookingRepository
     Task<string> NewCodeAsync(CancellationToken ct);
 
     Task<(string Slug, string Name, string Address)> PitchInfoAsync(long pitchId, CancellationToken ct);
+
+    /// <summary>The code of the package a match belongs to.</summary>
+    Task<string?> PackageCodeAsync(long packageId, CancellationToken ct);
 }
 
 /// <summary>Platform settings (ops.Settings) as numbers.</summary>

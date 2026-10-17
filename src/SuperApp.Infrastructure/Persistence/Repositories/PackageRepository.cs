@@ -107,5 +107,5 @@ public sealed class PackageRepository(AppDbContext db, IClock clock) : IPackageR
     private static PackageDto ToDto(Row r) => new(
         r.P.Code, r.Slug, r.Name, r.P.MatchCount, r.P.UsedCount, r.P.DayOfWeek, r.P.StartHour, r.P.Duration, r.P.StartsOn, r.P.EndsOn,
         r.P.DiscountPercent, r.P.TotalPrice, r.P.Status.ToString(),
-        r.Matches.Select((b, i) => new PackageMatchDto(i + 1, b.Code, b.Date, b.StartHour, b.Status.ToString(), b.CheckedInAt)).ToList(), null);
+        r.Matches.Select((b, i) => new PackageMatchDto(i + 1, b.Code, b.Date, b.StartHour, b.Status.ToString(), b.CheckedInAt, b.Total, b.DiscountAmount)).ToList(), null);
 }

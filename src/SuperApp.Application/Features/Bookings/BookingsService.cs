@@ -130,7 +130,7 @@ public sealed class CreateBookingRequestValidator : AbstractValidator<CreateBook
 /// <summary>Booking entity → the customer's view.</summary>
 public static class BookingMapper
 {
-    public static BookingResponse ToResponse(Booking b, string slug, string name, string address, string? qrToken) => new(
+    public static BookingResponse ToResponse(Booking b, string slug, string name, string address, string? qrToken, string? packageCode = null) => new(
         b.Code, slug, name, address, b.Date, b.StartHour, b.Duration, b.PitchAmount, b.ServiceFee, b.Total, b.PayAtVenue,
-        b.Status.ToString(), b.PolicyKey, b.RefundAmount, b.CreatedAt, b.CancelledAt, qrToken);
+        b.Status.ToString(), b.PolicyKey, b.RefundAmount, b.CreatedAt, b.CancelledAt, qrToken, packageCode);
 }

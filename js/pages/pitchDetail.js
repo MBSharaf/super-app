@@ -83,7 +83,7 @@
             <p class="field-error" data-slot-err style="margin-top:8px"></p>
             ${p.weekly?.enabled ? `<div class="repeat-box" data-repeat>
               <div class="row-between"><h2 class="field-label">4. Play every week?</h2>${p.weekly.discount ? `<span class="badge badge-turf">Save ${Math.round(p.weekly.discount * 100)}%</span>` : ''}</div>
-              <div class="tabs" role="radiogroup" aria-label="Repeat">${[[0, 'Just once'], ...S.bookings.WEEK_OPTIONS.map((w) => [w, `${w} weeks`])].map(([v, l]) => `<button class="tab" role="radio" data-weeks="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
+              <div class="tabs" role="radiogroup" aria-label="Repeat">${[[0, 'Just once'], ...(p.weekly.sizes || S.bookings.WEEK_OPTIONS).map((w) => [w, `${w} weeks`])].map(([v, l]) => `<button class="tab" role="radio" data-weeks="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
             </div>` : ''}
             <div class="book-summary" data-summary></div>
           </aside>

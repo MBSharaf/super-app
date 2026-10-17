@@ -32,7 +32,8 @@ public sealed record BookingResponse(
     decimal RefundAmount,
     DateTime CreatedAt,
     DateTime? CancelledAt,
-    string? QrToken);
+    string? QrToken,
+    string? PackageCode = null);
 
 /// <summary>What a cancellation now refunds (the pitch's policy and the time left before kick-off).</summary>
 public sealed record RefundPreview(string Code, double HoursLeft, int RefundPercent, decimal RefundAmount, bool CanCancel);
