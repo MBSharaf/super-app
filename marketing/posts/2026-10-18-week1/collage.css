@@ -1,0 +1,37 @@
+/* Super App collage kit for 4:5 posts (1080×1350). Style rules: docs/brand/references.md.
+   Colours are the brand tokens; blaze is the accent, never neon green. */
+@font-face { font-family: "Archivo"; src: url(../../../vendor/fonts/archivo-latin.woff2) format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: "Cairo"; src: url(../../../vendor/fonts/cairo-arabic.woff2) format("woff2"); font-weight: 400 800; }
+:root {
+  --paper: #F1F2EE; --cream: #F4EEDF; --surface: #FFFFFF; --ink: #0D1411; --ink-2: #46514B;
+  --turf: #0B6E4F; --turf-tint: #E1F0E8; --blaze: #FF5B14; --gold: #C9920F; --gold-tint: #FBF1D6;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1080px; height: 1350px; overflow: hidden; }
+body { font-family: "Cairo", "Archivo", sans-serif; position: relative; color: var(--ink); }
+.abs { position: absolute; }
+.bg-ink { background: var(--ink); }
+.bg-turf { background-color: var(--turf); background-image: linear-gradient(rgba(255,255,255,.16) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.16) 2px, transparent 2px); background-size: 54px 54px; }
+.bg-cream { background-color: var(--cream); background-image: linear-gradient(rgba(13,20,17,.06) 2px, transparent 2px), linear-gradient(90deg, rgba(13,20,17,.06) 2px, transparent 2px); background-size: 54px 54px; }
+.halftone { inset: 0; opacity: .13; background-image: radial-gradient(rgba(255,255,255,.95) 1.6px, transparent 2px); background-size: 14px 14px; }
+.grain { inset: 0; z-index: 90; pointer-events: none; mix-blend-mode: multiply; opacity: .55; }
+.block { display: inline-block; font-weight: 800; line-height: 1.1; padding: 4px 30px 18px; box-shadow: 0 16px 24px -14px rgba(0,0,0,.55); white-space: nowrap; }
+.b-ink { background: var(--ink); color: #fff; }
+.b-paper { background: var(--surface); color: var(--ink); }
+.b-blaze { background: var(--blaze); color: #fff; }
+.b-cream { background: var(--cream); color: var(--ink); }
+.note { background: var(--gold-tint); background-image: repeating-linear-gradient(transparent 0 54px, rgba(11,110,79,.22) 54px 56px); color: var(--ink); font-weight: 700; padding: 18px 36px 26px; line-height: 56px; box-shadow: 0 18px 26px -16px rgba(0,0,0,.5); }
+.note mark { background: linear-gradient(transparent 55%, rgba(255,91,20,.55) 55%); color: inherit; padding: 0 4px; }
+.tape { width: 170px; height: 50px; background: rgba(251,241,214,.8); box-shadow: 0 2px 6px rgba(0,0,0,.18); z-index: 5; }
+.stampbox { width: 180px; height: 214px; background: var(--surface); border: 12px dotted currentColor; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 14px 20px -12px rgba(0,0,0,.5); text-align: center; }
+.stampbox b { font: 800 64px "Cairo", "Archivo", sans-serif; line-height: 1; color: var(--ink); }
+.stampbox span { font: 800 18px "Archivo", sans-serif; letter-spacing: .12em; color: var(--ink-2); direction: ltr; }
+.tag { height: 64px; padding: 0 28px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 30px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 16px -10px rgba(0,0,0,.5); }
+.tag i { width: 12px; height: 12px; border-radius: 50%; background: var(--turf); display: block; }
+.cta { display: inline-flex; align-items: center; gap: 16px; height: 84px; padding: 0 36px 6px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 800; font-size: 36px; box-shadow: 0 14px 22px -12px rgba(0,0,0,.6); }
+.cta .dot { width: 54px; height: 54px; border-radius: 50%; background: var(--blaze); display: grid; place-items: center; }
+.phone { border-radius: 64px; background: #0D1411; padding: 16px; box-shadow: 0 40px 50px -24px rgba(0,0,0,.55); }
+.phone .screen { border-radius: 50px; overflow: hidden; height: 100%; background: #fff; }
+.phone .screen img { width: 100%; display: block; }
+.mark-x { width: 30px; height: 30px; }
+.handle { font: 800 24px "Archivo", sans-serif; letter-spacing: .04em; direction: ltr; }
