@@ -40,3 +40,32 @@
 
 #ملاعب_مصر #حجز_ملاعب #ملاعب_خماسي #سوبر_اب
 ```
+
+## Carousels (6 slides each, 4:5)
+
+Rebuild: `node carousel.js` (both) — slides land in `carousel-*/slide-1..6.png/.jpg`. Upload the slides in order.
+
+| Folder | Audience | Slides | CTA |
+|---|---|---|---|
+| `carousel-fantasy-rules/` | Fantasy players | 1 hook · 2 fifteen players for 100m (2/5/5/3) · 3 max 3 per club, 11 + 4 bench, formations · 4 captain ×2, vice steps in · 5 scoring table · 6 one free transfer, extra −4, Egyptian + English in one app | Save + send to a friend |
+| `carousel-khomasi-rules/` | Footballers | 1 hook · 2 keeper by turns · 3 the ball owner never comes off · 4 "last goal wins" · 5 "I'll transfer it tonight" · 6 which rule do you break + Super App split payment | Tag your friend |
+
+Fantasy rules are the app's own (`js/data/fantasy.js` rules: budget 100, squad 2/5/5/3, max 3 per club, 1 free transfer, −4 each extra, scoring table; captain ×2 with vice fallback in `fantasyService.js`).
+
+**Caption — fantasy rules**
+```
+قواعد الفانتازي في 6 شرايح 📌
+15 لاعب، 100 مليون، 3 بس من كل نادي، والكابتن نقطه دبل.
+احفظ البوست وابعته لصاحبك اللي لسه بيسأل "النقط بتتحسب إزاي؟"
+
+#فانتازي #فانتازي_الدوري_المصري #FPL #سوبر_اب
+```
+
+**Caption — 5-a-side rules**
+```
+قواعد الخماسي اللي محدش كتبها… بس الكل ماشي عليها 😂
+الحارس بالدور، صاحب الكورة مبيطلعش، وآخر جول بيكسب.
+انت بتكسر أنهي قاعدة؟ منشن صاحبك 👇
+
+#ماتش_خماسي #كورة #خماسي #سوبر_اب
+```

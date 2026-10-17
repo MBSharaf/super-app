@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Carousel — قواعد الفانتازي في 6 شرايح</title>
+<!-- Audience: fantasy players. Goal: saves + shares. Rules are the ones the app uses (js/data/fantasy.js rules + fantasyService captain logic).
+     Render one slide with ?s=1..6 (carousel.js renders all six). -->
+<link rel="stylesheet" href="collage.css">
+<style>
+  .hdr { position: absolute; top: 56px; left: 64px; right: 64px; display: flex; justify-content: space-between; align-items: center; direction: ltr; }
+  .count { height: 64px; padding: 0 24px; background: var(--cream); color: var(--ink); font: 800 30px "Archivo", sans-serif; letter-spacing: .06em; display: flex; align-items: center; box-shadow: 0 8px 16px -10px rgba(0,0,0,.5); }
+  .swipe { position: absolute; left: 64px; bottom: 64px; display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 800; font-size: 30px; }
+  .pos { display: flex; align-items: center; gap: 20px; background: var(--surface); padding: 18px 30px; box-shadow: 0 16px 22px -14px rgba(0,0,0,.5); }
+  .pos b { font: 800 64px "Archivo", sans-serif; width: 70px; text-align: center; color: var(--blaze); }
+  .pos span { font-size: 44px; font-weight: 800; flex: 1; }
+  .pos i { width: 34px; height: 34px; border-radius: 50%; background: var(--turf); display: inline-block; margin-inline-start: 6px; }
+  .pts { background: #fff; width: 820px; padding: 26px 40px 46px; box-shadow: 0 22px 30px -16px rgba(0,0,0,.5);
+    clip-path: polygon(0 0,100% 0,100% calc(100% - 18px),95% 100%,90% calc(100% - 18px),85% 100%,80% calc(100% - 18px),75% 100%,70% calc(100% - 18px),65% 100%,60% calc(100% - 18px),55% 100%,50% calc(100% - 18px),45% 100%,40% calc(100% - 18px),35% 100%,30% calc(100% - 18px),25% 100%,20% calc(100% - 18px),15% 100%,10% calc(100% - 18px),5% 100%,0 calc(100% - 18px)); }
+  .pts .row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 2px dashed rgba(13,20,17,.16); font-size: 34px; font-weight: 700; }
+  .pts .row b { font: 800 36px "Archivo", sans-serif; direction: ltr; }
+  .pts .row b.plus { color: var(--turf); } .pts .row b.minus { color: var(--blaze); }
+  .chip { display: inline-block; background: var(--surface); color: var(--ink); font: 800 40px "Archivo", sans-serif; padding: 8px 26px 12px; border-radius: 999px; direction: ltr; box-shadow: 0 10px 16px -10px rgba(0,0,0,.45); }
+  .armband { width: 300px; height: 300px; border-radius: 50%; background: var(--blaze); display: grid; place-items: center; box-shadow: 0 26px 30px -14px rgba(0,0,0,.55); }
+  .armband span { width: 200px; height: 200px; border-radius: 50%; border: 12px solid #fff; display: grid; place-items: center; color: #fff; font: 800 120px "Archivo", sans-serif; }
+</style></head>
+<body class="bg-turf">
+<div id="slide"></div>
+<svg class="abs grain" width="1080" height="1350"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .22 0"/></filter><rect width="1080" height="1350" filter="url(#n)"/></svg>
+<script>
+const s = +new URLSearchParams(location.search).get('s') || 1, N = 6;
+const mark = `<div style="display:flex;align-items:center;gap:14px;color:#fff"><svg width="58" height="58" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg><span class="handle" style="font-size:28px;font-weight:850;font-stretch:125%">SUPER APP</span></div>`;
+const hdr = `<div class="hdr">${mark}<span class="count">0${s} / 0${N}</span></div>`;
+const swipe = s < N ? `<div class="swipe">اسحب<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 6l-6 6 6 6"/></svg></div>` : '';
+const pips = (n) => Array.from({ length: n }, () => '<i></i>').join('');
+const slides = {
+  1: `<div class="abs" style="right:64px;top:260px;display:flex;flex-direction:column;align-items:flex-start;gap:18px">
+        <span class="block b-paper" style="font-size:150px;transform:rotate(-2deg)">قواعد</span>
+        <span class="block b-blaze" style="font-size:150px;transform:rotate(1.5deg);margin-inline-start:60px">الفانتازي</span>
+        <span class="block b-ink" style="font-size:96px;transform:rotate(-1deg)">في 6 شرايح</span>
+      </div>
+      <div class="abs note" style="right:64px;top:900px;font-size:44px;transform:rotate(1.5deg)">اقراها <mark>قبل ما تعمل فريقك</mark>… واحفظها</div>
+      <div class="abs tape" style="right:380px;top:884px;transform:rotate(-4deg);width:140px"></div>
+      <div class="abs" style="left:64px;top:1080px;display:flex;gap:12px"><span class="chip">EPL</span><span class="chip" style="background:var(--blaze);color:#fff">الدوري المصري</span></div>`,
+  2: `<div class="abs" style="right:64px;top:170px;display:flex;flex-direction:column;align-items:flex-start;gap:12px">
+        <span class="block b-blaze" style="font-size:112px;transform:rotate(-2deg)">15 لاعب</span>
+        <span class="block b-paper" style="font-size:84px;transform:rotate(2deg);margin-inline-start:60px">بـ 100 مليون</span>
+      </div>
+      <div class="abs" style="right:64px;left:64px;top:500px;display:flex;flex-direction:column;gap:22px">
+        <div class="pos" style="transform:rotate(-1deg)"><b>2</b><span>حراس مرمى</span>${pips(2)}</div>
+        <div class="pos" style="transform:rotate(1deg)"><b>5</b><span>مدافعين</span>${pips(5)}</div>
+        <div class="pos" style="transform:rotate(-.8deg)"><b>5</b><span>لاعبين وسط</span>${pips(5)}</div>
+        <div class="pos" style="transform:rotate(1.2deg)"><b>3</b><span>مهاجمين</span>${pips(3)}</div>
+      </div>
+      <div class="abs note" style="right:64px;top:1080px;font-size:38px;transform:rotate(-1.5deg)">الميزانية <mark>100 مليون</mark>… وكل لاعب ليه سعر</div>`,
+  3: `<div class="abs" style="right:64px;top:190px;display:flex;flex-direction:column;align-items:flex-start;gap:16px">
+        <span class="block b-paper" style="font-size:130px;transform:rotate(-2deg)">3 بس</span>
+        <span class="block b-blaze" style="font-size:110px;transform:rotate(1.5deg)">من كل نادي</span>
+      </div>
+      <div class="abs note" style="right:64px;top:560px;width:720px;font-size:42px;transform:rotate(1.2deg)">مهما كنت بتحب فريقك… <mark>مش هتجيبه كله</mark></div>
+      <div class="abs" style="right:64px;top:740px;display:flex;flex-direction:column;align-items:flex-start;gap:14px">
+        <span class="block b-ink" style="font-size:84px;transform:rotate(-1.5deg)">11 بيلعبوا · 4 احتياطي</span>
+      </div>
+      <div class="abs" style="right:64px;left:64px;top:930px;display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-start">
+        ${['3-4-3', '3-5-2', '4-4-2', '4-3-3', '4-5-1', '5-3-2', '5-4-1'].map((f, i) => `<span class="chip" style="transform:rotate(${[-2, 1.5, -1, 2, -1.5, 1, -2][i]}deg)${f === '4-4-2' ? ';background:var(--blaze);color:#fff' : ''}">${f}</span>`).join('')}
+      </div>
+      <div class="abs" style="right:64px;top:1130px;color:#fff;font-size:32px;font-weight:700">اختار التشكيل اللي يريحك</div>`,
+  4: `<div class="abs" style="right:64px;top:190px;display:flex;flex-direction:column;align-items:flex-start;gap:16px">
+        <span class="block b-blaze" style="font-size:140px;transform:rotate(-2deg)">الكابتن</span>
+        <span class="block b-paper" style="font-size:120px;transform:rotate(1.5deg)">نقطه × 2</span>
+      </div>
+      <div class="abs armband" style="left:90px;top:560px;transform:rotate(-8deg)"><span>C</span></div>
+      <div class="abs tape" style="left:110px;top:560px;transform:rotate(-30deg)"></div>
+      <div class="abs note" style="right:64px;top:640px;width:520px;font-size:40px;transform:rotate(1.5deg)">ولو الكابتن <mark>ملعبش</mark>… النايب بياخد الدبل مكانه</div>
+      <div class="abs" style="right:64px;top:1000px;display:flex;flex-direction:column;align-items:flex-start;gap:12px">
+        <span class="block b-ink" style="font-size:70px;transform:rotate(-1deg)">اختيار الكابتن = نص الجولة</span>
+      </div>`,
+  5: `<div class="abs" style="right:64px;top:180px"><span class="block b-paper" style="font-size:104px;transform:rotate(-2deg)">النقط بتيجي منين؟</span></div>
+      <div class="abs pts" style="right:130px;top:400px;transform:rotate(1.2deg)">
+        <div class="row"><span>لعب 60 دقيقة أو أكتر</span><b class="plus">+2</b></div>
+        <div class="row"><span>جول مهاجم</span><b class="plus">+4</b></div>
+        <div class="row"><span>جول لاعب وسط</span><b class="plus">+5</b></div>
+        <div class="row"><span>جول حارس أو مدافع</span><b class="plus">+6</b></div>
+        <div class="row"><span>أسيست</span><b class="plus">+3</b></div>
+        <div class="row"><span>شباك نضيفة (حارس أو مدافع)</span><b class="plus">+4</b></div>
+        <div class="row"><span>صد ضربة جزاء</span><b class="plus">+5</b></div>
+        <div class="row"><span>كارت أصفر</span><b class="minus">−1</b></div>
+        <div class="row"><span>كارت أحمر</span><b class="minus">−3</b></div>
+        <div class="row" style="border:0"><span>جول في نفسه</span><b class="minus">−2</b></div>
+      </div>
+      <div class="abs tape" style="right:470px;top:384px;transform:rotate(-3deg);width:150px"></div>`,
+  6: `<div class="abs" style="right:64px;top:190px;display:flex;flex-direction:column;align-items:flex-start;gap:16px">
+        <span class="block b-paper" style="font-size:110px;transform:rotate(-2deg)">تغيير واحد ببلاش</span>
+        <span class="block b-blaze" style="font-size:110px;transform:rotate(1.5deg)">والزيادة بـ −4</span>
+      </div>
+      <div class="abs note" style="right:64px;top:520px;width:760px;font-size:40px;transform:rotate(1deg)">كل جولة ليك تغيير واحد ببلاش. أي تغيير زيادة <mark>بيخصم 4 نقط</mark>.</div>
+      <div class="abs" style="right:64px;left:64px;top:780px;background:var(--ink);padding:40px 44px 48px;transform:rotate(-1.2deg);box-shadow:0 22px 30px -16px rgba(0,0,0,.6)">
+        <div style="color:#fff;font-size:52px;font-weight:800;line-height:1.3">فانتازي <span style="color:var(--blaze)">الدوري المصري والإنجليزي</span><br>في تطبيق واحد</div>
+        <div style="color:rgba(255,255,255,.75);font-size:30px;font-weight:700;margin-top:12px">قريب على Super App</div>
+      </div>
+      <div class="abs" style="right:64px;top:1150px"><span class="cta" style="font-size:32px;height:76px">احفظ البوست وابعته لصاحبك</span></div>`,
+};
+document.getElementById('slide').innerHTML = hdr + slides[s] + swipe;
+</script>
+</body></html>
