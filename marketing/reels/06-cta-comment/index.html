@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel 06 — CTA: قولنا رأيك واستنى الإطلاق</title>
+<!-- Super App reel 06 (CTA reel) · audience: footballers who juggle several apps · 1080×1920 · 20 s · collage on cream grid.
+     Voiceover (Egyptian Arabic) with burned-in subtitles; one CTA: comment your pick, wait for launch.
+     The VO lines and their times live in LINES below: retime them to the recorded voiceover (see README). -->
+<link rel="stylesheet" href="../_kit/reel.css">
+<style>
+  #tiles { left: 90px; right: 90px; top: 430px; height: 720px; z-index: 10; }
+  #tiles .tile { position: absolute; }
+  #phone { left: 300px; top: 420px; width: 480px; height: 560px; z-index: 12; }
+  #poll { left: 80px; right: 80px; top: 420px; background: var(--surface); padding: 34px 40px 20px; box-shadow: 0 30px 40px -22px rgba(0,0,0,.5); z-index: 12; }
+  #poll h3 { font-size: 54px; font-weight: 800; margin-bottom: 10px; }
+  #poll .opt { display: flex; align-items: center; gap: 24px; height: 120px; border-top: 2px solid #E6E8E3; font-size: 44px; font-weight: 800; }
+  #poll .opt i { width: 76px; height: 76px; border-radius: 50%; background: var(--ink); color: #fff; font: 800 40px "Archivo", sans-serif; font-style: normal; display: grid; place-items: center; flex: none; }
+  #comment { left: 70px; right: 70px; top: 760px; z-index: 14; }
+  #comment .box { background: var(--surface); border-radius: 999px; height: 130px; display: flex; align-items: center; gap: 26px; padding: 0 36px; box-shadow: 0 26px 34px -18px rgba(0,0,0,.5); font-size: 44px; font-weight: 700; color: #8A938E; }
+  #comment .box .av { width: 82px; height: 82px; border-radius: 50%; background: var(--turf-tint); flex: none; }
+  #comment .box .send { margin-inline-start: auto; color: var(--blaze); font-weight: 800; }
+</style>
+</head>
+<body class="bg-cream">
+<div class="abs tag"><i></i>كل الكورة في مكان واحد</div>
+
+<div class="abs stack" id="hook">
+  <span class="block b-paper hw" style="font-size:130px">4 أبلكيشنات</span>
+  <span class="block b-blaze hw" style="font-size:104px">عشان ماتش واحد؟</span>
+</div>
+
+<div class="abs" id="tiles">
+  <div class="tile" data-at="1.7" style="right:40px;top:0;background:var(--turf);color:#fff"><svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M12 5v14M3 9.5h3v5H3M21 9.5h-3v5h3"/><circle cx="12" cy="12" r="2.2"/></svg>حجز الملعب</div>
+  <div class="tile" data-at="2.7" style="left:40px;top:40px;background:var(--ink);color:#fff"><svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8"/></svg>الفانتازي</div>
+  <div class="tile" data-at="3.7" style="right:80px;top:360px;background:var(--surface);color:var(--ink)"><svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#0D1411" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h3M7 17h3M14 13h3M14 17h3"/></svg>الجداول</div>
+  <div class="tile" data-at="5.0" style="left:60px;top:400px;background:#D6EFDF;color:var(--ink)"><svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#0D1411" stroke-width="1.6" stroke-linejoin="round"><path d="M4 18.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8z"/><path d="M9 9.5h6M9 12.5h4"/></svg>فلوس الماتش</div>
+  <div class="abs bubble b-in" id="nag" style="left:200px;top:690px;font-size:42px"><span class="who">الكابتن</span>يا رجالة اللي مدفعش يدفع 😤</div>
+</div>
+
+<div class="abs phone" id="phone"><div class="screen"><img src="assets/home.jpg" style="display:block"></div></div>
+<div class="abs tape" id="tp" style="left:260px;top:404px;z-index:13;transform:rotate(-28deg)"></div>
+<div class="abs" id="one" style="right:60px;top:1040px;z-index:14"><span class="cta" style="background:var(--turf)">كل الكورة في مكان واحد</span></div>
+
+<div class="abs" id="poll">
+  <h3>أول حاجة نفسك فيها؟</h3>
+  <div class="opt"><i>1</i>احجز ملعب قريب منك</div>
+  <div class="opt"><i>2</i>ماتش ناقصه لاعيبة</div>
+  <div class="opt"><i>3</i>فانتازي مصري وإنجليزي</div>
+  <div class="opt"><i>4</i>متجر وبراندات</div>
+</div>
+
+<div class="abs" id="comment">
+  <span class="block b-blaze" id="cm-h" style="font-size:96px;display:inline-block;margin-bottom:40px">اكتب رقمك 👇</span>
+  <div class="box"><span class="av"></span>أضف تعليق… 1؟ 2؟ 3؟ 4؟<span class="send">نشر</span></div>
+</div>
+
+<div class="abs sub" id="sub"></div>
+
+<div class="abs stack" id="end" style="top:440px">
+  <span class="block b-paper ew" style="font-size:150px">الإطلاق</span>
+  <span class="block b-blaze ew" style="font-size:160px;margin-inline-start:80px">قرّب</span>
+  <span class="note ew" style="font-size:50px;margin-top:10px">خليك معانا… و<mark>قولنا رأيك</mark> في الكومنتات</span>
+</div>
+<div class="abs brand" id="brand" style="top:1060px"></div>
+
+<svg class="abs grain" width="1080" height="1920"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .16 0"/></filter><rect width="1080" height="1920" filter="url(#n)"/></svg>
+<script src="../_kit/reel.js"></script>
+<script>
+// voiceover lines: [start, end, subtitle]. Retime to the recorded take (README → "Voiceover").
+const LINES = [
+  [0.2, 1.4, 'بص…'],
+  [1.4, 4.8, 'الملعب بتحجزه من مكان، والفانتازي من أبلكيشن تاني، والجداول من تالت…'],
+  [4.8, 7.0, 'والفلوس؟ بتلمّها على <b>الواتساب</b>.'],
+  [7.0, 10.2, 'إحنا بنعمل Super App… <b>كل الكورة في مكان واحد</b>.'],
+  [10.2, 14.2, 'بس عايزين رأيك إنت: إيه أول حاجة نفسك تلاقيها فيه؟'],
+  [14.2, 16.8, 'اكتبها في <b>الكومنتات</b>…'],
+  [16.8, 19.7, 'وخليك معانا، الإطلاق قرّب.'],
+];
+const DUR = 20, B = { tilesIn: 1.4, one: 7.0, poll: 10.2, comment: 14.2, end: 16.8 };
+const brand = $('#brand'); brand.innerHTML = `${MARK}<div class="wm">SUPER APP</div><div class="ln">قريب · كل الكورة في مكان واحد</div>`;
+window.ready = Promise.all($$('img').map((im) => im.decode().catch(() => {})));
+
+window.render = function (t) {
+  // hook
+  const hookOut = prog(t, B.tilesIn - .25, .3);
+  show($('#hook'), t < B.tilesIn + .1 ? 1 - hookOut : 0, `translateX(${-ease(hookOut) * 1100}px)`);
+  popIn($$('.hw'), t, .05, [-2, 1.5], 0, .18);
+
+  // four apps pile up, then get sucked into one phone
+  const suck = ease(prog(t, B.one, .55));
+  show($('#tiles'), t > B.tilesIn && t < B.one + .6 ? 1 : 0);
+  $$('#tiles .tile').forEach((el, i) => {
+    const p = spring(prog(t, +el.dataset.at, .35));
+    el.style.opacity = clamp(p * 3) * (1 - suck);
+    el.style.transform = `translate(${jit(i, t, 3) + suck * [-260, 260, -220, 240][i]}px, ${jit(i + 5, t, 3) + suck * [260, 240, -120, -120][i]}px) rotate(${[-6, 5, 4, -5][i] * (1 - suck)}deg) scale(${lerp(1.7, 1, p) * (1 - .8 * suck)})`;
+  });
+  const nag = spring(prog(t, 5.5, .3));
+  show($('#nag'), t > 5.5 && t < B.one + .4 ? clamp(nag * 3) * (1 - suck) : 0, `rotate(-2deg) scale(${lerp(.6, 1, nag)})`);
+
+  const ph = spring(prog(t, B.one + .35, .5)), phOut = ease(prog(t, B.poll - .3, .3));
+  show($('#phone'), t > B.one + .35 && t < B.poll + .05 ? clamp(ph * 3) * (1 - phOut) : 0, `translate(${jit(2, t, 2)}px, ${(1 - ph) * 600 + phOut * 500}px) rotate(${lerp(10, -3, ph)}deg)`);
+  show($('#tp'), t > B.one + .35 && t < B.poll ? clamp(ph * 3) * (1 - phOut) : 0);
+  const on = spring(prog(t, B.one + 1.3, .3));
+  show($('#one'), t > B.one + 1.3 && t < B.poll ? clamp(on * 3) * (1 - phOut) : 0, `rotate(${-3 + jit(3, t, .8)}deg) scale(${lerp(1.7, 1, on)})`);
+
+  // the poll
+  const pl = spring(prog(t, B.poll + .05, .4)), plOut = ease(prog(t, B.comment - .25, .3));
+  show($('#poll'), t > B.poll && t < B.comment + .05 ? clamp(pl * 3) * (1 - plOut) : 0, `translate(${-plOut * 1100}px, ${(1 - pl) * 300}px) rotate(${1 + jit(4, t, .3)}deg)`);
+  $$('#poll .opt').forEach((o, i) => { const p = spring(prog(t, B.poll + .6 + i * .45, .3)); o.style.opacity = clamp(p * 3); o.style.transform = `translateX(${(1 - p) * 120}px)`; });
+
+  // comment box
+  const cm = spring(prog(t, B.comment + .05, .4)), cmOut = ease(prog(t, B.end - .25, .3));
+  show($('#comment'), t > B.comment && t < B.end + .05 ? clamp(cm * 3) * (1 - cmOut) : 0, `translateY(${(1 - cm) * 400}px)`);
+  const ch = spring(prog(t, B.comment + .35, .3));
+  $('#cm-h').style.transform = `rotate(${-2 + jit(6, t, .8)}deg) scale(${lerp(1.7, 1, ch)})`;
+
+  // end
+  const endOn = t >= B.end;
+  show($('#end'), endOn ? 1 : 0);
+  popIn($$('.ew'), t, B.end + .05, [-2, 1.5, 1], 20);
+  const br = ease(prog(t, B.end + .6, .4));
+  show(brand, endOn ? br : 0, `translateY(${(1 - br) * 40}px)`);
+
+  subtitles($('#sub'), LINES, t);
+};
+window.DURATION = DUR;
+render(0);
+</script>
+</body>
+</html>

@@ -146,3 +146,27 @@ def write(path='sfx.wav'):
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
         w.writeframes((st * 32767).astype('<i2').tobytes())
     print('wrote', path)
+
+def voice(path, at=0.0, gain=1.0, duck=.4):
+    """Mix a voiceover file (any format ffmpeg reads) at `at` seconds. The beat and foley already placed are
+    ducked to `duck` while the voice speaks, with 80 ms ramps. Call after placing everything else, before write()."""
+    import subprocess, os
+    if not os.path.exists(path): print('no voiceover yet:', path); return False
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True, check=True).stdout
+    v = np.frombuffer(raw, dtype='<f4').astype(float)
+    v = v / max(1e-9, np.abs(v).max()) * .9
+    i = int(at * SR); j = min(N, i + len(v)); v = v[: j - i]
+    # envelope of where the voice is active (20 ms windows), smoothed into a gain curve for the music
+    win = int(.02 * SR); act = np.zeros(N)
+    for k in range(0, len(v), win):
+        if np.abs(v[k:k + win]).max() > .05: act[i + k: i + k + win] = 1
+    ramp = int(.08 * SR); act = np.convolve(act, np.ones(ramp) / ramp, 'same')
+    g = 1 - (1 - duck) * np.clip(act, 0, 1)
+    L[:] *= g; R[:] *= g
+    L[i:j] += v * gain; R[i:j] += v * gain
+    return True
+
+def setup(dur):
+    """Use a reel length other than 15 s. Call before placing any sound."""
+    global DUR, N, L, R
+    DUR = dur; N = int(SR * dur); L = np.zeros(N); R = np.zeros(N)

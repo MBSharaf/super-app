@@ -39,3 +39,8 @@ body.bg-cream { --fg: var(--ink); --fg-2: var(--ink-2); --mark: var(--ink); back
 .b-in { background: var(--surface); color: var(--ink); border-start-start-radius: 8px; align-self: flex-start; }
 .b-out { background: #D6EFDF; color: var(--ink); border-start-end-radius: 8px; align-self: flex-end; }
 .grain { inset: 0; z-index: 60; pointer-events: none; mix-blend-mode: multiply; opacity: .5; }
+/* burned-in voiceover subtitles (inside the safe zone, above the 420 px bottom UI) */
+.sub { left: 80px; right: 160px; top: 1330px; z-index: 40; display: flex; justify-content: center; }
+.sub span { background: var(--ink); color: #fff; font-size: 46px; font-weight: 800; line-height: 1.45; padding: 10px 28px 16px; text-align: center; box-shadow: 0 14px 22px -12px rgba(0,0,0,.5); }
+.sub span b { color: var(--blaze); }
+.tile { width: 300px; height: 300px; border-radius: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 26px 34px -18px rgba(0,0,0,.55); font-weight: 800; font-size: 36px; }

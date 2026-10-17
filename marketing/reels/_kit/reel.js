@@ -41,3 +41,11 @@ function Reel({ dur = 15, T, caps, scene }) {
   window.DURATION = dur;
   window.render(0);
 }
+
+// voiceover subtitles: lines = [[start, end, html], ...]; the line on screen pops in and stays until its end
+function subtitles(el, lines, t) {
+  const k = lines.findIndex(([a, b]) => t >= a && t < b);
+  if (el.dataset.k !== String(k)) { el.innerHTML = k >= 0 ? `<span>${lines[k][2]}</span>` : ''; el.dataset.k = String(k); }
+  const s = el.firstElementChild; if (!s) return;
+  const p = spring(prog(t, lines[k][0], .25)); s.style.opacity = clamp(p * 3); s.style.transform = `scale(${lerp(.85, 1, p)})`;
+}
