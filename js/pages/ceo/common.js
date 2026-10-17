@@ -38,9 +38,14 @@
 
   /* ---------- Sign-in ---------- */
   const brand = (sub) => `<a class="dash-brand" href="#/ceo"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">${sub}</span></span></a>`;
+  const openCeo = () => { CE().auth.signInWithAccount(); SA.ui.overlay.toast('Welcome back'); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/ceo/') ? h : '/ceo', { replace: true }); SA.app.rerender(); };
   const login = {
     title: 'Command Center — Super App',
-    render() {
+    async render() {
+      await SA.services.api.ready;
+      const live = SA.services.api.isLive();
+      if (live && !SA.services.session.loaded()) await SA.services.session.load();
+      if (live && SA.ui.teamSignIn.ready('ceo')) { setTimeout(openCeo); return ''; }
       const K = (() => { try { return { depts: SA.data.org.DEPTS.length, agents: SA.data.org.ROLES.filter((r) => r.holder === 'ai').length }; } catch { return { depts: 8, agents: 0 }; } })();
       return `<div class="dash-login ceo-login">
         <section class="dl-copy">
@@ -49,8 +54,8 @@
           <span class="badge badge-gold">${icon('crown', 13)} CEO only</span>
           <h1 class="display dl-title">The whole company on one screen.</h1>
           <p class="lead">${K.depts} departments, ${K.agents} AI agents and every system — with your approvals, goals, budgets, deadlines, reports and kill switches.</p>
-          <button class="dl-acc ceo-acc" data-ceo-signin style="--i:0">${c.avatar({ name: 'Sharaf', avatar: 4 })}<span class="grow"><b>Sharaf</b><span class="xs muted" style="display:block">Chief executive (CEO)</span></span>${icon('lock', 15)}</button>
-          <p class="xs muted" style="margin-top:12px">${icon('info', 12)} Demo PIN: 2026 — sign-in with two-step verification arrives with the backend.</p>
+          ${live ? SA.ui.teamSignIn.html('ceo') : `<button class="dl-acc ceo-acc" data-ceo-signin style="--i:0">${c.avatar({ name: 'Sharaf', avatar: 4 })}<span class="grow"><b>Sharaf</b><span class="xs muted" style="display:block">Chief executive (CEO)</span></span>${icon('lock', 15)}</button>
+          <p class="xs muted" style="margin-top:12px">${icon('info', 12)} Demo PIN: 2026 — sign-in with two-step verification arrives with the backend.</p>`}
           <p class="small muted" style="margin-top:18px">Super App team? <a class="link" href="#/admin">Admin console</a> · Factory? <a class="link" href="#/factory">Factory system</a></p>
         </section>
         <section class="dl-visual ceo-visual" aria-hidden="true">
@@ -64,6 +69,7 @@
       </div>`;
     },
     mount(el) {
+      SA.ui.teamSignIn.mount(el, 'ceo', openCeo);
       el.querySelector('[data-ceo-signin]')?.addEventListener('click', () => pinPad({ title: 'Sharaf', subtitle: 'Chief executive · enter your 4-digit PIN', check: (pin) => CE().auth.signIn(pin), done: () => { SA.ui.overlay.toast('Welcome back, Sharaf'); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/ceo/') ? h : '/ceo', { replace: true }); SA.app.rerender(); } }));
       return SA.core.motion.tilt(el.querySelector('[data-tilt3d]'), { max: 10 });
     },

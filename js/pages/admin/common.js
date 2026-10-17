@@ -54,9 +54,15 @@
   };
 
   /* ---------- Sign-in ---------- */
+  /** API mode: a verified team account opens the console (the console itself still runs on demo data until Phase 7) */
+  const openAdmin = () => { D().auth.signIn('acc-admin'); SA.ui.overlay.toast('Welcome back'); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/admin/') ? h : '/admin', { replace: true }); SA.app.rerender(); };
   SA.pages.adminLogin = {
     title: 'Admin console — Super App',
-    render() {
+    async render() {
+      await SA.services.api.ready;
+      const live = SA.services.api.isLive();
+      if (live && !SA.services.session.loaded()) await SA.services.session.load();
+      if (live && SA.ui.teamSignIn.ready('admin')) { setTimeout(openAdmin); return ''; }
       const accs = SA.services.db.all('accounts').filter((a) => a.role === 'admin' && a.teamRole !== 'ceo');
       const CE = SA.services.ceo;
       const acc = (a, i) => { const r = CE?.roleOfAccount(a); const paused = CE?.blockedAccount(a); return `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${paused ? 'disabled' : ''}>${SA.ui.c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${r ? esc(r.title) : esc(a.email)}</span></span><span class="badge ${paused ? 'badge-danger' : a.agent ? 'badge-gold' : 'badge-blaze'}">${paused ? 'Paused' : a.agent ? 'AI agent' : 'Admin'}</span>${icon('arrowRight', 16)}</button>`; };
@@ -68,10 +74,10 @@
           <span class="badge badge-blaze adm-tag">${icon('lock', 13)} Super App team only</span>
           <h1 class="display dl-title">Run the whole platform from one place.</h1>
           <p class="lead">Money and withdrawals, customers, partners and sellers, every order and booking, support, content, fantasy and promotions — with a full audit log.</p>
-          <h2 class="h4" style="margin-top:28px">Sign in as</h2>
+          ${live ? SA.ui.teamSignIn.html('admin') : `<h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo account — admin sign-in with email, password and two-step verification arrives with the backend.</p>
-          <div class="dl-accounts">${people.map(acc).join('')}</div>
-          ${agents.length ? `<details class="adm-agents"><summary class="small"><b>${icon('bolt', 14)} AI agents</b> <span class="muted">· ${agents.length} — each sees only its role’s sections</span></summary><div class="dl-accounts">${agents.map(acc).join('')}</div></details>` : ''}
+          <div class="dl-accounts">${people.map(acc).join('')}</div>`}
+          ${!live && agents.length ? `<details class="adm-agents"><summary class="small"><b>${icon('bolt', 14)} AI agents</b> <span class="muted">· ${agents.length} — each sees only its role’s sections</span></summary><div class="dl-accounts">${agents.map(acc).join('')}</div></details>` : ''}
           <p class="small muted" style="margin-top:22px">Pitch owner or seller? <a class="link" href="#/dash">Go to the partner dashboard</a> · Factory team? <a class="link" href="#/factory">Factory system</a> · CEO? <a class="link" href="#/ceo">Command Center</a></p>
         </section>
         <section class="dl-visual adm-visual" aria-hidden="true">
@@ -87,6 +93,7 @@
     },
     mount(el) {
       const off = SA.core.motion.tilt(el.querySelector('[data-tilt3d]'), { max: 12 });
+      SA.ui.teamSignIn.mount(el, 'admin', openAdmin);
       el.querySelectorAll('[data-signin]').forEach((b) => b.addEventListener('click', () => {
         try { D().auth.signIn(b.dataset.signin); } catch (e) { SA.ui.overlay.toast(e.message, { type: 'error' }); return; }
         SA.ui.overlay.toast(`Welcome, ${esc(D().me().name.split(' ')[0])}`);

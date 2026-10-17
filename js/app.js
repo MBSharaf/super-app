@@ -32,6 +32,15 @@
     .add('/orders', P.orders)
     .add('/wishlist', P.wishlist)
     .add('/profile', P.profile)
+    // Real accounts (API mode)
+    .add('/auth/sign-in', P.authSignIn)
+    .add('/auth/sign-up', P.authSignUp)
+    .add('/auth/2fa', P.authTwoFactor)
+    .add('/auth/2fa-setup', P.authTwoFactorSetup)
+    .add('/auth/forgot', P.authForgot)
+    .add('/auth/reset', P.authReset)
+    .add('/auth/confirm', P.authConfirm)
+    .add('/auth/invite', P.authInvite)
     .add('/wallet', P.wallet)
     .add('/news', P.news)
     .add('/news/:id', P.newsArticle)
@@ -187,7 +196,8 @@
     const scroll = scrollY;
     let swapped = false;
     const swap = () => {
-      if (swapped) return;
+      // A newer render already ran (a view transition can call this late): never put an older page back
+      if (swapped || token !== renderToken) return;
       swapped = true;
       const view = document.createElement('div');
       view.className = 'view';

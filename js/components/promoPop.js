@@ -13,7 +13,7 @@
   const { icon } = SA.ui;
   const C = () => SA.services.content;
   const MUTE = 'superapp.promo.mute', SEEN = 'superapp.promo.session';
-  const QUIET = /^\/(dash|seller|admin|factory|ceo|checkout|cart|book|sell\/studio|sell\/bulk|order)(\/|$)/;
+  const QUIET = /^\/(dash|seller|admin|factory|ceo|checkout|cart|book|sell\/studio|sell\/bulk|order|auth)(\/|$)/;
   const reduced = () => !SA.core.motion?.enabled?.() || matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ls = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
   const ss = { get: (k) => { try { return JSON.parse(sessionStorage.getItem(k)) || null; } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } } };

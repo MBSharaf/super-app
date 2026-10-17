@@ -47,6 +47,10 @@
       ['Profile (grow cards)', '#/profile'], ['Apply to sell', '#/sell'], ['Apply as a pitch partner', '#/partner/apply'], ['Pitch partner: apply to sell', '#/dash/sell'], ['Karim’s shop (seller dashboard)', '#/seller/products'],
       ['Admin: pitch partner applications', '#/admin/approvals?tab=partners'], ['Admin: seller applications', '#/admin/approvals?tab=sellers'],
     ] },
+    { title: 'Real accounts (when the site runs on the Super App server)', icon: 'lock', links: [
+      ['Sign in', '#/auth/sign-in'], ['Create an account', '#/auth/sign-up'], ['Two-step code', '#/auth/2fa'], ['Set up two-step sign-in', '#/auth/2fa-setup'],
+      ['Forgot password', '#/auth/forgot'], ['Choose a new password (from the email)', '#/auth/reset'], ['Confirm email (from the email)', '#/auth/confirm'], ['Team invitation (from the email)', '#/auth/invite'],
+    ] },
     { title: 'CEO system (Command Center)', icon: 'crown', ceo: true, links: [
       ['CEO sign-in (PIN 2026)', '#/ceo'], ['Command overview', '#/ceo'], ['Morning briefing', '#/ceo/briefing'], ['Approvals inbox', '#/ceo/approvals'], ['Departments', '#/ceo/departments'], ['Org chart', '#/ceo/departments?view=chart'],
       ['A department (Finance)', '#/ceo/department/finance'], ['AI workforce', '#/ceo/agents'], ['An agent (Payables)', '#/ceo/agent/payables'], ['Goals (OKRs)', '#/ceo/goals'], ['Budgets', '#/ceo/budgets'], ['Compliance calendar', '#/ceo/calendar'],

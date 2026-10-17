@@ -31,7 +31,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         // Dates are stored in UTC without fractions unless a column says otherwise (ERD conventions)
-        configurationBuilder.Properties<DateTime>().HaveColumnType("datetime2(0)");
-        configurationBuilder.Properties<DateTime?>().HaveColumnType("datetime2(0)");
+        // Values read back are marked UTC, so the API sends "…Z" and browsers show the right local time
+        configurationBuilder.Properties<DateTime>().HaveColumnType("datetime2(0)").HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveColumnType("datetime2(0)").HaveConversion<UtcDateTimeConverter>();
     }
 }
+
+/// <summary>Stores DateTime as is and reads it back with Kind = Utc (SQL Server keeps no time zone).</summary>
+public sealed class UtcDateTimeConverter() : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+    v => v.Kind == DateTimeKind.Local ? v.ToUniversalTime() : v,
+    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));

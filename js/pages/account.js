@@ -5,9 +5,31 @@
   const S = SA.services;
   const store = SA.core.store;
 
+  /** API mode: the real account (or sign-in buttons) at the top of the profile */
+  const DASHBOARDS = { partner: ['pitch', 'Pitch dashboard', '#/dash'], seller: ['bag', 'Seller dashboard', '#/seller'], factory: ['package', 'Factory system', '#/factory'], admin: ['shield', 'Admin console', '#/admin'], ceo: ['crown', 'Command Center', '#/ceo'] };
+  const accountPanel = (me) => {
+    if (!me) {
+      return `<section class="panel panel-pad acc-real">${icon('user', 26)}<div class="grow"><h2 class="h4">Sign in to your Super App account</h2><p class="small soft">Your bookings, orders and applications follow you on every device.</p></div>
+        <div class="row wrap" style="--gap:8px"><a class="btn btn-outline" href="#/auth/sign-in?next=/profile">${icon('lock', 16)} Sign in</a><a class="btn btn-primary" href="#/auth/sign-up?next=/profile">${icon('sparkle', 16)} Create account</a></div></section>`;
+    }
+    const boards = me.dashboards.filter((d) => DASHBOARDS[d]).map((d) => `<a class="btn btn-ghost btn-sm" href="${DASHBOARDS[d][2]}">${icon(DASHBOARDS[d][0], 14)} ${DASHBOARDS[d][1]}</a>`).join('');
+    const mail = me.emailConfirmed ? `<span class="badge badge-turf">${icon('check', 11)} Email confirmed</span>` : `<span class="badge badge-gold">Email not confirmed</span> <button class="btn btn-ghost btn-sm" data-resend>Send the link again</button>`;
+    return `<section class="panel panel-pad acc-real">${icon('shield', 26)}<div class="grow"><h2 class="h4">${esc(me.fullName)}</h2><p class="small soft" dir="ltr" style="text-align:start">${esc(me.email)}${me.phone ? ` · ${esc(me.phone)}` : ''}</p><div class="row wrap" style="--gap:6px;margin-top:6px">${mail}${me.twoFactorEnabled ? `<span class="badge badge-turf">${icon('lock', 11)} Two-step on</span>` : ''}</div>${boards ? `<div class="row wrap" style="--gap:6px;margin-top:8px">${boards}</div>` : ''}</div>
+      <div class="row wrap" style="--gap:8px"><button class="btn btn-ghost btn-sm" data-signout-all>Sign out on all devices</button><button class="btn btn-outline btn-sm" data-signout>${icon('logout', 14)} Sign out</button></div></section>`;
+  };
+  const bindAccountPanel = (el) => {
+    const run = async (fn, msg) => { try { await fn(); if (msg) SA.ui.overlay.toast(msg); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } };
+    el.querySelector('[data-signout]')?.addEventListener('click', () => run(() => S.session.signOut(), 'Signed out'));
+    el.querySelector('[data-signout-all]')?.addEventListener('click', () => run(() => S.session.signOut(true), 'Signed out on every device'));
+    el.querySelector('[data-resend]')?.addEventListener('click', () => run(() => S.session.resendConfirmation(), 'We sent you a new link'));
+  };
+
   SA.pages.profile = {
     title: 'Profile — Super App',
     async render() {
+      await S.api.ready;
+      if (S.api.isLive() && !S.session.loaded()) await S.session.load();
+      const real = S.api.isLive() ? accountPanel(S.session.me()) : '';
       const u = S.user.me(), s = store.get();
       const [{ upcoming }, mine] = await Promise.all([S.bookings.list(), S.matches.mine()]);
       const team = S.fantasy.team();
@@ -26,6 +48,7 @@
         ['trophy', 'Tournaments', `${(SA.services.db.all('tournaments') || []).filter((t) => t.status !== 'cancelled' && t.teams.some((x) => x.userId === u.id)).length} team entries`, '#/tournaments'],
       ];
       return `<div class="container">
+        ${real}
         <section class="profile-hero">
           ${c.avatar(u, 'xl')}
           <div class="grow"><h1 class="h1">${esc(u.name)}</h1><p class="soft">${esc(u.position)} · ${esc(u.level)} · ${esc(u.foot)} foot · ${esc(u.area)}, ${esc(u.city)}</p>
@@ -49,6 +72,7 @@
       </div>`;
     },
     mount(el) {
+      bindAccountPanel(el);
       el.querySelector('[data-edit]').addEventListener('click', () => {
         const u = S.user.me();
         SA.ui.overlay.open({

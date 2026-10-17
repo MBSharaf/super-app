@@ -17,29 +17,66 @@
   const field = (name, label, input, hint = '') => `<div class="field"><label for="ap-${name}">${label}</label>${input}${hint ? `<span class="field-hint">${hint}</span>` : ''}<p class="field-error" data-err="${name}"></p></div>`;
   const idBlock = (prefix = '') => `
       ${field('nationalId', 'National ID number', `<input class="input num" id="ap-nationalId" name="nationalId" inputmode="numeric" maxlength="14" autocomplete="off" dir="ltr" placeholder="14 digits" />`, 'Only the last 4 digits are kept on Super App.')}
-      <div class="field"><span class="field-label">Photo of your ID (front)</span><label class="ap-photo" data-pick="idPhoto${prefix}"><input type="file" accept="image/*" hidden /><span data-preview>${icon('camera', 22)}<span class="small">Add a photo</span></span></label><p class="field-error" data-err="idPhoto"></p></div>`;
+      <div class="field"><span class="field-label">Photo of your ID (front)</span><label class="ap-photo" data-pick="idPhoto${prefix}"><input type="file" accept="image/*" hidden /><span data-preview>${icon('camera', 22)}<span class="small">Add a photo</span></span></label><p class="field-error" data-err="idPhoto"></p></div>
+      <div class="field"><span class="field-label">Photo of your ID (back)</span><label class="ap-photo" data-pick="idPhotoBack${prefix}"><input type="file" accept="image/*" hidden /><span data-preview>${icon('camera', 22)}<span class="small">Add a photo</span></span></label><p class="field-error" data-err="idPhotoBack"></p></div>`;
   const bindPhoto = (el, key, onPick) => el.querySelectorAll(`[data-pick="${key}"]`).forEach((lbl) => lbl.querySelector('input').addEventListener('change', async (e) => {
     try { const url = await readPhoto(e.target.files[0]); lbl.querySelector('[data-preview]').innerHTML = `<img src="${url}" alt="" />`; onPick(url); } catch (err) { toast(err.message, 'error'); }
   }));
 
+  /* ======================= API mode (the site served by the Super App server) ======================= */
+  const live = () => S.api?.isLive();
+  /** Server field names → the names used by these forms */
+  const FIELD = { areaId: 'area', lng: 'lat', acceptTerms: 'agree', idFront: 'idPhoto', idBack: 'idPhotoBack', storeName: 'name', bio: 'bio' };
+  const apiErrors = (details = {}) => Object.fromEntries(Object.entries(details).map(([k, v]) => [FIELD[k] || k, v]));
+  const signInFirst = (title) => `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">${title}</h1></div>
+    <section class="panel panel-pad acc-real">${icon('lock', 26)}<div class="grow"><h2 class="h4">Sign in to apply</h2><p class="small soft">Applications are linked to your Super App account.</p></div><a class="btn btn-primary" href="#/auth/sign-in?next=${encodeURIComponent(SA.core.router.location())}">${icon('lock', 16)} Sign in</a></section></div>`;
+  /** The latest application of one type from the server, in the shape the status card reads */
+  const latestLive = async (type) => {
+    const a = (await S.api.get('/applications/mine')).find((x) => x.type === type);
+    return a && { status: a.status.toLowerCase(), kind: type === 'Seller' ? 'seller' : 'partner', pitchName: a.answers.pitchName || a.answers.storeName, area: '', reason: a.rejectReason, code: a.code };
+  };
+  /** Adds the photos the form read (data: URLs) to the upload */
+  const addPhoto = async (form, field, dataUrl, name) => { if (dataUrl) form.append(field, await S.api.blob(dataUrl), name); };
+  const PAYOUT = { 'Bank transfer': 'Bank', InstaPay: 'InstaPay' };
+
+  const applyPitchLive = async (fd, f, data, areas) => {
+    const area = areas.find((a) => [a.nameEn, a.nameAr].some((n) => n.toLowerCase() === String(fd.area || '').trim().toLowerCase()));
+    const answers = {
+      ownerName: fd.ownerName, phone: fd.phone, nationalId: fd.nationalId, pitchName: fd.pitchName, areaId: area?.id || 0, address: fd.address,
+      lat: data.lat, lng: data.lng, count: +fd.count, formats: [...f.querySelectorAll('[name="formats"]:checked')].map((x) => parseInt(x.value, 10)),
+      price: +fd.price, payoutMethod: PAYOUT[fd.payoutMethod] || fd.payoutMethod, payoutDetail: fd.payoutDetail, acceptTerms: f.agree.checked, note: fd.note || null,
+    };
+    const form = new FormData();
+    form.append('answers', JSON.stringify(answers));
+    await addPhoto(form, 'idFront', data.idPhoto, 'id-front.jpg');
+    await addPhoto(form, 'idBack', data.idPhotoBack, 'id-back.jpg');
+    for (const [i, p] of data.photos.filter(Boolean).entries()) await addPhoto(form, 'photos', p, `pitch-${i + 1}.jpg`);
+    // A rejected application is fixed and sent again; otherwise it is a new one
+    return f.dataset.code ? S.api.form(`/applications/${f.dataset.code}`, form, 'PUT') : S.api.form('/applications/pitch-owner', form);
+  };
+
   /* ======================= Pitch partner application ======================= */
   const statusCard = (a) => {
-    if (a.status === 'pending') return `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">“${esc(a.pitchName)}” in ${esc(a.area)} — the Super App team replies within 2 working days. You’ll get a notification.</p></div></section>`;
+    if (a.status === 'pending') return `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">“${esc(a.pitchName)}”${a.area ? ` in ${esc(a.area)}` : ''} — the Super App team replies within 2 working days. You’ll get a notification.</p></div></section>`;
+    if (a.status === 'approved' && a.kind === 'seller') return `<section class="panel panel-pad ap-status is-ok">${icon('check', 28)}<div><h2 class="h3">You’re a Super App seller</h2><p class="soft">“${esc(a.pitchName)}” is open. Add designs and products from your seller dashboard.</p><a class="btn btn-primary" href="#/seller" style="margin-top:12px">${icon('bag', 16)} Open my seller dashboard</a></div></section>`;
     if (a.status === 'approved') return `<section class="panel panel-pad ap-status is-ok">${icon('check', 28)}<div><h2 class="h3">You’re a Super App pitch partner</h2><p class="soft">“${esc(a.pitchName)}” is live. Manage bookings, hours and money from your dashboard.</p><button class="btn btn-primary" data-open-partner style="margin-top:12px">${icon('pitch', 16)} Open my pitch dashboard</button></div></section>`;
     return `<section class="panel panel-pad ap-status is-bad">${icon('alert', 28)}<div><h2 class="h3">Your application wasn’t approved</h2><p class="soft">${esc(a.reason || '')}</p><p class="small">Fix it below and apply again.</p></div></section>`;
   };
   SA.pages.partnerApply = {
     title: 'List your pitch — Super App',
-    render() {
-      const a = S.partners.mine();
+    async render() {
+      await S.api.ready;
+      if (live() && !S.session.loaded()) await S.session.load();
+      if (live() && !S.session.me()) return signInFirst('List your pitch');
+      const a = live() ? await latestLive('PitchOwner') : S.partners.mine();
       const u = S.user.me();
       if (a && a.status !== 'rejected') return `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">List your pitch</h1></div>${statusCard(a)}</div>`;
-      const areas = [...new Set(S.db.all('pitches').map((p) => p.area))].sort();
+      const areas = live() ? (await S.api.get('/lookups/areas')).map((x) => (SA.i18n?.isAr ? x.nameAr : x.nameEn)) : [...new Set(S.db.all('pitches').map((p) => p.area))].sort();
       return `<div class="container section-tight ap-page">
         <div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">List your pitch on Super App</h1>
           <p class="lead">Players book and pay online, you get paid every week. Tell us about you and your pitch — we review it within 2 working days.</p></div>
         ${a ? statusCard(a) : ''}
-        <form class="stack ap-form" style="--gap:18px" data-apply novalidate>
+        <form class="stack ap-form" style="--gap:18px" data-apply ${a?.status === 'rejected' && a.code ? `data-code="${esc(a.code)}"` : ''} novalidate>
           <section class="panel panel-pad"><h2 class="h4">1. About you</h2><div class="form-grid" style="margin-top:12px">
             ${field('ownerName', 'Full name (as on your ID)', `<input class="input" id="ap-ownerName" name="ownerName" value="${esc(u.name || '')}" maxlength="60" />`)}
             ${field('phone', 'Mobile', `<input class="input num" id="ap-phone" name="phone" value="${esc(u.phone || '')}" inputmode="tel" dir="ltr" />`)}
@@ -68,8 +105,9 @@
     mount(el) {
       el.querySelector('[data-open-partner]')?.addEventListener('click', () => { S.partners.openDashboard(); SA.core.router.go('/dash'); });
       const f = el.querySelector('[data-apply]'); if (!f) return;
-      const data = { idPhoto: '', photos: [], lat: 0, lng: 0 };
+      const data = { idPhoto: '', idPhotoBack: '', photos: [], lat: 0, lng: 0 };
       bindPhoto(el, 'idPhoto', (u) => (data.idPhoto = u));
+      bindPhoto(el, 'idPhotoBack', (u) => (data.idPhotoBack = u));
       [0, 1, 2, 3].forEach((i) => bindPhoto(el, `photo${i}`, (u) => (data.photos[i] = u)));
       // Pin the pitch on the map
       let map = null, pin = null;
@@ -78,9 +116,18 @@
         map = SA.ui.map.create(box, { center: { lat: 30.0444, lng: 31.2357 }, zoom: 11 });
         map?.raw.on('click', (e) => { data.lat = e.latlng.lat; data.lng = e.latlng.lng; if (pin) pin.setLatLng(e.latlng); else pin = window.L.marker(e.latlng).addTo(map.raw); el.querySelector('[data-coords]').textContent = `${data.lat.toFixed(4)}, ${data.lng.toFixed(4)}`; });
       });
-      f.addEventListener('submit', (e) => {
+      f.addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = SA.core.utils.formData(f);
+        if (live()) {
+          const btn = f.querySelector('[type="submit"]'); btn.disabled = true;
+          try {
+            await applyPitchLive(fd, f, data, await S.api.get('/lookups/areas'));
+            toast('Application sent — we’ll review it within 2 working days');
+            SA.core.motion.confetti({ count: 60 }); SA.app.rerender(); scrollTo(0, 0);
+          } catch (err) { showErrors(f, apiErrors(err.details)); toast(err.message, 'error'); } finally { btn.disabled = false; }
+          return;
+        }
         try {
           S.partners.apply({ ...fd, formats: [...f.querySelectorAll('[name="formats"]:checked')].map((x) => x.value), agree: f.agree.checked, idPhoto: data.idPhoto, photos: data.photos.filter(Boolean), lat: data.lat, lng: data.lng });
           toast('Application sent — we’ll review it within 2 working days');
@@ -98,7 +145,9 @@
       ${field('phone', 'Mobile', `<input class="input num" id="ap-phone" name="phone" value="${esc(u.phone || '')}" inputmode="tel" dir="ltr" />`)}
       ${idBlock()}
     </div></section>`;
-  SA.ui.bindSellerId = (el, data) => bindPhoto(el, 'idPhoto', (u) => (data.idPhoto = u));
+  SA.ui.bindSellerId = (el, data) => { bindPhoto(el, 'idPhoto', (u) => (data.idPhoto = u)); bindPhoto(el, 'idPhotoBack', (u) => (data.idPhotoBack = u)); };
+  /** API-mode helpers shared with the seller application (#/sell) */
+  SA.ui.applyLive = { live, signInFirst, latestLive, apiErrors, addPhoto, PAYOUT, statusCard };
   SA.ui.showApplyErrors = showErrors;
 
   /** Pitch partner → apply to sell, from inside their dashboard */

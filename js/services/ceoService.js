@@ -114,6 +114,12 @@
       try { localStorage.setItem(SESSION, CEO_ID); } catch { /* private mode */ }
       db().log(CEO_ID, 'ceo.signin', 'The CEO signed in to the Command Center');
     },
+    /** API mode: the real CEO account signed in with its authenticator code opens the Command Center */
+    signInWithAccount() {
+      if (!SA.services.session?.has('ceo')) throw new ApiError('Sign in with the CEO account first.', 'forbidden');
+      try { localStorage.setItem(SESSION, CEO_ID); } catch { /* private mode */ }
+      db().log(CEO_ID, 'ceo.signin', 'The CEO signed in to the Command Center (account + authenticator)');
+    },
     signOut() { try { localStorage.removeItem(SESSION); } catch { /* ignore */ } },
   };
   const me = () => { const a = auth.current(); if (!a) throw new ApiError('Sign in to the CEO system first.', 'forbidden'); return a; };

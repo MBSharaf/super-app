@@ -92,10 +92,34 @@
     </div>`;
   };
 
+  /** API mode: the seller application goes to the server (ID card front and back, payout by InstaPay or bank) */
+  const L = () => SA.ui.applyLive;
+  const liveStatus = (a) => `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Sell on Super App</h1></div>${L().statusCard(a)}</div>`;
+  const applySellerLive = async (data, form, idData) => {
+    const answers = {
+      fullName: data.fullName, phone: data.phone, nationalId: data.nationalId, storeName: data.name, handle: null, mode: data.mode, bio: data.bio || null,
+      payoutMethod: L().PAYOUT[data.payoutMethod] || data.payoutMethod, payoutDetail: data.payoutDetail, acceptTerms: form.agree.checked,
+    };
+    const fd = new FormData();
+    fd.append('answers', JSON.stringify(answers));
+    await L().addPhoto(fd, 'idFront', idData.idPhoto, 'id-front.jpg');
+    await L().addPhoto(fd, 'idBack', idData.idPhotoBack, 'id-back.jpg');
+    return form.dataset.code ? S.api.form(`/applications/${form.dataset.code}`, fd, 'PUT') : S.api.form('/applications/seller', fd);
+  };
+
   SA.pages.sell = {
     title: 'Sell on Super App',
-    render() {
-      const mine = S.sellers.mine();
+    async render() {
+      await S.api.ready;
+      let rejected = null;
+      if (L().live()) {
+        if (!S.session.loaded()) await S.session.load();
+        if (!S.session.me()) return L().signInFirst('Sell on Super App');
+        const a = await L().latestLive('Seller');
+        if (a && a.status !== 'rejected') return liveStatus(a);
+        rejected = a;
+      }
+      const mine = L().live() ? null : S.sellers.mine();
       if (mine) return SA.pages.sell.welcome(mine);
       const user = S.user.me();
       const suggested = S.sellers.slug(`${user.firstName || user.name}-designs`);
@@ -113,7 +137,8 @@
         </div>
       </section>
       <div class="container sell-layout">
-        <form id="sell-form" class="stack" style="--gap:20px" novalidate>
+        ${rejected ? L().statusCard(rejected) : ''}
+        <form id="sell-form" class="stack" style="--gap:20px" ${rejected ? `data-code="${esc(rejected.code)}"` : ''} novalidate>
           <section class="panel panel-pad">
             <h2 class="h4">1. How do you want to sell?</h2>
             <div class="sell-modes" role="radiogroup" aria-label="How you sell">${MODES.map((m, i) => `<label class="sell-mode"><input type="radio" name="mode" value="${m.id}" ${i === 0 ? 'checked' : ''} />
@@ -130,7 +155,7 @@
           <section class="panel panel-pad">
             <h2 class="h4">3. How we pay you</h2>
             <div class="form-grid" style="margin-top:14px">
-              <div class="field"><label for="sl-pm">Method</label><select class="select" id="sl-pm" name="payoutMethod">${PAYOUTS.map((p) => `<option>${p}</option>`).join('')}</select></div>
+              <div class="field"><label for="sl-pm">Method</label><select class="select" id="sl-pm" name="payoutMethod">${PAYOUTS.filter((p) => !L().live() || L().PAYOUT[p]).map((p) => `<option>${p}</option>`).join('')}</select></div>
               <div class="field"><label for="sl-pd">Account</label><input class="input" id="sl-pd" name="payoutDetail" maxlength="60" placeholder="Phone, email or IBAN" dir="ltr" /><p class="field-error" data-err="payoutDetail"></p></div>
             </div>
             <p class="small soft sell-note">${icon('info', 14)} Profit becomes available ${S.pod.cfg().holdDays} days after delivery. You can withdraw from <b>${money(S.pod.cfg().minWithdraw)}</b>.</p>
@@ -203,13 +228,22 @@
       price.addEventListener('input', calcUpdate);
       calcUpdate();
 
-      const idData = { idPhoto: '' };
+      const idData = { idPhoto: '', idPhotoBack: '' };
       SA.ui.bindSellerId(el, idData);
       form.bio.addEventListener('input', () => (el.querySelector('[data-count]').textContent = `${form.bio.value.length} / 280`));
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = SA.core.utils.formData(form);
+        if (L().live()) {
+          const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
+          try {
+            await applySellerLive(data, form, idData);
+            SA.ui.overlay.toast('Application sent — we review it within one working day', { type: 'success' });
+            SA.core.motion?.confetti?.({ count: 90 }); SA.app.rerender(); scrollTo(0, 0);
+          } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); SA.ui.showApplyErrors(form, L().apiErrors(err.details)); } finally { btn.disabled = false; }
+          return;
+        }
         try {
           const s = S.sellers.start({ ...data, agree: form.agree.checked, idPhoto: idData.idPhoto, requireId: true });
           SA.ui.overlay.toast(s.status === 'pending' ? 'Application sent — we review it within one working day' : `${s.name} is open — welcome aboard!`, { type: 'success' });

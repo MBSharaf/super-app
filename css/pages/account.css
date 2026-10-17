@@ -67,3 +67,18 @@ body.is-loading::before { content: ""; position: fixed; top: 0; inset-inline-sta
 .ap-map { height: 260px; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line); }
 .chip-check { cursor: pointer; }
 .chip-check input { accent-color: var(--blaze); }
+
+/* ---------- Real account pages (API mode): sign in, sign up, two-step ---------- */
+.auth-page { display: grid; justify-items: center; }
+.auth-card { width: 100%; max-width: 440px; margin: var(--s-6) auto; display: grid; gap: var(--s-4); }
+.auth-brand { display: inline-flex; align-items: center; gap: var(--s-2); color: var(--ink); text-decoration: none; letter-spacing: .04em; }
+.auth-wide { width: 100%; justify-content: center; }
+.auth-foot { text-align: center; color: var(--ink-3); }
+.auth-done { display: grid; justify-items: center; gap: var(--s-3); text-align: center; padding: var(--s-3) 0; color: var(--ink-2); }
+.auth-done svg { color: var(--turf); }
+.auth-steps { padding-inline-start: var(--s-5); display: grid; gap: var(--s-1); color: var(--ink-2); }
+.auth-qr { display: grid; place-items: center; }
+.auth-qr svg { width: 200px; height: 200px; background: #fff; padding: var(--s-2); border-radius: var(--r-md); }
+.auth-codes { columns: 2; margin: 0; padding: var(--s-4); background: var(--surface-2); border-radius: var(--r-md); font-size: var(--fs-md); line-height: 1.9; }
+.acc-real { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+.acc-real .grow { min-width: 220px; }

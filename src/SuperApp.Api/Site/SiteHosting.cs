@@ -34,15 +34,18 @@ public static class SiteHosting
                 RequestPath = $"{BasePath}/{folder}",
                 ContentTypeProvider = types,
                 ServeUnknownFileTypes = false,
+                // The browser checks with the server before reusing a file (a cheap 304), so updates show up at once
+                OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache",
             });
         }
         app.MapGet("/", () => Results.Redirect($"{BasePath}/")).ExcludeFromDescription();
-        app.MapGet($"{BasePath}/{{**path}}", (string? path) => ServePage(root, path)).ExcludeFromDescription();
+        app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path) => ServePage(http, root, path)).ExcludeFromDescription();
         return app;
     }
 
-    private static IResult ServePage(string root, string? path)
+    private static IResult ServePage(HttpContext http, string root, string? path)
     {
+        http.Response.Headers.CacheControl = "no-cache";
         var name = string.IsNullOrEmpty(path) ? "index.html" : path;
         if (RootFiles.Contains(name, StringComparer.OrdinalIgnoreCase))
         {
