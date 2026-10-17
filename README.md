@@ -278,3 +278,34 @@ Plan: `docs/PLAN-studio.md`.
 | --- | --- |
 | Public site | `js/components/promoPop.js`: small cards for Super App's own services and offers. Ten come built in: become a seller, fantasy, the KICKOFF10 code, cheap daytime pitches, the shop, weekly packages, tournaments, finding players, points and listing a pitch. Each card flips in with a 3D animation, tilts toward the pointer (its layers sit at different depths), and carries a 3D object: a spinning cube with icons, a coin with thickness, or the real 3D T-shirt with orbiting sparks. **Defaults:** the first after 6 s, then one every 10 s, each stays 7 s, up to 6 a visit. A card stays open while the pointer is over it. They never show on checkout, dashboards or the studio, over a dialog or the cookie bar, or for the page the visitor is on. The seller ad doesn't show to sellers. **Close** hides that one for the visit; **Don't show offers** mutes them for 7 days. Reduced motion turns the animation off. |
 | `/admin/content?tab=popups` | On/off, timing (first, every, stays, per visit), and the list with views, clicks and click rate. Add, edit, preview, pause or delete a pop-up; each one has a title, text, button, link, badge, colour, 3D object and cube icons. In the CEO **Every page** map. |
+
+## Backend (ASP.NET Core Web API) — Phase 1
+
+The backend lives in `src/` (Clean Architecture, .NET 10, SQL Server code-first) and serves this same site,
+unchanged, at `/super-app/`. Planning documents: `docs/backend/` (PRD, ERD, API, INTEGRATIONS, STRUCTURE — each
+also as PDF in `docs/backend/pdf/`). Progress checklist: `docs/backend/PROGRESS.md`.
+
+| Project | Holds |
+|---|---|
+| `SuperApp.Domain` | Entities for all 162 tables, enums — no dependencies |
+| `SuperApp.Application` | Unified response, exceptions, permission catalogue, service interfaces, validators |
+| `SuperApp.Infrastructure` | `AppDbContext`, Fluent API configurations, Identity, audit interceptor, seed |
+| `SuperApp.Api` | `Program.cs`, middlewares, error handler, validation filter, cookie auth, rate limits, site hosting |
+| `tests/SuperApp.Tests` | Pipeline, error mapping, permissions and seed tests |
+
+**First run (VS Code terminal, from the repository root):**
+
+1. Copy `.env.example` to `.env` and fill at least `SEED__CEO_EMAIL` and `SEED__CEO_PASSWORD` (8+ characters with a digit). `.env` is never committed.
+2. Install the EF tool once: `dotnet tool install --global dotnet-ef`
+3. Create the migration: `dotnet ef migrations add InitialCreate --project src/SuperApp.Infrastructure --startup-project src/SuperApp.Api --output-dir Persistence/Migrations`
+4. Create the database: `dotnet ef database update --project src/SuperApp.Infrastructure --startup-project src/SuperApp.Api`
+5. Run: `dotnet run --project src/SuperApp.Api --launch-profile https` — the seed runs at start-up in Development.
+6. Open `https://localhost:7254/super-app/` (the site), `/docs` (API reference), `/health/ready` (database check).
+
+**Seed:** idempotent (safe to run many times), in ERD §12 order — reference data first, then the demo data while
+`SEED__DEMODATA=true` (fictional partners, pitches, products, sellers, designs, orders, tournaments, posts and the
+18 AI agents, all paused). Set it to `false` before the real launch. The seed files are in
+`src/SuperApp.Infrastructure/Persistence/Seed/Data`; they are rebuilt from the site's own data with
+`python tools/seed/export_front_data.py`, `python tools/seed/build_seed.py` and `python tools/seed/build_demo.py`.
+
+**Tests:** `dotnet test` — the seed tests create and drop a throw-away LocalDB database; nothing touches your `SuperApp` database.
