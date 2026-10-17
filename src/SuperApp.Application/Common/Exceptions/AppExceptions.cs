@@ -32,3 +32,11 @@ public sealed class BusinessRuleException(string message, string code = "busines
 /// <summary>423 — the area is switched off by a CEO kill switch or maintenance mode.</summary>
 public sealed class FeatureDisabledException(string message = "This is paused for now. Please try again later.", string code = "feature_disabled")
     : AppException(message, code);
+
+/// <summary>423 — the account is locked for a while (too many wrong passwords).</summary>
+public sealed class LockedException(string message = "Too many wrong attempts. Try again in 15 minutes.", string code = "locked_out")
+    : AppException(message, code);
+
+/// <summary>400 with a machine code, for a bad request that is not a single form field (for example an expired link).</summary>
+public sealed class BadRequestException(string message, string code = "bad_request")
+    : AppException(message, code);

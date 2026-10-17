@@ -4,6 +4,7 @@ using SuperApp.Api.Filters;
 using SuperApp.Api.Security;
 using SuperApp.Api.Services;
 using SuperApp.Application.Abstractions.Services;
+using SuperApp.Application.Common.Options;
 
 namespace SuperApp.Api.Extensions;
 
@@ -14,8 +15,14 @@ public static class ApiServiceExtensions
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IRequestInfo, RequestInfo>();
+        services.Configure<SiteOptions>(configuration.GetSection(SiteOptions.Section));
 
-        services.AddControllers(o => o.Filters.Add<ValidationFilter>());
+        services.AddControllers(o =>
+        {
+            o.Filters.Add<AntiforgeryFilter>();
+            o.Filters.Add<ValidationFilter>();
+        });
         // Invalid JSON / model binding errors go through the same unified 400 response
         services.Configure<ApiBehaviorOptions>(o => o.InvalidModelStateResponseFactory = ValidationResponse.FromModelState);
 
@@ -23,7 +30,7 @@ public static class ApiServiceExtensions
         services.AddProblemDetails();
 
         services.AddSuperAppAuth();
-        services.AddSuperAppRateLimits();
+        services.AddSuperAppRateLimits(configuration);
         services.AddOpenApi();
         services.AddHealthChecks()
             .AddSqlServer(configuration.GetConnectionString("Default")!, name: "database", tags: ["ready"]);

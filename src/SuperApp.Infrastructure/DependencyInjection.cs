@@ -4,9 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SuperApp.Application.Abstractions.Email;
+using SuperApp.Application.Abstractions.Identity;
+using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Domain.Entities.Auth;
+using SuperApp.Infrastructure.Email;
+using SuperApp.Infrastructure.Identity;
 using SuperApp.Infrastructure.Persistence;
+using SuperApp.Infrastructure.Persistence.Repositories;
 using SuperApp.Infrastructure.Persistence.Interceptors;
 using SuperApp.Infrastructure.Persistence.Seed;
 using SuperApp.Infrastructure.Services;
@@ -37,9 +43,27 @@ public static class DependencyInjection
             .AddRoles<Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddTokenProvider<EmailConfirmationTokenProvider>(SessionRules.EmailConfirmationProvider)
+            .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>();
+        services.AddSessionRules();
+        services.AddAccountServices();
 
         services.AddSeed(configuration);
+        return services;
+    }
+
+    /// <summary>Identity, email, audit and repositories behind the Application interfaces.</summary>
+    private static IServiceCollection AddAccountServices(this IServiceCollection services)
+    {
+        services.AddScoped<PermissionReader>();
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddSingleton<IEmailTransport, FileEmailTransport>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<ILegalRepository, LegalRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
 
@@ -52,6 +76,7 @@ public static class DependencyInjection
         o.Password.RequireDigit = true;
         o.Password.RequireNonAlphanumeric = false;
         o.Password.RequireUppercase = false;
+        o.Password.RequireLowercase = false;
         o.Lockout.MaxFailedAccessAttempts = 5;
         o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
         o.Lockout.AllowedForNewUsers = true;

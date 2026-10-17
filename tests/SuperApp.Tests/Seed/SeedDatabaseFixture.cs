@@ -9,7 +9,7 @@ using SuperApp.Infrastructure.Persistence;
 namespace SuperApp.Tests.Seed;
 
 /// <summary>
-/// A throw-away LocalDB database built from the model (no migration needed), dropped after the tests.
+/// A throw-away LocalDB database built with the real migrations, dropped after the tests.
 /// The real database is created by the owner with Add-Migration / Update-Database.
 /// </summary>
 public sealed class SeedDatabaseFixture : IAsyncLifetime
@@ -36,7 +36,7 @@ public sealed class SeedDatabaseFixture : IAsyncLifetime
         Services = services.BuildServiceProvider();
 
         await using var scope = Services.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreatedAsync();
+        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
     }
 
     public async Task DisposeAsync()

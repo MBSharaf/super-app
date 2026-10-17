@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using SuperApp.Application.Common.Responses;
+using SuperApp.Infrastructure.Identity;
 
 namespace SuperApp.Api.Security;
 
@@ -36,6 +37,7 @@ public static class CookieAuthSetup
         o.Cookie.SameSite = SameSiteMode.Lax;
         o.ExpireTimeSpan = TimeSpan.FromDays(14);
         o.SlidingExpiration = true;
+        o.Events.OnValidatePrincipal = SessionRules.ValidatePrincipalAsync;
         o.Events.OnRedirectToLogin = ctx => Deny(ctx.HttpContext, StatusCodes.Status401Unauthorized, "Please sign in first.", "unauthorized");
         o.Events.OnRedirectToAccessDenied = ctx => Deny(ctx.HttpContext, StatusCodes.Status403Forbidden, "You are not allowed to do this.", "forbidden");
     }

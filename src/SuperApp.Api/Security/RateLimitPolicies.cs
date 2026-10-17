@@ -7,6 +7,7 @@ namespace SuperApp.Api.Security;
 /// <summary>
 /// Request limits per caller (PRD NFR-SEC-04). Controllers pick one with <c>[EnableRateLimiting(RateLimitPolicies.Auth)]</c>;
 /// everything else falls under the global read limit. Signed-in users are counted by account, guests by IP address.
+/// Each limit (requests per minute) can be changed in settings, e.g. <c>RateLimits:Auth</c>.
 /// </summary>
 public static class RateLimitPolicies
 {
@@ -17,7 +18,7 @@ public static class RateLimitPolicies
     public const string Upload = "upload";
     public const string Agent = "agent";
 
-    public static IServiceCollection AddSuperAppRateLimits(this IServiceCollection services)
+    public static IServiceCollection AddSuperAppRateLimits(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddRateLimiter(o =>
         {
@@ -25,13 +26,15 @@ public static class RateLimitPolicies
             o.OnRejected = (ctx, token) => new ValueTask(ctx.HttpContext.Response.WriteAsJsonAsync(
                 ApiResponse.Fail("Too many requests. Please wait a moment and try again.",
                     new Dictionary<string, string[]> { ["code"] = ["rate_limited"] }, ctx.HttpContext.TraceIdentifier), token));
-            o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx => PerMinute(ctx, "read", 300));
-            Add(o, Auth, 10);
-            Add(o, Scan, 60);
-            Add(o, Write, 60);
-            Add(o, Chat, 30);
-            Add(o, Upload, 20);
-            Add(o, Agent, 30);
+            var limits = configuration.GetSection("RateLimits");
+            var read = limits.GetValue("Read", 300);
+            o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx => PerMinute(ctx, "read", read));
+            Add(o, Auth, limits.GetValue("Auth", 5));
+            Add(o, Scan, limits.GetValue("Scan", 60));
+            Add(o, Write, limits.GetValue("Write", 60));
+            Add(o, Chat, limits.GetValue("Chat", 20));
+            Add(o, Upload, limits.GetValue("Upload", 20));
+            Add(o, Agent, limits.GetValue("Agent", 600));
         });
         return services;
     }
