@@ -4,6 +4,7 @@ using SuperApp.Application.Features.Applications.Services;
 using SuperApp.Application.Features.Auth.Services;
 using SuperApp.Application.Features.Ceo.Services;
 using SuperApp.Application.Features.Files;
+using SuperApp.Application.Features.Pitches;
 
 namespace SuperApp.Application;
 
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationsService, ApplicationsService>();
         services.AddScoped<IApprovalsService, ApprovalsService>();
         services.AddScoped<IFilesService, FilesService>();
+        services.AddScoped<IPitchesService, PitchesService>();
         return services;
     }
 }

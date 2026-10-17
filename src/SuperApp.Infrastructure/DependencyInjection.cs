@@ -11,6 +11,7 @@ using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Features.Lookups;
+using SuperApp.Application.Features.Pitches;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Infrastructure.Email;
 using SuperApp.Infrastructure.Identity;
@@ -77,6 +78,7 @@ public static class DependencyInjection
         services.AddScoped<IFeatureFlags, FeatureFlags>();
         services.AddScoped<INotifier, Notifier>();
         services.AddScoped<ILookupsReader, LookupsReader>();
+        services.AddScoped<IPitchesReader, PitchesReader>();
         return services;
     }
 

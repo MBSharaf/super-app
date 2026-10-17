@@ -18,7 +18,7 @@ namespace SuperApp.Tests.Api;
 /// The real API on a throw-away LocalDB database with the reference seed (no demo data) and a CEO account.
 /// Emails are kept in memory so tests can open the links; the database is dropped at the end.
 /// </summary>
-public sealed class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string CeoEmail = "ceo@superapp.test";
     public const string CeoPassword = "Ceo-test-2026";
@@ -27,6 +27,9 @@ public sealed class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncL
     private readonly SemaphoreSlim ceoSetup = new(1, 1);
 
     public CapturingEmailTransport Emails { get; } = new();
+
+    /// <summary>True loads today's demo data too (pitches, products…) for the tests that read it.</summary>
+    protected virtual bool WithDemoData => false;
 
     /// <summary>The CEO's authenticator key once 2FA is set up (by the first <see cref="CeoAsync"/>).</summary>
     public string? CeoKey { get; private set; }
@@ -38,7 +41,7 @@ public sealed class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("Security:Data_Protection_Keys_Path", Path.Combine(Path.GetTempPath(), "superapp-test-keys"));
         builder.UseSetting("Seed:Ceo_Email", CeoEmail);
         builder.UseSetting("Seed:Ceo_Password", CeoPassword);
-        builder.UseSetting("Seed:DemoData", "false");
+        builder.UseSetting("Seed:DemoData", WithDemoData ? "true" : "false");
         builder.UseSetting("RateLimits:Auth", "1000");
         builder.UseSetting("RateLimits:Write", "1000");
         builder.UseSetting("RateLimits:Upload", "1000");
@@ -134,4 +137,10 @@ public sealed partial class CapturingEmailTransport : IEmailTransport
 
     [GeneratedRegex("href=\"([^\"]+)\"")]
     private static partial Regex Href();
+}
+
+/// <summary>The same throw-away API with the demo data (12 pitches, stores, products…).</summary>
+public sealed class DemoApiFactory : AccountsApiFactory
+{
+    protected override bool WithDemoData => true;
 }
