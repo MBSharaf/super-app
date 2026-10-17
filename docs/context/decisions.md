@@ -51,6 +51,8 @@ decisions here (with the date) from any window.
 
 - **Partner staff (2026-10-17):** added by the email or mobile of an existing Super App account (they sign up first); one partner business per person; only the owner handles managers.
 
+- **Test data (2026-10-17):** test accounts and test data stay in the local database until the backend is finished; they are deleted together with the demo data at launch (Phase 9).
+
 ## Technology
 - **Backend stack:** ASP.NET Core .NET 10 Web API with SQL Server (LocalDB in development), Clean Architecture. The existing site is served by the API at `/super-app/` and is unchanged.
 - **Demo data:** it stays as seed data so the site is not empty; it is switched off before launch.

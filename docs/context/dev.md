@@ -22,7 +22,7 @@
 - Sessions can end mid-task: commit after each chunk and keep PROGRESS current.
 
 ## Owner still to answer
-- Delete the test customer `browser.test@superapp.test` and its application "Browser Test Arena" from the local database?
+- *(nothing open)* — test data (e.g. `browser.test@superapp.test`, "Browser Test Arena") is deleted at the end of the backend, with the demo data (Phase 9).
 
 ## Inbox (requests from other windows)
 - *(empty)*
