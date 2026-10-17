@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using SuperApp.Application.Security;
 using SuperApp.Domain.Entities.Auth;
+using SuperApp.Domain.Entities.Communities;
+using SuperApp.Domain.Entities.Content;
+using SuperApp.Domain.Entities.Fantasy;
 using SuperApp.Domain.Entities.Geo;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Domain.Entities.Pitches;
@@ -43,6 +46,17 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         first["designCategories"].ShouldBe(10);
         first["levels"].ShouldBe(4);
         first["departments"].ShouldBe(8);
+        first["catalogue"].ShouldBe(3);
+        first["printAreas"].ShouldBe(6);
+        first["legal"].ShouldBe(7);
+        first["legalVersions"].ShouldBe(7);
+        first["helpTopics"].ShouldBe(12);
+        first["helpArticles"].ShouldBe(20);
+        first["banners"].ShouldBe(3);
+        first["popups"].ShouldBe(10);
+        first["communities"].ShouldBe(5);
+        first["bannedWords"].ShouldBe(4);
+        first["competitions"].ShouldBe(2);
     }
 
     [Fact]
@@ -90,5 +104,19 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         ["levels"] = await fixture.CountAsync<SellerLevel>(),
         ["departments"] = await fixture.CountAsync<Department>(),
         ["positions"] = await fixture.CountAsync<OrgPosition>(),
+        ["catalogue"] = await fixture.CountAsync<CatalogProduct>(),
+        ["catalogueColors"] = await fixture.CountAsync<CatalogColor>(),
+        ["catalogueSizes"] = await fixture.CountAsync<CatalogSize>(),
+        ["catalogueDetails"] = await fixture.CountAsync<CatalogDetail>(),
+        ["printAreas"] = await fixture.CountAsync<CatalogPrintArea>(),
+        ["legal"] = await fixture.CountAsync<LegalDocument>(),
+        ["legalVersions"] = await fixture.CountAsync<LegalVersion>(),
+        ["helpTopics"] = await fixture.CountAsync<HelpTopic>(),
+        ["helpArticles"] = await fixture.CountAsync<HelpArticle>(),
+        ["banners"] = await fixture.CountAsync<Banner>(),
+        ["popups"] = await fixture.CountAsync<PopupAd>(),
+        ["communities"] = await fixture.CountAsync<Community>(),
+        ["bannedWords"] = await fixture.CountAsync<BannedWord>(),
+        ["competitions"] = await fixture.CountAsync<Competition>(),
     };
 }

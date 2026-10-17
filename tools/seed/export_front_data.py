@@ -35,6 +35,7 @@ window.addEventListener('load', () => setTimeout(() => {
   const ar = data.i18nAr?.strings || {};    // only used to give seeded lookups their Arabic names
   delete data.i18nAr;
   delete data.fantasyLeagues;               // same objects as fantasy / fantasyEPL
+  data.promoPops = SA.services.content.PROMO_DEFAULTS();   // pop-up ads live in the content service, not in SA.data
   const pre = document.createElement('pre');
   pre.id = 'sa-export';
   pre.textContent = JSON.stringify({ exportedAt: Date.now(), data, storage: store, ar });

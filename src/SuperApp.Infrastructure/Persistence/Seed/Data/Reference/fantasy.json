@@ -1,0 +1,20 @@
+[
+  {
+    "key": "egy",
+    "en": "Egyptian Premier League",
+    "ar": "الدوري المصري الممتاز",
+    "externalLeagueId": 233,
+    "country": "Egypt",
+    "budget": 100,
+    "maxPerClub": 3
+  },
+  {
+    "key": "epl",
+    "en": "English Premier League",
+    "ar": "الدوري الإنجليزي الممتاز",
+    "externalLeagueId": 39,
+    "country": "England",
+    "budget": 100,
+    "maxPerClub": 3
+  }
+]

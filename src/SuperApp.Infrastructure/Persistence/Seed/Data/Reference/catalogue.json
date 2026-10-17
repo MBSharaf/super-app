@@ -1,0 +1,409 @@
+[
+  {
+    "key": "pod-tee",
+    "en": "Classic T-shirt",
+    "ar": "تيشيرت كلاسيك",
+    "kind": "Tee",
+    "descriptionEn": "180 g combed cotton, regular fit, DTF print that survives the wash.",
+    "descriptionAr": "قطن ممشط 180 جرام، قصة عادية، وطباعة DTF بتستحمل الغسيل.",
+    "basePrice": 300,
+    "factoryCost": 210,
+    "backPrintExtra": 60,
+    "bigSizeExtra": 30,
+    "maxPrice": 900,
+    "hasBackPrint": true,
+    "model3d": "models/tee.glb",
+    "colors": [
+      {
+        "en": "White",
+        "ar": "أبيض",
+        "hex": "#F7F7F5"
+      },
+      {
+        "en": "Black",
+        "ar": "أسود",
+        "hex": "#141414"
+      },
+      {
+        "en": "Navy",
+        "ar": "كحلي",
+        "hex": "#1C2541"
+      },
+      {
+        "en": "Heather Grey",
+        "ar": "رمادي فاتح",
+        "hex": "#9A9DA2"
+      },
+      {
+        "en": "Bottle Green",
+        "ar": "أخضر زجاجي",
+        "hex": "#1F4D3A"
+      },
+      {
+        "en": "Sand",
+        "ar": "رملي",
+        "hex": "#D8C7A6"
+      }
+    ],
+    "sizes": [
+      {
+        "size": "S",
+        "big": false,
+        "chest": 48,
+        "length": 69,
+        "sleeve": 19
+      },
+      {
+        "size": "M",
+        "big": false,
+        "chest": 51,
+        "length": 71,
+        "sleeve": 20
+      },
+      {
+        "size": "L",
+        "big": false,
+        "chest": 54,
+        "length": 73,
+        "sleeve": 21
+      },
+      {
+        "size": "XL",
+        "big": false,
+        "chest": 57,
+        "length": 75,
+        "sleeve": 22
+      },
+      {
+        "size": "2XL",
+        "big": true,
+        "chest": 60,
+        "length": 77,
+        "sleeve": 23
+      },
+      {
+        "size": "3XL",
+        "big": true,
+        "chest": 63,
+        "length": 79,
+        "sleeve": 24
+      }
+    ],
+    "details": [
+      {
+        "labelEn": "Fabric",
+        "labelAr": "الخامة",
+        "valueEn": "100% combed cotton, 180 g/m² single jersey",
+        "valueAr": "قطن ممشط 100%، جيرسيه 180 جرام/م²"
+      },
+      {
+        "labelEn": "Fit",
+        "labelAr": "المقاس",
+        "valueEn": "Regular fit, true to size",
+        "valueAr": "قصّة عادية، المقاس مظبوط"
+      },
+      {
+        "labelEn": "Print",
+        "labelAr": "الطباعة",
+        "valueEn": "DTF transfer — bright colours, soft feel, doesn’t crack",
+        "valueAr": "طباعة DTF — ألوان قوية وملمس ناعم ومابتتشققش"
+      },
+      {
+        "labelEn": "Neck",
+        "labelAr": "الرقبة",
+        "valueEn": "Ribbed crew neck, taped shoulder seams",
+        "valueAr": "رقبة مدوّرة ريب، وخياطة الكتف مقوّاة بشريط"
+      },
+      {
+        "labelEn": "Care",
+        "labelAr": "العناية",
+        "valueEn": "Wash inside out at 30°C, don’t iron on the print, no tumble dryer",
+        "valueAr": "اغسله مقلوب على 30 درجة، ماتكويش على الطباعة، ومن غير نشّافة"
+      }
+    ],
+    "printAreas": [
+      {
+        "side": "Front",
+        "x": 0.31,
+        "y": 0.2,
+        "w": 0.38,
+        "h": 0.62
+      },
+      {
+        "side": "Back",
+        "x": 0.31,
+        "y": 0.2,
+        "w": 0.38,
+        "h": 0.62
+      }
+    ]
+  },
+  {
+    "key": "pod-oversized",
+    "en": "Oversized T-shirt",
+    "ar": "تيشيرت أوفرسايز",
+    "kind": "Tee",
+    "descriptionEn": "240 g heavyweight cotton, dropped shoulders, boxy streetwear fit.",
+    "descriptionAr": "قطن تقيل 240 جرام، كتف نازل، وقصة ستريت وير واسعة.",
+    "basePrice": 380,
+    "factoryCost": 270,
+    "backPrintExtra": 60,
+    "bigSizeExtra": 30,
+    "maxPrice": 1000,
+    "hasBackPrint": true,
+    "model3d": "models/tee.glb",
+    "colors": [
+      {
+        "en": "Black",
+        "ar": "أسود",
+        "hex": "#141414"
+      },
+      {
+        "en": "Off-white",
+        "ar": "أوف وايت",
+        "hex": "#EFEBE1"
+      },
+      {
+        "en": "Sage",
+        "ar": "أخضر مطفي",
+        "hex": "#8FA58A"
+      },
+      {
+        "en": "Brown",
+        "ar": "بني",
+        "hex": "#5A4032"
+      },
+      {
+        "en": "Washed Blue",
+        "ar": "أزرق باهت",
+        "hex": "#5E7E9E"
+      }
+    ],
+    "sizes": [
+      {
+        "size": "S",
+        "big": false,
+        "chest": 56,
+        "length": 70,
+        "sleeve": 23
+      },
+      {
+        "size": "M",
+        "big": false,
+        "chest": 59,
+        "length": 72,
+        "sleeve": 24
+      },
+      {
+        "size": "L",
+        "big": false,
+        "chest": 62,
+        "length": 74,
+        "sleeve": 25
+      },
+      {
+        "size": "XL",
+        "big": false,
+        "chest": 65,
+        "length": 76,
+        "sleeve": 26
+      },
+      {
+        "size": "2XL",
+        "big": true,
+        "chest": 68,
+        "length": 78,
+        "sleeve": 27
+      },
+      {
+        "size": "3XL",
+        "big": true,
+        "chest": 71,
+        "length": 80,
+        "sleeve": 28
+      }
+    ],
+    "details": [
+      {
+        "labelEn": "Fabric",
+        "labelAr": "الخامة",
+        "valueEn": "100% heavyweight cotton, 240 g/m², pre-shrunk",
+        "valueAr": "قطن تقيل 100%، 240 جرام/م²، مش بينكمش"
+      },
+      {
+        "labelEn": "Fit",
+        "labelAr": "المقاس",
+        "valueEn": "Oversized and boxy with dropped shoulders — take your usual size for the loose look",
+        "valueAr": "أوفر سايز واسع وكتف نازل — خد مقاسك العادي علشان يطلع واسع"
+      },
+      {
+        "labelEn": "Print",
+        "labelAr": "الطباعة",
+        "valueEn": "DTF transfer — bright colours, soft feel, doesn’t crack",
+        "valueAr": "طباعة DTF — ألوان قوية وملمس ناعم ومابتتشققش"
+      },
+      {
+        "labelEn": "Neck",
+        "labelAr": "الرقبة",
+        "valueEn": "Thick 2.5 cm ribbed collar",
+        "valueAr": "ياقة ريب تخينة 2.5 سم"
+      },
+      {
+        "labelEn": "Care",
+        "labelAr": "العناية",
+        "valueEn": "Wash inside out at 30°C, don’t iron on the print, no tumble dryer",
+        "valueAr": "اغسله مقلوب على 30 درجة، ماتكويش على الطباعة، ومن غير نشّافة"
+      }
+    ],
+    "printAreas": [
+      {
+        "side": "Front",
+        "x": 0.31,
+        "y": 0.2,
+        "w": 0.38,
+        "h": 0.62
+      },
+      {
+        "side": "Back",
+        "x": 0.31,
+        "y": 0.2,
+        "w": 0.38,
+        "h": 0.62
+      }
+    ]
+  },
+  {
+    "key": "pod-hoodie",
+    "en": "Hoodie",
+    "ar": "هودي",
+    "kind": "Hoodie",
+    "descriptionEn": "320 g brushed fleece, double-lined hood, kangaroo pocket.",
+    "descriptionAr": "فليس مبطن 320 جرام، كابيشون بطبقتين، وجيب كانجرو.",
+    "basePrice": 600,
+    "factoryCost": 430,
+    "backPrintExtra": 70,
+    "bigSizeExtra": 40,
+    "maxPrice": 1600,
+    "hasBackPrint": true,
+    "model3d": null,
+    "colors": [
+      {
+        "en": "Black",
+        "ar": "أسود",
+        "hex": "#141414"
+      },
+      {
+        "en": "Heather Grey",
+        "ar": "رمادي فاتح",
+        "hex": "#9A9DA2"
+      },
+      {
+        "en": "Navy",
+        "ar": "كحلي",
+        "hex": "#1C2541"
+      },
+      {
+        "en": "Maroon",
+        "ar": "نبيتي",
+        "hex": "#5B1A24"
+      },
+      {
+        "en": "Off-white",
+        "ar": "أوف وايت",
+        "hex": "#EFEBE1"
+      }
+    ],
+    "sizes": [
+      {
+        "size": "S",
+        "big": false,
+        "chest": 56,
+        "length": 67,
+        "sleeve": 60
+      },
+      {
+        "size": "M",
+        "big": false,
+        "chest": 59,
+        "length": 69,
+        "sleeve": 61
+      },
+      {
+        "size": "L",
+        "big": false,
+        "chest": 62,
+        "length": 71,
+        "sleeve": 62
+      },
+      {
+        "size": "XL",
+        "big": false,
+        "chest": 65,
+        "length": 73,
+        "sleeve": 63
+      },
+      {
+        "size": "2XL",
+        "big": true,
+        "chest": 68,
+        "length": 75,
+        "sleeve": 64
+      },
+      {
+        "size": "3XL",
+        "big": true,
+        "chest": 71,
+        "length": 77,
+        "sleeve": 65
+      }
+    ],
+    "details": [
+      {
+        "labelEn": "Fabric",
+        "labelAr": "الخامة",
+        "valueEn": "80% cotton, 20% polyester brushed fleece, 320 g/m² — warm and soft inside",
+        "valueAr": "خليط 80% قطن و20% بوليستر مبطّن، 320 جرام/م² — دافي وناعم من جوه"
+      },
+      {
+        "labelEn": "Fit",
+        "labelAr": "المقاس",
+        "valueEn": "Relaxed fit with dropped shoulders",
+        "valueAr": "قصّة مريحة وكتف نازل"
+      },
+      {
+        "labelEn": "Print",
+        "labelAr": "الطباعة",
+        "valueEn": "DTF transfer — bright colours, soft feel, doesn’t crack",
+        "valueAr": "طباعة DTF — ألوان قوية وملمس ناعم ومابتتشققش"
+      },
+      {
+        "labelEn": "Details",
+        "labelAr": "التفاصيل",
+        "valueEn": "Double-lined hood, kangaroo pocket, ribbed cuffs and waistband",
+        "valueAr": "كابيشون دبل، جيب كانجارو، وأساور ووسط ريب"
+      },
+      {
+        "labelEn": "Care",
+        "labelAr": "العناية",
+        "valueEn": "Wash inside out at 30°C, don’t iron on the print, no tumble dryer",
+        "valueAr": "اغسله مقلوب على 30 درجة، ماتكويش على الطباعة، ومن غير نشّافة"
+      }
+    ],
+    "printAreas": [
+      {
+        "side": "Front",
+        "x": 0.3,
+        "y": 0.24,
+        "w": 0.4,
+        "h": 0.42
+      },
+      {
+        "side": "Back",
+        "x": 0.3,
+        "y": 0.24,
+        "w": 0.4,
+        "h": 0.42
+      }
+    ]
+  }
+]

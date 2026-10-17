@@ -1,0 +1,581 @@
+{
+  "legal": [
+    {
+      "key": "terms",
+      "titleEn": "Terms of use",
+      "titleAr": "شروط الاستخدام",
+      "acceptance": true,
+      "summaryEn": "The rules for using Super App: accounts, bookings, the shop, fantasy and communities.",
+      "summaryAr": "قواعد استخدام Super App: الحسابات والحجوزات والمتجر والفانتازي والمجتمعات.",
+      "bodyEn": "## Who we are\n\nSuper App is run by Super App Egypt (company details to be added after registration). By creating an account or using the site you agree to these terms.\n\n## Your account\n\nYou must be 16 or older. Keep your sign-in code private; you are responsible for what happens on your account. One person, one account.\n\nWe may suspend accounts that break these terms, abuse other people, or try to cheat payments, reviews or fantasy.\n\n## Bookings\n\nPitches belong to our pitch partners. Super App takes the booking and the payment on their behalf. Each pitch shows its cancellation policy before you pay, and refunds follow that policy.\n\nA weekly package uses one QR code. A game you do not come to counts as played.\n\n## Shop and printed designs\n\nProducts are sold by Super App or by independent sellers; the seller is shown on every product. Printed designs are made to order by our factory.\n\nReturns and exchanges follow our Refunds & returns policy.\n\n## Payments, wallet and points\n\nPrices are in Egyptian pounds and include VAT where it applies. Wallet balance can be used on Super App only. Super Points have no cash value: 20 points = 1 EGP in vouchers, from 2,000 points.\n\n## Community rules\n\nBe respectful. No phone numbers or outside links in posts, no selling outside Super App, no hate or harassment. We may remove posts and mute members.\n\n## Fantasy\n\nFantasy is a free game of skill with optional paid passes; prizes are vouchers from sponsors. Scores use official match data.\n\n## Liability\n\nPlaying sport has risks; see the Injury & conduct waiver. We are not responsible for the condition of pitches beyond what Egyptian law requires, but we help settle disputes with pitch partners and sellers.\n\n## Changes and law\n\nWe will tell you before important changes take effect. These terms follow Egyptian law, and the courts of Cairo decide disputes.",
+      "bodyAr": "## إحنا مين\n\nSuper App بتديرها Super App Egypt (بيانات الشركة هتتضاف بعد التسجيل). لما تعمل حساب أو تستخدم الموقع، إنت موافق على الشروط دي.\n\n## حسابك\n\nلازم يكون سنك 16 سنة أو أكتر. خلي كود الدخول سر؛ إنت مسؤول عن أي حاجة بتحصل على حسابك. حساب واحد لكل شخص.\n\nمن حقنا نوقف أي حساب يخالف الشروط دي، أو يسيء لحد، أو يحاول يغش في الدفع أو التقييمات أو الفانتازي.\n\n## الحجوزات\n\nالملاعب ملك شركائنا. Super App بتاخد الحجز والفلوس بالنيابة عنهم. كل ملعب بيوضح سياسة الإلغاء قبل ما تدفع، والاسترجاع بيمشي حسبها.\n\nالباقة الأسبوعية ليها QR واحد. والماتش اللي متجيش له بيتحسب كأنه اتلعب.\n\n## المتجر والتصميمات المطبوعة\n\nالمنتجات بتتباع من Super App أو من بائعين مستقلين، واسم البائع مكتوب على كل منتج. التصميمات المطبوعة بتتعمل حسب الطلب في المصنع بتاعنا.\n\nالمرتجعات والاستبدال بيمشوا حسب سياسة الاسترجاع والمرتجعات.\n\n## الدفع والمحفظة والنقاط\n\nالأسعار بالجنيه المصري وشاملة الضريبة لو مطلوبة. رصيد المحفظة بيتصرف جوه Super App بس. نقاط Super ملهاش قيمة كاش: كل 20 نقطة = 1 جنيه في قسايم، من أول 2,000 نقطة.\n\n## قواعد المجتمعات\n\nخليك محترم. ممنوع أرقام التليفونات واللينكات الخارجية في البوستات، وممنوع البيع برّه Super App، وممنوع الكراهية والمضايقة. من حقنا نشيل بوستات ونكتم أعضاء.\n\n## الفانتازي\n\nالفانتازي لعبة مهارة مجانية، وفيها باس مدفوع اختياري، والجوايز قسايم من الرعاة. النقاط بتتحسب من بيانات الماتشات الرسمية.\n\n## المسؤولية\n\nالرياضة فيها مخاطر؛ اقرا إقرار الإصابات والسلوك. إحنا مش مسؤولين عن حالة الملاعب أكتر من اللي القانون المصري بيطلبه، بس بنساعد في حل أي خلاف مع الشركاء والبائعين.\n\n## التعديلات والقانون\n\nهنبلّغك قبل ما أي تعديل مهم يبدأ. الشروط دي خاضعة للقانون المصري، ومحاكم القاهرة هي اللي بتفصل في أي نزاع."
+    },
+    {
+      "key": "privacy",
+      "titleEn": "Privacy policy",
+      "titleAr": "سياسة الخصوصية",
+      "acceptance": true,
+      "summaryEn": "What we collect, why, who sees it, and your rights under Law 151 of 2020.",
+      "summaryAr": "بنجمع إيه، وليه، ومين بيشوفه، وحقوقك حسب قانون 151 لسنة 2020.",
+      "bodyEn": "## What we collect\n\nYour name, phone, email, city and delivery addresses; bookings, orders and payments (card details stay with the payment provider); your location only when you allow it; posts and reviews you write.\n\nSellers and pitch partners also give an ID photo and payout details, used only for verification and payments.\n\n## Why we use it\n\nTo run your bookings and orders, deliver parcels, prevent fraud, answer support, and — only if you agree — send offers and measure the site.\n\n## Who sees it\n\nThe pitch partner sees your name and phone for your booking; the seller and the factory see your name and delivery address for your order; the courier sees what it needs to deliver. We never sell your data.\n\n## How long we keep it\n\nAccount data while your account is open; invoices and payments for the period tax law requires; ID photos until verification plus the legal minimum.\n\n## Your rights\n\nYou can see, correct or delete your data, take back consent, and object to marketing. Write to support; we answer within 30 days.\n\n## Security\n\nData is encrypted in transit, staff and AI agents only see what their role needs, and every admin action is logged.\n\n## Contact\n\nData protection contact: Super App Egypt (company details to be added after registration), through Help & support.",
+      "bodyAr": "## بنجمع إيه\n\nاسمك وموبايلك وإيميلك ومدينتك وعناوين التوصيل؛ حجوزاتك وطلباتك ومدفوعاتك (بيانات الكارت بتفضل عند شركة الدفع)؛ مكانك بس لو سمحت بده؛ والبوستات والتقييمات اللي بتكتبها.\n\nالبائعين وشركاء الملاعب بيبعتوا كمان صورة البطاقة وبيانات التحويل، وبتُستخدم للتحقق والدفع بس.\n\n## بنستخدمها ليه\n\nعلشان نشغّل حجوزاتك وطلباتك، ونوصّل الشحنات، ونمنع النصب، ونرد على الدعم، و— لو وافقت بس — نبعتلك عروض ونقيس استخدام الموقع.\n\n## مين بيشوفها\n\nشريك الملعب بيشوف اسمك وموبايلك علشان الحجز؛ والبائع والمصنع بيشوفوا اسمك وعنوانك علشان الطلب؛ وشركة الشحن بتشوف اللي محتاجاه للتوصيل. عمرنا ما بنبيع بياناتك.\n\n## بنحتفظ بيها قد إيه\n\nبيانات الحساب طول ما حسابك مفتوح؛ والفواتير والمدفوعات للمدة اللي قانون الضرايب بيطلبها؛ وصور البطايق لحد التحقق وبعدها أقل مدة قانونية.\n\n## حقوقك\n\nتقدر تشوف بياناتك أو تصلحها أو تمسحها، وتسحب موافقتك، وترفض التسويق. ابعت للدعم؛ وهنرد في خلال 30 يوم.\n\n## الأمان\n\nالبيانات متشفرة وهي بتتنقل، والموظفين والـ AI agents بيشوفوا بس اللي دورهم محتاجه، وكل حاجة الإدارة بتعملها بتتسجل.\n\n## التواصل\n\nمسؤول حماية البيانات: Super App Egypt (بيانات الشركة هتتضاف بعد التسجيل)، من خلال المساعدة والدعم."
+    },
+    {
+      "key": "refunds",
+      "titleEn": "Refunds & returns",
+      "titleAr": "الاسترجاع والمرتجعات",
+      "acceptance": false,
+      "summaryEn": "Booking cancellations, shop returns and exchanges, printed designs, and how refunds reach you.",
+      "summaryAr": "إلغاء الحجوزات، ومرتجعات واستبدال المتجر، والتصميمات المطبوعة، وإزاي الفلوس بترجعلك.",
+      "bodyEn": "## Bookings\n\nEach pitch shows its cancellation policy (flexible, standard or strict) before you pay. Cancel from the booking page; the refund follows that policy. If the venue cancels, you get everything back.\n\n## Shop products\n\nYou can return or exchange an unused product in its original condition within 14 days of delivery. Ask from the order page; the courier picks it up. If the product is faulty or not as described, return delivery is free.\n\n## Printed designs (made to order)\n\nBecause each piece is printed for you, we cannot take it back if you changed your mind. If the print is faulty, the wrong size was sent, or the item is damaged, we reprint it at no cost or refund you.\n\n## How refunds reach you\n\nRefunds go to your Super App wallet straight away, with a receipt. With the payment provider live you can also choose the original card (5–14 working days).\n\n## Cash on delivery refused\n\nRefusing a cash-on-delivery parcel twice means future printed orders must be paid in advance.",
+      "bodyAr": "## الحجوزات\n\nكل ملعب بيوضح سياسة الإلغاء (مرنة أو عادية أو صارمة) قبل ما تدفع. الغي من صفحة الحجز، والاسترجاع بيمشي حسب السياسة. ولو الملعب هو اللي لغى، فلوسك كلها بترجع.\n\n## منتجات المتجر\n\nتقدر ترجّع أو تستبدل أي منتج مش مستخدم وبحالته الأصلية في خلال 14 يوم من الاستلام. اطلب من صفحة الطلب، وشركة الشحن هتيجي تاخده. ولو المنتج فيه عيب أو مش زي الوصف، الشحن مجاني.\n\n## التصميمات المطبوعة (حسب الطلب)\n\nلأن كل قطعة بتتطبع مخصوص ليك، مش هنقدر نرجّعها لو غيّرت رأيك. لكن لو الطباعة فيها عيب، أو المقاس اتبعت غلط، أو القطعة متضررة، هنطبعها تاني ببلاش أو نرجّعلك فلوسك.\n\n## الفلوس بترجعلك إزاي\n\nالاسترجاع بيوصل محفظة Super App على طول، ومعاه إيصال. ولما الدفع الحقيقي يشتغل، هتقدر تختار ترجّعه على نفس الكارت (من 5 لـ 14 يوم عمل).\n\n## رفض الاستلام في الدفع عند الاستلام\n\nرفض الاستلام مرتين في الدفع عند الاستلام معناه إن طلبات الطباعة الجاية لازم تتدفع مقدماً."
+    },
+    {
+      "key": "waiver",
+      "titleEn": "Injury & conduct waiver",
+      "titleAr": "إقرار الإصابات والسلوك",
+      "acceptance": true,
+      "summaryEn": "What you accept when you book, join a game or enter a tournament.",
+      "summaryAr": "اللي بتوافق عليه لما تحجز أو تنضم لماتش أو تدخل بطولة.",
+      "bodyEn": "## Playing is at your own risk\n\nFootball and other sports can cause injury. You confirm you are fit to play, will warm up, and will wear suitable shoes and shin pads.\n\n## Your team\n\nThe person who books is responsible for everyone they bring and for damage to the venue caused by the group.\n\n## Conduct\n\nNo violence, abuse, discrimination or dangerous play. Venue staff can stop a game; Super App can block players for repeated problems.\n\n## Responsibility\n\nSuper App and the pitch partner are not responsible for injuries during play, except where caused by their negligence (for example an unsafe pitch) as Egyptian law provides.\n\n## Minors\n\nPlayers under 18 need a parent or guardian to accept this waiver for them.",
+      "bodyAr": "## اللعب على مسؤوليتك\n\nالكورة وأي رياضة ممكن يحصل فيها إصابات. إنت بتأكد إنك لايق صحياً للعب، وهتسخّن، وهتلبس جزمة مناسبة وواقي سمانة.\n\n## فريقك\n\nاللي بيحجز مسؤول عن كل اللي جايبهم، وعن أي ضرر في الملعب يعمله الفريق.\n\n## السلوك\n\nممنوع العنف أو الشتيمة أو التمييز أو اللعب الخطر. موظفين الملعب من حقهم يوقفوا الماتش، وSuper App من حقها تحظر اللعيبة اللي بيتكرر منهم مشاكل.\n\n## المسؤولية\n\nSuper App وشريك الملعب مش مسؤولين عن الإصابات أثناء اللعب، إلا لو كانت بسبب إهمال منهم (زي ملعب مش آمن) حسب القانون المصري.\n\n## القُصّر\n\nاللعيبة اللي أقل من 18 سنة لازم وليّ أمرهم يوافق على الإقرار ده بالنيابة عنهم."
+    },
+    {
+      "key": "seller",
+      "titleEn": "Seller agreement",
+      "titleAr": "اتفاقية البائع",
+      "acceptance": true,
+      "summaryEn": "For designers and stores selling on Super App.",
+      "summaryAr": "للمصممين والمتاجر اللي بتبيع على Super App.",
+      "bodyEn": "## Your designs\n\nYou confirm you own the rights to every design or have permission to use it. No club logos, brands or people without written permission. Copyright complaints lead to removal and strikes; three strikes close the store.\n\n## Money\n\nFor printed designs you earn the price minus the base cost; profit is released 7 days after delivery. For your own products Super App keeps the store commission. Withdrawals arrive within 2 working days once approved.\n\n## Identity and taxes\n\nWe verify your national ID before your first withdrawal. You are responsible for your own income taxes.\n\n## Levels\n\nLevels (Starter, Pro, Elite) depend on sales and quality and are reviewed monthly with one month of grace before moving down.\n\n## Ending\n\nYou can close your store any time; pending orders are still completed and paid. We can suspend stores that break this agreement.",
+      "bodyAr": "## تصميماتك\n\nإنت بتأكد إنك صاحب حقوق كل تصميم أو معاك إذن تستخدمه. ممنوع لوجوهات الأندية والماركات وصور الناس من غير إذن مكتوب. شكاوى حقوق الملكية بتوصّل لشيل التصميم وإنذارات، و3 إنذارات بتقفل المتجر.\n\n## الفلوس\n\nفي التصميمات المطبوعة بتكسب الفرق بين السعر والتكلفة الأساسية، والربح بينزل بعد 7 أيام من التوصيل. وفي منتجاتك إنت، Super App بتاخد عمولة المتجر. السحب بيوصل في خلال يومين عمل بعد الموافقة.\n\n## الهوية والضرايب\n\nبنتأكد من بطاقتك قبل أول سحب. وإنت مسؤول عن ضرايب دخلك.\n\n## المستويات\n\nالمستويات (Starter وPro وElite) بتعتمد على المبيعات والجودة، وبتتراجع كل شهر، ومعاك شهر سماح قبل ما تنزل.\n\n## الإنهاء\n\nتقدر تقفل متجرك في أي وقت، والطلبات اللي لسه شغالة بتكمل وبتتدفع. ومن حقنا نوقف أي متجر يخالف الاتفاقية دي."
+    },
+    {
+      "key": "partner",
+      "titleEn": "Pitch partner agreement",
+      "titleAr": "اتفاقية شريك الملعب",
+      "acceptance": true,
+      "summaryEn": "For pitch owners listing on Super App.",
+      "summaryAr": "لأصحاب الملاعب اللي بيعرضوا على Super App.",
+      "bodyEn": "## Listing\n\nYou keep your pitch’s calendar, prices and photos accurate and honour every booking made through Super App.\n\n## Commission and payouts\n\nSuper App keeps the agreed commission on each booking (10% unless a special deal is signed). Your balance can be withdrawn any time and arrives within 2 working days once approved.\n\n## Cancellations\n\nIf you cancel a confirmed booking, the customer is refunded in full and the amount may be deducted from your balance.\n\n## Safety\n\nYou keep the pitch, lights and facilities safe and hold the licences the law requires.\n\n## Disputes\n\nSuper App investigates customer complaints and may ask you for details; refunds we decide in the customer’s favour may be charged to your balance.",
+      "bodyAr": "## العرض\n\nإنت مسؤول إن مواعيد ملعبك وأسعاره وصوره تكون مظبوطة، وإنك تلتزم بكل حجز يتعمل من Super App.\n\n## العمولة والتحويلات\n\nSuper App بتاخد العمولة المتفق عليها من كل حجز (10% إلا لو فيه اتفاق خاص). وتقدر تسحب رصيدك في أي وقت، وبيوصل في خلال يومين عمل بعد الموافقة.\n\n## الإلغاء\n\nلو إنت لغيت حجز متأكد، العميل بياخد فلوسه كاملة، وممكن المبلغ يتخصم من رصيدك.\n\n## الأمان\n\nإنت مسؤول إن الملعب والإضاءة والمرافق تكون آمنة، وإن معاك التراخيص اللي القانون بيطلبها.\n\n## الخلافات\n\nSuper App بتحقق في شكاوى العملاء وممكن تطلب منك تفاصيل، والاسترجاع اللي نقرره لصالح العميل ممكن يتخصم من رصيدك."
+    },
+    {
+      "key": "cookies",
+      "titleEn": "Cookies",
+      "titleAr": "الكوكيز",
+      "acceptance": false,
+      "summaryEn": "What we store on your device and how to choose.",
+      "summaryAr": "بنخزّن إيه على جهازك وإزاي تختار.",
+      "bodyEn": "## Essential\n\nNeeded for the site to work: your sign-in, cart, language and theme. They can’t be turned off.\n\n## Analytics and marketing\n\nOnly with your consent: measuring visits and the success of our ads. You can change your choice any time from the footer.",
+      "bodyAr": "## الأساسية\n\nلازمة علشان الموقع يشتغل: الدخول والسلة واللغة والشكل. مينفعش تتقفل.\n\n## التحليلات والتسويق\n\nبموافقتك بس: قياس الزيارات ونجاح إعلاناتنا. وتقدر تغيّر اختيارك في أي وقت من أسفل الصفحة."
+    }
+  ],
+  "helpTopics": [
+    {
+      "key": "bookings",
+      "icon": "pitch",
+      "en": "Bookings",
+      "ar": "الحجوزات"
+    },
+    {
+      "key": "packages",
+      "icon": "repeat",
+      "en": "Weekly packages",
+      "ar": "الباقات الأسبوعية"
+    },
+    {
+      "key": "payments",
+      "icon": "wallet",
+      "en": "Payments & wallet",
+      "ar": "الدفع والمحفظة"
+    },
+    {
+      "key": "shop",
+      "icon": "bag",
+      "en": "Shop & delivery",
+      "ar": "المتجر والتوصيل"
+    },
+    {
+      "key": "returns",
+      "icon": "refresh",
+      "en": "Returns & refunds",
+      "ar": "المرتجعات والاسترجاع"
+    },
+    {
+      "key": "printed",
+      "icon": "shirt",
+      "en": "Printed designs",
+      "ar": "التصميمات المطبوعة"
+    },
+    {
+      "key": "games",
+      "icon": "users",
+      "en": "Games & tournaments",
+      "ar": "الماتشات والبطولات"
+    },
+    {
+      "key": "fantasy",
+      "icon": "trophy",
+      "en": "Fantasy",
+      "ar": "الفانتازي"
+    },
+    {
+      "key": "points",
+      "icon": "gift",
+      "en": "Super Points",
+      "ar": "نقاط Super"
+    },
+    {
+      "key": "sellers",
+      "icon": "image",
+      "en": "Selling on Super App",
+      "ar": "البيع على Super App"
+    },
+    {
+      "key": "partners",
+      "icon": "grid",
+      "en": "Pitch partners",
+      "ar": "شركاء الملاعب"
+    },
+    {
+      "key": "account",
+      "icon": "user",
+      "en": "Account & privacy",
+      "ar": "الحساب والخصوصية"
+    }
+  ],
+  "helpArticles": [
+    {
+      "topic": "bookings",
+      "qEn": "How do I book a pitch?",
+      "qAr": "أحجز ملعب إزاي؟",
+      "aEn": "Open <a href=\"#/pitches\">Pitches</a>, choose a pitch, a day and a free hour, then pay by card or wallet. You get a confirmation with a QR code to show at the venue.",
+      "aAr": "افتح <a href=\"#/pitches\">الملاعب</a>، واختار ملعب ويوم وساعة فاضية، وادفع بالكارت أو المحفظة. هيوصلك تأكيد فيه QR تفرجه في الملعب."
+    },
+    {
+      "topic": "bookings",
+      "qEn": "Can I cancel a booking?",
+      "qAr": "أقدر ألغي الحجز؟",
+      "aEn": "Yes, from the booking page. The refund follows the pitch’s cancellation policy, shown before you pay, and goes to your wallet straight away.",
+      "aAr": "أيوه، من صفحة الحجز. الاسترجاع بيمشي حسب سياسة الإلغاء بتاعة الملعب، اللي بتظهر قبل ما تدفع، والفلوس بتوصل محفظتك على طول."
+    },
+    {
+      "topic": "bookings",
+      "qEn": "The venue cancelled or something went wrong at the pitch",
+      "qAr": "الملعب لغى أو حصلت مشكلة في الملعب",
+      "aEn": "Open the booking and tap “Get help”. Our team looks into it with the venue and refunds you if the venue was at fault.",
+      "aAr": "افتح الحجز ودوس \"محتاج مساعدة\". فريقنا هيراجع مع الملعب، ولو الغلط منهم هترجعلك فلوسك."
+    },
+    {
+      "topic": "packages",
+      "qEn": "How does a weekly package work?",
+      "qAr": "الباقة الأسبوعية بتشتغل إزاي؟",
+      "aEn": "You book the same hour every week for 4, 8 or 12 weeks with a discount. One QR code works for the whole package, once per game.",
+      "aAr": "بتحجز نفس الساعة كل أسبوع لمدة 4 أو 8 أو 12 أسبوع بخصم. QR واحد شغال للباقة كلها، مرة لكل ماتش."
+    },
+    {
+      "topic": "packages",
+      "qEn": "What if I miss a game in my package?",
+      "qAr": "لو فاتني ماتش في الباقة؟",
+      "aEn": "A game you don’t come to counts as played. Cancel it before kick-off from its page if you can’t make it. In special cases Super App can excuse one missed game per package after talking to the venue.",
+      "aAr": "الماتش اللي متجيش له بيتحسب كأنه اتلعب. لو مش هتقدر تيجي، الغيه قبل ميعاده من صفحته. وفي حالات خاصة Super App ممكن تسامح في ماتش واحد في كل باقة بعد ما تتكلم مع الملعب."
+    },
+    {
+      "topic": "payments",
+      "qEn": "Which payment methods can I use?",
+      "qAr": "أقدر أدفع بإيه؟",
+      "aEn": "Card, your Super App wallet, Super Points vouchers, and cash on delivery for shop orders.",
+      "aAr": "الكارت، ومحفظة Super App، وقسايم نقاط Super، والدفع عند الاستلام لطلبات المتجر."
+    },
+    {
+      "topic": "payments",
+      "qEn": "Where do I find my receipts?",
+      "qAr": "ألاقي إيصالاتي فين؟",
+      "aEn": "Every payment, refund and top-up has a PDF receipt in <a href=\"#/profile\">your profile</a> under Payments & receipts.",
+      "aAr": "كل دفعة واسترجاع وشحن ليها إيصال PDF في <a href=\"#/profile\">صفحتك</a> تحت المدفوعات والإيصالات."
+    },
+    {
+      "topic": "shop",
+      "qEn": "How long does delivery take?",
+      "qAr": "التوصيل بياخد قد إيه؟",
+      "aEn": "Standard delivery takes 2–4 working days, express 1–2. Printed designs are made first, usually within 48 hours. You get the tracking number by notification.",
+      "aAr": "التوصيل العادي من 2 لـ 4 أيام عمل، والسريع من 1 لـ 2. التصميمات المطبوعة بتتعمل الأول، عادة في خلال 48 ساعة. ورقم التتبع بيوصلك في إشعار."
+    },
+    {
+      "topic": "shop",
+      "qEn": "How much is delivery?",
+      "qAr": "التوصيل بكام؟",
+      "aEn": "The price shows at checkout; delivery is free above a minimum order shown in your cart.",
+      "aAr": "السعر بيظهر وإنت بتدفع، والتوصيل مجاني فوق مبلغ معيّن بيظهرلك في السلة."
+    },
+    {
+      "topic": "returns",
+      "qEn": "Can I return or exchange a product?",
+      "qAr": "أقدر أرجّع أو أستبدل منتج؟",
+      "aEn": "Yes, within 14 days of delivery if it’s unused. Open the order and tap “Return or exchange”; the courier picks it up. See the <a href=\"#/legal/refunds\">refunds policy</a>.",
+      "aAr": "أيوه، في خلال 14 يوم من الاستلام لو مش مستخدم. افتح الطلب ودوس \"إرجاع أو استبدال\"، وشركة الشحن هتيجي تاخده. اقرا <a href=\"#/legal/refunds\">سياسة الاسترجاع</a>."
+    },
+    {
+      "topic": "returns",
+      "qEn": "When do I get my money back?",
+      "qAr": "فلوسي بترجع إمتى؟",
+      "aEn": "As soon as the return is received and checked — straight to your wallet, with a receipt.",
+      "aAr": "أول ما المرتجع يوصل ويتراجع — على محفظتك على طول، ومعاه إيصال."
+    },
+    {
+      "topic": "printed",
+      "qEn": "My printed item has a problem",
+      "qAr": "القطعة المطبوعة فيها مشكلة",
+      "aEn": "Open the order and tap “Return or exchange” with a photo. A faulty print, wrong size or damage is reprinted free or refunded. Made-to-order items can’t be returned for a change of mind.",
+      "aAr": "افتح الطلب ودوس \"إرجاع أو استبدال\" مع صورة. الطباعة اللي فيها عيب أو المقاس الغلط أو التلف بيتطبع تاني ببلاش أو بترجعلك فلوسك. القطع اللي بتتعمل حسب الطلب مينفعش ترجع لو غيّرت رأيك."
+    },
+    {
+      "topic": "games",
+      "qEn": "How do I join a game?",
+      "qAr": "أنضم لماتش إزاي؟",
+      "aEn": "Open <a href=\"#/players\">Find players</a>, pick a game and ask to join. Your share is held until the host accepts; if they don’t, it comes back to you.",
+      "aAr": "افتح <a href=\"#/players\">دوّر على لعيبة</a>، واختار ماتش واطلب تنضم. نصيبك بيتحجز لحد ما صاحب الماتش يوافق، ولو موافقش بيرجعلك."
+    },
+    {
+      "topic": "games",
+      "qEn": "How do I enter a tournament?",
+      "qAr": "أدخل بطولة إزاي؟",
+      "aEn": "Open <a href=\"#/tournaments\">Tournaments</a>, choose one with open registration and register your team. Entry fees are refunded only if the venue cancels.",
+      "aAr": "افتح <a href=\"#/tournaments\">البطولات</a>، واختار واحدة التسجيل فيها مفتوح، وسجّل فريقك. رسوم الدخول بترجع بس لو الملعب لغى."
+    },
+    {
+      "topic": "fantasy",
+      "qEn": "How do fantasy points work?",
+      "qAr": "نقاط الفانتازي بتتحسب إزاي؟",
+      "aEn": "Pick 15 players within the budget. Points come from real match events: goals, assists, clean sheets and more. Your captain scores double.",
+      "aAr": "اختار 15 لاعب في حدود الميزانية. النقاط بتيجي من أحداث الماتشات الحقيقية: الأهداف والأسيستات والشباك النضيفة وغيرها. والكابتن نقطه بتتضاعف."
+    },
+    {
+      "topic": "points",
+      "qEn": "How do I use Super Points?",
+      "qAr": "أستخدم نقاط Super إزاي؟",
+      "aEn": "From 2,000 points you can turn them into a voucher (20 points = 1 EGP) in your <a href=\"#/wallet\">wallet</a> and use it at checkout.",
+      "aAr": "من أول 2,000 نقطة تقدر تحوّلها لقسيمة (كل 20 نقطة = 1 جنيه) من <a href=\"#/wallet\">محفظتك</a> وتستخدمها وإنت بتدفع."
+    },
+    {
+      "topic": "sellers",
+      "qEn": "How do I start selling?",
+      "qAr": "أبدأ أبيع إزاي؟",
+      "aEn": "Apply from <a href=\"#/sell\">Sell on Super App</a>. Once approved you can upload designs (we print and ship them) or list your own products.",
+      "aAr": "قدّم من <a href=\"#/sell\">البيع على Super App</a>. أول ما تتقبل تقدر ترفع تصميمات (إحنا بنطبعها ونشحنها) أو تعرض منتجاتك."
+    },
+    {
+      "topic": "sellers",
+      "qEn": "When do I get paid?",
+      "qAr": "فلوسي بتوصل إمتى؟",
+      "aEn": "Profit from printed designs is released 7 days after delivery. Ask for a withdrawal any time; it arrives within 2 working days once approved.",
+      "aAr": "ربح التصميمات المطبوعة بينزل بعد 7 أيام من التوصيل. اطلب سحب في أي وقت، وبيوصل في خلال يومين عمل بعد الموافقة."
+    },
+    {
+      "topic": "partners",
+      "qEn": "How do I list my pitch?",
+      "qAr": "أعرض ملعبي إزاي؟",
+      "aEn": "Apply from <a href=\"#/partner/apply\">List your pitch</a>. We review it within 2 working days and set up your partner dashboard.",
+      "aAr": "قدّم من <a href=\"#/partner/apply\">اعرض ملعبك</a>. بنراجع الطلب في خلال يومين عمل ونجهّزلك لوحة الشريك."
+    },
+    {
+      "topic": "account",
+      "qEn": "How do I delete my account or my data?",
+      "qAr": "أمسح حسابي أو بياناتي إزاي؟",
+      "aEn": "Contact support and we’ll do it within 30 days, as the <a href=\"#/legal/privacy\">privacy policy</a> explains.",
+      "aAr": "كلّم الدعم وهنعملها في خلال 30 يوم، زي ما <a href=\"#/legal/privacy\">سياسة الخصوصية</a> بتوضح."
+    }
+  ],
+  "banners": [
+    {
+      "title": "Up to 20% off turf and FG boots",
+      "badge": "Boots week",
+      "cta": "Shop boots",
+      "link": "#/shop?cat=boots",
+      "image": "photo-1529900748604-07564a03e7a6",
+      "active": true,
+      "order": 1
+    },
+    {
+      "title": "Pitches from 500 EGP an hour before 4 PM",
+      "badge": "Weekday mornings",
+      "cta": null,
+      "link": "#/pitches?sort=price",
+      "image": "nightGrass",
+      "active": true,
+      "order": 2
+    },
+    {
+      "title": "Private coaching with CAF-licensed coaches",
+      "badge": "New",
+      "cta": null,
+      "link": "#/shop?cat=services",
+      "image": "kidsTraining",
+      "active": true,
+      "order": 3
+    }
+  ],
+  "popups": [
+    {
+      "titleEn": "Join as a seller and earn",
+      "titleAr": "انضم كبائع واكسب",
+      "textEn": "Upload your designs — we print, ship and pay you for every sale.",
+      "textAr": "ارفع تصميماتك — إحنا بنطبع وبنشحن وبندفعلك في كل بيعة.",
+      "ctaEn": "Start selling",
+      "ctaAr": "ابدأ البيع",
+      "link": "#/sell",
+      "badge": "No stock, no cost",
+      "color": "#E8590C",
+      "shape": "Tee3d",
+      "icons": null,
+      "hideFromSellers": true,
+      "active": true,
+      "order": 1
+    },
+    {
+      "titleEn": "Play Egyptian League fantasy",
+      "titleAr": "العب فانتازي الدوري المصري",
+      "textEn": "Pick your 15, join a league with your friends and win prizes every gameweek.",
+      "textAr": "اختار الـ 15 بتوعك، ادخل دوري مع صحابك واكسب جوايز كل جولة.",
+      "ctaEn": "Pick my team",
+      "ctaAr": "اختار فريقي",
+      "link": "#/fantasy",
+      "badge": "Free to play",
+      "color": "#0B6E4F",
+      "shape": "Cube",
+      "icons": "trophy,ball,star,users",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 2
+    },
+    {
+      "titleEn": "10% off your first order",
+      "titleAr": "خصم 10% على أول طلب",
+      "textEn": "Use code KICKOFF10 at checkout in the Super App shop.",
+      "textAr": "استخدم كود KICKOFF10 وإنت بتدفع في متجر Super App.",
+      "ctaEn": "Shop now",
+      "ctaAr": "اشتري دلوقتي",
+      "link": "#/shop",
+      "badge": "10%",
+      "color": "#C2410C",
+      "shape": "Coin",
+      "icons": null,
+      "hideFromSellers": false,
+      "active": true,
+      "order": 3
+    },
+    {
+      "titleEn": "Pitches from 500 EGP an hour",
+      "titleAr": "ملاعب من 500 ج.م في الساعة",
+      "textEn": "Weekday mornings and afternoons cost less. See the free hours near you.",
+      "textAr": "الصبح والضهر في أيام الأسبوع أرخص. شوف المواعيد الفاضية جنبك.",
+      "ctaEn": "Book a pitch",
+      "ctaAr": "احجز ملعب",
+      "link": "#/pitches?sort=price",
+      "badge": "Before 4 PM",
+      "color": "#15803D",
+      "shape": "Cube",
+      "icons": "pitch,clock,calendar,ball",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 4
+    },
+    {
+      "titleEn": "Boots, kits and printed designs",
+      "titleAr": "جزم وأطقم وتصميمات مطبوعة",
+      "textEn": "Football gear and original designs from Egyptian creators in one shop.",
+      "textAr": "لبس ومعدات كورة وتصميمات أصلية من مصممين مصريين في متجر واحد.",
+      "ctaEn": "Open the shop",
+      "ctaAr": "افتح المتجر",
+      "link": "#/shop",
+      "badge": "Delivered across Egypt",
+      "color": "#1D4ED8",
+      "shape": "Cube",
+      "icons": "bag,boot,shirt,ball",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 5
+    },
+    {
+      "titleEn": "Same pitch every week? Save 10%",
+      "titleAr": "نفس الملعب كل أسبوع؟ وفّر 10%",
+      "textEn": "Book a weekly package and lock your hour for the whole month.",
+      "textAr": "احجز باقة أسبوعية وثبّت ساعتك الشهر كله.",
+      "ctaEn": "See pitches",
+      "ctaAr": "شوف الملاعب",
+      "link": "#/pitches",
+      "badge": "−10%",
+      "color": "#0F766E",
+      "shape": "Coin",
+      "icons": null,
+      "hideFromSellers": false,
+      "active": true,
+      "order": 6
+    },
+    {
+      "titleEn": "Enter a 5-a-side tournament",
+      "titleAr": "اشترك في بطولة خماسي",
+      "textEn": "Bring your team, play the group stage and go for the trophy.",
+      "textAr": "هات فريقك، العب دور المجموعات وروح على الكاس.",
+      "ctaEn": "See tournaments",
+      "ctaAr": "شوف البطولات",
+      "link": "#/tournaments",
+      "badge": "Prizes",
+      "color": "#B45309",
+      "shape": "Cube",
+      "icons": "trophy,users,calendar,star",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 7
+    },
+    {
+      "titleEn": "Fill your squad in minutes",
+      "titleAr": "كمّل فريقك في دقايق",
+      "textEn": "Post your game and players near you ask to join.",
+      "textAr": "انشر ماتشك واللعيبة اللي جنبك هيطلبوا ينضموا.",
+      "ctaEn": "Post a game",
+      "ctaAr": "انشر ماتش",
+      "link": "#/players/new",
+      "badge": "Short of players?",
+      "color": "#7C3AED",
+      "shape": "Cube",
+      "icons": "users,ball,pitch,bell",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 8
+    },
+    {
+      "titleEn": "Points on every booking and order",
+      "titleAr": "نقاط على كل حجز وطلب",
+      "textEn": "Collect points and swap them for vouchers from 100 EGP.",
+      "textAr": "جمّع نقاط وبدّلها بقسايم من 100 ج.م.",
+      "ctaEn": "My points",
+      "ctaAr": "نقاطي",
+      "link": "#/wallet",
+      "badge": "pts",
+      "color": "#A16207",
+      "shape": "Coin",
+      "icons": null,
+      "hideFromSellers": false,
+      "active": true,
+      "order": 9
+    },
+    {
+      "titleEn": "List your pitch on Super App",
+      "titleAr": "ضيف ملعبك على Super App",
+      "textEn": "Online bookings and payments, plus a free dashboard for your team.",
+      "textAr": "حجز ودفع أونلاين، ولوحة تحكم ببلاش لفريقك.",
+      "ctaEn": "Apply now",
+      "ctaAr": "قدّم دلوقتي",
+      "link": "#/partner/apply",
+      "badge": "For pitch owners",
+      "color": "#0B6E4F",
+      "shape": "Cube",
+      "icons": "pitch,wallet,calendar,chart",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 10
+    }
+  ],
+  "communities": [
+    {
+      "slug": "pitches",
+      "name": "Pitches & free slots",
+      "about": "Free hours posted by verified venues — book them in one tap — and games looking for players. Filter by area and time.",
+      "audience": "everyone",
+      "rules": [
+        "Slot cards come only from verified venues on Super App.",
+        "Share your game as a card so players can ask to join and pay safely.",
+        "No phone numbers or outside links — book and pay on Super App.",
+        "Be on time: hosts rate players after every game."
+      ],
+      "slowMode": 0,
+      "color": "#0A3D2D",
+      "icon": "pitch",
+      "order": 0
+    },
+    {
+      "slug": "creators",
+      "name": "Super App Creators",
+      "about": "Print-on-demand sellers helping each other: design feedback, what sells, printing tips and news from the Super App team.",
+      "audience": "sellers",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 0,
+      "color": "#FF5B14",
+      "icon": "shirt",
+      "order": 1
+    },
+    {
+      "slug": "pro-lounge",
+      "name": "Pro & Elite Lounge",
+      "about": "For Pro and Elite sellers: early news on new products, bigger campaigns and talking shop with the top sellers.",
+      "audience": "sellers-pro",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 0,
+      "color": "#C9920F",
+      "icon": "crown",
+      "order": 2
+    },
+    {
+      "slug": "players",
+      "name": "Super App Players",
+      "about": "Players across Egypt: find teammates, share pitch tips, ask anything about booking and playing.",
+      "audience": "everyone",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 2,
+      "color": "#0B6E4F",
+      "icon": "users",
+      "order": 3
+    },
+    {
+      "slug": "fantasy",
+      "name": "Fantasy Talk",
+      "about": "Captain picks, transfers and gameweek banter for the Egyptian league and the Premier League.",
+      "audience": "everyone",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 1,
+      "color": "#2459D6",
+      "icon": "trophy",
+      "order": 4
+    }
+  ],
+  "bannedWords": [
+    {
+      "word": "scam",
+      "language": "en"
+    },
+    {
+      "word": "fake",
+      "language": "en"
+    },
+    {
+      "word": "نصاب",
+      "language": "ar"
+    },
+    {
+      "word": "حرامي",
+      "language": "ar"
+    }
+  ]
+}
