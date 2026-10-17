@@ -29,6 +29,8 @@ decisions here (with the date) from any window.
   - The owner sets a discount per count, and an admin approves it within the CEO maximum.
 - **No private messages** between customers; communities cover that.
 
+- **Walk-ins (2026-10-17):** a booking taken at the venue pays there, with no service fee and no commission.
+
 ## Print on demand
 - **Partner:** a contracted factory prints and ships, DTF only for now. One factory to start, with the code ready for several.
 - **Courier:** Super App holds the courier contract (Bosta as a trial), behind a switchable adapter.
@@ -46,6 +48,8 @@ decisions here (with the date) from any window.
   - The CEO invites admins and sets their roles, permissions and money limits.
   - The CEO can give the Approvals permission to one admin.
 - **Approvals:** pitch partners, sellers and factories apply with their ID (front and back), and admins approve or reject with a reason.
+
+- **Partner staff (2026-10-17):** added by the email or mobile of an existing Super App account (they sign up first); one partner business per person; only the owner handles managers.
 
 ## Technology
 - **Backend stack:** ASP.NET Core .NET 10 Web API with SQL Server (LocalDB in development), Clean Architecture. The existing site is served by the API at `/super-app/` and is unchanged.
@@ -69,4 +73,3 @@ decisions here (with the date) from any window.
 - The 3D hoodie model: the GPU quota ran out (the tee is done).
 - Referral and gift cards.
 - The PWA: after the backend.
-- 2026-10-17 — Partner staff are added by the email or mobile of an existing Super App account (they sign up first); one partner business per person. Walk-ins pay at the venue with no service fee and no commission.
