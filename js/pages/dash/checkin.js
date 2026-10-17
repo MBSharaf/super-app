@@ -26,8 +26,8 @@
     return lib(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' })?.data || null;
   };
 
-  const TONE = { ok: 'ok', early: 'warn', already: 'info', 'wrong-day': 'warn', ended: 'warn', cancelled: 'bad', 'no-show': 'bad', 'wrong-venue': 'bad', 'not-found': 'bad', invalid: 'bad', expired: 'bad' };
-  const TITLE = { expired: 'Package used up', ok: 'Ready to check in', early: 'Early arrival', already: 'Already checked in', 'wrong-day': 'Not today', ended: 'Game finished', cancelled: 'Cancelled booking', 'no-show': 'Marked no-show', 'wrong-venue': 'Different venue', 'not-found': 'Booking not found', invalid: 'Code not valid' };
+  const TONE = { checked: 'ok', ok: 'ok', early: 'warn', already: 'info', 'wrong-day': 'warn', ended: 'warn', cancelled: 'bad', 'no-show': 'bad', 'wrong-venue': 'bad', 'not-found': 'bad', invalid: 'bad', expired: 'bad' };
+  const TITLE = { checked: 'Checked in', expired: 'Package used up', ok: 'Ready to check in', early: 'Early arrival', already: 'Already checked in', 'wrong-day': 'Not today', ended: 'Game finished', cancelled: 'Cancelled booking', 'no-show': 'Marked no-show', 'wrong-venue': 'Different venue', 'not-found': 'Booking not found', invalid: 'Code not valid' };
 
   const resultCard = (res) => {
     const b = res.booking;
@@ -44,7 +44,7 @@
         <div><dt>Payment</dt><dd>${esc(b.payment)}${b.money.online ? ' · paid' : ` · <b style="color:var(--blaze)">collect ${money(b.amount)}</b>`}</dd></div>
       </dl>` : ''}
       <div class="row wrap" style="--gap:8px;margin-top:14px">
-        ${b && ['ok', 'early'].includes(res.state) ? `<button class="btn btn-turf" data-do-checkin="${b.id}">${icon('check', 16)} Check in${res.state === 'early' ? ' anyway' : ''}</button>` : ''}
+        ${b && !res.live && ['ok', 'early'].includes(res.state) ? `<button class="btn btn-turf" data-do-checkin="${b.id}">${icon('check', 16)} Check in${res.state === 'early' ? ' anyway' : ''}</button>` : ''}
         ${b && res.state !== 'wrong-venue' ? `<button class="btn btn-outline" data-open="${b.id}">Booking details</button>` : ''}
         <button class="btn btn-ghost" data-next>${icon('scan', 16)} Scan next</button>
       </div>
@@ -108,9 +108,12 @@
       const show = (res) => {
         out.innerHTML = resultCard(res);
         out.querySelector('.ci-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        if (navigator.vibrate) navigator.vibrate(res.state === 'ok' ? 60 : [40, 60, 40]);
+        if (navigator.vibrate) navigator.vibrate(['ok', 'checked'].includes(res.state) ? 60 : [40, 60, 40]);
       };
-      const handle = (text) => { paused = true; stage.classList.add('is-hit'); setTimeout(() => stage.classList.remove('is-hit'), 600); show(D().checkIn(text)); };
+      const handle = async (text) => {
+        paused = true; stage.classList.add('is-hit'); setTimeout(() => stage.classList.remove('is-hit'), 600);
+        try { show(await D().checkIn(text)); } catch (err) { out.innerHTML = `<div class="notice gold">${icon('alert', 18)}<span>${esc(err.message)}</span></div>`; }
+      };
 
       const stop = () => {
         cancelAnimationFrame(raf); raf = 0;

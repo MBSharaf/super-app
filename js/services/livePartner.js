@@ -7,7 +7,7 @@
  * server first, then loads again. The pages and their design stay as they are.
  *
  * On the server already: pitches (edit, photos, close / reopen, delete), blocked times, bookings (walk-in, no-show,
- * venue cancel). Still demo-only until their phase: QR check-in (3.5), weekly teams, offers, reviews, store, payouts.
+ * venue cancel), QR check-in. Still demo-only until their phase: packages (3.5b), weekly teams, offers, reviews, store, payouts.
  */
 (function (SA) {
   const api = SA.services.api;
@@ -257,8 +257,30 @@
     return dash.findBooking(r.code);
   };
 
+  /* ---------------- QR check-in ---------------- */
+
+  /** Server reason → the check-in page's states (it already has a card for each) */
+  const SCAN_STATE = { already_used: 'already', wrong_day: 'wrong-day', cancelled: 'cancelled', other_venue: 'wrong-venue', bad_signature: 'invalid', package_finished: 'expired', account_blocked: 'invalid' };
+  const key = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`).replace(/-/g, '');
+
+  /** Sends a scanned token or a typed booking ID; the server checks it in straight away when it's valid */
+  const scan = async (raw) => {
+    const text = String(raw || '').trim();
+    const typed = /^SA-[A-Z0-9]{4,}$/i.test(text);
+    const r = await api.post('/check-in/scan', { token: typed ? null : text, code: typed ? text.toUpperCase() : null, pitchId: null, device: 'Partner dashboard' }, { headers: { 'Idempotency-Key': key() } });
+    if (r.code) await reload();
+    const booking = r.code ? dash.findBooking(r.code) : null;
+    const late = r.reason === 'wrong_hour' && booking && booking.startsAt < Date.now();
+    const state = r.result === 'accepted' ? 'checked' : r.reason === 'wrong_hour' ? (late ? 'ended' : 'early') : SCAN_STATE[r.reason] || 'invalid';
+    return { state, message: r.message, booking, manual: typed, live: true };
+  };
+
   const bookingAction = async (id, action, reason = 'Cancelled by the venue') => {
-    if (action === 'check-in') throw new ApiError('QR check-in on the live site arrives in the next step.', 'not_yet');
+    if (action === 'check-in') {
+      const r = await scan(id);
+      if (r.state !== 'checked') throw new ApiError(r.message, r.state);
+      return r.booking;
+    }
     if (action === 'cancel') await api.post(`/partner/bookings/${encodeURIComponent(id)}/cancel`, { reason });
     else if (action === 'no-show') await api.post(`/partner/bookings/${encodeURIComponent(id)}/no-show`);
     await reload();
@@ -275,6 +297,8 @@
     removeClosure: (id) => (isLive(db.find('closures', id)) ? removeClosure(id) : demo.removeClosure(id)),
     walkIn: (w) => (livePitch(w.pitchId) ? walkIn(w) : demo.walkIn(w)),
     bookingAction: (id, action) => (isLive(db.find('bookings', id)) ? bookingAction(id, action) : demo.bookingAction(id, action)),
+    // A token from the app's QR can't be read here: in API mode every scan goes to the server
+    checkIn: (raw) => (live() && dash.auth.current()?.id === ACCOUNT ? scan(raw) : demo.checkIn(raw)),
   });
 
   SA.services.livePartner = { enter, reload, scope: () => scope, ACCOUNT };

@@ -13,6 +13,7 @@ using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Lookups;
 using SuperApp.Application.Abstractions.Documents;
+using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Partners;
 using SuperApp.Infrastructure.Documents;
 using SuperApp.Application.Features.Pitches;
@@ -89,6 +90,7 @@ public static class DependencyInjection
         services.AddScoped<IPartnerBookingsRepository, PartnerBookingsRepository>();
         services.AddScoped<IPitchReviewRepository, PitchReviewRepository>();
         services.AddScoped<IPartnerStaffRepository, PartnerStaffRepository>();
+        services.AddScoped<ICheckInRepository, CheckInRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
         services.AddSingleton<IQrTokens, QrTokens>();

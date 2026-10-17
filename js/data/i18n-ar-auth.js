@@ -50,6 +50,12 @@
     'This account has no pitch business yet': 'الحساب ده لسه مالوش ملاعب', 'Apply to list your pitch, or ask the owner to add you as staff.': 'قدّم عشان تضيف ملعبك، أو اطلب من صاحب الملعب يضيفك كموظف.',
     'QR check-in on the live site arrives in the next step.': 'تسجيل الحضور بالـ QR على الموقع هييجي في الخطوة الجاية.',
     'Choose an area from the list.': 'اختار المنطقة من القايمة.', 'A photo could not be loaded. Try another one.': 'صورة ماتحملتش. جرّب صورة تانية.',
+    /* ---------- QR check-in from the server ---------- */
+    'Checked in. Have a great game!': 'اتسجل الحضور. ماتش موفق!', 'This code isn’t a Super App booking. Ask for the QR in the app or the booking ID.': 'الكود ده مش حجز على Super App. اطلب الـ QR من التطبيق أو رقم الحجز.',
+    'This booking is for another pitch.': 'الحجز ده لملعب تاني.', 'This booking is for another day.': 'الحجز ده ليوم تاني.',
+    'Too early or too late: check-in opens 60 minutes before kick-off and closes when the booking ends.': 'بدري أو متأخر: تسجيل الحضور بيفتح قبل الماتش بساعة وبيقفل لما الحجز يخلص.',
+    'This booking was cancelled.': 'الحجز ده اتلغى.', 'Already checked in.': 'الحضور متسجل قبل كده.', 'Every match of this package was used.': 'كل ماتشات الباقة دي اتلعبت.',
+    'This player’s account is blocked. Contact Super App support.': 'حساب اللاعب ده موقوف. كلّم دعم Super App.',
   });
   D.patterns.push(
     ['^Back to (.+)$', 'رجوع لـ {1}'],

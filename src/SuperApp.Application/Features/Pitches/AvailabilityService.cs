@@ -78,6 +78,9 @@ public static class CairoTime
     private static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
 
     public static DateTime Now(IClock clock) => TimeZoneInfo.ConvertTimeFromUtc(clock.UtcNow, Zone);
+
+    /// <summary>A Cairo local time (e.g. midnight of a day) as UTC.</summary>
+    public static DateTime ToUtc(DateTime cairo) => TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(cairo, DateTimeKind.Unspecified), Zone);
 }
 
 public sealed class AvailabilityQueryValidator : AbstractValidator<AvailabilityQuery>

@@ -4,6 +4,7 @@ using SuperApp.Application.Features.Applications.Services;
 using SuperApp.Application.Features.Auth.Services;
 using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Ceo.Services;
+using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Files;
 using SuperApp.Application.Features.Partners;
 using SuperApp.Application.Features.Pitches;
@@ -38,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IPartnerPitchRemovalService, PartnerPitchRemovalService>();
         services.AddScoped<IPitchReviewsService, PitchReviewsService>();
         services.AddScoped<IPartnerStaffService, PartnerStaffService>();
+        services.AddScoped<ICheckInService, CheckInService>();
         return services;
     }
 }

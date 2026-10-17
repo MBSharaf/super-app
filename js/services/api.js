@@ -31,15 +31,15 @@
     return csrf;
   };
 
-  const call = async (method, path, body, { form = false, retry = true } = {}) => {
-    const headers = { Accept: 'application/json', 'Accept-Language': SA.i18n?.lang || 'en' };
+  const call = async (method, path, body, { form = false, retry = true, headers: extra = {} } = {}) => {
+    const headers = { Accept: 'application/json', 'Accept-Language': SA.i18n?.lang || 'en', ...extra };
     if (method !== 'GET') headers['X-CSRF-TOKEN'] = csrf || await refreshCsrf();
     if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
     const res = await fetch(`${BASE}${path}`, { method, credentials: 'same-origin', headers, body: body === undefined ? undefined : form ? body : JSON.stringify(body) });
     const text = await res.text();
     const json = text ? JSON.parse(text) : null;
     // The anti-forgery token is tied to the signed-in person: after a sign-in elsewhere it is refreshed once
-    if (res.status === 400 && json?.errors?.code?.[0] === 'csrf' && retry) { await refreshCsrf(); return call(method, path, body, { form, retry: false }); }
+    if (res.status === 400 && json?.errors?.code?.[0] === 'csrf' && retry) { await refreshCsrf(); return call(method, path, body, { form, retry: false, headers: extra }); }
     if (!res.ok || json?.success === false) throw toError(res.status, json);
     return json ? (json.meta ? { items: json.data, meta: json.meta, message: json.message } : json.data) : null;
   };
@@ -56,7 +56,8 @@
     isLive: () => mode === 'api',
     refreshCsrf,
     get: (path) => call('GET', path),
-    post: (path, body = {}) => call('POST', path, body),
+    /** opts.headers: extra request headers (e.g. Idempotency-Key) */
+    post: (path, body = {}, opts = {}) => call('POST', path, body, opts),
     put: (path, body = {}) => call('PUT', path, body),
     patch: (path, body = {}) => call('PATCH', path, body),
     del: (path) => call('DELETE', path),
