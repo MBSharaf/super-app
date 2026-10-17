@@ -10,6 +10,7 @@ using SuperApp.Application.Abstractions.Notifications;
 using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Abstractions.Storage;
+using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Lookups;
 using SuperApp.Application.Features.Pitches;
 using SuperApp.Domain.Entities.Auth;
@@ -80,6 +81,9 @@ public static class DependencyInjection
         services.AddScoped<ILookupsReader, LookupsReader>();
         services.AddScoped<IPitchesReader, PitchesReader>();
         services.AddScoped<IAvailabilityReader, AvailabilityReader>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<ISettingsReader, SettingsReader>();
+        services.AddSingleton<IQrTokens, QrTokens>();
         return services;
     }
 

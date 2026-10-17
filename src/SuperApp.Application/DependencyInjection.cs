@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Applications.Services;
 using SuperApp.Application.Features.Auth.Services;
+using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Ceo.Services;
 using SuperApp.Application.Features.Files;
 using SuperApp.Application.Features.Pitches;
@@ -24,6 +25,9 @@ public static class DependencyInjection
         services.AddScoped<IFilesService, FilesService>();
         services.AddScoped<IPitchesService, PitchesService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
+        services.AddScoped<BookingPlanner>();
+        services.AddScoped<IBookingsService, BookingsService>();
+        services.AddScoped<IMyBookingsService, MyBookingsService>();
         return services;
     }
 }
