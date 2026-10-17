@@ -30,6 +30,7 @@ public static class PipelineExtensions
         app.UseAuthorization();
         app.UseAntiforgery();
         app.UseRateLimiter();
+        app.UseOutputCache();
 
         app.MapControllers();
         // Unknown API addresses answer in the unified shape too, not an empty 404

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SuperApp.Api.Controllers;
 using SuperApp.Api.Errors;
 using SuperApp.Api.Filters;
 using SuperApp.Api.Security;
@@ -31,6 +32,7 @@ public static class ApiServiceExtensions
 
         services.AddSuperAppAuth();
         services.AddSuperAppRateLimits(configuration);
+        services.AddOutputCache(o => o.AddPolicy(LookupsController.CachePolicy, p => p.Expire(TimeSpan.FromHours(1)).Tag(LookupsController.CachePolicy)));
         services.AddOpenApi();
         services.AddHealthChecks()
             .AddSqlServer(configuration.GetConnectionString("Default")!, name: "database", tags: ["ready"]);

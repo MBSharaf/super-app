@@ -10,6 +10,7 @@ using SuperApp.Application.Abstractions.Notifications;
 using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Abstractions.Storage;
+using SuperApp.Application.Features.Lookups;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Infrastructure.Email;
 using SuperApp.Infrastructure.Identity;
@@ -75,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<IFileStorage, LocalFileStorage>();
         services.AddScoped<IFeatureFlags, FeatureFlags>();
         services.AddScoped<INotifier, Notifier>();
+        services.AddScoped<ILookupsReader, LookupsReader>();
         return services;
     }
 
