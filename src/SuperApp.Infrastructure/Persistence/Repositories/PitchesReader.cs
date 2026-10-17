@@ -92,7 +92,7 @@ public sealed class PitchesReader(AppDbContext db) : IPitchesReader
         lat is null || lng is null ? null : Math.Round(Haversine((double)lat, (double)lng, (double)r.Lat, (double)r.Lng), 1));
 
     /// <summary>Demo photos are external ids (the site builds their address); uploads are served by /files.</summary>
-    private static PhotoDto Photo(string container, string key, long fileId) =>
+    internal static PhotoDto Photo(string container, string key, long fileId) =>
         container.StartsWith("demo", StringComparison.Ordinal) ? new PhotoDto(null, key) : new PhotoDto($"/api/v1/files/{fileId}", null);
 
     private static double Haversine(double lat1, double lng1, double lat2, double lng2)

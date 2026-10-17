@@ -75,7 +75,7 @@ public sealed partial class OnboardingRepository(AppDbContext db) : IOnboardingR
         return Free(handle, taken);
     }
 
-    private static string Free(string baseName, List<string> taken)
+    internal static string Free(string baseName, List<string> taken)
     {
         var candidate = baseName;
         for (var i = 2; taken.Contains(candidate); i++)
@@ -86,7 +86,7 @@ public sealed partial class OnboardingRepository(AppDbContext db) : IOnboardingR
     }
 
     /// <summary>"Turf 22 Arena" → "turf-22-arena"; names in Arabic only fall back to the given word.</summary>
-    private static string Slug(string text, string fallback)
+    internal static string Slug(string text, string fallback)
     {
         var slug = NotSlug().Replace(text.ToLowerInvariant(), "-").Trim('-');
         slug = slug.Length > 40 ? slug[..40].TrimEnd('-') : slug;

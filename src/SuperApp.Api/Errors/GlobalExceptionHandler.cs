@@ -52,6 +52,10 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     private static Dictionary<string, string[]> Code(string code) => new() { ["code"] = [code] };
 
     private static Dictionary<string, string[]> GroupErrors(ValidationException v) => v.Errors
-        .GroupBy(e => string.IsNullOrEmpty(e.PropertyName) ? "request" : char.ToLowerInvariant(e.PropertyName[0]) + e.PropertyName[1..])
+        .GroupBy(e => string.IsNullOrEmpty(e.PropertyName) ? "request" : FieldName(e.PropertyName))
         .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).Distinct().ToArray());
+
+    /// <summary>"OpeningHours[0].CloseHour" → "openingHours[0].closeHour", as the JSON names the fields.</summary>
+    private static string FieldName(string path) =>
+        string.Join('.', path.Split('.').Select(part => part.Length == 0 ? part : char.ToLowerInvariant(part[0]) + part[1..]));
 }

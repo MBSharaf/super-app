@@ -86,6 +86,33 @@ Accept: application/json
 GET {{api}}/admin/approvals?status=Pending
 Accept: application/json
 
+### Partner: my venues and pitches (signed in as a pitch partner or their staff)
+GET {{api}}/partner/venues
+Accept: application/json
+
+###
+GET {{api}}/partner/pitches
+Accept: application/json
+
+### Partner: add a pitch (waits for the admin's review). openingHours: 7 rows, closeHour up to 30 (26 = 2 AM)
+POST {{api}}/partner/pitches
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "venueId": 1, "name": "Arena Five", "format": 5, "surface": "ArtificialTurf", "isIndoor": false, "pricePerHour": 600, "peakPricePerHour": 750, "peakFromHour": 18,
+  "policyKey": "standard", "allowCash": true, "facilities": ["lights", "parking"],
+  "openingHours": [ { "dayOfWeek": 0, "openHour": 9, "closeHour": 26, "isClosed": false }, { "dayOfWeek": 1, "openHour": 9, "closeHour": 26, "isClosed": false },
+    { "dayOfWeek": 2, "openHour": 9, "closeHour": 26, "isClosed": false }, { "dayOfWeek": 3, "openHour": 9, "closeHour": 26, "isClosed": false },
+    { "dayOfWeek": 4, "openHour": 9, "closeHour": 26, "isClosed": false }, { "dayOfWeek": 5, "openHour": 9, "closeHour": 26, "isClosed": false },
+    { "dayOfWeek": 6, "openHour": 9, "closeHour": 26, "isClosed": false } ] }
+
+### Partner: block hours (409 bookings_in_range when booked hours fall inside)
+POST {{api}}/partner/pitches/1/closures
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "fromDate": "2026-11-01", "toDate": "2026-11-01", "fromHour": 9, "toHour": 12, "reason": "Maintenance" }
+
 ### Sign out
 POST {{api}}/auth/sign-out
 X-CSRF-TOKEN: {{csrf}}

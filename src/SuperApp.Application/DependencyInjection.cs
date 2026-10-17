@@ -5,6 +5,7 @@ using SuperApp.Application.Features.Auth.Services;
 using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Ceo.Services;
 using SuperApp.Application.Features.Files;
+using SuperApp.Application.Features.Partners;
 using SuperApp.Application.Features.Pitches;
 
 namespace SuperApp.Application;
@@ -28,6 +29,10 @@ public static class DependencyInjection
         services.AddScoped<BookingPlanner>();
         services.AddScoped<IBookingsService, BookingsService>();
         services.AddScoped<IMyBookingsService, MyBookingsService>();
+        services.AddScoped<IPartnerAccess, PartnerAccess>();
+        services.AddScoped<IPartnerVenuesService, PartnerVenuesService>();
+        services.AddScoped<IPartnerPitchesService, PartnerPitchesService>();
+        services.AddScoped<IPartnerClosuresService, PartnerClosuresService>();
         return services;
     }
 }
