@@ -1,0 +1,86 @@
+[
+  {
+    "governorate": "C",
+    "en": "Al Rehab",
+    "ar": "الرحاب",
+    "lat": 30.0588,
+    "lng": 31.4925
+  },
+  {
+    "governorate": "C",
+    "en": "Heliopolis",
+    "ar": "مصر الجديدة",
+    "lat": 30.0911,
+    "lng": 31.3253
+  },
+  {
+    "governorate": "C",
+    "en": "Maadi",
+    "ar": "المعادي",
+    "lat": 29.9612,
+    "lng": 31.2753
+  },
+  {
+    "governorate": "C",
+    "en": "Madinaty",
+    "ar": "مدينتي",
+    "lat": 30.1067,
+    "lng": 31.6372
+  },
+  {
+    "governorate": "C",
+    "en": "Mokattam",
+    "ar": "المقطم",
+    "lat": 30.0128,
+    "lng": 31.3051
+  },
+  {
+    "governorate": "C",
+    "en": "Nasr City",
+    "ar": "مدينة نصر",
+    "lat": 30.0626,
+    "lng": 31.3459
+  },
+  {
+    "governorate": "C",
+    "en": "New Cairo",
+    "ar": "القاهرة الجديدة",
+    "lat": 30.0283,
+    "lng": 31.4713
+  },
+  {
+    "governorate": "C",
+    "en": "Zamalek",
+    "ar": "الزمالك",
+    "lat": 30.0566,
+    "lng": 31.2215
+  },
+  {
+    "governorate": "GZ",
+    "en": "6th of October",
+    "ar": "6 أكتوبر",
+    "lat": 29.9687,
+    "lng": 30.9492
+  },
+  {
+    "governorate": "GZ",
+    "en": "Dokki",
+    "ar": "الدقي",
+    "lat": 30.0385,
+    "lng": 31.2154
+  },
+  {
+    "governorate": "GZ",
+    "en": "Sheikh Zayed",
+    "ar": "الشيخ زايد",
+    "lat": 30.0396,
+    "lng": 30.9876
+  },
+  {
+    "governorate": "ALX",
+    "en": "Smouha",
+    "ar": "سموحة",
+    "lat": 31.2156,
+    "lng": 29.9418
+  }
+]

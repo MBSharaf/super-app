@@ -22,7 +22,7 @@ public static class ApiServiceExtensions
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
-        services.AddSuperAppAuth(configuration);
+        services.AddSuperAppAuth();
         services.AddSuperAppRateLimits();
         services.AddOpenApi();
         services.AddHealthChecks()

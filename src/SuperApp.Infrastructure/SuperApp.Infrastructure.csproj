@@ -6,6 +6,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Seed files travel inside the assembly, so the seed works the same from any folder -->
+    <EmbeddedResource Include="Persistence\Seed\Data\**\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SuperApp.Application\SuperApp.Application.csproj" />
     <ProjectReference Include="..\SuperApp.Domain\SuperApp.Domain.csproj" />
   </ItemGroup>

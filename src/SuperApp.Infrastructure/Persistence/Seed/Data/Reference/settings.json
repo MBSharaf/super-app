@@ -1,0 +1,31 @@
+[
+  { "key": "commission.bookings", "group": "money", "value": 0.10 },
+  { "key": "commission.store", "group": "money", "value": 0.12 },
+  { "key": "fees.service", "group": "money", "value": 0.03 },
+  { "key": "vat.rate", "group": "money", "value": 0.14 },
+  { "key": "settlement.day", "group": "money", "value": 1 },
+
+  { "key": "limits.payoutCeo", "group": "limits", "value": 10000 },
+  { "key": "limits.refundCeo", "group": "limits", "value": 1000 },
+  { "key": "limits.dualApproval", "group": "limits", "value": 50000 },
+  { "key": "package.maxDiscount", "group": "limits", "value": 25 },
+
+  { "key": "pod.holdDays", "group": "pod", "value": 7 },
+  { "key": "pod.minWithdraw", "group": "pod", "value": 500 },
+  { "key": "pod.refuseLimit", "group": "pod", "value": 2 },
+  { "key": "pod.sellerApproval", "group": "pod", "value": true },
+
+  { "key": "loyalty.earnPer", "group": "loyalty", "value": 10 },
+  { "key": "loyalty.pointValue", "group": "loyalty", "value": 0.05 },
+  { "key": "loyalty.minRedeem", "group": "loyalty", "value": 2000 },
+
+  { "key": "delivery.fees", "group": "delivery", "value": { "standard": 60, "express": 120, "freeOver": 1500 } },
+  { "key": "delivery.courier", "group": "delivery", "value": { "provider": "courier.simulated", "auto": true } },
+
+  { "key": "fantasy.passPrice", "group": "fantasy", "value": { "one": 50, "both": 80 } },
+
+  { "key": "popups.timing", "group": "popups", "value": { "on": true, "first": 6, "interval": 10, "stay": 7, "max": 6 } },
+  { "key": "content.announcement", "group": "content", "value": { "on": false, "text": "", "link": "", "cta": "", "tone": "info", "until": "" } },
+
+  { "key": "community.rules", "group": "community", "value": { "blockContacts": true } }
+]

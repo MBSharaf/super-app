@@ -1,0 +1,14 @@
+[
+  { "key": "kill.bookings", "kind": "KillSwitch" },
+  { "key": "kill.shop", "kind": "KillSwitch" },
+  { "key": "kill.pod", "kind": "KillSwitch" },
+  { "key": "kill.payouts", "kind": "KillSwitch" },
+  { "key": "kill.applications", "kind": "KillSwitch" },
+  { "key": "kill.fantasy", "kind": "KillSwitch" },
+  { "key": "kill.community", "kind": "KillSwitch" },
+  { "key": "kill.games", "kind": "KillSwitch" },
+  { "key": "kill.agents", "kind": "KillSwitch" },
+  { "key": "api.fantasy", "kind": "ApiGroup" },
+  { "key": "api.agents", "kind": "ApiGroup" },
+  { "key": "api.webhooks", "kind": "ApiGroup" }
+]

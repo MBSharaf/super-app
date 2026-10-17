@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using SuperApp.Application.Common.Responses;
 
@@ -14,7 +13,7 @@ public static class CookieAuthSetup
     public const string CookieName = "sa.auth";
     public const string CsrfHeader = "X-CSRF-TOKEN";
 
-    public static IServiceCollection AddSuperAppAuth(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddSuperAppAuth(this IServiceCollection services)
     {
         services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
         services.ConfigureApplicationCookie(ConfigureCookie);
@@ -26,8 +25,6 @@ public static class CookieAuthSetup
             o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
             o.Cookie.SameSite = SameSiteMode.Strict;
         });
-        var keys = configuration["Security:Data_Protection_Keys_Path"] ?? "keys";
-        services.AddDataProtection().SetApplicationName("SuperApp").PersistKeysToFileSystem(new DirectoryInfo(keys));
         return services;
     }
 

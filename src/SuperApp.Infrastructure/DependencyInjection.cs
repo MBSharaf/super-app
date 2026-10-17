@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using SuperApp.Application.Abstractions.Services;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Infrastructure.Persistence;
 using SuperApp.Infrastructure.Persistence.Interceptors;
+using SuperApp.Infrastructure.Persistence.Seed;
 using SuperApp.Infrastructure.Services;
 
 namespace SuperApp.Infrastructure;
@@ -24,11 +26,17 @@ public static class DependencyInjection
             .UseSqlServer(connection, sql => sql.EnableRetryOnFailure(3))
             .AddInterceptors(sp.GetRequiredService<AuditableSaveChangesInterceptor>()));
 
+        // Keys for cookies, reset links and anti-forgery tokens; kept on disk so sign-ins survive a restart
+        var keys = configuration["Security:Data_Protection_Keys_Path"] ?? "keys";
+        services.AddDataProtection().SetApplicationName("SuperApp").PersistKeysToFileSystem(new DirectoryInfo(keys));
+
         services.AddIdentityCore<User>(ConfigureIdentity)
             .AddRoles<Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddSignInManager()
             .AddDefaultTokenProviders();
+
+        services.AddSeed(configuration);
         return services;
     }
 

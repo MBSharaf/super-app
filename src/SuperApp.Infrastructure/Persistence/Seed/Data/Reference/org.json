@@ -1,0 +1,623 @@
+{
+  "departments": [
+    {
+      "key": "ops",
+      "en": "Operations",
+      "ar": "العمليات",
+      "color": "#0B6E4F"
+    },
+    {
+      "key": "support",
+      "en": "Customer support & trust",
+      "ar": "خدمة العملاء والثقة",
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "bizdev",
+      "en": "Business development",
+      "ar": "تطوير الأعمال",
+      "color": "#A16207"
+    },
+    {
+      "key": "finance",
+      "en": "Finance",
+      "ar": "المالية",
+      "color": "#E8590C"
+    },
+    {
+      "key": "legal",
+      "en": "Legal & compliance",
+      "ar": "القانونية والالتزام",
+      "color": "#1F2937"
+    },
+    {
+      "key": "marketing",
+      "en": "Marketing & social",
+      "ar": "التسويق والسوشيال ميديا",
+      "color": "#7C3AED"
+    },
+    {
+      "key": "tech",
+      "en": "Technology & product",
+      "ar": "التكنولوجيا والمنتج",
+      "color": "#1D4ED8"
+    },
+    {
+      "key": "aiops",
+      "en": "AI agents operations",
+      "ar": "تشغيل الـ AI agents",
+      "color": "#A16207"
+    }
+  ],
+  "positions": [
+    {
+      "key": "ceo",
+      "dept": null,
+      "reportsTo": null,
+      "en": "Chief executive (CEO)",
+      "ar": "المدير التنفيذي (CEO)",
+      "holder": "human",
+      "name": "Sharaf",
+      "limit": null,
+      "can": [
+        "payout.approve",
+        "payout.prepare",
+        "settle",
+        "refund",
+        "credit",
+        "adjust",
+        "approve.partner",
+        "approve.seller",
+        "suspend",
+        "customer.block",
+        "moderate",
+        "designs",
+        "promo",
+        "broadcast",
+        "content",
+        "fantasy",
+        "factory",
+        "orders",
+        "settings",
+        "audit"
+      ],
+      "duties": [
+        "Sets goals and budgets",
+        "Approves big payments and refunds",
+        "Hires, pauses and stops AI agents",
+        "Owns every kill switch"
+      ],
+      "sort": 0
+    },
+    {
+      "key": "hq",
+      "dept": "ops",
+      "reportsTo": "ceo",
+      "en": "Admin manager (HQ)",
+      "ar": "مدير الإدارة (HQ)",
+      "holder": "human",
+      "name": "Super App HQ",
+      "limit": 10000,
+      "can": [
+        "payout.approve",
+        "settle",
+        "refund",
+        "credit",
+        "adjust",
+        "approve.partner",
+        "approve.seller",
+        "suspend",
+        "customer.block",
+        "moderate",
+        "designs",
+        "promo",
+        "broadcast",
+        "content",
+        "fantasy",
+        "factory",
+        "orders",
+        "settings",
+        "audit"
+      ],
+      "duties": [
+        "Runs the admin console day to day",
+        "Steps in when an agent is unsure",
+        "Second pair of eyes on agents’ work"
+      ],
+      "sort": 1
+    },
+    {
+      "key": "cfo",
+      "dept": "finance",
+      "reportsTo": "ceo",
+      "en": "Finance director (CFO)",
+      "ar": "المدير المالي (CFO)",
+      "holder": "human",
+      "name": "Laila Mansour",
+      "limit": 50000,
+      "can": [
+        "payout.approve",
+        "settle",
+        "refund",
+        "credit",
+        "adjust",
+        "audit"
+      ],
+      "duties": [
+        "Approves withdrawals the payables agent prepared",
+        "Second approval on anything over the two-person limit",
+        "Monthly close and reconciliation",
+        "Taxes with the legal counsel"
+      ],
+      "sort": 2
+    },
+    {
+      "key": "coo",
+      "dept": "ops",
+      "reportsTo": "ceo",
+      "en": "Operations lead",
+      "ar": "قائد العمليات",
+      "holder": "ai",
+      "name": "Atlas",
+      "limit": 0,
+      "can": [
+        "orders",
+        "factory",
+        "audit"
+      ],
+      "duties": [
+        "Watches bookings, orders and the factory every hour",
+        "Escalates late jobs and problems",
+        "Writes the daily operations summary"
+      ],
+      "sort": 3
+    },
+    {
+      "key": "bookings-ops",
+      "dept": "ops",
+      "reportsTo": "coo",
+      "en": "Pitch & bookings agent",
+      "ar": "agent الملاعب والحجوزات",
+      "holder": "ai",
+      "name": "Kick",
+      "limit": 0,
+      "can": [
+        "orders"
+      ],
+      "duties": [
+        "Checks double bookings and no-shows",
+        "Weekly packages and make-up games",
+        "Tournaments and free-slot games"
+      ],
+      "sort": 4
+    },
+    {
+      "key": "orders-ops",
+      "dept": "ops",
+      "reportsTo": "coo",
+      "en": "Orders & factory agent",
+      "ar": "agent الطلبات والمصنع",
+      "holder": "ai",
+      "name": "Loom",
+      "limit": 0,
+      "can": [
+        "orders",
+        "factory"
+      ],
+      "duties": [
+        "Sends printed orders to the factory",
+        "Chases late jobs and quality problems",
+        "Keeps the Super App Store stocked"
+      ],
+      "sort": 5
+    },
+    {
+      "key": "logistics",
+      "dept": "ops",
+      "reportsTo": "coo",
+      "en": "Courier & delivery agent",
+      "ar": "agent الشحن والتوصيل",
+      "holder": "ai",
+      "name": "Route",
+      "limit": 0,
+      "can": [
+        "factory"
+      ],
+      "duties": [
+        "Books the courier when an order is packed",
+        "Follows every parcel to delivery",
+        "Handles refused parcels"
+      ],
+      "sort": 6
+    },
+    {
+      "key": "support-lead",
+      "dept": "support",
+      "reportsTo": "coo",
+      "en": "Support & trust lead",
+      "ar": "قائد الدعم والثقة",
+      "holder": "ai",
+      "name": "Haven",
+      "limit": 1000,
+      "can": [
+        "refund",
+        "credit",
+        "customer.block",
+        "moderate"
+      ],
+      "duties": [
+        "Answers disputes and decides refunds up to 1,000 EGP",
+        "Blocks abusive customers",
+        "Reviews the frontline agent’s answers"
+      ],
+      "sort": 7
+    },
+    {
+      "key": "support-agent",
+      "dept": "support",
+      "reportsTo": "support-lead",
+      "en": "Frontline support agent",
+      "ar": "agent الدعم الأول",
+      "holder": "ai",
+      "name": "Echo",
+      "limit": 300,
+      "can": [
+        "refund"
+      ],
+      "duties": [
+        "Replies to every ticket within 2 hours",
+        "Refunds up to 300 EGP",
+        "Hands harder cases to the lead"
+      ],
+      "sort": 8
+    },
+    {
+      "key": "trust",
+      "dept": "support",
+      "reportsTo": "support-lead",
+      "en": "Trust & safety agent",
+      "ar": "agent الثقة والأمان",
+      "holder": "ai",
+      "name": "Shield",
+      "limit": 0,
+      "can": [
+        "moderate",
+        "designs",
+        "suspend"
+      ],
+      "duties": [
+        "Checks designs for copyright",
+        "Moderates reviews and communities",
+        "Gives sellers strikes"
+      ],
+      "sort": 9
+    },
+    {
+      "key": "partners-agent",
+      "dept": "bizdev",
+      "reportsTo": "coo",
+      "en": "Partnerships agent",
+      "ar": "agent الشراكات",
+      "holder": "ai",
+      "name": "Bridge",
+      "limit": 0,
+      "can": [
+        "approve.partner"
+      ],
+      "duties": [
+        "Reviews pitch partner applications",
+        "Onboards new pitches",
+        "Talks commission deals (the CEO signs)"
+      ],
+      "sort": 10
+    },
+    {
+      "key": "sellers-agent",
+      "dept": "bizdev",
+      "reportsTo": "partners-agent",
+      "en": "Sellers agent",
+      "ar": "agent البائعين",
+      "holder": "ai",
+      "name": "Spark",
+      "limit": 0,
+      "can": [
+        "approve.seller"
+      ],
+      "duties": [
+        "Checks seller IDs and approves sellers",
+        "Runs the monthly level review",
+        "Helps new sellers make their first sale"
+      ],
+      "sort": 11
+    },
+    {
+      "key": "payables",
+      "dept": "finance",
+      "reportsTo": "cfo",
+      "en": "Payables agent",
+      "ar": "agent المدفوعات",
+      "holder": "ai",
+      "name": "Ledger",
+      "limit": 0,
+      "can": [
+        "payout.prepare"
+      ],
+      "duties": [
+        "Checks every withdrawal (ID, disputes, balance)",
+        "Prepares withdrawals — never sends them",
+        "Prepares the factory settlement"
+      ],
+      "sort": 12
+    },
+    {
+      "key": "analyst",
+      "dept": "finance",
+      "reportsTo": "cfo",
+      "en": "Revenue analyst",
+      "ar": "محلل الإيرادات",
+      "holder": "ai",
+      "name": "Abacus",
+      "limit": 0,
+      "can": [],
+      "duties": [
+        "Daily revenue and cost report",
+        "Reconciles payments with the bank",
+        "Flags unusual numbers"
+      ],
+      "sort": 13
+    },
+    {
+      "key": "counsel",
+      "dept": "legal",
+      "reportsTo": "ceo",
+      "en": "Legal counsel",
+      "ar": "المستشار القانوني",
+      "holder": "human",
+      "name": "Fictional law firm (external)",
+      "limit": 0,
+      "can": [],
+      "duties": [
+        "Contracts with partners, the factory and the courier",
+        "Tax filings with the CFO",
+        "Data protection (Law 151 of 2020)"
+      ],
+      "sort": 14
+    },
+    {
+      "key": "compliance",
+      "dept": "legal",
+      "reportsTo": "counsel",
+      "en": "Compliance agent",
+      "ar": "agent الالتزام",
+      "holder": "ai",
+      "name": "Clause",
+      "limit": 0,
+      "can": [
+        "audit"
+      ],
+      "duties": [
+        "Keeps the compliance calendar",
+        "Checks seller and partner IDs",
+        "Reads the audit log for rule breaks"
+      ],
+      "sort": 15
+    },
+    {
+      "key": "cmo",
+      "dept": "marketing",
+      "reportsTo": "ceo",
+      "en": "Marketing lead",
+      "ar": "قائد التسويق",
+      "holder": "ai",
+      "name": "Pulse",
+      "limit": 0,
+      "can": [
+        "promo",
+        "broadcast",
+        "content"
+      ],
+      "duties": [
+        "Plans campaigns within the budget",
+        "Creates promo codes",
+        "Sends broadcasts to the right people"
+      ],
+      "sort": 16
+    },
+    {
+      "key": "social",
+      "dept": "marketing",
+      "reportsTo": "cmo",
+      "en": "Social media & content agent",
+      "ar": "agent السوشيال ميديا والمحتوى",
+      "holder": "ai",
+      "name": "Buzz",
+      "limit": 0,
+      "can": [
+        "content"
+      ],
+      "duties": [
+        "Posts on social media every day",
+        "News, banners and the announcement bar",
+        "Runs the official communities"
+      ],
+      "sort": 17
+    },
+    {
+      "key": "arena",
+      "dept": "marketing",
+      "reportsTo": "cmo",
+      "en": "Fantasy & games agent",
+      "ar": "agent الفانتازي والماتشات",
+      "holder": "ai",
+      "name": "Arena",
+      "limit": 0,
+      "can": [
+        "fantasy"
+      ],
+      "duties": [
+        "Runs fantasy leagues and prizes",
+        "Free-slot games and player safety",
+        "Match-day content"
+      ],
+      "sort": 18
+    },
+    {
+      "key": "cto",
+      "dept": "tech",
+      "reportsTo": "ceo",
+      "en": "Technology lead",
+      "ar": "قائد التكنولوجيا",
+      "holder": "ai",
+      "name": "Forge",
+      "limit": 0,
+      "can": [
+        "settings",
+        "audit"
+      ],
+      "duties": [
+        "Keeps the platform up and fast",
+        "Releases new features",
+        "Security and backups"
+      ],
+      "sort": 19
+    },
+    {
+      "key": "qa",
+      "dept": "tech",
+      "reportsTo": "cto",
+      "en": "Quality & monitoring agent",
+      "ar": "agent الجودة والمراقبة",
+      "holder": "ai",
+      "name": "Probe",
+      "limit": 0,
+      "can": [],
+      "duties": [
+        "Tests every flow every night",
+        "Watches errors and speed",
+        "Reports bugs to the technology lead"
+      ],
+      "sort": 20
+    },
+    {
+      "key": "conductor",
+      "dept": "aiops",
+      "reportsTo": "ceo",
+      "en": "AI agents supervisor",
+      "ar": "مشرف الـ AI agents",
+      "holder": "ai",
+      "name": "Conductor",
+      "limit": 0,
+      "can": [
+        "audit"
+      ],
+      "duties": [
+        "Watches every agent’s work and cost",
+        "Pauses an agent that makes mistakes",
+        "Weekly agents report to the CEO"
+      ],
+      "sort": 21
+    }
+  ],
+  "actions": [
+    {
+      "code": "payout.approve",
+      "en": "Send withdrawals",
+      "group": "Money"
+    },
+    {
+      "code": "payout.prepare",
+      "en": "Prepare withdrawals",
+      "group": "Money"
+    },
+    {
+      "code": "settle",
+      "en": "Pay the factory",
+      "group": "Money"
+    },
+    {
+      "code": "refund",
+      "en": "Refund customers",
+      "group": "Money"
+    },
+    {
+      "code": "credit",
+      "en": "Credit customers",
+      "group": "Money"
+    },
+    {
+      "code": "adjust",
+      "en": "Adjust balances",
+      "group": "Money"
+    },
+    {
+      "code": "approve.partner",
+      "en": "Approve pitch partners",
+      "group": "People"
+    },
+    {
+      "code": "approve.seller",
+      "en": "Approve sellers",
+      "group": "People"
+    },
+    {
+      "code": "suspend",
+      "en": "Suspend accounts",
+      "group": "People"
+    },
+    {
+      "code": "customer.block",
+      "en": "Block customers",
+      "group": "People"
+    },
+    {
+      "code": "moderate",
+      "en": "Moderate reviews & posts",
+      "group": "Trust"
+    },
+    {
+      "code": "designs",
+      "en": "Review designs",
+      "group": "Trust"
+    },
+    {
+      "code": "promo",
+      "en": "Create promo codes",
+      "group": "Marketing"
+    },
+    {
+      "code": "broadcast",
+      "en": "Send broadcasts",
+      "group": "Marketing"
+    },
+    {
+      "code": "content",
+      "en": "Edit site content",
+      "group": "Marketing"
+    },
+    {
+      "code": "fantasy",
+      "en": "Run fantasy",
+      "group": "Marketing"
+    },
+    {
+      "code": "factory",
+      "en": "Manage factories & courier",
+      "group": "Operations"
+    },
+    {
+      "code": "orders",
+      "en": "Change orders & bookings",
+      "group": "Operations"
+    },
+    {
+      "code": "settings",
+      "en": "Platform settings",
+      "group": "Platform"
+    },
+    {
+      "code": "audit",
+      "en": "Read the audit log",
+      "group": "Platform"
+    }
+  ]
+}

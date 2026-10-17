@@ -1,0 +1,328 @@
+{
+  "facilities": [
+    {
+      "key": "lights",
+      "en": "Floodlights",
+      "ar": "كشافات",
+      "icon": "bulb"
+    },
+    {
+      "key": "parking",
+      "en": "Free parking",
+      "ar": "باركينج مجاني",
+      "icon": "car"
+    },
+    {
+      "key": "showers",
+      "en": "Showers",
+      "ar": "دُش",
+      "icon": "drop"
+    },
+    {
+      "key": "lockers",
+      "en": "Locker rooms",
+      "ar": "غرف تغيير",
+      "icon": "lock"
+    },
+    {
+      "key": "cafe",
+      "en": "Café",
+      "ar": "كافيه",
+      "icon": "cup"
+    },
+    {
+      "key": "water",
+      "en": "Drinking water",
+      "ar": "مياه شرب",
+      "icon": "drop"
+    },
+    {
+      "key": "bibs",
+      "en": "Bibs & balls",
+      "ar": "بيبس وكور",
+      "icon": "shirt"
+    },
+    {
+      "key": "ac",
+      "en": "Air-conditioned",
+      "ar": "مكيف",
+      "icon": "snow"
+    },
+    {
+      "key": "wc",
+      "en": "Restrooms",
+      "ar": "حمامات",
+      "icon": "door"
+    },
+    {
+      "key": "prayer",
+      "en": "Prayer room",
+      "ar": "مصلى",
+      "icon": "moon"
+    },
+    {
+      "key": "camera",
+      "en": "Match recording",
+      "ar": "تصوير الماتش",
+      "icon": "camera"
+    },
+    {
+      "key": "wifi",
+      "en": "Wi-Fi",
+      "ar": "واي فاي",
+      "icon": "wifi"
+    },
+    {
+      "key": "firstaid",
+      "en": "First aid",
+      "ar": "إسعافات أولية",
+      "icon": "plus"
+    },
+    {
+      "key": "seats",
+      "en": "Spectator seating",
+      "ar": "مدرجات للجمهور",
+      "icon": "users"
+    }
+  ],
+  "cancellationPolicies": [
+    {
+      "key": "flexible",
+      "en": "Flexible",
+      "ar": "مرنة",
+      "fullHours": 2,
+      "halfHours": 0,
+      "summaryEn": "Full refund up to 2 hours before kick-off, then 50% until kick-off.",
+      "summaryAr": "استرداد كامل حتى ساعتين قبل الماتش، وبعدها 50% حتى بداية الماتش."
+    },
+    {
+      "key": "standard",
+      "en": "Standard",
+      "ar": "عادي",
+      "fullHours": 6,
+      "halfHours": 0,
+      "summaryEn": "Full refund up to 6 hours before kick-off, then 50% until kick-off.",
+      "summaryAr": "استرداد كامل حتى 6 ساعات قبل الماتش، وبعدها 50% حتى بداية الماتش."
+    },
+    {
+      "key": "moderate",
+      "en": "Moderate",
+      "ar": "متوسطة",
+      "fullHours": 24,
+      "halfHours": 6,
+      "summaryEn": "Full refund up to 24 hours before, 50% up to 6 hours before, no refund after that.",
+      "summaryAr": "استرداد كامل حتى 24 ساعة قبل الماتش، و50% حتى 6 ساعات قبله، وبعد كده مفيش استرداد."
+    },
+    {
+      "key": "strict",
+      "en": "Strict",
+      "ar": "صارمة",
+      "fullHours": 48,
+      "halfHours": 24,
+      "summaryEn": "Full refund up to 48 hours before, 50% up to 24 hours before, no refund after that.",
+      "summaryAr": "استرداد كامل حتى 48 ساعة قبل الماتش، و50% حتى 24 ساعة قبله، وبعد كده مفيش استرداد."
+    }
+  ],
+  "productCategories": [
+    {
+      "key": "boots",
+      "en": "Football boots",
+      "ar": "أحذية كرة القدم",
+      "icon": "boot"
+    },
+    {
+      "key": "balls",
+      "en": "Balls",
+      "ar": "كور",
+      "icon": "ball"
+    },
+    {
+      "key": "kits",
+      "en": "Jerseys & kits",
+      "ar": "التيشيرتات والأطقم",
+      "icon": "shirt"
+    },
+    {
+      "key": "goalkeeping",
+      "en": "Goalkeeping",
+      "ar": "حراسة المرمى",
+      "icon": "glove"
+    },
+    {
+      "key": "running",
+      "en": "Running & training shoes",
+      "ar": "أحذية جري وتمرين",
+      "icon": "shoe"
+    },
+    {
+      "key": "training",
+      "en": "Training gear",
+      "ar": "معدات تمرين",
+      "icon": "cone"
+    },
+    {
+      "key": "padel",
+      "en": "Padel",
+      "ar": "بادل",
+      "icon": "racket"
+    },
+    {
+      "key": "accessories",
+      "en": "Bags & accessories",
+      "ar": "شنط وإكسسوارات",
+      "icon": "bag"
+    },
+    {
+      "key": "services",
+      "en": "Coaching & services",
+      "ar": "تدريب وخدمات",
+      "icon": "whistle"
+    }
+  ],
+  "designCategories": [
+    {
+      "key": "football",
+      "en": "Football fans",
+      "ar": "جمهور الكورة"
+    },
+    {
+      "key": "sports",
+      "en": "Sports & gym",
+      "ar": "رياضة وجيم"
+    },
+    {
+      "key": "egyptian",
+      "en": "Egyptian phrases",
+      "ar": "عبارات مصرية"
+    },
+    {
+      "key": "anime",
+      "en": "Anime & manga",
+      "ar": "أنمي ومانجا"
+    },
+    {
+      "key": "gaming",
+      "en": "Gaming",
+      "ar": "جيمنج"
+    },
+    {
+      "key": "music",
+      "en": "Music",
+      "ar": "موسيقى"
+    },
+    {
+      "key": "retro",
+      "en": "Retro",
+      "ar": "ريترو"
+    },
+    {
+      "key": "minimal",
+      "en": "Minimal",
+      "ar": "مينيمال"
+    },
+    {
+      "key": "motivation",
+      "en": "Motivation",
+      "ar": "تحفيز"
+    },
+    {
+      "key": "funny",
+      "en": "Funny",
+      "ar": "كوميدي"
+    }
+  ],
+  "sellerLevels": [
+    {
+      "key": "new",
+      "en": "Starter",
+      "ar": "مبتدئ",
+      "rank": 1,
+      "sales": 0,
+      "rating": 0,
+      "designs": 25,
+      "codes": 2,
+      "baseDiscount": 0,
+      "commission": 0.12,
+      "review": "normal",
+      "boost": 0,
+      "sampleDiscount": 0,
+      "freeSamples": 0,
+      "fantasyDiscount": 0,
+      "bulk": false,
+      "teamKits": false,
+      "earlyAccess": false,
+      "analytics": "basic",
+      "calendar": "basic",
+      "support": "normal"
+    },
+    {
+      "key": "rising",
+      "en": "Rising",
+      "ar": "صاعد",
+      "rank": 2,
+      "sales": 10,
+      "rating": 4,
+      "designs": 100,
+      "codes": 5,
+      "baseDiscount": 10,
+      "commission": 0.11,
+      "review": "normal",
+      "boost": 1,
+      "sampleDiscount": 0,
+      "freeSamples": 0,
+      "fantasyDiscount": 0,
+      "bulk": false,
+      "teamKits": false,
+      "earlyAccess": false,
+      "analytics": "basic",
+      "calendar": "weather",
+      "support": "normal"
+    },
+    {
+      "key": "pro",
+      "en": "Pro",
+      "ar": "محترف",
+      "rank": 3,
+      "sales": 50,
+      "rating": 4.3,
+      "designs": 300,
+      "codes": 15,
+      "baseDiscount": 20,
+      "commission": 0.1,
+      "review": "priority",
+      "boost": 2,
+      "sampleDiscount": 0.3,
+      "freeSamples": 0,
+      "fantasyDiscount": 0.5,
+      "bulk": true,
+      "teamKits": true,
+      "earlyAccess": false,
+      "analytics": "advanced",
+      "calendar": "trends",
+      "support": "priority"
+    },
+    {
+      "key": "elite",
+      "en": "Elite",
+      "ar": "نخبة",
+      "rank": 4,
+      "sales": 200,
+      "rating": 4.6,
+      "designs": null,
+      "codes": null,
+      "baseDiscount": 35,
+      "commission": 0.08,
+      "review": "instant",
+      "boost": 3,
+      "sampleDiscount": 1,
+      "freeSamples": 1,
+      "fantasyDiscount": 1,
+      "bulk": true,
+      "teamKits": true,
+      "earlyAccess": true,
+      "analytics": "export",
+      "calendar": "early",
+      "support": "manager"
+    }
+  ]
+}
