@@ -6,6 +6,16 @@
   const S = SA.services;
   const STEPS = ['Pitch & time', 'Review & pay', 'Confirmed'];
 
+  /** Holds the hours on the server; returns the price, or the page to show instead (sign in / time taken) */
+  const liveHold = async (p, { date, hour, dur }) => {
+    if (!S.session.loaded()) await S.session.load();
+    const back = `<a class="btn btn-outline" href="#/pitches/${p.id}?date=${date}">Back to ${esc(p.name)}</a>`;
+    if (!S.session.me()) return c.empty({ icon: 'lock', title: 'Sign in to book', text: 'Bookings are linked to your Super App account.', action: `<a class="btn btn-primary" href="#/auth/sign-in?next=${encodeURIComponent(SA.core.router.location())}">Sign in</a> ${back}` });
+    try { return await S.bookings.hold({ pitchId: p.id, date, hour: +hour, duration: +dur || 1 }); } catch (err) {
+      return c.empty({ icon: 'calendar', title: 'This time isn’t available', text: err.message, action: back });
+    }
+  };
+
   /* -------- Review & pay: #/book/:id?date&hour&dur[&weeks] -------- */
   SA.pages.bookingCheckout = {
     title: 'Review booking — Super App',
@@ -16,7 +26,11 @@
       const weeks = S.bookings.WEEK_OPTIONS.includes(+ctx.query.weeks) && p.weekly?.enabled ? +ctx.query.weeks : 0;
       const code = weeks ? '' : String(ctx.query.code || '').toUpperCase();
       let q, codeErr = '';
-      if (weeks) q = S.bookings.quoteSeries({ pitchId: p.id, date, hour: +hour, duration: +dur || 1, weeks });
+      // Live site: a signed-in account, and the hours are held for 10 minutes at the server's price
+      const held = S.api?.isLive() ? await liveHold(p, ctx.query) : null;
+      if (typeof held === 'string') return held;
+      if (held) { q = { ...held, perPlayer: Math.ceil(held.total / p.players) }; if (code) codeErr = 'Promo codes aren’t available yet. They arrive with online payments.'; }
+      else if (weeks) q = S.bookings.quoteSeries({ pitchId: p.id, date, hour: +hour, duration: +dur || 1, weeks });
       else { try { q = S.bookings.quote({ pitchId: p.id, date, hour: +hour, duration: +dur || 1, code }); } catch (err) { codeErr = err.message; q = S.bookings.quote({ pitchId: p.id, date, hour: +hour, duration: +dur || 1 }); } }
       const points = S.loyalty.estimate(q.pitchTotal);
       const pol = S.pitches.policyOf(p.cancelPolicy);

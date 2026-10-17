@@ -1,0 +1,233 @@
+/**
+ * Pitches and bookings from the real API (backend Phase 3). Loaded after pitchService and bookingService.
+ *
+ * In API mode the pitch list, the pitch page, the hour grid, checkout and "My bookings" read and write the
+ * server; the pages keep their design and call the same service methods as before. This file keeps a small
+ * cache so the methods the pages call synchronously (getSync, slotsSync, quote) still answer straight away:
+ * the async methods (list, get, bookings.get/list) fill it first.
+ *
+ * Site ids are `p-<slug>` (as in the demo data); the API uses the slug. Booking ids are the booking codes.
+ * Not on the server yet (later phases) and still demo-only: weekly packages, promo codes, reviews, waitlist.
+ */
+(function (SA) {
+  const api = SA.services.api;
+  const P = SA.services.pitches;
+  const B = SA.services.bookings;
+  const { ApiError } = SA.services.http;
+  const { haversineKm, isoDate, today, parseISO } = SA.core.utils;
+  const store = SA.core.store;
+
+  const demo = { pitches: { ...P }, bookings: { ...B } };
+  const pitches = new Map();   // site id → pitch in the site's shape
+  const days = new Map();      // `${id}|${date}` → hour slots
+  const bookings = new Map();  // booking code → booking in the site's shape
+
+  const live = () => api.isLive();
+  /** Async methods decide the mode once it is known (the page may ask before detection finishes) */
+  const ready = (fn) => async (...args) => { await api.ready; return fn(...args); };
+  const ar = () => SA.i18n?.lang === 'ar';
+  const idOf = (slug) => `p-${slug}`;
+  const slugOf = (id) => String(id).replace(/^p-/, '');
+  const isLivePitch = (id) => live() && pitches.has(id);
+
+  const SURFACE = { ArtificialTurf: 'Artificial turf', NaturalGrass: 'Natural grass', IndoorCourt: 'Indoor court' };
+  const photo = (ph) => (!ph ? 'nightMatch' : ph.url ? `${location.origin}${ph.url}` : ph.key);
+  const origin = () => store.get().location || SA.config.fallbackLocation;
+  const withDistance = (p) => { const km = haversineKm(origin(), p); return { ...p, distanceKm: km, etaMin: Math.round(km * 2.6 + 4) }; };
+
+  /** API card → the site's pitch shape (details are added by fromDetails) */
+  const fromCard = (c) => {
+    const prev = pitches.get(idOf(c.slug)) || {};
+    const p = withDistance({
+      ...prev, id: idOf(c.slug), slug: c.slug, live: true, status: 'active', name: c.name, venue: c.venueName,
+      area: ar() ? c.areaAr : c.areaEn, city: c.governorateEn, lat: +c.lat, lng: +c.lng,
+      format: `${c.format}-a-side`, players: c.format * 2, surface: SURFACE[c.surface] || c.surface, indoor: c.isIndoor,
+      price: +c.pricePerHour, peakPrice: +(c.peakPricePerHour ?? c.pricePerHour), rating: +c.rating, reviews: c.reviewsCount,
+      images: prev.images || [photo(c.photo)], facilities: c.facilities || [], tags: prev.tags || [],
+      weekly: { enabled: false }, open: prev.open || [9, 24],
+    });
+    pitches.set(p.id, p);
+    return p;
+  };
+
+  /** Today's opening hours stand for the pitch on the page (the grid shows each day's own hours) */
+  const openToday = (hours) => {
+    const h = hours.find((x) => x.dayOfWeek === new Date().getDay() && !x.isClosed) || hours.find((x) => !x.isClosed);
+    return h ? [h.openHour, h.closeHour] : [9, 24];
+  };
+
+  const fromDetails = (d) => {
+    const p = fromCard(d.card);
+    Object.assign(p, {
+      address: d.address, about: (ar() ? d.descriptionAr : d.descriptionEn) || d.descriptionEn || '',
+      images: d.photos.length ? d.photos.map(photo) : p.images, cancelPolicy: d.cancellationPolicy.key,
+      open: openToday(d.openingHours), allowCash: d.allowCash, company: d.partnerName, ownerId: null,
+    });
+    return p;
+  };
+
+  const STATUS = { free: 'available', booked: 'booked', held: 'booked', closed: 'blocked', past: 'past' };
+  const mine = (pitchId, date, hour) => [...bookings.values()].some((b) => b.pitchId === pitchId && b.status === 'confirmed' && b.date === date && hour >= b.hour && hour < b.hour + b.duration);
+
+  /** One availability day → the site's slots */
+  const toSlots = (id, day) => day.hours.map((h) => {
+    const status = h.status === 'booked' && mine(id, h.date, h.calendarHour) ? 'yours' : STATUS[h.status] || 'blocked';
+    return { hour: h.hour, status, price: +h.price, base: +h.basePrice, deal: Math.round(+h.offerPercent), peak: h.isPeak, waiting: h.waiting };
+  });
+
+  const loadDays = async (id, from = isoDate(today()), n = 14) => {
+    const r = await api.get(`/pitches/${slugOf(id)}/availability?from=${from}&days=${n}`);
+    r.days.forEach((d) => days.set(`${id}|${d.date}`, toSlots(id, d)));
+    return r.days;
+  };
+
+  /* ---------------- Pitches ---------------- */
+
+  const SORTERS = {
+    distance: (a, b) => a.distanceKm - b.distanceKm,
+    price: (a, b) => a.price - b.price,
+    rating: (a, b) => b.rating - a.rating || b.reviews - a.reviews,
+    availability: (a, b) => (b.freeSlots ?? -1) - (a.freeSlots ?? -1),
+  };
+
+  /** The server filters by text, price and format; the rest is applied here exactly as in demo mode */
+  const search = async (f = {}) => {
+    const date = f.date || isoDate(today());
+    const qs = new URLSearchParams({ pageSize: '50' });
+    if (f.q) qs.set('q', f.q);
+    if (f.maxPrice) qs.set('maxPrice', f.maxPrice);
+    if (parseInt(f.format, 10)) qs.set('format', parseInt(f.format, 10));
+    const res = await api.get(`/pitches?${qs}`);
+    let out = (res.items || res).map(fromCard);
+    await Promise.all(out.map((p) => loadDays(p.id, date, 1).then(() => { p.freeSlots = (days.get(`${p.id}|${date}`) || []).filter((s) => s.status === 'available').length; }).catch(() => { p.freeSlots = null; })));
+    if (f.minRating) out = out.filter((p) => p.rating >= f.minRating);
+    if (f.indoor === 'indoor') out = out.filter((p) => p.indoor);
+    if (f.indoor === 'outdoor') out = out.filter((p) => !p.indoor);
+    if (f.surface === 'grass') out = out.filter((p) => /grass/i.test(p.surface));
+    if (f.onlyAvailable) out = out.filter((p) => p.freeSlots > 0);
+    return out.sort(SORTERS[f.sort] || SORTERS.distance);
+  };
+
+  const getPitch = async (id) => {
+    let d;
+    try { d = await api.get(`/pitches/${encodeURIComponent(slugOf(id))}`); } catch (err) {
+      if (err.status === 404) throw new ApiError('We couldn’t find that pitch. It may have been removed.', 'not_found');
+      throw err;
+    }
+    const p = fromDetails(d);
+    await loadDays(p.id);
+    return { ...p };
+  };
+
+  Object.assign(P, {
+    list: ready((f) => (live() ? search(f) : demo.pitches.list(f))),
+    get: ready((id) => (live() ? getPitch(id) : demo.pitches.get(id))),
+    getSync: (id) => (isLivePitch(id) ? pitches.get(id) : demo.pitches.getSync(id)),
+    slots: ready(async (id, date) => { if (!live()) return demo.pitches.slots(id, date); if (!days.has(`${id}|${date}`)) await loadDays(id, date, 1); return days.get(`${id}|${date}`) || []; }),
+    slotsSync: (id, date) => (isLivePitch(id) ? days.get(`${id}|${date}`) || [] : demo.pitches.slotsSync(id, date)),
+    nearest: ready(async (n = 4) => (live() ? (await search({ sort: 'distance' })).slice(0, n) : demo.pitches.nearest(n))),
+    // Reviews and owner offers arrive with Phase 3.6; offer prices already show on each hour
+    reviews: (id, n) => (isLivePitch(id) ? Promise.resolve([]) : demo.pitches.reviews(id, n)),
+    activePromos: (p) => (p?.live && live() ? [] : demo.pitches.activePromos(p)),
+    bookable: (p) => (p?.live && live() ? p.status === 'active' : demo.pitches.bookable(p)),
+  });
+
+  /* ---------------- Bookings ---------------- */
+
+  const startsAt = (b) => parseISO(b.date).getTime() + b.hour * 36e5;
+
+  /** API booking → the site's booking shape */
+  const fromBooking = (r) => {
+    const id = idOf(r.pitchSlug);
+    const p = pitches.get(id) || {};
+    const prev = bookings.get(r.code) || {};
+    const b = {
+      id: r.code, code: r.code, live: true, pitchId: id, pitchName: r.pitchName, address: r.address,
+      area: p.area || '', city: p.city || '', image: p.images?.[0] || 'nightMatch', format: p.format || '',
+      date: r.date, hour: r.startHour, duration: r.duration, players: prev.players || p.players || 10,
+      listPrice: +r.pitchAmount, pitchTotal: +r.pitchAmount, serviceFee: +r.serviceFee, total: +r.total,
+      discount: 0, discountAmount: 0, promo: null, publishedMatchId: prev.publishedMatchId || null,
+      payment: r.payAtVenue ? { method: 'cash', label: 'Pay at the venue' } : { method: 'card', label: 'Paid in the app' },
+      status: r.status.startsWith('Cancelled') ? 'cancelled' : 'confirmed', checkedIn: ['CheckedIn', 'Played'].includes(r.status),
+      refund: +r.refundAmount, createdAt: Date.parse(r.createdAt), cancelledAt: r.cancelledAt ? Date.parse(r.cancelledAt) : 0,
+      policy: r.policyKey, qrToken: r.qrToken || prev.qrToken || null,
+    };
+    b.startsAt = startsAt(b);
+    bookings.set(b.id, b);
+    return b;
+  };
+
+  const hold = async ({ pitchId, date, hour, duration }) => {
+    const h = await api.post('/bookings/hold', { pitchSlug: slugOf(pitchId), date, hour, duration });
+    return { listPrice: +h.pitchAmount, pitchTotal: +h.pitchAmount, serviceFee: +h.serviceFee, total: +h.total, discount: 0, discountAmount: 0, promo: null, expiresAt: Date.parse(h.expiresAt) };
+  };
+
+  /** Price from the hour grid (the server confirms it when the hours are held at checkout) */
+  const quote = ({ pitchId, date, hour, duration, code = '' }) => {
+    if (code) throw new ApiError('Promo codes aren’t available yet. They arrive with online payments.', 'invalid');
+    const p = pitches.get(pitchId);
+    const slots = days.get(`${pitchId}|${date}`) || [];
+    let list = 0;
+    for (let h = hour; h < hour + duration; h++) list += slots.find((s) => s.hour === h)?.price ?? p.price;
+    const serviceFee = Math.round(list * SA.services.db.settings().serviceFee);
+    const total = list + serviceFee;
+    return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players) };
+  };
+
+  const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false }) => {
+    SA.services.legal?.requireWaiver(waiver, 'booking');
+    const r = await api.post('/bookings', { pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: payment?.method === 'cash', acceptWaiver: !!waiver });
+    [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
+    const b = fromBooking(r);
+    b.players = players || b.players;
+    return b;
+  };
+
+  const myList = async () => {
+    const tab = (t) => api.get(`/bookings/mine?tab=${t}&pageSize=50`).then((r) => r.items || r);
+    const raw = await Promise.all([tab('upcoming'), tab('past'), tab('cancelled')]);
+    // The rows show each pitch's area and photo
+    const missing = [...new Set(raw.flat().map((r) => idOf(r.pitchSlug)))].filter((id) => !pitches.has(id));
+    await Promise.all(missing.map((id) => getPitch(id).catch(() => null)));
+    const [upcoming, past, cancelled] = raw.map((list) => list.map(fromBooking));
+    const now = Date.now();
+    const mark = (b) => ({ ...b, isPast: b.startsAt + b.duration * 36e5 < now });
+    return { upcoming: upcoming.map(mark), past: [...past, ...cancelled].map(mark).sort((a, b) => b.startsAt - a.startsAt) };
+  };
+
+  const getBooking = async (id) => {
+    let r;
+    try { r = await api.get(`/bookings/${encodeURIComponent(id)}`); } catch (err) {
+      if (err.status === 404) throw new ApiError('Booking not found.', 'not_found');
+      throw err;
+    }
+    // The ticket shows the pitch's address and photo
+    if (!pitches.has(idOf(r.pitchSlug))) await getPitch(idOf(r.pitchSlug)).catch(() => null);
+    return { ...fromBooking(r) };
+  };
+
+  const cancel = async (id) => {
+    const r = await api.post(`/bookings/${encodeURIComponent(id)}/cancel`);
+    const b = fromBooking(r);
+    [...days.keys()].filter((k) => k.startsWith(`${b.pitchId}|`)).forEach((k) => days.delete(k));
+    return { refund: b.refund, share: b.total ? b.refund / b.total : 0 };
+  };
+
+  const isLiveBooking = (id) => live() && bookings.has(id);
+
+  Object.assign(B, {
+    hold: ready((args) => (live() ? hold(args) : null)),
+    quote: (args) => (isLivePitch(args.pitchId) ? quote(args) : demo.bookings.quote(args)),
+    create: ready((args) => (live() ? create(args) : demo.bookings.create(args))),
+    list: ready(() => (live() ? myList() : demo.bookings.list())),
+    get: ready((id) => (live() ? getBooking(id) : demo.bookings.get(id))),
+    getSync: (id) => (isLiveBooking(id) ? bookings.get(id) : demo.bookings.getSync(id)),
+    cancel: (id) => (isLiveBooking(id) ? cancel(id) : demo.bookings.cancel(id)),
+    venueRecord: (id) => (isLiveBooking(id) ? (bookings.get(id).checkedIn ? { checkedIn: true } : null) : demo.bookings.venueRecord(id)),
+    // The gate scans the server's signed token
+    checkInCode: (id) => (isLiveBooking(id) && bookings.get(id).qrToken ? bookings.get(id).qrToken : demo.bookings.checkInCode(id)),
+    review: (id, d) => (isLiveBooking(id) ? Promise.reject(new ApiError('Reviews open soon on the live site.', 'not_allowed')) : demo.bookings.review(id, d)),
+    reviewOf: (b) => (b?.live ? null : demo.bookings.reviewOf(b)),
+    upcomingSync: () => (live() ? [...bookings.values()].filter((b) => b.status === 'confirmed' && b.startsAt > Date.now()).sort((a, b) => a.startsAt - b.startsAt) : demo.bookings.upcomingSync()),
+  });
+})(window.SA);

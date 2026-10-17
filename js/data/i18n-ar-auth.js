@@ -39,8 +39,15 @@
     'Sign in to apply': 'ادخل عشان تقدّم', 'Applications are linked to your Super App account.': 'الطلبات بتتربط بحسابك في Super App.',
     'You’re a Super App seller': 'إنت بقيت بائع على Super App', 'Open my seller dashboard': 'افتح لوحة البائع',
     'This account can’t open this system.': 'الحساب ده مينفعش يفتح النظام ده.', 'Enter the 6-digit code from your authenticator app.': 'اكتب الكود اللي فيه 6 أرقام من تطبيق التحقق.', 'Welcome back': 'أهلاً بيك تاني',
+    /* ---------- Pitches and bookings from the server ---------- */
+    'Sign in to book': 'ادخل عشان تحجز', 'Bookings are linked to your Super App account.': 'الحجوزات بتتربط بحسابك في Super App.',
+    'This time isn’t available': 'الميعاد ده مش متاح', 'Promo codes aren’t available yet. They arrive with online payments.': 'أكواد الخصم لسه مش متاحة. هتيجي مع الدفع أونلاين.',
+    'Reviews open soon on the live site.': 'التقييمات هتفتح قريب على الموقع.', 'Booking not found.': 'الحجز مش موجود.',
+    'Pay at the venue': 'الدفع في الملعب', 'Paid in the app': 'مدفوع في التطبيق',
+    'We couldn’t find that pitch. It may have been removed.': 'ما لقيناش الملعب ده. ممكن يكون اتشال.',
   });
   D.patterns.push(
+    ['^Back to (.+)$', 'رجوع لـ {1}'],
     ['^If (.+) has an account, a link is on its way\\. It works for 30 minutes\\.$', 'لو {1} ليه حساب، اللينك في الطريق. شغال نص ساعة.'],
   );
 })(window.SA);

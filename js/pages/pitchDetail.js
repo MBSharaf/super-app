@@ -76,7 +76,7 @@
             <h2 class="field-label" style="margin-top:18px">1. Pick a date</h2>
             <div class="date-strip compact" data-dates>${Array.from({ length: 14 }, (_, i) => { const d = addDays(today(), i), iso = isoDate(d); return `<button class="date-chip" data-date="${iso}" aria-pressed="false"><span class="xs">${i === 0 ? 'Today' : DAY[d.getDay()]}</span><b class="num">${d.getDate()}</b></button>`; }).join('')}</div>
             <h2 class="field-label" style="margin-top:18px">2. How long?</h2>
-            <div class="tabs dur-tabs" role="radiogroup" aria-label="Duration">${DURATIONS.map(([v, l]) => `<button class="tab" role="radio" data-dur="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
+            <div class="tabs dur-tabs" role="radiogroup" aria-label="Duration">${(S.api?.isLive() ? DURATIONS.filter(([v]) => Number.isInteger(v)) : DURATIONS).map(([v, l]) => `<button class="tab" role="radio" data-dur="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
             <div class="row-between" style="margin-top:18px"><h2 class="field-label">3. Choose a start time</h2><span class="xs muted" data-free></span></div>
             <div class="slot-legend xs"><span><i class="lg-av"></i>Available</span><span><i class="lg-sel"></i>Selected</span><span><i class="lg-bk"></i>Booked — tap for waitlist</span>${S.pitches.activePromos(p).length ? '<span><i class="lg-deal"></i>Offer price</span>' : ''}</div>
             <div class="slot-grid" data-slots role="listbox" aria-label="Start times"></div>
