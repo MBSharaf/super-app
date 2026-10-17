@@ -84,4 +84,30 @@ public sealed class PitchesTests(DemoApiFactory api) : IClassFixture<DemoApiFact
         status.ShouldBe(HttpStatusCode.NotFound);
         body.Code().ShouldBe("not_found");
     }
+
+    [Fact]
+    public async Task The_hour_grid_shows_overnight_hours_and_prices()
+    {
+        var from = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(2)).ToString("yyyy-MM-dd");
+        var (status, body) = await (await api.ClientAsync()).GetAsync($"/api/v1/pitches/zayed-22/availability?from={from}&days=3");
+
+        status.ShouldBe(HttpStatusCode.OK, body.ToString());
+        var days = body.Data().GetProperty("days");
+        days.GetArrayLength().ShouldBe(3);
+        var hours = days[0].GetProperty("hours");
+        hours.GetArrayLength().ShouldBe(17);   // Turf 22 Arena: 9 AM to 2 AM
+        hours[16].GetProperty("hour").GetInt32().ShouldBe(25);
+        hours[16].GetProperty("calendarHour").GetInt32().ShouldBe(1);
+        hours.EnumerateArray().ShouldAllBe(h => h.GetProperty("status").GetString() == "free");
+    }
+
+    [Theory]
+    [InlineData("days=0")]
+    [InlineData("days=15")]
+    [InlineData("from=2020-01-01")]
+    public async Task The_hour_grid_refuses_bad_ranges(string query)
+    {
+        var (status, _) = await (await api.ClientAsync()).GetAsync($"/api/v1/pitches/zayed-22/availability?{query}");
+        status.ShouldBe(HttpStatusCode.BadRequest);
+    }
 }

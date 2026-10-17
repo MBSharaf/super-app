@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IApprovalsService, ApprovalsService>();
         services.AddScoped<IFilesService, FilesService>();
         services.AddScoped<IPitchesService, PitchesService>();
+        services.AddScoped<IAvailabilityService, AvailabilityService>();
         return services;
     }
 }

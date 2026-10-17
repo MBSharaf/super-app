@@ -79,6 +79,7 @@ public static class DependencyInjection
         services.AddScoped<INotifier, Notifier>();
         services.AddScoped<ILookupsReader, LookupsReader>();
         services.AddScoped<IPitchesReader, PitchesReader>();
+        services.AddScoped<IAvailabilityReader, AvailabilityReader>();
         return services;
     }
 

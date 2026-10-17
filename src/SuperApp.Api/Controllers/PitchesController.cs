@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using SuperApp.Application.Features.Pitches;
 
 namespace SuperApp.Api.Controllers;
 
 /// <summary>Public pitches (API §3.1): search and the pitch page. Live pitches only.</summary>
 [Route("api/v1/pitches")]
-public sealed class PitchesController(IPitchesService pitches) : ApiControllerBase
+public sealed class PitchesController(IPitchesService pitches, IAvailabilityService availability) : ApiControllerBase
 {
     /// <summary>?q &amp;areaId &amp;governorateId &amp;format=5|7|11 &amp;minPrice &amp;maxPrice &amp;facilities=lights,parking &amp;lat &amp;lng &amp;sort=rating|price|-price|distance|name &amp;page &amp;pageSize</summary>
     [HttpGet]
@@ -13,4 +14,12 @@ public sealed class PitchesController(IPitchesService pitches) : ApiControllerBa
 
     [HttpGet("{slug}")]
     public async Task<ActionResult<object>> Get(string slug, CancellationToken ct) => Ok(await pitches.GetAsync(slug, ct));
+
+    /// <summary>?from=yyyy-MM-dd &amp;days=1..14 — the hour grid (cached 30 seconds).</summary>
+    [HttpGet("{slug}/availability")]
+    [OutputCache(PolicyName = AvailabilityCache)]
+    public async Task<ActionResult<object>> Availability(string slug, [FromQuery] AvailabilityQuery query, CancellationToken ct) =>
+        Ok(await availability.GetAsync(slug, query, ct));
+
+    public const string AvailabilityCache = "availability";
 }

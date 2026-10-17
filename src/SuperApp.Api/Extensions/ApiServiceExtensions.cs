@@ -32,7 +32,11 @@ public static class ApiServiceExtensions
 
         services.AddSuperAppAuth();
         services.AddSuperAppRateLimits(configuration);
-        services.AddOutputCache(o => o.AddPolicy(LookupsController.CachePolicy, p => p.Expire(TimeSpan.FromHours(1)).Tag(LookupsController.CachePolicy)));
+        services.AddOutputCache(o =>
+        {
+            o.AddPolicy(LookupsController.CachePolicy, p => p.Expire(TimeSpan.FromHours(1)).Tag(LookupsController.CachePolicy));
+            o.AddPolicy(PitchesController.AvailabilityCache, p => p.Expire(TimeSpan.FromSeconds(30)).SetVaryByQuery("from", "days").Tag(PitchesController.AvailabilityCache));
+        });
         services.AddOpenApi();
         services.AddHealthChecks()
             .AddSqlServer(configuration.GetConnectionString("Default")!, name: "database", tags: ["ready"]);
