@@ -4,6 +4,8 @@
 **Audience:** footballers (each partner brings theirs) · **One CTA:** تابعونا… الإطلاق قرّب
 **Format:** 9:16, 1080×1920, 30 fps, 18 s · **Style:** collage on ink · voiceover in Egyptian Arabic + burned-in subtitles · built on `../_kit`
 
+**Cover:** `cover.png`, the designed cover (series look from `../_kit/covers.html`).
+
 ## Voiceover script
 | Time | Line (also the subtitle) | On screen |
 |---|---|---|

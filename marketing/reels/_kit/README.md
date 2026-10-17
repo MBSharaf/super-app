@@ -8,3 +8,4 @@
 | `render.js` | `node _kit/render.js <reel-dir>` → `<reel-dir>/reel-<name>.mp4` at 30 fps with `sfx.wav` normalised to -14 LUFS; `--frames=1,5` saves stills |
 
 New reel: copy `03-fantasy-two-leagues/`, change the markup, `T`, `caps` and `scene`, then `python3 sfx.py && node ../_kit/render.js .`
+| `covers.html` + `covers.js` | Designed reel covers, one series look (REEL 0X badge, ransom title, the reel's own art). `node _kit/covers.js [01]` writes each reel's `cover.png`; everything sits in the centre 1080×1350 so the profile grid crop keeps it |

@@ -7,7 +7,7 @@
 |---|---|
 | `reel-04-player-dropped.mp4` | The reel with sound (-14.5 LUFS) |
 | `reel-04-player-dropped-silent.mp4` | No sound |
-| `cover.png` | Cover frame (hook) |
+| `cover.png` | Designed cover (series look from `../_kit/covers.html`, title inside the 4:5 grid crop) |
 | `index.html`, `sfx.py`, `assets/` | Composition, sound bed, real "players" screen (demo data) |
 
 ## Beats

@@ -3,6 +3,8 @@
 **Audience:** footballers who juggle several apps · **Goal:** comments (the algorithm signal) + people waiting for launch · **One CTA:** write your pick in the comments
 **Format:** 9:16, 1080×1920, 30 fps, 20 s · **Style:** collage on cream grid · voiceover in Egyptian Arabic + burned-in subtitles · built on `../_kit`
 
+**Cover:** `cover.png`, the designed cover (series look from `../_kit/covers.html`).
+
 ## Voiceover script (Egyptian Arabic, young energetic male voice)
 | Time | Line (also the on-screen subtitle) | On screen |
 |---|---|---|

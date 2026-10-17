@@ -7,7 +7,7 @@
 |---|---|
 | `reel-02-tee-3d.mp4` | The reel, with the 104 BPM beat + paper/tape/stamp/ding foley, about -14 LUFS |
 | `reel-02-tee-3d-silent.mp4` | Same, no sound, for adding trending audio inside Instagram/TikTok |
-| `cover.png` | Cover frame (hook) |
+| `cover.png` | Designed cover (series look from `../_kit/covers.html`, title inside the 4:5 grid crop) |
 | `index.html` | The composition: `window.render(t)` draws any frame; open it in a browser to scrub |
 | `tee-turn.html` | Renders `models/tee.glb` with three.js, prints the design as a decal: `?a=<turn 0..1>&print=0\|1&c=<hex>` |
 | `render.js` | `node render.js` → MP4 (Playwright frames + ffmpeg); `--frames=1.3,5` saves stills |

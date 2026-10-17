@@ -95,7 +95,7 @@ ITEMS = [
          pin='قاعدة 4 ("هحوّلك بالليل") دي بتاعة مين عندكم؟ 😅'),
     # ---- reels (9:16, 1080×1920) ----
     dict(id='reel-01-khomasi-types', kind='reel', title='أنواع اللاعيبة في ماتش الخماسي', audience='لاعيبة الخماسي', when='أيام الأسبوع 8–11 م',
-         files=['reels/01-khomasi-types/reel-01-khomasi-types-v2.mp4', 'reels/01-khomasi-types/reel-01-khomasi-types-v2-silent.mp4', 'reels/01-khomasi-types/cover-v2.png'],
+         files=['reels/01-khomasi-types/reel-01-khomasi-types-v2.mp4', 'reels/01-khomasi-types/reel-01-khomasi-types-v2-silent.mp4', 'reels/01-khomasi-types/cover.png'],
          caption='''أنواع اللاعيبة في ماتش الخماسي 😂
 منشن صاحبك اللي مبيباصيش… وقولنا انت رقم كام؟
 
@@ -189,6 +189,7 @@ ORDER = ['post-04-captain-gw7', 'reel-01-khomasi-types', 'post-05-who-collects',
 
 def caption_txt(it):
     out = [f'{KIND[it["kind"]]}: {it["title"]}', f'الجمهور: {it["audience"]}', f'أحسن وقت: {it["when"]}', '', 'الكابشن:', it['caption'], '', 'أول كومنت (ثبّته):', it['pin'], '', 'هوك بديل (جرّبه A/B أو على تيك توك):', it['alt']]
+    if it['kind'] == 'reel': out += ['', 'الغلاف:', 'ارفع cover.png كغلاف (تعديل الغلاف ← إضافة من الصور)، وخلي العنوان في نص المربع عشان شبكة البروفايل.']
     if it.get('notes'): out += ['', 'قبل النشر:', it['notes']]
     return '\n'.join(out) + '\n'
 

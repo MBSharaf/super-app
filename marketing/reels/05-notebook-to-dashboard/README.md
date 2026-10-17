@@ -7,7 +7,7 @@
 |---|---|
 | `reel-05-notebook-to-dashboard.mp4` | The reel with sound (-14.4 LUFS) |
 | `reel-05-notebook-to-dashboard-silent.mp4` | No sound |
-| `cover.png` | Cover frame (hook) |
+| `cover.png` | Designed cover (series look from `../_kit/covers.html`, title inside the 4:5 grid crop) |
 | `index.html`, `sfx.py`, `assets/` | Composition, sound bed, real partner-dashboard screens (demo data, cropped) |
 
 ## Beats

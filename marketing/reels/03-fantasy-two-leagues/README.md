@@ -7,7 +7,7 @@
 |---|---|
 | `reel-03-fantasy-two-leagues.mp4` | The reel with sound (-14.3 LUFS) |
 | `reel-03-fantasy-two-leagues-silent.mp4` | No sound, for trending audio inside Instagram/TikTok |
-| `cover.png` | Cover frame (hook) |
+| `cover.png` | Designed cover (series look from `../_kit/covers.html`, title inside the 4:5 grid crop) |
 | `index.html`, `sfx.py`, `assets/` | Composition, sound bed, real app screens (demo data) |
 
 ## Beats
