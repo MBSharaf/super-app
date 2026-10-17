@@ -48,3 +48,4 @@ tools/seed/_front-data.json
 marketing/reels/**/.frames/
 # 3D tee turn frames (16 MB, regenerate with tee-turn.html — see marketing/reels/02-tee-3d/README.md)
 marketing/reels/02-tee-3d/tee-frames/
+marketing/export/
