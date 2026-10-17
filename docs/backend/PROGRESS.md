@@ -81,3 +81,17 @@ Decisions for this phase:
 - [ ] 3.6 Waitlist, free slots, alerts, reviews (+ owner reply and report)
 - [ ] 3.7 Games (find players) and tournaments (register team, draw, results, cancel → refunds)
 - [ ] 3.8 Site in API mode for all of the above (design unchanged), Arabic, tests for every endpoint, `.http`, docs
+
+## Phase 4 — Shop & POD (branch `phase-4-shop`, started 2026-10-17)
+Built in its own window — see `docs/context/parallel.md`.
+### Schema requests
+- *(none)*
+### Requests to main
+- *(none)*
+
+## Phase 6 — Fantasy & content (branch `phase-6-fantasy`, started 2026-10-17)
+Built in its own window — see `docs/context/parallel.md`.
+### Schema requests
+- *(none)*
+### Requests to main
+- *(none)*

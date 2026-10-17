@@ -44,3 +44,6 @@ Common to all: [project-brief.md](project-brief.md) (what Super App is) and [dec
 - Write the request in the other window's brief under **Inbox** (date, who asks, what is needed), push, and
   tell the owner to open that window.
 - A window that finishes an inbox item moves it to **Done** in its brief with the result and links.
+
+## Parallel development
+Phases are built in parallel branches since 2026-10-17 — read [parallel.md](parallel.md) before working in a branch window.
