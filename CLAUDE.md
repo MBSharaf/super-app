@@ -4,7 +4,7 @@ Read this before making any design, social post, reel, video, ad or marketing co
 
 ## Sources of truth
 - **Design system (tokens, components, logos, icons, social templates):** https://claude.ai/artifact/65e1JyQRGpGN3JMgobxF2f — read its `project/README.md` and the sections below with the Artifact tool.
-- **In this repo:** `css/tokens.css` + `css/dark.css` (tokens), `docs/brand/audiences.md`, `docs/brand/content-strategy.md`, `docs/brand/social-video.md`.
+- **In this repo:** `css/tokens.css` + `css/dark.css` (tokens), `docs/brand/audiences.md`, `docs/brand/content-strategy.md`, `docs/brand/social-video.md`, `docs/brand/prompts.md` (ready video prompts, the code-video stack and approved styles).
 
 ## Always, for every piece of content
 1. Write for **one** audience from `docs/brand/audiences.md`.
