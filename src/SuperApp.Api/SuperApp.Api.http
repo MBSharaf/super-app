@@ -1,6 +1,91 @@
-@SuperApp.Api_HostAddress = http://localhost:5216
+# Super App API — try the endpoints from Visual Studio or VS Code (REST Client).
+# Run the API first (https profile). Requests are sent in order with the same cookies.
+#
+# How changes work: every POST / PUT / PATCH needs the anti-forgery token from GET /auth/csrf in the
+# X-CSRF-TOKEN header. Run "csrf" first, copy data.token into @csrf below, and run it again after a sign-in.
+# Fake values only — never put real passwords in this file.
 
-GET {{SuperApp.Api_HostAddress}}/weatherforecast/
+@host = https://localhost:7254
+@api = {{host}}/api/v1
+@csrf = paste-the-token-here
+
+### Health (no sign-in)
+GET {{host}}/health/ready
+
+### csrf — copy data.token into @csrf
+GET {{api}}/auth/csrf
+Accept: application/json
+
+### Public lookups
+GET {{api}}/lookups/governorates
 Accept: application/json
 
 ###
+GET {{api}}/lookups/settings/public
+Accept: application/json
+
+### Sign up (a test customer)
+POST {{api}}/auth/sign-up
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{
+  "fullName": "Test Player",
+  "email": "test.player@example.test",
+  "phone": "01012345678",
+  "password": "TestOnly2026",
+  "acceptTerms": true,
+  "language": "ar"
+}
+
+### Sign in (email or mobile) — then run csrf again
+POST {{api}}/auth/sign-in
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "login": "test.player@example.test", "password": "TestOnly2026" }
+
+### My account
+GET {{api}}/me
+Accept: application/json
+
+### Change my name and language
+PATCH {{api}}/me
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "fullName": "Test Player Two", "language": "en" }
+
+### My applications
+GET {{api}}/applications/mine
+Accept: application/json
+
+### Forgot password (always 202; the email is saved in src/SuperApp.Api/emails)
+POST {{api}}/auth/forgot-password
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "email": "test.player@example.test" }
+
+### Second step of sign-in for team accounts (code from the authenticator app)
+POST {{api}}/auth/2fa/verify
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "code": "123456" }
+
+### CEO: the team (needs the CEO signed in with the authenticator code)
+GET {{api}}/ceo/admins
+Accept: application/json
+
+### CEO: roles and their permissions
+GET {{api}}/ceo/roles
+Accept: application/json
+
+### Admin: applications waiting (needs an approvals permission + authenticator code)
+GET {{api}}/admin/approvals?status=Pending
+Accept: application/json
+
+### Sign out
+POST {{api}}/auth/sign-out
+X-CSRF-TOKEN: {{csrf}}

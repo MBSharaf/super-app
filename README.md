@@ -309,3 +309,12 @@ also as PDF in `docs/backend/pdf/`). Progress checklist: `docs/backend/PROGRESS.
 `python tools/seed/export_front_data.py`, `python tools/seed/build_seed.py` and `python tools/seed/build_demo.py`.
 
 **Tests:** `dotnet test` — the seed tests create and drop a throw-away LocalDB database; nothing touches your `SuperApp` database.
+
+### Backend Phase 2 — accounts and approvals
+
+- **Accounts:** sign-up with terms acceptance, sign-in by email or Egyptian mobile (5 wrong tries → 15 minutes locked), sign-out (also on every device), email confirmation, forgot / reset password, profile and password change. Sessions are a secure HttpOnly cookie; every change sends the `X-CSRF-TOKEN` header.
+- **Team:** the CEO invites admins by email (7-day link), gives admin roles, direct permissions (for example Approvals to one admin), money limits; suspends and reactivates. Every team account must use an authenticator app (two-step sign-in) — admin and CEO endpoints refuse a session without it.
+- **Applications:** customers apply as pitch partner, seller or factory with the ID card (front and back); the team approves (the account gets its role and its pitches / store / factory) or rejects with a reason the applicant sees and can fix.
+- **Site in API mode:** when the site is opened from the server (`https://localhost:7254/super-app/`) it uses the real API for these parts; on GitHub Pages it keeps the demo data. Pages: `#/auth/sign-in`, `#/auth/sign-up`, `#/auth/forgot`, `#/auth/2fa-setup` …
+- **Emails** are saved as files in `src/SuperApp.Api/emails` until the domain exists; **uploads** go to `src/SuperApp.Api/storage` (both ignored by git).
+- **Try the API** from Visual Studio with `src/SuperApp.Api/SuperApp.Api.http`, or open `/docs`.
