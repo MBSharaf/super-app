@@ -8,6 +8,7 @@ using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Files;
 using SuperApp.Application.Features.Packages;
 using SuperApp.Application.Features.Partners;
+using SuperApp.Application.Features.Reviews;
 using SuperApp.Application.Features.Pitches;
 
 namespace SuperApp.Application;
@@ -43,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<ICheckInService, CheckInService>();
         services.AddScoped<IPackageOptionsService, PackageOptionsService>();
         services.AddScoped<IPackagesService, PackagesService>();
+        services.AddScoped<IReviewsService, ReviewsService>();
+        services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();
         return services;
     }
 }

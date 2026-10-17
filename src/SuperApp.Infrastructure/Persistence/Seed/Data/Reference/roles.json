@@ -14,7 +14,7 @@
   { "name": "Marketing", "description": "Promo codes, broadcasts, banners, fantasy and tournaments (no revenue view: separation of duties).",
     "permissions": ["codes.manage", "broadcasts.send", "content.banners", "content.popups", "content.news", "fantasy.manage", "tournaments.manage", "analytics.read"] },
   { "name": "Moderator", "description": "Keeps communities, games, reviews and designs clean.",
-    "permissions": ["community.moderate", "designs.reports", "games.moderate", "support.read"] },
+    "permissions": ["community.moderate", "designs.reports", "games.moderate", "reviews.moderate", "support.read"] },
   { "name": "AgentBase", "description": "Base role of every AI agent; each agent gets its own permissions on top.", "kind": "AgentRole", "permissions": [] },
   { "name": "Customer", "description": "Books pitches, joins games, shops and plays fantasy.", "permissions": [] },
   { "name": "PitchOwner", "description": "Pitch partner: manages their own venues, pitches, bookings and staff.", "permissions": [] },

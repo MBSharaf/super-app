@@ -16,6 +16,7 @@ using SuperApp.Application.Abstractions.Documents;
 using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Packages;
 using SuperApp.Application.Features.Partners;
+using SuperApp.Application.Features.Reviews;
 using SuperApp.Infrastructure.Documents;
 using SuperApp.Application.Features.Pitches;
 using SuperApp.Domain.Entities.Auth;
@@ -93,6 +94,7 @@ public static class DependencyInjection
         services.AddScoped<IPartnerStaffRepository, PartnerStaffRepository>();
         services.AddScoped<ICheckInRepository, CheckInRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
         services.AddSingleton<IQrTokens, QrTokens>();
