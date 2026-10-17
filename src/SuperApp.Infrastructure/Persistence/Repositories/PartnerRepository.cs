@@ -55,15 +55,18 @@ public sealed class PartnerRepository(AppDbContext db) : IPartnerRepository
             return null;
         }
         var hours = p.OpeningHours.OrderBy(h => h.DayOfWeek).Select(h => new OpeningHourDto(h.DayOfWeek, h.OpenHour, h.CloseHour, h.IsClosed)).ToList();
-        var photos = p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => PitchesReader.Photo(ph.File.Container, ph.File.StorageKey, ph.FileId)).ToList();
+        var photos = p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => { var x = PitchesReader.Photo(ph.File.Container, ph.File.StorageKey, ph.FileId); return new PartnerPhotoDto(ph.Id, x.Url, x.Key); }).ToList();
         return new PitchEditDto(p.Id, p.Slug, p.VenueId, p.Name, p.Format, p.Surface.ToString(), p.IsIndoor, p.PricePerHour, p.PeakPricePerHour, p.PeakFromHour,
             p.DescriptionEn, p.DescriptionAr, p.CancellationPolicy.Key, p.AllowCash, p.Facilities.OrderBy(f => f.Facility.SortOrder).Select(f => f.Facility.Key).ToList(),
             hours, photos, p.Status.ToString(), p.RejectReason, Convert.ToBase64String(p.RowVersion));
     }
 
     public Task<Pitch?> PitchAsync(long partnerId, long pitchId, CancellationToken ct) =>
-        db.Set<Pitch>().AsSplitQuery().Include(p => p.OpeningHours).Include(p => p.Facilities)
+        db.Set<Pitch>().AsSplitQuery().Include(p => p.OpeningHours).Include(p => p.Facilities).Include(p => p.Photos)
             .FirstOrDefaultAsync(p => p.Id == pitchId && p.Venue.PartnerId == partnerId, ct);
+
+    public async Task<IReadOnlyList<Booking>> UpcomingBookingsAsync(long pitchId, DateOnly today, CancellationToken ct) =>
+        await db.Set<Booking>().Where(b => b.PitchId == pitchId && b.Status == BookingStatus.Confirmed && b.Date >= today).ToListAsync(ct);
 
     public void ExpectVersion(Pitch pitch, byte[] rowVersion) => db.Entry(pitch).Property(p => p.RowVersion).OriginalValue = rowVersion;
 

@@ -34,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<IPartnerPitchesService, PartnerPitchesService>();
         services.AddScoped<IPartnerClosuresService, PartnerClosuresService>();
         services.AddScoped<IPartnerBookingsService, PartnerBookingsService>();
+        services.AddScoped<IPartnerPhotosService, PartnerPhotosService>();
+        services.AddScoped<IPartnerPitchRemovalService, PartnerPitchRemovalService>();
+        services.AddScoped<IPitchReviewsService, PitchReviewsService>();
         return services;
     }
 }

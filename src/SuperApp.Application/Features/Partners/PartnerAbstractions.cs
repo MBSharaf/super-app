@@ -1,3 +1,4 @@
+using SuperApp.Domain.Entities.Bookings;
 using SuperApp.Domain.Entities.Pitches;
 using SuperApp.Domain.Enums;
 
@@ -34,8 +35,11 @@ public interface IPartnerRepository
 
     Task<PitchEditDto?> PitchForEditAsync(long partnerId, long pitchId, CancellationToken ct);
 
-    /// <summary>A pitch of this partner with its hours and facilities, tracked for changes.</summary>
+    /// <summary>A pitch of this partner with its hours, facilities and photos, tracked for changes.</summary>
     Task<Pitch?> PitchAsync(long partnerId, long pitchId, CancellationToken ct);
+
+    /// <summary>Confirmed bookings of the pitch from today on, tracked for changes.</summary>
+    Task<IReadOnlyList<Booking>> UpcomingBookingsAsync(long pitchId, DateOnly today, CancellationToken ct);
 
     /// <summary>The edit was based on this version: a newer saved change makes the save fail with 409.</summary>
     void ExpectVersion(Pitch pitch, byte[] rowVersion);

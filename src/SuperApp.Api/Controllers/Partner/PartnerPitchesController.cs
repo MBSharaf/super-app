@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SuperApp.Api.Security;
+using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Features.Partners;
 
 namespace SuperApp.Api.Controllers.Partner;
@@ -15,8 +16,12 @@ namespace SuperApp.Api.Controllers.Partner;
 public sealed class PartnerPitchesController(
     IPartnerVenuesService venues,
     IPartnerPitchesService pitches,
-    IPartnerClosuresService closures) : ApiControllerBase
+    IPartnerClosuresService closures,
+    IPartnerPhotosService photos,
+    IPartnerPitchRemovalService removal) : ApiControllerBase
 {
+    private const long MaxUpload = 30 * 1024 * 1024;
+
     [HttpGet("venues")]
     public async Task<ActionResult<object>> Venues(CancellationToken ct) => Ok(await venues.ListAsync(ct));
 
@@ -52,6 +57,29 @@ public sealed class PartnerPitchesController(
     [HttpPost("pitches/{id:long}/reopen")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Reopen(long id, CancellationToken ct) => Ok(await pitches.ReopenAsync(id, ct), "Open for booking again.");
+
+    /// <summary>Owner only. Upcoming games are cancelled with a full refund and their players told; 202 with the count.</summary>
+    [HttpDelete("pitches/{id:long}")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Delete(long id, CancellationToken ct) =>
+        StatusCode(StatusCodes.Status202Accepted, Application.Common.Responses.ApiResponse.Ok(await removal.RemoveAsync(id, ct), "Pitch deleted."));
+
+    /// <summary>multipart/form-data with one or more "photos" (JPEG / PNG / WEBP, 5 MB each); up to 10 per pitch.</summary>
+    [HttpPost("pitches/{id:long}/photos")]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
+    [RequestSizeLimit(MaxUpload)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxUpload)]
+    public async Task<ActionResult<object>> AddPhotos(long id, [FromForm(Name = "photos")] List<IFormFile> files, CancellationToken ct) =>
+        Created(await photos.AddAsync(id, files.Select(f => new UploadedFile(f.OpenReadStream(), f.FileName, f.ContentType, f.Length)).ToList(), ct), "Photos added.");
+
+    [HttpDelete("pitches/{id:long}/photos/{photoId:long}")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> DeletePhoto(long id, long photoId, CancellationToken ct) => Ok(await photos.DeleteAsync(id, photoId, ct), "Photo deleted.");
+
+    /// <summary>The first photo is the cover.</summary>
+    [HttpPut("pitches/{id:long}/photos/order")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> OrderPhotos(long id, PhotoOrderRequest request, CancellationToken ct) => Ok(await photos.OrderAsync(id, request, ct), "Order saved.");
 
     [HttpGet("pitches/{id:long}/closures")]
     public async Task<ActionResult<object>> Closures(long id, CancellationToken ct) => Ok(await closures.ListAsync(id, ct));
