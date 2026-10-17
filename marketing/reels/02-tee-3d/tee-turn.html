@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- Renders our tee model (models/tee.glb) at an angle with a print projected onto the fabric, the same way the
+     design studio does it (js/components/model3d.js: raycast to the surface + DecalGeometry). Transparent background.
+     Params: ?a=<turn 0..1>&print=0|1&c=<hex fabric>. Open through a local server. -->
+<script type="importmap">{"imports":{"three":"../../../vendor/three/three.module.min.js"}}</script>
+<style>@font-face{font-family:Cairo;src:url(../../../vendor/fonts/cairo-arabic.woff2)}html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from '../../../vendor/three/addons/GLTFLoader.js';
+import { DecalGeometry } from '../../../vendor/three/addons/DecalGeometry.js';
+const q = new URLSearchParams(location.search), turn = +(q.get('a') || 0), withPrint = q.get('print') !== '0', fabric = '#' + (q.get('c') || 'F4EEDF');
+const W = 900, H = 1000;
+const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+r.setSize(W, H); r.setClearColor(0, 0); r.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(r.domElement);
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(28, W / H, .1, 20); cam.position.set(0, .02, 2.45);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7d7d74, 1.5));
+const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(1.4, 2, 2.6); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffd9c4, .9); rim.position.set(-2.2, 1.2, -1.4); scene.add(rim);
+
+// The print: a drawn emblem (ball + "خماسي" label), never a club crest
+async function printTexture() {
+  await document.fonts.load('800 80px Cairo');
+  const c = document.createElement('canvas'); c.width = 512; c.height = 560; const g = c.getContext('2d');
+  g.lineWidth = 22; g.strokeStyle = '#0D1411';
+  g.beginPath(); g.arc(256, 190, 160, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = '#0D1411'; g.beginPath();
+  for (let i = 0; i < 5; i++) { const t = -Math.PI / 2 + i * 2 * Math.PI / 5; g.lineTo(256 + 62 * Math.cos(t), 190 + 62 * Math.sin(t)); } g.fill();
+  g.lineWidth = 14;
+  for (let i = 0; i < 5; i++) { const t = -Math.PI / 2 + i * 2 * Math.PI / 5; g.beginPath(); g.moveTo(256 + 62 * Math.cos(t), 190 + 62 * Math.sin(t)); g.lineTo(256 + 158 * Math.cos(t), 190 + 158 * Math.sin(t)); g.stroke(); }
+  g.fillStyle = '#FF5B14'; g.fillRect(36, 400, 440, 140);
+  g.fillStyle = '#fff'; g.font = '800 104px Cairo'; g.textAlign = 'center'; g.direction = 'rtl'; g.fillText('خماسي', 256, 505);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return { t, ratio: c.height / c.width };
+}
+// keep only the decal triangles that face the projector (no bleed onto the back)
+function facing(geo) {
+  const n = geo.attributes.normal, keep = [];
+  for (let i = 0; i < n.count; i += 3) if ((n.getZ(i) + n.getZ(i + 1) + n.getZ(i + 2)) / 3 > 0.15) keep.push(i, i + 1, i + 2);
+  const out = new THREE.BufferGeometry();
+  for (const name of Object.keys(geo.attributes)) {
+    const a = geo.attributes[name], arr = new Float32Array(keep.length * a.itemSize);
+    keep.forEach((v, j) => { for (let k = 0; k < a.itemSize; k++) arr[j * a.itemSize + k] = a.array[v * a.itemSize + k]; });
+    out.setAttribute(name, new THREE.BufferAttribute(arr, a.itemSize));
+  }
+  return out;
+}
+new GLTFLoader().load('../../../models/tee.glb', async (gl) => {
+  let geo; gl.scene.traverse((o) => { if (o.isMesh && !geo) geo = o.geometry; });
+  geo.computeBoundingBox(); const b = geo.boundingBox, c = new THREE.Vector3(), s = new THREE.Vector3();
+  b.getCenter(c); b.getSize(s); geo.translate(-c.x, -c.y, -c.z); geo.scale(1 / s.y, 1 / s.y, 1 / s.y); geo.computeVertexNormals();
+  const pivot = new THREE.Group(); scene.add(pivot);
+  const body = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(fabric), roughness: .93, side: THREE.DoubleSide }));
+  pivot.add(body); pivot.updateMatrixWorld(true);
+  if (withPrint) {
+    const { t, ratio } = await printTexture();
+    const w = .27, x = 0, y = .1;   // inside the studio's front print area (x ±0.16, y −0.31…0.27)
+    const hit = new THREE.Raycaster(new THREE.Vector3(x, y, 3), new THREE.Vector3(0, 0, -1)).intersectObject(body, false)[0];
+    const pos = hit ? hit.point : new THREE.Vector3(x, y, 0);
+    const dg = facing(new DecalGeometry(body, pos, new THREE.Euler(0, 0, 0), new THREE.Vector3(w, w * ratio, .3)));
+    pivot.add(new THREE.Mesh(dg, new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: .95, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 })));
+  }
+  pivot.rotation.y = turn * Math.PI * 2 - .18;
+  r.render(scene, cam); document.body.dataset.ready = '1';
+});
+</script></body></html>
