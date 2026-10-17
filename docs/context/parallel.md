@@ -2,7 +2,7 @@
 
 Decided by the owner on 2026-10-17: the backend phases that don't depend on each other are built at the same time
 in separate windows. Nothing is postponed, the plan (PRD §14) stays the same, and the owner's site and database are
-not touched. The browser check of everything happens once, at the end of the backend.
+not touched. One quick browser check per step (main window), and branch screens are checked when they are merged.
 
 ## Who does what
 
@@ -25,7 +25,9 @@ Money (Phase 5) waits for Phases 3 and 4, because bookings and orders call it; t
    Tests make their own throw-away databases (unique names) and drop them.
 4. **Own build folder:** `dotnet build --artifacts-path %TEMP%\sa-art-<branch>` and the same for `dotnet test`.
 5. **Automated tests after every chunk** (fast, run in the background): every endpoint gets its tests, as in Phase 3.
-   The whole suite must pass before each push. No browser checks until the end.
+   The whole suite must pass before each push. **Branch windows don't use the browser** (it is shared and the
+   windows would collide); the main window checks each branch's screens in the browser when it merges them, on a
+   throw-away database. The main window also does one quick browser check after each of its own steps.
 6. **Shared files — keep the change to one line or one block, so merges stay trivial:**
    - `src/SuperApp.Application/DependencyInjection.cs` and `src/SuperApp.Infrastructure/DependencyInjection.cs`:
      put your registrations in your own extension method in its own file (e.g. `ShopRegistration.AddShop()`), and add
