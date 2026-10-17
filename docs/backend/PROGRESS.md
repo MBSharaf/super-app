@@ -33,3 +33,20 @@ The site files stay at the repo root (GitHub Pages keeps working); the Api serve
 - **Encrypted columns are longer than the plain value:** `KycDocuments.NationalId` is `varchar(200)` (the ERD said char(14), but the encrypted text is longer), and `PayoutDetail` / `Destination` are `nvarchar(400)`.
 - **Identity schema version 2** (no passkeys table), so the database matches the ERD; passkeys can be switched on later.
 - Generated code: `tools/codegen` (spec_*.py follow the ERD). After a file is edited by hand, edit it by hand — don't re-run the generator over it.
+
+## Phase 2 — Accounts & approvals (started 2026-10-17)
+
+Decisions for this phase:
+- Identity work (passwords, tokens, cookies, 2FA) lives in `Infrastructure/Identity` behind interfaces in `Application/Abstractions/Identity`; business rules stay in `Application/Features/*/Services`; controllers stay thin.
+- Sessions: customers 14 days (sliding); staff (admins, CEO, agents' people) end 8 hours after sign-in. Suspension and "sign out everywhere" change the security stamp, checked every minute.
+- Staff must set up an authenticator app at their first sign-in; admin and CEO endpoints refuse a session without the 2FA (`amr=mfa`) claim (403 `2fa_required`).
+- Email: every email is written to `notify.EmailOutbox` and delivered by the active sender — files in `emails/` until the domain exists (`EMAIL__MODE=File`).
+- The site keeps working on GitHub Pages (demo mode). When it is served by the API it switches to **API mode**: real sign-up / sign-in / applications; parts not built yet keep the demo data until their phase.
+
+- [ ] 2.1 Auth core — sign-up (terms acceptance), sign-in by email or phone (lockout), sign-out, sign-out everywhere, CSRF token, confirm email, forgot / reset password (30 min), change password, `GET/PATCH /me`; email outbox + file sender + templates; audit log
+- [ ] 2.2 Authorization — permission claims (roles + direct grants), `[RequirePermission]`, CEO / staff policies, 2FA setup (authenticator QR + recovery codes) and verify, 2FA enforced for staff
+- [ ] 2.3 CEO: admins — create + invitation email, accept invite, list / details, permissions (grant Approvals to one admin), money limits, suspend / reactivate / reset 2FA; roles + permission matrix (read)
+- [ ] 2.4 Applications & approvals — apply as pitch owner / seller / factory with files (local storage, type and size checks), my applications, fix and resend; admin approvals queue, approve (role + partner / seller + store / factory records) or reject with a reason; notifications + emails; `kill.applications` → 423
+- [ ] 2.5 Public lookups — governorates, areas, facilities, policies, categories, seller levels, public settings
+- [ ] 2.6 Site in API mode — API client with CSRF, real sign-in / sign-up / forgot / reset / 2FA screens in the current design, application forms, admin approvals, CEO admins
+- [ ] 2.7 Tests for every endpoint (happy path + edge cases), `.http` request file for VS, docs, commit and push
