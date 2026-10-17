@@ -1,13 +1,13 @@
 # Product Marketing Context
 
-**Document version:** v1
+**Document version:** v2
 **Last updated:** 2026-10-17
 
 > Shared context for the marketing skills in `.claude/skills/`. Brand and content rules that always apply: `CLAUDE.md`, `docs/brand/audiences.md`, `docs/brand/content-strategy.md`, `docs/brand/social-video.md`, `docs/brand/prompts.md`. Lines marked **TBD** need the team's real input; never invent them.
 
 ## Product Overview
 **One-liner:** Egypt's sports super app — book a football pitch, fill your match, play Egyptian and English Premier League fantasy, and shop sports gear, with one account and one wallet. ("كل الكورة في مكان واحد")
-**What it does:** Players find and book pitches near them, publish games to find missing players and split the cost online, play fantasy, and buy gear. Pitch owners run bookings, check-in, memberships, tournaments, discount codes and payouts from a partner dashboard. Anyone can open a store or sell print-on-demand designs; partner factories print and ship them.
+**What it does:** Players find and book pitches near them, publish games to find missing players and split the cost online, play fantasy, follow fixtures and football news, talk in communities, and buy and sell gear. Pitch owners run bookings, check-in, memberships, tournaments, discount codes and payouts from a partner dashboard. Anyone can open a store or sell print-on-demand designs; partner factories print and ship them.
 **Product category:** Sports booking marketplace + fantasy football + sports commerce (consumer super app with B2B partner side).
 **Product type:** Web app (mobile-first, Arabic RTL and English), with partner, seller, factory and admin dashboards.
 **Business model:** 10% commission on app bookings, 12% on store sales, print-on-demand margin, service and delivery fees, Fantasy Pass subscription (50 EGP/month per league, 80 EGP for both). Rates are configurable by the admin.
@@ -50,14 +50,21 @@
 **Emotional tension:** The organiser's frustration ("كل أسبوع نفس الحكاية"), the embarrassment of a game short of players, the owner's anxiety about empty hours.
 
 ## Competitive Landscape
-**Direct (fantasy):** FilGoal fantasy for the Egyptian league (running since about 2020/21) and independent Egyptian-league fantasy apps — single-league, not connected to playing or booking.
-**Direct (booking):** **TBD** — Egyptian pitch-booking apps to be researched and verified before naming any.
+*Researched 2026-10-17 from public listings; company figures are their own claims, not verified.*
+
+**Direct (pitch booking, Egypt):**
+- **Yalla Hagz (يلا حجز)** — the strongest: football, padel and padbol in Cairo and Giza, live slots, deposit online and the rest at the venue, plus "Team Fillups" (a booked team requests nearby players) and "Solo Kickoffs" (singles matched into games). Claims 75,000+ players, 250+ venues. Falls short because it is booking-only: no fantasy, fixtures, news, communities or shop. **It already has a find-players feature, so "find players" is not unique to us.**
+- **Courty** — football (5/7/11-a-side) and padel across Cairo, Alexandria and beyond. Booking-only.
+- **Tirtan** — booking plus court cameras that record games and performance analysis. Strong "watch your game" angle; booking-centred.
+- **Mal3bk, Movenue, Sporta Club, Mal3abak (Delta cities), Golato** — smaller booking platforms (Movenue and Sporta also sell venue tools).
+- **Find Me Football** — Cairo app (since 2016) for finding players and games, not booking.
+**Direct (fantasy):** FilGoal fantasy for the Egyptian league (since about 2020/21) and independent Egyptian-league fantasy apps — single-purpose, not tied to playing, booking or shopping.
 **Secondary:** WhatsApp groups and phone bookings with the pitch — free and familiar, but no availability, payment or replacement players.
-**Indirect:** Fantasy Premier League (FPL, official English game); Instagram/Facebook print-on-demand shops.
+**Indirect (attention):** Football news and fixtures sites and apps (FilGoal, Yallakora, Kooora); Fantasy Premier League (FPL); Facebook groups for players and fans; Instagram/Facebook print-on-demand shops; inPlay and Sportyano for wider leisure and sports booking.
 
 ## Differentiation
 **Key differentiators:**
-- One account and one wallet across booking, finding players, fantasy and shopping.
+- **Everything football in one place:** book a pitch, play fantasy, follow fixtures and news, buy and sell, and talk in communities — one account, one wallet, one set of points. No competitor found does more than one or two of these.
 - "Find players" with online share payment held until the host accepts.
 - Egyptian and English Premier League fantasy in one place, with sponsor prizes (never cash).
 - Full partner tooling for venues (availability board, QR check-in, memberships, tournaments, forecasts, invoices with VAT).
@@ -65,7 +72,7 @@
 - Arabic-first, right-to-left, Egyptian prices and payment habits (cash at the pitch supported).
 **How we do it differently:** The real game, the fantasy game and the gear live in the same app and feed the same points and wallet.
 **Why that's better:** Fewer apps, less chasing, rewards for playing.
-**Why customers choose us:** **TBD** — collect after launch from real users.
+**Why customers choose us:** Because they can book a pitch, play fantasy, follow the fixtures and news, sell and buy, and talk in our communities, all from one place (team's positioning, 2026-10-17; replace with real user quotes after launch).
 
 ## Objections
 | Objection | Response |
@@ -120,7 +127,7 @@
 **Never use (and why):** Betting language (legal and trust risk); club crests or official kits (rights); "first fantasy" claims (false).
 
 ## Proof Points
-**Metrics:** **TBD** (pre-launch — no public numbers yet; label any sample numbers as examples).
+**Metrics:** None yet — the product has not launched. Never state user, venue or booking numbers until we have them; label any sample numbers as examples.
 **Customers:** **TBD**
 **Testimonials:** **TBD**
 **Value themes:**
@@ -131,9 +138,10 @@
 | Owner revenue | 30-day forecast and quiet-hour offers in the dashboard |
 
 ## Goals
-**Business goal:** Grow organically through content (no paid ads for a long period): players, partner venues and sellers.
-**Conversion action:** Player: first booking or joining a game. Owner: pitch listed. Seller: first design live.
-**Current metrics:** **TBD**
+**Stage:** Pre-launch. Content is being built to bring players, users, venues and sellers to the site at launch.
+**Business goal:** Grow organically through content (no paid ads for a long period): players, partner venues, sellers and factories.
+**Conversion action:** Pre-launch: follow + sign up for launch / venue and seller applications. After launch — player: first booking or joining a game; owner: pitch listed; seller: first design live.
+**Current metrics:** None yet (pre-launch).
 
 ## Paid Ads (optional)
 Not running paid ads for now.
@@ -142,9 +150,12 @@ Not running paid ads for now.
 *Decisions and tested lessons. Newest first. Keep it to about 20 active entries.*
 | Date | Learning | Evidence | Applies to | Status |
 |------|----------|----------|------------|--------|
+| 2026-10-17 | Lead with "all of football in one place", not with find-players or booking alone | Yalla Hagz already offers booking + Team Fillups/Solo Kickoffs; nobody found combines booking, fantasy, fixtures, news, community and shop | All positioning | Active |
+| 2026-10-17 | Venues and sellers before players | A marketplace with no pitches to book loses the first players | Launch plan | Active |
 | 2026-10-17 | Don't claim "first Egyptian league fantasy" | FilGoal fantasy has run since about 2020/21; independent apps exist | All fantasy content | Active |
 | 2026-10-17 | Content must read as human-made, not AI | Brand decision | All content | Active |
 
 ## Changelog
 *Newest first. One line per revision: what changed and why.*
+- v2 (2026-10-17) — Researched Egyptian competitors (Yalla Hagz, Courty, Tirtan, others); repositioned on "everything football in one place" incl. fixtures, news and communities; set stage to pre-launch with acquisition goals.
 - v1 (2026-10-17) — Initial context drafted from the codebase and the brand docs; competitors, proof points and metrics left TBD.
