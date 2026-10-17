@@ -9,7 +9,7 @@
 | Front end (all layers: site, partner, seller, studio, factory, admin, CEO, communities, legal, SEO) | Done — `docs/PLAN-*.md` |
 | Backend 1 — foundation (162 tables, seed, API base) | Done |
 | Backend 2 — accounts, 2FA, team, applications, approvals, site in API mode | Done |
-| Backend 3 — pitches & bookings | **In progress**: 3.1 pitches API, 3.2 hour grid, 3.3 bookings API, 3.1b site pitch pages and booking flow in API mode, 3.4a partner venues / pitches / blocked times, 3.4b partner bookings + Excel export, 3.4c photos / delete / admin pitch review, 3.4 partner side (API + dashboard in API mode) done; admin pitch review in API mode, 3.5a QR check-in done; next: 3.5b packages |
+| Backend 3 — pitches & bookings | **In progress**: 3.1 pitches API, 3.2 hour grid, 3.3 bookings API, 3.1b site pitch pages and booking flow in API mode, 3.4a partner venues / pitches / blocked times, 3.4b partner bookings + Excel export, 3.4c photos / delete / admin pitch review, 3.4 partner side (API + dashboard in API mode) done; admin pitch review in API mode, 3.5a QR check-in, 3.5b packages API done; next: 3.5c packages on the site and dashboard |
 | Backend 4–9 — shop & POD, money, fantasy & content, admin & CEO, hardening, launch | Planned — PRD §14 |
 
 **Resume point:** `docs/backend/PROGRESS.md` → first unticked item. The owner says «كمل».

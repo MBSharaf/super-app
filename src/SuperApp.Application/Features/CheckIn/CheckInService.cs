@@ -51,16 +51,20 @@ public sealed class CheckInService(
         if (await scans.ByKeyAsync(idempotencyKey, ct) is { } repeated)
         {
             var again = repeated.Code is null ? null : await scans.BookingAsync(repeated.Code, ct);
-            return Answer(repeated.Scan.Result, again);
+            return Answer(repeated.Scan.Result, again, MatchText(repeated.Scan.MatchNumber, repeated.MatchCount));
         }
         var code = string.IsNullOrWhiteSpace(request.Token) ? request.Code!.Trim().ToUpperInvariant() : qr.Read(request.Token.Trim());
+        if (code?.StartsWith("PK-", StringComparison.Ordinal) == true)
+        {
+            return await ScanPackageAsync(code, scope, request, idempotencyKey, ct);
+        }
         var target = code is null ? null : await scans.BookingAsync(code, ct);
         if (target is null)
         {
             return Answer(QrScanResult.BadSignature, null);
         }
         var result = Judge(target, scope, request.PitchId);
-        await RecordAsync(target, result, request, idempotencyKey, ct);
+        await RecordAsync(target, null, result, request, idempotencyKey, null, ct);
         return Answer(result, target);
     }
 
@@ -72,6 +76,53 @@ public sealed class CheckInService(
         var from = CairoTime.ToUtc(day.ToDateTime(TimeOnly.MinValue));
         return await scans.HistoryAsync(query.PitchId, from, from.AddDays(1), ct);
     }
+
+    /// <summary>One QR for a whole package: finds today's match, checks it in and counts it.</summary>
+    private async Task<ScanResultDto> ScanPackageAsync(string code, PartnerScope scope, ScanRequest request, string key, CancellationToken ct)
+    {
+        var t = await scans.PackageAsync(code, ct);
+        if (t is null)
+        {
+            return Answer(QrScanResult.BadSignature, null);
+        }
+        var (result, match) = JudgePackage(t, scope, request.PitchId);
+        var number = match is null ? (int?)null : t.Matches.Where(Live).ToList().IndexOf(match) + 1;
+        if (result == QrScanResult.Accepted)
+        {
+            t.Package.UsedCount++;
+            t.Package.Status = t.Package.UsedCount >= t.Package.MatchCount ? PackageStatus.Finished : t.Package.Status;
+        }
+        var target = match is null ? null : new ScanTarget(match, t.PartnerId, t.PitchName, t.CustomerName, t.CustomerBlocked);
+        await RecordAsync(target, t.Package.Id, result, request with { PitchId = request.PitchId ?? t.Package.PitchId }, key, (byte?)number, ct);
+        var answer = Answer(result, target, MatchText(number, t.Package.MatchCount));
+        return answer with { Code = answer.Code ?? t.Package.Code, CustomerName = t.CustomerName, PitchName = t.PitchName };
+    }
+
+    private (QrScanResult Result, Booking? Match) JudgePackage(PackageTarget t, PartnerScope scope, long? pitchId)
+    {
+        var p = t.Package;
+        if (t.PartnerId != scope.PartnerId || (pitchId is not null && p.PitchId != pitchId)) { return (QrScanResult.OtherVenue, null); }
+        if (p.Status is PackageStatus.Cancelled) { return (QrScanResult.Cancelled, null); }
+        if (t.CustomerBlocked) { return (QrScanResult.AccountBlocked, null); }
+        if (p.Status is PackageStatus.Finished or PackageStatus.Expired || p.UsedCount >= p.MatchCount) { return (QrScanResult.PackageFinished, null); }
+        var now = CairoTime.Now(clock);
+        var live = t.Matches.Where(Live).ToList();
+        var current = live.FirstOrDefault(b => InWindow(b, now));
+        if (current is not null)
+        {
+            return (current.Status is BookingStatus.CheckedIn or BookingStatus.Played ? QrScanResult.AlreadyUsed : QrScanResult.Accepted, current);
+        }
+        var today = live.FirstOrDefault(b => b.Date == DateOnly.FromDateTime(now));
+        return today is not null ? (QrScanResult.WrongHour, today) : (QrScanResult.WrongDay, live.FirstOrDefault(b => Start(b) > now));
+    }
+
+    private static bool Live(Booking b) => b.Status is not (BookingStatus.CancelledByCustomer or BookingStatus.CancelledByVenue);
+
+    private static DateTime Start(Booking b) => b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
+
+    private static bool InWindow(Booking b, DateTime now) => now >= Start(b) - EarlyWindow && now < Start(b).AddHours(b.Duration);
+
+    private static string? MatchText(int? number, int? count) => number is null || count is null ? null : $"{number} of {count}";
 
     /// <summary>The rules, in the order the staff should hear them.</summary>
     private QrScanResult Judge(ScanTarget t, PartnerScope scope, long? pitchId)
@@ -89,33 +140,33 @@ public sealed class CheckInService(
         return day ? QrScanResult.WrongHour : QrScanResult.WrongDay;
     }
 
-    private async Task RecordAsync(ScanTarget t, QrScanResult result, ScanRequest request, string key, CancellationToken ct)
+    private async Task RecordAsync(ScanTarget? t, long? packageId, QrScanResult result, ScanRequest request, string key, byte? matchNumber, CancellationToken ct)
     {
         var me = currentUser.UserId ?? throw new UnauthorizedException();
-        if (result == QrScanResult.Accepted)
+        if (result == QrScanResult.Accepted && t is not null)
         {
             t.Booking.Status = BookingStatus.CheckedIn;
             t.Booking.CheckedInAt = clock.UtcNow;
         }
         scans.Add(new QrScan
         {
-            BookingId = t.Booking.Id, PitchId = request.PitchId ?? t.Booking.PitchId, ScannedById = me, ScannedAt = clock.UtcNow, Result = result,
-            Device = request.Device?.Trim() is { Length: > 0 } d ? d[..Math.Min(d.Length, 100)] : null, IdempotencyKey = key,
+            BookingId = t?.Booking.Id, PackageId = packageId, PitchId = request.PitchId ?? t!.Booking.PitchId, ScannedById = me, ScannedAt = clock.UtcNow,
+            Result = result, MatchNumber = matchNumber, Device = request.Device?.Trim() is { Length: > 0 } d ? d[..Math.Min(d.Length, 100)] : null, IdempotencyKey = key,
         });
         await unitOfWork.SaveChangesAsync(ct);
-        if (result == QrScanResult.Accepted && t.Booking.CustomerId is { } customer)
+        if (result == QrScanResult.Accepted && t?.Booking.CustomerId is { } customer)
         {
             await notifier.NotifyUserAsync(customer, new NotificationMessage(NotificationCategory.Bookings, $"Checked in at {t.PitchName}",
                 $"{t.Booking.Code} · have a great game!", $"#/booking/{t.Booking.Code}", NotificationTone.Success), ct);
         }
     }
 
-    private static ScanResultDto Answer(QrScanResult result, ScanTarget? t)
+    private static ScanResultDto Answer(QrScanResult result, ScanTarget? t, string? match = null)
     {
         var b = t?.Booking;
         var (reason, message) = Reasons[result];
-        return new ScanResultDto(result == QrScanResult.Accepted ? "accepted" : "rejected", reason, message,
-            b?.Code, t?.CustomerName, t?.PitchName, b?.Date, b?.StartHour, b?.Duration, null);
+        return new ScanResultDto(result == QrScanResult.Accepted ? "accepted" : "rejected", reason, match is null ? message : $"{message} Match {match}.",
+            b?.Code, t?.CustomerName, t?.PitchName, b?.Date, b?.StartHour, b?.Duration, match);
     }
 
     private static readonly Dictionary<QrScanResult, (string? Reason, string Message)> Reasons = new()

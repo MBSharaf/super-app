@@ -134,6 +134,24 @@ X-CSRF-TOKEN: {{csrf}}
 
 { "reason": "Floodlights repair" }
 
+### Check-in: scan a QR token or a typed booking / package code (new Idempotency-Key each scan)
+POST {{api}}/check-in/scan
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+Idempotency-Key: scan-0001
+
+{ "code": "SA-XXXXXXXX", "pitchId": null, "device": "Front desk" }
+
+### Packages: quote (public)
+GET {{api}}/packages/quote?pitchSlug=zayed-22&optionId=1&startsOn=2026-11-05&hour=20&duration=1
+
+### Packages: buy
+POST {{api}}/packages
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "pitchSlug": "zayed-22", "optionId": 1, "startsOn": "2026-11-05", "hour": 20, "duration": 1, "acceptWaiver": true }
+
 ### Sign out
 POST {{api}}/auth/sign-out
 X-CSRF-TOKEN: {{csrf}}

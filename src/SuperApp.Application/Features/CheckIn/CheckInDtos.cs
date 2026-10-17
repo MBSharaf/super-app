@@ -33,12 +33,17 @@ public sealed record CheckInHistoryQuery(long PitchId, DateOnly? Date = null);
 /// <summary>What a scan needs about a booking (tracked for changes).</summary>
 public sealed record ScanTarget(Booking Booking, long PartnerId, string PitchName, string CustomerName, bool CustomerBlocked);
 
+/// <summary>What a package scan needs: the package and its matches in date order (tracked for changes).</summary>
+public sealed record PackageTarget(Package Package, long PartnerId, string PitchName, string CustomerName, bool CustomerBlocked, IReadOnlyList<Booking> Matches);
+
 public interface ICheckInRepository
 {
-    /// <summary>The scan already recorded with this key (a repeated request), with its booking code.</summary>
-    Task<(QrScan Scan, string? Code)?> ByKeyAsync(string idempotencyKey, CancellationToken ct);
+    /// <summary>The scan already recorded with this key (a repeated request), with its match's booking code and the package size.</summary>
+    Task<(QrScan Scan, string? Code, int? MatchCount)?> ByKeyAsync(string idempotencyKey, CancellationToken ct);
 
     Task<ScanTarget?> BookingAsync(string code, CancellationToken ct);
+
+    Task<PackageTarget?> PackageAsync(string code, CancellationToken ct);
 
     void Add(QrScan scan);
 

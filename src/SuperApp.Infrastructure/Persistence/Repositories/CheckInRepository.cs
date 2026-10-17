@@ -8,11 +8,26 @@ namespace SuperApp.Infrastructure.Persistence.Repositories;
 /// <summary>QR scans and the bookings they check in. The unique Idempotency-Key index stops a scan being stored twice.</summary>
 public sealed class CheckInRepository(AppDbContext db) : ICheckInRepository
 {
-    public async Task<(QrScan Scan, string? Code)?> ByKeyAsync(string idempotencyKey, CancellationToken ct)
+    public async Task<(QrScan Scan, string? Code, int? MatchCount)?> ByKeyAsync(string idempotencyKey, CancellationToken ct)
     {
         var row = await db.Set<QrScan>().AsNoTracking().Where(s => s.IdempotencyKey == idempotencyKey)
-            .Select(s => new { Scan = s, Code = s.Booking != null ? s.Booking.Code : null }).FirstOrDefaultAsync(ct);
-        return row is null ? null : (row.Scan, row.Code);
+            .Select(s => new { Scan = s, Code = s.Booking != null ? s.Booking.Code : null, Count = s.Package != null ? (int?)s.Package.MatchCount : null })
+            .FirstOrDefaultAsync(ct);
+        return row is null ? null : (row.Scan, row.Code, row.Count);
+    }
+
+    public async Task<PackageTarget?> PackageAsync(string code, CancellationToken ct)
+    {
+        var package = await db.Set<Package>().FirstOrDefaultAsync(p => p.Code == code, ct);
+        if (package is null)
+        {
+            return null;
+        }
+        var info = await db.Set<Package>().IgnoreQueryFilters().Where(p => p.Id == package.Id)
+            .Select(p => new { p.Pitch.Venue.PartnerId, PitchName = p.Pitch.Name, p.Customer.FullName, Blocked = p.Customer.Status != UserStatus.Active })
+            .SingleAsync(ct);
+        var matches = await db.Set<Booking>().Where(b => b.PackageId == package.Id).OrderBy(b => b.Date).ThenBy(b => b.StartHour).ToListAsync(ct);
+        return new PackageTarget(package, info.PartnerId, info.PitchName, info.FullName, info.Blocked, matches);
     }
 
     public async Task<ScanTarget?> BookingAsync(string code, CancellationToken ct)

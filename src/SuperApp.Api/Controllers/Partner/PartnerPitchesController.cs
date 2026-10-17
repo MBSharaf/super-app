@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SuperApp.Api.Security;
 using SuperApp.Application.Abstractions.Storage;
+using SuperApp.Application.Features.Packages;
 using SuperApp.Application.Features.Partners;
 
 namespace SuperApp.Api.Controllers.Partner;
@@ -19,7 +20,8 @@ public sealed class PartnerPitchesController(
     IPartnerClosuresService closures,
     IPartnerPhotosService photos,
     IPartnerPitchRemovalService removal,
-    IPartnerAccess access) : ApiControllerBase
+    IPartnerAccess access,
+    IPackageOptionsService packageOptions) : ApiControllerBase
 {
     private const long MaxUpload = 30 * 1024 * 1024;
 
@@ -85,6 +87,15 @@ public sealed class PartnerPitchesController(
     [HttpPut("pitches/{id:long}/photos/order")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> OrderPhotos(long id, PhotoOrderRequest request, CancellationToken ct) => Ok(await photos.OrderAsync(id, request, ct), "Order saved.");
+
+    [HttpGet("pitches/{id:long}/package-options")]
+    public async Task<ActionResult<object>> PackageOptions(long id, CancellationToken ct) => Ok(await packageOptions.ListAsync(id, ct));
+
+    /// <summary>The whole list of sizes; new or changed ones wait for approval. Over the CEO maximum → 422 discount_over_max.</summary>
+    [HttpPut("pitches/{id:long}/package-options")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> SavePackageOptions(long id, PackageOptionsRequest request, CancellationToken ct) =>
+        Ok(await packageOptions.SaveAsync(id, request, ct), "Saved. New discounts go live after approval.");
 
     [HttpGet("pitches/{id:long}/closures")]
     public async Task<ActionResult<object>> Closures(long id, CancellationToken ct) => Ok(await closures.ListAsync(id, ct));

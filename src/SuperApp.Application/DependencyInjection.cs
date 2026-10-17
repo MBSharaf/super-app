@@ -6,6 +6,7 @@ using SuperApp.Application.Features.Bookings;
 using SuperApp.Application.Features.Ceo.Services;
 using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Files;
+using SuperApp.Application.Features.Packages;
 using SuperApp.Application.Features.Partners;
 using SuperApp.Application.Features.Pitches;
 
@@ -40,6 +41,8 @@ public static class DependencyInjection
         services.AddScoped<IPitchReviewsService, PitchReviewsService>();
         services.AddScoped<IPartnerStaffService, PartnerStaffService>();
         services.AddScoped<ICheckInService, CheckInService>();
+        services.AddScoped<IPackageOptionsService, PackageOptionsService>();
+        services.AddScoped<IPackagesService, PackagesService>();
         return services;
     }
 }
