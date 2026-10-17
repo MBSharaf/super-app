@@ -18,7 +18,7 @@ public static class CookieAuthSetup
     {
         services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
         services.ConfigureApplicationCookie(ConfigureCookie);
-        services.AddAuthorization();
+        services.AddSuperAppAuthorization();
         services.AddAntiforgery(o =>
         {
             o.HeaderName = CsrfHeader;

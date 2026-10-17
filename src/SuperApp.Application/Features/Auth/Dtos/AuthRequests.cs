@@ -20,3 +20,6 @@ public sealed record ChangePasswordRequest(string CurrentPassword, string NewPas
 
 /// <summary>PATCH /me — only the fields that are sent change.</summary>
 public sealed record UpdateMeRequest(string? FullName, string? Phone, string? Language);
+
+/// <summary>POST /auth/accept-invite — a new admin chooses their first password from the invitation link.</summary>
+public sealed record AcceptInviteRequest(Guid UserId, string Token, string Password);

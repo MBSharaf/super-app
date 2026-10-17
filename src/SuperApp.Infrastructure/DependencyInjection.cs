@@ -45,6 +45,7 @@ public static class DependencyInjection
             .AddSignInManager()
             .AddDefaultTokenProviders()
             .AddTokenProvider<EmailConfirmationTokenProvider>(SessionRules.EmailConfirmationProvider)
+            .AddTokenProvider<InviteTokenProvider>(StaffStore.InviteProvider)
             .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>();
         services.AddSessionRules();
         services.AddAccountServices();
@@ -59,6 +60,8 @@ public static class DependencyInjection
         services.AddScoped<PermissionReader>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<ITwoFactorService, TwoFactorService>();
+        services.AddScoped<IStaffStore, StaffStore>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IEmailTransport, FileEmailTransport>();
         services.AddScoped<IAuditLogger, AuditLogger>();

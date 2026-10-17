@@ -26,7 +26,7 @@ public sealed class MeService(IIdentityService identity, ISessionService session
     {
         var p = await identity.GetProfileAsync(userId, ct);
         return new MeResponse(p.Id, p.FullName, p.Email, p.EmailConfirmed, p.Phone, p.Language, p.Roles, p.Permissions,
-            Dashboards(p.Roles, p.Permissions), p.TwoFactorEnabled, p.CreatedAt);
+            Dashboards(p.Roles, p.Permissions), p.TwoFactorEnabled, p.Permissions.Count > 0 && !p.TwoFactorEnabled, p.CreatedAt);
     }
 
     public Task<MeResponse> GetCurrentAsync(CancellationToken ct) => GetAsync(Me(), ct);

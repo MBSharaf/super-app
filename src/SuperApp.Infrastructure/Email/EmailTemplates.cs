@@ -20,6 +20,10 @@ public static class EmailTemplates
             ["Hi {name},", "Someone asked to reset the password of your Super App account. If it was you, use the button below.", "The link works for 30 minutes. If you did not ask for this, ignore this email — your password stays the same."], "Choose a new password"),
         [("reset-password", "ar")] = new("تغيير الباسورد — Super App",
             ["أهلاً {name}،", "فيه طلب لتغيير باسورد حسابك على Super App. لو إنت اللي طلبت، دوس على الزرار.", "اللينك شغال نص ساعة بس. لو ماطلبتش ده، تجاهل الإيميل والباسورد هيفضل زي ما هو."], "اختار باسورد جديد"),
+        [("admin-invite", "en")] = new("You are invited to the Super App team",
+            ["Hi {name},", "The CEO added you to the Super App team as: {roles}.", "Choose your password with the button below. At your first sign-in you will set up an authenticator app (Google or Microsoft Authenticator) — it is required for every team account.", "The invitation works for 7 days."], "Accept the invitation"),
+        [("admin-invite", "ar")] = new("دعوة لفريق Super App",
+            ["أهلاً {name}،", "المدير التنفيذي ضافك لفريق Super App بدور: {roles}.", "اختار الباسورد بتاعك من الزرار تحت. أول ما تدخل هتفعّل تطبيق التحقق (Google أو Microsoft Authenticator)، وده إجباري لكل حسابات الفريق.", "الدعوة شغالة 7 أيام."], "قبول الدعوة"),
     };
 
     /// <summary>Adds templates from other features (admin invitations, application decisions…).</summary>

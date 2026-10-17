@@ -68,3 +68,13 @@ public sealed class UpdateMeRequestValidator : AbstractValidator<UpdateMeRequest
         RuleFor(x => x.Language!).Language().When(x => x.Language is not null);
     }
 }
+
+public sealed class AcceptInviteRequestValidator : AbstractValidator<AcceptInviteRequest>
+{
+    public AcceptInviteRequestValidator()
+    {
+        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.Token).NotEmpty().MaximumLength(2000);
+        RuleFor(x => x.Password).NewPassword();
+    }
+}

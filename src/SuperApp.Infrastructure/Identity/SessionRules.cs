@@ -26,6 +26,7 @@ public static class SessionRules
         });
         services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromMinutes(30));
         services.Configure<EmailConfirmationTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(2));
+        services.Configure<InviteTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(7));
         services.Configure<IdentityOptions>(o => o.Tokens.EmailConfirmationTokenProvider = EmailConfirmationProvider);
         return services;
     }
@@ -69,5 +70,17 @@ public sealed class EmailConfirmationTokenProviderOptions : DataProtectionTokenP
 public sealed class EmailConfirmationTokenProvider(
     Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection,
     Microsoft.Extensions.Options.IOptions<EmailConfirmationTokenProviderOptions> options,
+    Microsoft.Extensions.Logging.ILogger<DataProtectorTokenProvider<User>> logger)
+    : DataProtectorTokenProvider<User>(dataProtection, options, logger);
+
+/// <summary>Admin invitations last 7 days.</summary>
+public sealed class InviteTokenProviderOptions : DataProtectionTokenProviderOptions
+{
+    public InviteTokenProviderOptions() => Name = StaffStore.InviteProvider;
+}
+
+public sealed class InviteTokenProvider(
+    Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection,
+    Microsoft.Extensions.Options.IOptions<InviteTokenProviderOptions> options,
     Microsoft.Extensions.Logging.ILogger<DataProtectorTokenProvider<User>> logger)
     : DataProtectorTokenProvider<User>(dataProtection, options, logger);

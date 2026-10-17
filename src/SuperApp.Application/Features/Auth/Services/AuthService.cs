@@ -17,6 +17,7 @@ namespace SuperApp.Application.Features.Auth.Services;
 /// </summary>
 public sealed class AuthService(
     IIdentityService identity,
+    IStaffStore staff,
     ISessionService session,
     IMeService me,
     IEmailService email,
@@ -97,6 +98,12 @@ public sealed class AuthService(
         await identity.ResetPasswordAsync(request.UserId, request.Token, request.NewPassword);
         await session.SignOutEverywhereAsync(request.UserId);
         await audit.LogAsync(AuditSystem.Site, "account.password_reset", "Password reset by email link", "User", request.UserId.ToString(), ct: ct);
+    }
+
+    public async Task AcceptInviteAsync(AcceptInviteRequest request, CancellationToken ct)
+    {
+        await staff.AcceptInviteAsync(request.UserId, request.Token, request.Password);
+        await audit.LogAsync(AuditSystem.Admin, "admin.invite_accepted", "Invitation accepted, password chosen", "User", request.UserId.ToString(), ct: ct);
     }
 
     private async Task SendConfirmationAsync(Guid userId, CancellationToken ct)

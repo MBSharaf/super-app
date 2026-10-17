@@ -79,4 +79,12 @@ public sealed class AuthController(IAuthService auth, IAntiforgery antiforgery) 
         await auth.ResetPasswordAsync(request, ct);
         return Ok(new { reset = true }, "Your password is changed. Sign in with the new one.");
     }
+
+    /// <summary>A new admin chooses the first password; next comes sign-in and the authenticator setup.</summary>
+    [HttpPost("accept-invite")]
+    public async Task<ActionResult<object>> AcceptInvite(AcceptInviteRequest request, CancellationToken ct)
+    {
+        await auth.AcceptInviteAsync(request, ct);
+        return Ok(new { accepted = true }, "Your password is set. Sign in and set up your authenticator app.");
+    }
 }

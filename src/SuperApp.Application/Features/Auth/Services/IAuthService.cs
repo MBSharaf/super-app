@@ -20,4 +20,6 @@ public interface IAuthService
     Task ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken ct);
 
     Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct);
+
+    Task AcceptInviteAsync(AcceptInviteRequest request, CancellationToken ct);
 }
