@@ -24,6 +24,14 @@ public static class EmailTemplates
             ["Hi {name},", "The CEO added you to the Super App team as: {roles}.", "Choose your password with the button below. At your first sign-in you will set up an authenticator app (Google or Microsoft Authenticator) — it is required for every team account.", "The invitation works for 7 days."], "Accept the invitation"),
         [("admin-invite", "ar")] = new("دعوة لفريق Super App",
             ["أهلاً {name}،", "المدير التنفيذي ضافك لفريق Super App بدور: {roles}.", "اختار الباسورد بتاعك من الزرار تحت. أول ما تدخل هتفعّل تطبيق التحقق (Google أو Microsoft Authenticator)، وده إجباري لكل حسابات الفريق.", "الدعوة شغالة 7 أيام."], "قبول الدعوة"),
+        [("application-approved", "en")] = new("You are now a Super App {kind}!",
+            ["Hi {name},", "Good news — your {kind} application ({code}) is approved.", "Open Super App and go to your profile: your new dashboard is ready."], null),
+        [("application-approved", "ar")] = new("مبروك! حسابك اتفعّل على Super App",
+            ["أهلاً {name}،", "خبر حلو — طلبك ({code}) اتقبل.", "افتح Super App وادخل على البروفايل بتاعك، هتلاقي لوحة التحكم الجديدة جاهزة."], null),
+        [("application-rejected", "en")] = new("Your Super App application needs changes",
+            ["Hi {name},", "We could not approve your {kind} application ({code}) yet.", "Reason: {reason}", "Fix it and send it again from your profile — we review it again within 2 working days."], null),
+        [("application-rejected", "ar")] = new("طلبك على Super App محتاج تعديل",
+            ["أهلاً {name}،", "لسه مقدرناش نقبل طلبك ({code}).", "السبب: {reason}", "عدّل الطلب وابعته تاني من البروفايل بتاعك، وهنراجعه تاني خلال يومين شغل."], null),
     };
 
     /// <summary>Adds templates from other features (admin invitations, application decisions…).</summary>

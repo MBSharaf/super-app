@@ -6,8 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Abstractions.Email;
 using SuperApp.Application.Abstractions.Identity;
+using SuperApp.Application.Abstractions.Notifications;
 using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
+using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Infrastructure.Email;
 using SuperApp.Infrastructure.Identity;
@@ -16,6 +18,7 @@ using SuperApp.Infrastructure.Persistence.Repositories;
 using SuperApp.Infrastructure.Persistence.Interceptors;
 using SuperApp.Infrastructure.Persistence.Seed;
 using SuperApp.Infrastructure.Services;
+using SuperApp.Infrastructure.Storage;
 
 namespace SuperApp.Infrastructure;
 
@@ -67,6 +70,11 @@ public static class DependencyInjection
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<ILegalRepository, LegalRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        services.AddScoped<IOnboardingRepository, OnboardingRepository>();
+        services.AddScoped<IFileStorage, LocalFileStorage>();
+        services.AddScoped<IFeatureFlags, FeatureFlags>();
+        services.AddScoped<INotifier, Notifier>();
         return services;
     }
 

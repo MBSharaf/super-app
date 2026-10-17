@@ -14,8 +14,8 @@ namespace SuperApp.Infrastructure.Identity;
 
 /// <summary>
 /// Team accounts in the database. An "admin" is a person (not an AI agent, not the CEO) who holds an admin role
-/// or a direct permission. Every change that affects access updates the security stamp, so the session refreshes
-/// within a minute.
+/// or a direct permission. Role and permission changes reach open sessions at their next refresh (within a minute);
+/// suspension changes the security stamp, which ends every open session.
 /// </summary>
 public sealed class StaffStore(AppDbContext db, UserManager<User> users, RoleManager<Role> roleManager, PermissionReader permissions, IClock clock) : IStaffStore
 {
@@ -73,7 +73,6 @@ public sealed class StaffStore(AppDbContext db, UserManager<User> users, RoleMan
         var current = (await users.GetRolesAsync(user)).Where(AdminRoles.Allowed.Contains).ToList();
         IdentityErrors.Check(await users.RemoveFromRolesAsync(user, current.Except(roles)), "roles");
         IdentityErrors.Check(await users.AddToRolesAsync(user, roles.Except(current)), "roles");
-        await users.UpdateSecurityStampAsync(user);
     }
 
     public async Task SetDirectPermissionsAsync(Guid userId, IReadOnlyList<string> codes, DateTime? expiresAt, Guid grantedBy, CancellationToken ct)
@@ -83,7 +82,6 @@ public sealed class StaffStore(AppDbContext db, UserManager<User> users, RoleMan
         var ids = await db.Set<Permission>().Where(p => codes.Contains(p.Code)).Select(p => p.Id).ToListAsync(ct);
         db.Set<UserPermission>().AddRange(ids.Select(id => new UserPermission { UserId = userId, PermissionId = id, GrantedById = grantedBy, ExpiresAt = expiresAt }));
         await db.SaveChangesAsync(ct);
-        await users.UpdateSecurityStampAsync(await RequireAsync(userId));
     }
 
     public async Task SetLimitsAsync(Guid userId, StaffLimitsDto limits, CancellationToken ct)

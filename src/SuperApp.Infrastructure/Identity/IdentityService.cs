@@ -108,6 +108,15 @@ public sealed class IdentityService(UserManager<User> users, AppDbContext db, Pe
         IdentityErrors.Check(await users.UpdateAsync(user));
     }
 
+    public async Task AddRoleAsync(Guid userId, string role)
+    {
+        var user = await RequireAsync(userId);
+        if (!await users.IsInRoleAsync(user, role))
+        {
+            IdentityErrors.Check(await users.AddToRoleAsync(user, role));
+        }
+    }
+
     private async Task EnsureFreeAsync(string? email, string? phone, Guid? self, CancellationToken ct)
     {
         if (email is not null && await users.FindByEmailAsync(email) is not null)

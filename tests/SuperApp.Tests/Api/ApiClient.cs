@@ -8,6 +8,8 @@ namespace SuperApp.Tests.Api;
 /// <summary>Small helper around HttpClient that sends the CSRF header and reads the unified response.</summary>
 public sealed class ApiClient(HttpClient http)
 {
+    private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
+
     public HttpClient Http => http;
 
     public async Task RefreshCsrfAsync()
@@ -34,6 +36,34 @@ public sealed class ApiClient(HttpClient http)
     {
         var response = await http.GetAsync(path);
         return (response.StatusCode, await ReadAsync(response));
+    }
+
+    /// <summary>Sends a multipart form: <c>answers</c> as JSON plus files (field name → file name and bytes).</summary>
+    public async Task<(HttpStatusCode Status, JsonElement Body)> PostFormAsync(string path, object answers, params (string Field, string Name, byte[] Bytes)[] files) =>
+        await SendFormAsync(HttpMethod.Post, path, answers, files);
+
+    public async Task<(HttpStatusCode Status, JsonElement Body)> SendFormAsync(HttpMethod method, string path, object answers, params (string Field, string Name, byte[] Bytes)[] files)
+    {
+        using var form = new MultipartFormDataContent { { new StringContent(JsonSerializer.Serialize(answers, WebJson)), "answers" } };
+        foreach (var (field, name, bytes) in files)
+        {
+            form.Add(new ByteArrayContent(bytes), field, name);
+        }
+        using var request = new HttpRequestMessage(method, path) { Content = form };
+        var response = await http.SendAsync(request);
+        return (response.StatusCode, await ReadAsync(response));
+    }
+
+    /// <summary>Sets up the authenticator for this session and returns its key.</summary>
+    public async Task<string> EnableTwoFactorAsync()
+    {
+        var setup = await PostAsync("/api/v1/auth/2fa/setup");
+        setup.Status.ShouldBe(HttpStatusCode.OK, setup.Body.ToString());
+        var key = setup.Body.GetProperty("data").GetProperty("sharedKey").GetString()!;
+        var enable = await PostAsync("/api/v1/auth/2fa/enable", new { code = Totp.Code(key) });
+        enable.Status.ShouldBe(HttpStatusCode.OK, enable.Body.ToString());
+        await RefreshCsrfAsync();
+        return key;
     }
 
     /// <summary>Signs in and refreshes the CSRF token (it is tied to the signed-in person).</summary>

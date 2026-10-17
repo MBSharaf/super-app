@@ -9,46 +9,7 @@ namespace SuperApp.Tests.Api;
 [Trait("Category", "Database")]
 public sealed class TeamTests(AccountsApiFactory api) : IClassFixture<AccountsApiFactory>
 {
-    private static readonly SemaphoreSlim CeoSetup = new(1, 1);
-    private static readonly Dictionary<AccountsApiFactory, string> CeoKeys = [];
-
-    /// <summary>A CEO session that passed 2FA (sets the authenticator up the first time).</summary>
-    private async Task<ApiClient> CeoAsync()
-    {
-        var client = await api.ClientAsync();
-        var signIn = await client.SignInAsync(AccountsApiFactory.CeoEmail, AccountsApiFactory.CeoPassword);
-        await CeoSetup.WaitAsync();
-        try
-        {
-            if (signIn.Data().GetProperty("requires2fa").GetBoolean())
-            {
-                (await client.PostAsync("/api/v1/auth/2fa/verify", new { code = Totp.Code(CeoKeys[api]) })).Status.ShouldBe(HttpStatusCode.OK);
-            }
-            else
-            {
-                CeoKeys[api] = await EnableTwoFactorAsync(client);
-            }
-        }
-        finally
-        {
-            CeoSetup.Release();
-        }
-        await client.RefreshCsrfAsync();
-        return client;
-    }
-
-    private static async Task<string> EnableTwoFactorAsync(ApiClient client)
-    {
-        var setup = await client.PostAsync("/api/v1/auth/2fa/setup");
-        setup.Status.ShouldBe(HttpStatusCode.OK, setup.Body.ToString());
-        var key = setup.Body.Data().GetProperty("sharedKey").GetString()!;
-        setup.Body.Data().GetProperty("qrSvg").GetString()!.ShouldStartWith("<svg");
-        var enable = await client.PostAsync("/api/v1/auth/2fa/enable", new { code = Totp.Code(key) });
-        enable.Status.ShouldBe(HttpStatusCode.OK, enable.Body.ToString());
-        enable.Body.Data().GetProperty("recoveryCodes").GetArrayLength().ShouldBe(10);
-        await client.RefreshCsrfAsync();
-        return key;
-    }
+    private Task<ApiClient> CeoAsync() => api.CeoAsync();
 
     private static async Task<(Guid Id, string Email)> InviteAdminAsync(ApiClient ceo, string[] roles)
     {
@@ -198,7 +159,7 @@ public sealed class TeamTests(AccountsApiFactory api) : IClassFixture<AccountsAp
     public async Task Team_accounts_cannot_turn_2fa_off_and_the_ceo_sees_roles_and_permissions()
     {
         var ceo = await CeoAsync();
-        var off = await ceo.PostAsync("/api/v1/auth/2fa/disable", new { code = Totp.Code(CeoKeys[api]) });
+        var off = await ceo.PostAsync("/api/v1/auth/2fa/disable", new { code = Totp.Code(api.CeoKey!) });
         off.Status.ShouldBe(HttpStatusCode.Forbidden);
         off.Body.Code().ShouldBe("2fa_required_for_staff");
 
@@ -210,7 +171,7 @@ public sealed class TeamTests(AccountsApiFactory api) : IClassFixture<AccountsAp
     private async Task<List<string>> NewRecoveryCodesAsync()
     {
         var ceo = await CeoAsync();
-        var body = (await ceo.PostAsync("/api/v1/auth/2fa/recovery-codes", new { code = Totp.Code(CeoKeys[api]) })).Body;
+        var body = (await ceo.PostAsync("/api/v1/auth/2fa/recovery-codes", new { code = Totp.Code(api.CeoKey!) })).Body;
         return body.Data().GetProperty("recoveryCodes").EnumerateArray().Select(c => c.GetString()!).ToList();
     }
 }

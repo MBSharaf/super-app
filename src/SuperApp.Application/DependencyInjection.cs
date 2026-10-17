@@ -1,7 +1,9 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using SuperApp.Application.Features.Applications.Services;
 using SuperApp.Application.Features.Auth.Services;
 using SuperApp.Application.Features.Ceo.Services;
+using SuperApp.Application.Features.Files;
 
 namespace SuperApp.Application;
 
@@ -10,10 +12,15 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        // Stop at the first failed rule of a field: no "too short" after "missing", and no rule runs on an empty value
+        ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IMeService, MeService>();
         services.AddScoped<IAdminAccountsService, AdminAccountsService>();
+        services.AddScoped<IApplicationsService, ApplicationsService>();
+        services.AddScoped<IApprovalsService, ApprovalsService>();
+        services.AddScoped<IFilesService, FilesService>();
         return services;
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shouldly;
 using SuperApp.Infrastructure.Email;
 using SuperApp.Infrastructure.Persistence;
 using SuperApp.Infrastructure.Persistence.Seed;
@@ -23,7 +24,12 @@ public sealed class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncL
     public const string CeoPassword = "Ceo-test-2026";
     private readonly string database = $"SuperApp_ApiTest_{Guid.NewGuid():N}";
 
+    private readonly SemaphoreSlim ceoSetup = new(1, 1);
+
     public CapturingEmailTransport Emails { get; } = new();
+
+    /// <summary>The CEO's authenticator key once 2FA is set up (by the first <see cref="CeoAsync"/>).</summary>
+    public string? CeoKey { get; private set; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -35,6 +41,8 @@ public sealed class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("Seed:DemoData", "false");
         builder.UseSetting("RateLimits:Auth", "1000");
         builder.UseSetting("RateLimits:Write", "1000");
+        builder.UseSetting("RateLimits:Upload", "1000");
+        builder.UseSetting("Storage:Local_Root", Path.Combine(Path.GetTempPath(), "superapp-test-storage", database));
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<IEmailTransport>(Emails);
@@ -58,6 +66,38 @@ public sealed class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncL
         var client = new ApiClient(http);
         await client.RefreshCsrfAsync();
         return client;
+    }
+
+    /// <summary>A CEO session that passed 2FA (sets the authenticator up the first time).</summary>
+    public async Task<ApiClient> CeoAsync()
+    {
+        var client = await ClientAsync();
+        var signIn = await client.SignInAsync(CeoEmail, CeoPassword);
+        await ceoSetup.WaitAsync();
+        try
+        {
+            if (signIn.GetProperty("data").GetProperty("requires2fa").GetBoolean())
+            {
+                (await client.PostAsync("/api/v1/auth/2fa/verify", new { code = Totp.Code(CeoKey!) })).Status.ShouldBe(HttpStatusCode.OK);
+            }
+            else
+            {
+                CeoKey = await client.EnableTwoFactorAsync();
+            }
+        }
+        finally
+        {
+            ceoSetup.Release();
+        }
+        await client.RefreshCsrfAsync();
+        return client;
+    }
+
+    /// <summary>Runs code against the test database (to check rows or flip a switch).</summary>
+    public async Task<T> DbAsync<T>(Func<AppDbContext, Task<T>> work)
+    {
+        using var scope = Services.CreateScope();
+        return await work(scope.ServiceProvider.GetRequiredService<AppDbContext>());
     }
 
     public Task InitializeAsync() => Task.CompletedTask;

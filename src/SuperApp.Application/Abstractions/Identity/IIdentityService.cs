@@ -26,4 +26,7 @@ public interface IIdentityService
     Task<ProfileData> GetProfileAsync(Guid userId, CancellationToken ct);
 
     Task UpdateProfileAsync(Guid userId, string? fullName, string? phone, string? language, CancellationToken ct);
+
+    /// <summary>Adds a role (e.g. PitchOwner after approval); the open session picks it up at its next refresh (within a minute).</summary>
+    Task AddRoleAsync(Guid userId, string role);
 }
