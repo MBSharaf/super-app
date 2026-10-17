@@ -218,6 +218,14 @@
     ...page,
     title: page.title || 'Partner dashboard — Super App',
     async render(ctx) {
+      // API mode: the admin console needs a real team account (a demo session left in the browser does not count)
+      if (isAdminUI() && D().me()) {
+        await SA.services.api.ready;
+        if (SA.services.api.isLive()) {
+          if (!SA.services.session.loaded()) await SA.services.session.load();
+          if (!SA.services.session.has('admin')) D().auth.signOut();
+        }
+      }
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).render(ctx);
       // Admin team roles: a section outside this admin's role
       const no = isAdminUI() && A()?.denied?.(SA.core.router.location());

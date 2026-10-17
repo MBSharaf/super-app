@@ -170,6 +170,12 @@
     ...page,
     title: page.title || 'Command Center — Super App',
     async render(ctx) {
+      // API mode: an old demo (PIN) session does not count — the real CEO account with its code is required
+      await SA.services.api.ready;
+      if (SA.services.api.isLive() && CE().auth.current()) {
+        if (!SA.services.session.loaded()) await SA.services.session.load();
+        if (!SA.services.session.has('ceo')) CE().auth.signOut();
+      }
       if (!CE().auth.current()) { this._login = true; return login.render(ctx); }
       this._login = false;
       try { this._failed = false; return await page.render.call(page, ctx); }
