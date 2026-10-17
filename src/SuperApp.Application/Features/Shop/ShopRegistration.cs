@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Shop.Catalog;
+using SuperApp.Application.Features.Shop.Orders;
 
 namespace SuperApp.Application.Features.Shop;
 
@@ -14,6 +15,12 @@ public static class ShopRegistration
     {
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<IStoresService, StoresService>();
+
+        services.AddScoped<CartService>();
+        services.AddScoped<ICartService>(sp => sp.GetRequiredService<CartService>());
+        services.AddScoped<OrderNotices>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<IMyOrdersService, MyOrdersService>();
         return services;
     }
 }

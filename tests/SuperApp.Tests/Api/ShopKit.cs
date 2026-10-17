@@ -78,5 +78,31 @@ public sealed class ShopKit(AccountsApiFactory api)
         return factory.Id;
     });
 
+    /// <summary>POST /orders/checkout with an Idempotency-Key header (a new key unless one is given).</summary>
+    public static async Task<(System.Net.HttpStatusCode Status, System.Text.Json.JsonElement Body)> CheckoutAsync(ApiClient client, string payment = "online",
+        string? promo = null, string? key = null, string speed = "standard")
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/orders/checkout")
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(new
+            {
+                address = new { label = "Home", line1 = "12 Test Street, Dokki", line2 = "Floor 3", city = "Giza" },
+                phone = "01012345678", deliverySpeed = speed, paymentMethod = payment, promoCode = promo,
+            }),
+        };
+        if (key != "")
+        {
+            request.Headers.Add("Idempotency-Key", key ?? Guid.NewGuid().ToString("N"));
+        }
+        var response = await client.Http.SendAsync(request);
+        var text = await response.Content.ReadAsStringAsync();
+        return (response.StatusCode, string.IsNullOrEmpty(text) ? default : System.Text.Json.JsonDocument.Parse(text).RootElement.Clone());
+    }
+
+    /// <summary>The variant ids of a demo product, with their stock.</summary>
+    public Task<List<(long Id, int Stock)>> VariantsAsync(string slug) => api.DbAsync(async db =>
+        (await db.Set<ProductVariant>().Where(v => v.Product.Slug == slug).OrderBy(v => v.Id).Select(v => new { v.Id, v.Stock }).ToListAsync())
+            .Select(v => (v.Id, v.Stock)).ToList());
+
     public Task<long> DesignIdAsync(string title) => api.DbAsync(db => db.Set<Design>().Where(d => d.Title == title).Select(d => d.Id).SingleAsync());
 }

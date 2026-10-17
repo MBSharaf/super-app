@@ -83,11 +83,32 @@ Decisions for this phase:
 - [ ] 3.8 Site in API mode for all of the above (design unchanged), Arabic, tests for every endpoint, `.http`, docs
 
 ## Phase 4 — Shop & POD (branch `phase-4-shop`, started 2026-10-17)
-Built in its own window — see `docs/context/parallel.md`.
+Built in its own window — see `docs/context/parallel.md`. Code: `Application/Features/Shop/**` (registered by `ShopRegistration.AddShop()`),
+`Infrastructure/Shop/**` (`ShopInfrastructure.AddShopInfrastructure()`), `Api/Controllers/Shop/**`, tests `tests/SuperApp.Tests/Api/Shop*.cs`, `CartOrdersTests.cs` …
+
+Decisions for this phase:
+- Payments stay simulated until Phase 5 (as bookings in Phase 3): online / wallet orders are **Paid** at once, cash on delivery stays **Placed**. The seam is `CheckoutService.PayAsync`.
+- Stock is taken at checkout in the same transaction as the order (`Stock - Reserved >= qty`, else 409 `stock_changed`); a cancel puts it back. Phase 5 can switch to "reserve, then take when the payment webhook arrives" with the `Reserved` column.
+- Money on each order item (for the Phase 5 ledger): `BaseAmount` is per unit; `CommissionAmount` and `SellerEarning` are line totals. Store product: commission = line × rate (official store 0; partner's `StoreCommission` in percent; seller level `StoreCommission` as a fraction; else setting `commission.store`); the store earns the rest minus its own code's share. Printed design: base = catalogue base + back print (when there is back art) + big size − level discount; seller earns (price − base) × qty, Super App keeps (base − factory cost) × qty. (The demo orders seeded in Phase 1 store per-unit amounts.)
+- Promo codes are checked, not stored with the cart: `POST /cart/promo` checks one, then the site sends `?promo=` with `GET /cart` and `promoCode` at checkout. Super App codes discount the whole cart; a store's code only that store's items (paid by the store).
+- Checkout needs an `Idempotency-Key` header; the answer is remembered for 24 h in memory (see schema request below for a durable column).
+- Printed designs are on sale while at least one factory takes work (or no factory exists yet); checkout with printed items needs an active factory with intake open (409 `printing_paused`) and routes each printed item to the least busy one as a job (deadline = its SLA). Cash on delivery is refused for printed items when the customer's `MustPrepay` is Always, or Automatic with `CodRefusals` ≥ setting `pod.refuseLimit` (422 `prepay_required`).
+- Design art keeps PNG transparency (new `IArtworkStore`, container "art", private); the site gets resized PNG previews from `/shop/designs/{id}/art/{side}`. SVGs with scripts, event handlers, entities or outside links are refused.
+- New demo seeder (own file, order 20): the factory "Nile DTF Works" for the factory owner, its 6 staff with the demo PINs (hashed), prices, and a job for every printed item of the demo orders.
+
+- [x] 4.1 Public shop (API) — `ShopController` `/shop/products` (one list of published store products of open stores and live designs; q, category (`designs` = printed only), designCategory, store, tag, price range, kind; sort featured (sales, views, rating, seller level boost) / price / -price / rating / newest; paged), `/shop/products/{slug}` (variants with what is left, specs, images, store), `/shop/designs/{id}` (catalogue product, active colours, size chart, details, print areas, placement, art, seller level; counts a view), `/shop/designs/{id}/art/{side}` (preview PNG / SVG; not live → only the seller and reviewers), `POST /shop/designs/{id}/report` (one open report per person; reviewers told). `StoresController` `/stores/{handle}` (store, logo, cover, level, rating, followers; the owner also sees designs not public yet with their status) and follow / unfollow (creators' stores only). Hidden, unpublished, on-break or suspended → not shown. Tests: 5 (116).
+- [x] 4.2 Cart, wishlist, checkout, my orders (API) — `CartController` `/cart` (live prices, stock, problems per line, delivery standard / express / free over the limit, `?promo=`), `/cart/items` add (variant, or design + size + colour; merged; 409 `out_of_stock`, 422 `qty_limit` / `bad_size` / `bad_color`), patch, delete, `/cart/promo` (422 `invalid_code` / `code_expired` / `code_used_up` / `min_spend` / `code_not_for_cart`), `/wishlist`. `OrdersController` `POST /orders/checkout` (Idempotency-Key; kill switches `kill.shop` / `kill.pod` 423; blocked account 403; every line checked again; order + one parcel per store + one factory job per printed item + code use + stock + cart in one transaction; customer, stores, sellers and the factory told), `/orders/mine`, `/orders/{code}` (parcels with status and tracking), `/orders/{code}/cancel` (only before packing / printing; stock and code use back; 422 `too_late`), `/orders/{code}/receipt.pdf` (QuestPDF). Tests: 6.
+- [ ] 4.3 Store owners — partner store and sellers' own products (profile, products with images / variants / specs, restock), store orders (pack, ship with the courier, deliver, cancel), official store for staff, admin hide / unhide
+- [ ] 4.4 Seller & print on demand — overview, store settings, logo / cover, catalogue for my level, designs (draft, save with rowVersion, art upload with dpi check, submit / Elite instant + spot check, pause / resume / delete, bulk), seller orders, samples, codes, analytics, calendar, KYC; admin design review, design reports and strikes, catalogue changes
+- [ ] 4.5 Factory — device registration, PIN sign-in, overview, production board, advance / QC / problems, job ticket PDF, scan, team, money, reports, settings (capacity, SLA, intake pause), catalogue change requests; admin job actions
+- [ ] 4.6 Shipping — courier adapter (`IShippingProvider`, simulated courier), automatic shipment when all printed items of an order are packed, labels, tracking, courier webhook, admin shipments
+- [ ] 4.7 Returns — returnable items (14 days), request, seller / partner / admin decide, received → refund or replacement
+- [ ] 4.8 Site in API mode (`js/services/liveShop.js`, `js/data/i18n-ar-shop.js`), `.http` requests, docs
+
 ### Schema requests
-- *(none)*
+- `shop.Orders.IdempotencyKey varchar(64) NULL` with a filtered unique index (CustomerId, IdempotencyKey) — so a checkout retry after a server restart still returns the same order (today the key is remembered in memory for 24 h).
 ### Requests to main
-- *(none)*
+- **`.gitignore` hides two source files:** the pattern `storage/` also matches `src/SuperApp.Application/Abstractions/Storage/IFileStorage.cs` and `src/SuperApp.Infrastructure/Storage/LocalFileStorage.cs`, so they are not in the repository and a fresh clone does not build. Change the pattern to `/storage/` (and keep `src/SuperApp.Api/storage/`), then `git add` the two files. This branch builds only with local copies of them.
 
 ## Phase 6 — Fantasy & content (branch `phase-6-fantasy`, started 2026-10-17)
 Built in its own window — see `docs/context/parallel.md`.

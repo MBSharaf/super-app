@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Shop.Catalog;
+using SuperApp.Application.Features.Shop.Orders;
 
 namespace SuperApp.Infrastructure.Shop;
 
@@ -13,6 +14,13 @@ public static class ShopInfrastructure
     {
         services.AddScoped<IShopReader, ShopReader>();
         services.AddScoped<IArtworkStore, ArtworkStore>();
+        services.AddMemoryCache();
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<OrderRepository>();
+        services.AddScoped<IOrderRepository>(sp => sp.GetRequiredService<OrderRepository>());
+        services.AddScoped<IShopSettings, ShopSettings>();
+        services.AddSingleton<IIdempotencyCache, IdempotencyCache>();
+        services.AddSingleton<IShopDocuments, ShopDocuments>();
         return services;
     }
 }
