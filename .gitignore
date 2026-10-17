@@ -43,3 +43,4 @@ logs/
 tools/seed/_export.html
 tools/seed/_profile/
 tools/seed/_front-data.json
+.claude/worktrees/
