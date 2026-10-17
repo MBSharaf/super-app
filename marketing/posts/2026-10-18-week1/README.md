@@ -1,4 +1,4 @@
-# Week 1 posts — 3 posts (18 Oct 2026)
+# Week 1 posts — 4 posts (18 Oct 2026)
 
 4:5, 1080×1350, same collage system as `../2026-10-17-teasers/`. Real app screens (served locally), drawn graphics, no internet or AI photos.
 
@@ -7,6 +7,7 @@
 | `post-04-captain-gw7` | Fantasy players | كابتن الجولة 7 (الدوري المصري): Zizo, Nasser Maher, and the surprise Mahmoud Mamdouh | Comment your captain | **Before Mon 19 Oct** |
 | `post-05-who-collects` | Team captains / organisers | مين هيلم الفلوس؟ A match receipt (14 × 95 EGP, 3 still owe) + the real match page where everyone pays their share | تابعنا | Any weekday evening |
 | `post-06-empty-hours` | Pitch owners (launch phase 0) | الساعة الفاضية بتخسرك كام؟ A week grid with empty afternoons, example math, the real forecast dashboard | ابعتلنا رسالة | Weekday morning (Facebook groups + LinkedIn) |
+| `post-07-crew-league` | Fantasy players and their crew | اعمل دوري لصحابك: a drawn example table (last place circled, "ده اللي هيعزم") + the real private-groups screen | منشن الشلة | Friday, before the Premier League round |
 
 **Facts checked 17 Oct 2026:** round 7 fixtures and times from youm7, sinai.news and alouroba (ZED × Modern Sport Tue 20 Oct 5 pm; Pyramids × Talaea El Gaish Tue 20 Oct 8 pm; Al Ahly × El Qanah Wed 21 Oct 8 pm). Goal tallies differ between sources (youm7 has Mahmoud Mamdouh on 6, others list several players on 3), so the post prints no goal numbers. Re-check times on the morning of posting.
 
@@ -40,6 +41,15 @@
 
 #ملاعب_مصر #حجز_ملاعب #ملاعب_خماسي #سوبر_اب
 ```
+
+### Post 07 — اعمل دوري لصحابك
+```
+اعمل دوري فانتازي لصحابك واللي يطلع آخر الجولة… يعزم 😂
+مجموعة خاصة مجانًا، بكود تبعته على جروب الشلة. منشن الشلة اللي هتلعب معاها.
+
+#فانتازي #دوري_فانتازي #FPL #سوبر_اب
+```
+The table is a drawn example (marked EXAMPLE); private groups are free and invite-only in the app.
 
 ## Carousels (6 slides each, 4:5)
 
