@@ -155,3 +155,190 @@ X-CSRF-TOKEN: {{csrf}}
 ### Sign out
 POST {{api}}/auth/sign-out
 X-CSRF-TOKEN: {{csrf}}
+
+
+############################################################
+### Phase 4 — Shop & POD
+############################################################
+
+### Shop: products and live designs (public)
+GET {{api}}/shop/products?category=boots&sort=price&page=1&pageSize=24
+
+### Shop: product page
+GET {{api}}/shop/products/sh-predator
+
+### Shop: printed-design page
+GET {{api}}/shop/designs/1
+
+### Shop: report a design
+POST {{api}}/shop/designs/1/report
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "reason": "Copyright", "detail": "This is my drawing", "contact": "me@example.com" }
+
+### Store page and follow
+GET {{api}}/stores/koora-ink
+
+###
+POST {{api}}/stores/koora-ink/follow
+X-CSRF-TOKEN: {{csrf}}
+
+### Cart (send ?promo=CODE to see a code applied)
+GET {{api}}/cart?promo=SUPER10
+
+### Cart: add a variant, or a design with size and colour
+POST {{api}}/cart/items
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "designId": 1, "size": "M", "color": "Black", "qty": 1 }
+
+### Cart: check a code
+POST {{api}}/cart/promo
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "code": "SUPER10" }
+
+### Wishlist
+POST {{api}}/wishlist
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "productSlug": "sh-copa" }
+
+### Checkout (new Idempotency-Key for each new order)
+POST {{api}}/orders/checkout
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+Idempotency-Key: order-0001
+
+{ "address": { "label": "Home", "line1": "12 Test Street, Dokki", "line2": "Floor 3", "city": "Giza" }, "phone": "01012345678", "deliverySpeed": "standard", "paymentMethod": "online", "promoCode": null }
+
+### My orders, order page, tracking, receipt
+GET {{api}}/orders/mine?status=open
+
+###
+GET {{api}}/orders/ORD-123456
+
+###
+GET {{api}}/orders/ORD-123456/tracking
+
+###
+GET {{api}}/orders/ORD-123456/receipt.pdf
+
+### Cancel before work starts
+POST {{api}}/orders/ORD-123456/cancel
+X-CSRF-TOKEN: {{csrf}}
+
+### Returns: what can be returned, request one
+GET {{api}}/orders/ORD-123456/returnable
+
+###
+POST {{api}}/returns
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "orderCode": "ORD-123456", "reason": "WrongSize", "detail": null, "items": [ { "orderItemId": 1, "qty": 1, "action": "Exchange", "newSize": "L" } ] }
+
+### Partner shop: profile, products, orders (the same tools under /seller/store and /admin/store)
+GET {{api}}/partner/store
+
+###
+POST {{api}}/partner/store/products
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "Grip Socks", "categoryKey": "accessories", "brand": "Turf", "description": "Anti-slip.", "price": 250, "compareAtPrice": 300, "lowStockAt": 3, "status": "Published",
+  "specs": [ { "label": "Material", "value": "Cotton" } ],
+  "variants": [ { "id": null, "size": "M", "colorName": "Black", "colorHex": "#000000", "sku": null, "stock": 10, "priceOverride": null } ] }
+
+###
+GET {{api}}/partner/store/orders?status=open
+
+###
+POST {{api}}/partner/store/orders/ORD-123456/pack
+X-CSRF-TOKEN: {{csrf}}
+
+###
+POST {{api}}/partner/store/orders/ORD-123456/ship
+X-CSRF-TOKEN: {{csrf}}
+
+###
+GET {{api}}/partner/returns
+
+### Seller: overview, catalogue, designs
+GET {{api}}/seller/overview
+
+###
+GET {{api}}/seller/catalogue
+
+###
+POST {{api}}/seller/designs
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "catalogProductId": 1 }
+
+###
+POST {{api}}/seller/designs/1/submit
+X-CSRF-TOKEN: {{csrf}}
+
+###
+GET {{api}}/seller/orders
+
+###
+GET {{api}}/seller/analytics?from=2026-09-01&to=2026-10-18
+
+### Factory: register a device (owner), then staff sign in with a PIN on it
+POST {{api}}/factory/devices/register
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "Packing tablet" }
+
+###
+GET {{api}}/factory/staff/list
+X-Factory-Device: {{factoryDevice}}
+
+###
+POST {{api}}/factory/auth/pin
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+X-Factory-Device: {{factoryDevice}}
+
+{ "staffId": 3, "pin": "3333" }
+
+###
+GET {{api}}/factory/jobs?stage=active
+X-Factory-Device: {{factoryDevice}}
+X-Factory-Session: {{factorySession}}
+
+###
+POST {{api}}/factory/jobs/JB-XXXXXXXX/advance
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+X-Factory-Device: {{factoryDevice}}
+X-Factory-Session: {{factorySession}}
+
+{ "toStage": "Printing", "note": null }
+
+### Admin: design queue, reports, catalogue changes, shipments (2FA session)
+GET {{api}}/admin/designs/queue
+
+###
+GET {{api}}/admin/design-reports
+
+###
+GET {{api}}/admin/catalogue-changes
+
+###
+GET {{api}}/admin/shipments?status=AwaitingPickup
+
+###
+POST {{api}}/admin/shipments/1/simulate
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "status": "Delivered" }
