@@ -32,6 +32,15 @@ public static class ShopRegistration
         services.AddScoped<IStoreProductsService, StoreProductsService>();
         services.AddScoped<IStoreOrdersService, StoreOrdersService>();
         services.AddScoped<IAdminProductsService, AdminProductsService>();
+
+        services.AddScoped<ISellerDesignsService, SellerDesignsService>();
+        services.AddScoped<IBulkDesignsService, BulkDesignsService>();
+        services.AddScoped<ISellerInsightsService, SellerInsightsService>();
+        services.AddScoped<ISamplesService, SamplesService>();
+        services.AddScoped<ISellerCodesService, SellerCodesService>();
+        services.AddScoped<ISellerKycService, SellerKycService>();
+        services.AddScoped<IDesignReviewService, DesignReviewService>();
+        services.AddScoped<IDesignReportsService, DesignReportsService>();
         return services;
     }
 }

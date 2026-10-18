@@ -30,6 +30,11 @@ public static class ShopInfrastructure
         services.AddScoped<IShippingProviders, ShippingProviders>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
         services.AddScoped<ISellerScopes, SellerScopes>();
+        services.AddScoped<DesignRepository>();
+        services.AddScoped<IDesignRepository>(sp => sp.GetRequiredService<DesignRepository>());
+        services.AddScoped<ISellerLevels>(sp => sp.GetRequiredService<DesignRepository>());
+        services.AddScoped<ISellerInsightsRepository, SellerInsightsRepository>();
+        services.AddScoped<IPodAdminRepository, PodAdminRepository>();
         return services;
     }
 }
