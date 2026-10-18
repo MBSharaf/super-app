@@ -21,6 +21,9 @@ public static class FantasyRegistration
         services.AddScoped<IFantasyPassService, FantasyPassService>();
         services.AddScoped<IFantasyLeaguesAdminService, FantasyLeaguesAdminService>();
         services.AddScoped<Content.INewsService, Content.NewsService>();
+        services.AddScoped<Content.IContentService, Content.ContentService>();
+        services.AddScoped<Content.IContentAdminService, Content.ContentAdminService>();
+        services.AddScoped<Content.ILegalHelpService, Content.LegalHelpService>();
         return services;
     }
 }

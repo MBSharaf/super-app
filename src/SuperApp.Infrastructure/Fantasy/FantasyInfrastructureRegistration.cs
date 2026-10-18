@@ -42,6 +42,8 @@ public static class FantasyInfrastructureRegistration
         services.AddScoped<IPrizeVouchers, PrizeVouchers>();
         services.AddScoped<Application.Features.Content.IMatchesReader, MatchesReader>();
         services.AddScoped<Application.Features.Content.INewsRepository, NewsRepository>();
+        services.AddScoped<Application.Features.Content.IContentRepository, ContentRepository>();
+        services.AddScoped<Application.Features.Content.ILegalHelpRepository, LegalHelpRepository>();
         services.AddHostedService<FootballScheduler>();
         return services;
     }
