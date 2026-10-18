@@ -62,7 +62,8 @@
 
   SA.pages.studio = {
     title: 'Design studio — Super App',
-    render(ctx) {
+    async render(ctx) {
+      await SA.services.liveShop?.sellerReady?.();
       const s = S.sellers.current();
       if (!s) return notSeller();
       if (s.mode === 'store') return `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Design studio']], title: 'Design studio' })}<div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Print on demand is off for your store', text: 'Your store sells your own products. Switch your selling mode to “Both” to add designs too.', action: '<button class="btn btn-primary" data-enable-pod>Turn on print on demand</button>' })}</div></div>`;
@@ -377,14 +378,14 @@
       // Typing a price: the profit follows it (the back-print adjustment only applies when the sides change)
       form.price.addEventListener('input', () => { st.lastBase = null; renderPrice(); });
 
-      const save = (submit) => {
+      const save = async (submit) => {
         const err = $('[data-err]'); err.textContent = '';
         try {
           if (submit && !st.arts.front && !st.arts.back) throw new Error('Upload your design first.');
-          const d = S.pod.saveDraft(seller.id, draft());
+          const d = await S.pod.saveDraft(seller.id, draft());
           st.id = d.id;
           if (!submit) { SA.ui.overlay.toast('Draft saved'); history.replaceState(null, '', `#/sell/studio/${d.id}`); return; }
-          const out = S.pod.submit(d.id);
+          const out = await S.pod.submit(d.id);
           SA.core.motion?.confetti?.({ count: 70 });
           SA.ui.overlay.toast(out.status === 'live' ? `“${out.title}” is live in the shop` : `“${out.title}” is in review — it shows in your store once it’s approved`, { type: 'success' });
           SA.core.router.go(SA.services.dash.me()?.role === 'seller' ? '/seller/designs' : '/sell');

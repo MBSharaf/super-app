@@ -86,7 +86,7 @@
       $('[data-rows]').addEventListener('click', (e) => { const b = e.target.closest('[data-del]'); if (b) { rows.splice(+b.dataset.del, 1); paintRows(); } });
       el.querySelectorAll('[data-chip-side], .bu-settings .chip').forEach((ch) => ch.addEventListener('click', () => el.querySelectorAll('.bu-settings .chip').forEach((x) => x.setAttribute('aria-pressed', String(x === ch)))));
       el.querySelector('.bu-settings .chip')?.setAttribute('aria-pressed', 'true');
-      const run = (submit) => {
+      const run = async (submit) => {
         const s = S.sellers.current();
         const colors = [...f.querySelectorAll('[name="color"]:checked')].map((x) => x.value);
         f.querySelectorAll('[data-err]').forEach((x) => (x.textContent = ''));
@@ -96,15 +96,15 @@
         const place = { front: side === 'front' ? { x: 0.5, y: 0.36, w: 0.42 } : null, back: side === 'back' ? { x: 0.5, y: 0.3, w: 0.4 } : null };
         const tags = f.tags.value.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean).slice(0, 10);
         let ok = 0;
-        rows.forEach((r) => {
-          if (r.state === 'ok') return;
+        for (const r of rows) {
+          if (r.state === 'ok') continue;
           try {
             if (submit && !S.sellers.canAddDesign(s).ok) throw new Error(SA.i18n.t('Your level’s design limit is reached.'));
-            const d = S.pod.saveDraft(s.id, { title: r.title, desc: '', tags, category: f.category.value, catalogId: f.catalogId.value, colors, price: r.price || +f.price.value, art: r.src, artW: r.w, artH: r.h, placement: place });
-            if (submit) { const out = S.pod.submit(d.id); r.msg = out.status === 'live' ? SA.i18n.t('Live in the shop') : SA.i18n.t('Sent for review'); } else r.msg = SA.i18n.t('Saved as a draft');
+            const d = await S.pod.saveDraft(s.id, { title: r.title, desc: '', tags, category: f.category.value, catalogId: f.catalogId.value, colors, price: r.price || +f.price.value, art: r.src, artW: r.w, artH: r.h, placement: place });
+            if (submit) { const out = await S.pod.submit(d.id); r.msg = out.status === 'live' ? SA.i18n.t('Live in the shop') : SA.i18n.t('Sent for review'); } else r.msg = SA.i18n.t('Saved as a draft');
             r.state = 'ok'; r.id = d.id; ok++;
           } catch (e) { r.state = 'bad'; r.msg = e.message; }
-        });
+        }
         paintRows();
         const bad = rows.filter((r) => r.state === 'bad').length;
         $('[data-result]').innerHTML = `<div class="notice ${bad ? 'gold' : 'turf'}" style="margin-top:12px">${icon(bad ? 'alert' : 'check', 18)}<span>${ok} ${SA.i18n.t(submit ? 'sent' : 'saved')}${bad ? ` · ${bad} ${SA.i18n.t('need a fix (see the red notes)')}` : ''}. <a class="link" href="#/seller/designs">${SA.i18n.t('See your designs')}</a></span></div>`;

@@ -88,11 +88,11 @@
       onMount(m, close) {
         const dots = m.querySelector('[data-dots]'), err = m.querySelector('[data-err]'), inp = m.querySelector('[data-pin-input]');
         const paint = () => dots.querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i < pin.length));
-        const press = (k) => {
+        const press = async (k) => {
           if (k === '⌫') pin = pin.slice(0, -1); else if (pin.length < 4 && /\d/.test(k)) pin += k;
           err.textContent = ''; paint();
           if (pin.length === 4) {
-            try { F().auth.signIn(staffId, pin); close(); SA.ui.overlay.toast(`Welcome, ${esc(x.name.split(' ')[0])}`); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/factory/') ? h : '/factory', { replace: true }); SA.app.rerender(); }
+            try { await F().auth.signIn(staffId, pin); close(); SA.ui.overlay.toast(`Welcome, ${esc(x.name.split(' ')[0])}`); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/factory/') ? h : '/factory', { replace: true }); SA.app.rerender(); }
             catch (e) { err.textContent = e.message; dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake'); pin = ''; setTimeout(paint, 250); }
           }
         };
@@ -172,6 +172,7 @@
     ...page,
     title: page.title || 'Factory — Super App',
     async render(ctx) {
+      await SA.services.liveShop?.factoryReady?.();
       const s = F().me();
       if (!s) { this._login = true; return login.render(ctx); }
       this._login = false;

@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<ICheckInService, CheckInService>();
         services.AddScoped<IPackageOptionsService, PackageOptionsService>();
         services.AddScoped<IPackagesService, PackagesService>();
+        Features.Shop.ShopRegistration.AddShop(services);
         services.AddScoped<IReviewsService, ReviewsService>();
         services.AddScoped<Features.Waitlist.IWaitlistService, Features.Waitlist.WaitlistService>();
         services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();

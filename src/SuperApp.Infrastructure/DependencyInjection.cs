@@ -61,6 +61,7 @@ public static class DependencyInjection
             .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>();
         services.AddSessionRules();
         services.AddAccountServices();
+        Shop.ShopInfrastructure.AddShopInfrastructure(services);
 
         services.AddSeed(configuration);
         Fantasy.FantasyInfrastructureRegistration.AddFantasyInfrastructure(services, configuration);   // Phase 6 (branch phase-6-fantasy)
