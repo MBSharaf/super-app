@@ -303,6 +303,121 @@
     wishlist: () => (live() && signedIn() ? wishes.filter((w) => w.card).map((w) => decorate(fromCard(w.card))) : demo.wishlist()),
   });
 
+  /* ---------------- Seller studio (on the server) ---------------- */
+
+  const SELLER = 'sl-live';
+  const SELLER_ACCOUNT = 'acc-live-seller';
+  const P = SA.services.pod;
+  const SL = SA.services.sellers;
+  const demoPod = { ...P };
+  const demoSellers = { ...SL };
+  let sellerLoad = null;
+  let catalogue = [];           // GET /seller/catalogue (ids ↔ keys, colour ids)
+  const isLiveSeller = (id) => live() && id === SELLER;
+  const DSTATUS = { Draft: 'draft', InReview: 'review', Live: 'live', Rejected: 'rejected', Paused: 'paused', Removed: 'removed' };
+  const MODE = { pod: 'pod', store: 'store', both: 'both' };
+
+  const artOf = (a) => (!a ? '' : a.url ? `${location.origin}${a.url}` : `seed:${String(a.key).replace(/^seed:/, '')}`);
+  const toDesign = (d) => ({
+    id: String(d.id), live: true, apiId: d.id, sellerId: SELLER, catalogId: d.catalogKey, title: d.title, desc: d.description || '', tags: d.tags, category: d.categoryKey || '',
+    colors: d.colors, price: +d.price, art: artOf(d.frontArt || d.backArt), artW: 0, artH: 0, artBack: d.frontArt && d.backArt ? artOf(d.backArt) : '', artBackW: 0, artBackH: 0,
+    placement: { front: d.front ? { ...d.front } : null, back: d.back ? { ...d.back } : null }, status: DSTATUS[d.status] || 'draft', reason: d.rejectReason || '',
+    spotCheck: d.spotCheck, views: d.views, sales: d.sales, rowVersion: d.rowVersion, submittedAt: d.submittedAt ? Date.parse(d.submittedAt) : 0,
+    reviewedAt: d.reviewedAt ? Date.parse(d.reviewedAt) : 0, createdAt: Date.parse(d.createdAt), updatedAt: Date.now(), deleted: false,
+  });
+  const putDesign = (d) => {
+    const raw = SA.services.db.raw();
+    const rec = toDesign(d);
+    raw.designs = [...(raw.designs || []).filter((x) => x.id !== rec.id), rec];
+    return rec;
+  };
+
+  /** The signed-in seller as a local seller record (same shape as the demo sellers) and its dashboard account */
+  const loadSeller = async () => {
+    const [overview, profile, designs] = await Promise.all([api.get('/seller/overview'), api.get('/seller/store'), api.get('/seller/designs')]);
+    catalogue = await api.get('/seller/catalogue');
+    const raw = SA.services.db.raw();
+    const template = raw.sellers.find((s) => !s.live) || {};
+    const me = SA.services.session.me() || {};
+    const rec = {
+      ...template, id: SELLER, live: true, accountId: SELLER_ACCOUNT, userId: store.get().user?.id, handle: profile.handle, name: profile.name, owner: me.fullName || '',
+      email: me.email || '', phone: me.phone || '', mode: MODE[profile.mode] || 'pod', bio: profile.about || '', tagline: profile.tagline || '', color: profile.accentColor,
+      cover: profile.cover ? img(profile.cover) : template.cover, status: 'active', strikes: [], frozenUntil: overview.level.frozenUntil ? Date.parse(overview.level.frozenUntil) : 0,
+      history: { sales: overview.level.lifetimeSales, revenue: 0, profit: 0, rating: +overview.level.rating, reviews: 0 }, followers: overview.kpis.followers,
+      featured: profile.featuredDesignId ? String(profile.featuredDesignId) : null, vacation: profile.status === 'OnBreak', vacationUntil: profile.breakUntil || '', storeId: null,
+      updatedAt: Date.now(),
+    };
+    raw.sellers = [rec, ...raw.sellers.filter((s) => s.id !== SELLER)];
+    const acc = { ...(raw.accounts.find((a) => a.role === 'seller') || {}), id: SELLER_ACCOUNT, live: true, role: 'seller', name: me.fullName || profile.name, company: profile.name, email: me.email || '', status: 'active' };
+    raw.accounts = [acc, ...raw.accounts.filter((a) => a.id !== SELLER_ACCOUNT)];
+    raw.designs = [...(raw.designs || []).filter((d) => d.sellerId !== SELLER), ...designs.map(toDesign)];
+    ['sellers', 'accounts', 'designs'].forEach((col) => SA.services.db.touch?.(col));
+    return rec;
+  };
+
+  /** Loads the seller once per page view (dashboard: signs the seller dashboard into it). Not a seller → nothing changes. */
+  const sellerReady = async (dashboard = false) => {
+    await api.ready;
+    if (!live()) return null;
+    if (!SA.services.session.loaded()) await SA.services.session.load();
+    if (!signedIn()) return null;
+    sellerLoad ||= loadSeller().catch((err) => { if (err.status !== 403) console.error(err); return null; }).finally(() => setTimeout(() => { sellerLoad = null; }, 15000));
+    const rec = await sellerLoad;
+    if (rec && dashboard && SA.services.dash?.auth.sellerAccount?.()?.id !== SELLER_ACCOUNT) SA.services.dash.auth.openAs(SELLER_ACCOUNT);
+    return rec;
+  };
+
+  const catalogOf = (key) => catalogue.find((c) => c.key === key) || catalogue[0];
+  const blob = (src) => (String(src).startsWith('data:') ? api.blob(src) : null);
+  const uploadArt = async (id, side, src) => {
+    const file = blob(src);
+    if (!file) return;
+    const form = new FormData();
+    form.append('file', file, `art.${file.type.includes('svg') ? 'svg' : 'png'}`);
+    await api.form(`/seller/designs/${id}/art/${side}`, form);
+  };
+
+  /** Studio draft → server: create when new, upload changed art, then save the listing (rowVersion from the server) */
+  const saveLiveDraft = async (draft) => {
+    const c = catalogOf(draft.catalogId);
+    let current = draft.id && SA.services.db.find('designs', String(draft.id))?.live ? await api.get(`/seller/designs/${draft.id}`) : await api.post('/seller/designs', { catalogProductId: c.id });
+    const id = current.id;
+    await uploadArt(id, 'front', draft.art);
+    if (draft.artBack) await uploadArt(id, 'back', draft.artBack);
+    else if (draft.placement?.back && blob(draft.art)) await uploadArt(id, 'back', draft.art);
+    if (!draft.placement?.back && !draft.artBack && current.backArt) await api.del(`/seller/designs/${id}/art/back`);
+    current = await api.get(`/seller/designs/${id}`);
+    const colorIds = (draft.colors || []).map((n) => c.colors.find((x) => x.nameEn === n)?.id).filter(Boolean);
+    const saved = await api.put(`/seller/designs/${id}`, {
+      catalogProductId: c.id, categoryKey: draft.category || null, title: String(draft.title || '').trim(), description: draft.desc || null,
+      price: Math.max(+draft.price || 0, +current.base), colorIds, tags: draft.tags || [], front: draft.placement?.front || null, back: draft.placement?.back || null, rowVersion: current.rowVersion,
+    });
+    return P.enrich(putDesign(saved));
+  };
+
+  Object.assign(P, {
+    saveDraft: (sellerId, draft) => (isLiveSeller(sellerId) ? saveLiveDraft(draft) : demoPod.saveDraft(sellerId, draft)),
+    submit: (id) => (live() && SA.services.db.find('designs', String(id))?.live ? api.post(`/seller/designs/${id}/submit`).then((d) => P.enrich(putDesign(d))) : demoPod.submit(id)),
+    setPaused: (id, paused) => (live() && SA.services.db.find('designs', String(id))?.live
+      ? api.post(`/seller/designs/${id}/${paused ? 'pause' : 'resume'}`).then((d) => P.enrich(putDesign(d))) : demoPod.setPaused(id, paused)),
+    remove: (id) => (live() && SA.services.db.find('designs', String(id))?.live
+      ? api.del(`/seller/designs/${id}`).then(() => { const raw = SA.services.db.raw(); raw.designs = raw.designs.filter((d) => d.id !== String(id)); }) : demoPod.remove(id)),
+  });
+
+  Object.assign(SL, {
+    current: () => (live() && SA.services.db.find('sellers', SELLER) && signedIn() ? SL.get(SELLER) : demoSellers.current()),
+    update(id, patch) {
+      if (!isLiveSeller(id)) return demoSellers.update(id, patch);
+      const s = { ...SL.get(SELLER), ...patch };
+      const body = { name: s.name, handle: s.handle, tagline: s.tagline || null, about: s.bio || null, accentColor: /^#[0-9a-f]{6}$/i.test(s.color || '') ? s.color : null,
+        coverPositionY: 50, breakUntil: s.vacation ? s.vacationUntil || null : null, breakNote: null, mode: s.mode === 'store' ? 'store' : s.mode === 'both' ? 'both' : 'pod',
+        featuredDesignId: s.featured && /^\d+$/.test(String(s.featured)) ? +s.featured : null };
+      const raw = SA.services.db.raw();
+      raw.sellers = raw.sellers.map((x) => (x.id === SELLER ? { ...x, ...patch, updatedAt: Date.now() } : x));
+      api.put('/seller/store', body).then(() => { sellerLoad = null; }).catch((err) => SA.ui.overlay?.toast(err.message, { type: 'error' }));
+      return SL.get(SELLER);
+    },
+  });
   /* ---------------- Start ---------------- */
 
   const start = async () => {
@@ -313,4 +428,5 @@
     SA.services.session?.subscribe?.(() => { loadCart().catch(() => null); loadWishes().catch(() => null); });
   };
   start();
+  SA.services.liveShop = { sellerReady, loadCart, SELLER };
 })(window.SA);

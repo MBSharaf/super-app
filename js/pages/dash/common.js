@@ -241,6 +241,8 @@
           if (this._gate) return liveGate(gate);
         }
       }
+      // API mode: the seller dashboard opens the signed-in seller from the server (backend Phase 4)
+      if (isSellerUI()) await SA.services.liveShop?.sellerReady?.(true);
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).render(ctx);
       // Admin team roles: a section outside this admin's role
       const no = isAdminUI() && A()?.denied?.(SA.core.router.location());
