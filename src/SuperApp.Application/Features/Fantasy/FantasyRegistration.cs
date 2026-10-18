@@ -24,6 +24,9 @@ public static class FantasyRegistration
         services.AddScoped<Content.IContentService, Content.ContentService>();
         services.AddScoped<Content.IContentAdminService, Content.ContentAdminService>();
         services.AddScoped<Content.ILegalHelpService, Content.LegalHelpService>();
+        services.AddScoped<Communities.ICommunitiesService, Communities.CommunitiesService>();
+        services.AddScoped<Communities.IPostsService, Communities.PostsService>();
+        services.AddScoped<Communities.ICommunityAdminService, Communities.CommunityAdminService>();
         return services;
     }
 }
