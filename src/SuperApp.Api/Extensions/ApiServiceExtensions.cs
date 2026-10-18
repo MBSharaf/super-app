@@ -40,6 +40,7 @@ public static class ApiServiceExtensions
         services.AddOpenApi();
         services.AddHealthChecks()
             .AddSqlServer(configuration.GetConnectionString("Default")!, name: "database", tags: ["ready"]);
+        Hubs.Phase6Api.AddFantasyApi(services);   // Phase 6 (branch phase-6-fantasy)
         return services;
     }
 }

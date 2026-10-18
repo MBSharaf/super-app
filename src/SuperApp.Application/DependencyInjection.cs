@@ -47,6 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IReviewsService, ReviewsService>();
         services.AddScoped<Features.Waitlist.IWaitlistService, Features.Waitlist.WaitlistService>();
         services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();
+        Features.Fantasy.FantasyRegistration.AddFantasy(services);   // Phase 6 (branch phase-6-fantasy)
         return services;
     }
 }
