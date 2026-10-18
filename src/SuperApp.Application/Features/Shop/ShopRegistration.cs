@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Shop.Catalog;
+using SuperApp.Application.Features.Shop.Factory;
 using SuperApp.Application.Features.Shop.Orders;
 using SuperApp.Application.Features.Shop.Pod;
 using SuperApp.Application.Features.Shop.Shipping;
@@ -26,6 +27,8 @@ public static class ShopRegistration
         services.AddScoped<IMyOrdersService, MyOrdersService>();
 
         services.AddScoped<ShipmentBooker>();
+        services.AddScoped<ShipmentTracker>();
+        services.AddScoped<IShippingService, ShippingService>();
         services.AddScoped<ISellerAccess, SellerAccess>();
         services.AddScoped<IStoreScopes, StoreScopes>();
         services.AddScoped<IStoreProfileService, StoreProfileService>();
@@ -41,6 +44,13 @@ public static class ShopRegistration
         services.AddScoped<ISellerKycService, SellerKycService>();
         services.AddScoped<IDesignReviewService, DesignReviewService>();
         services.AddScoped<IDesignReportsService, DesignReportsService>();
+
+        services.AddScoped<IFactoryAccess, FactoryAccess>();
+        services.AddScoped<IFactoryAuthService, FactoryAuthService>();
+        services.AddScoped<IFactoryJobsService, FactoryJobsService>();
+        services.AddScoped<IFactoryOpsService, FactoryOpsService>();
+        services.AddScoped<ICatalogueChangesService, CatalogueChangesService>();
+        services.AddScoped<IAdminFactoryService, AdminFactoryService>();
         return services;
     }
 }

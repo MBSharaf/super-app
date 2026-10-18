@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Shop.Catalog;
+using SuperApp.Application.Features.Shop.Factory;
 using SuperApp.Application.Features.Shop.Orders;
 using SuperApp.Application.Features.Shop.Pod;
 using SuperApp.Application.Features.Shop.Shipping;
@@ -29,12 +30,23 @@ public static class ShopInfrastructure
         services.AddSingleton<IShippingProvider>(sp => sp.GetRequiredService<SimulatedCourier>());
         services.AddScoped<IShippingProviders, ShippingProviders>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
+        services.AddScoped<ParcelRepository>();
+        services.AddScoped<IParcelRepository>(sp => sp.GetRequiredService<ParcelRepository>());
+        services.AddScoped<IShipmentReader>(sp => sp.GetRequiredService<ParcelRepository>());
         services.AddScoped<ISellerScopes, SellerScopes>();
         services.AddScoped<DesignRepository>();
         services.AddScoped<IDesignRepository>(sp => sp.GetRequiredService<DesignRepository>());
         services.AddScoped<ISellerLevels>(sp => sp.GetRequiredService<DesignRepository>());
         services.AddScoped<ISellerInsightsRepository, SellerInsightsRepository>();
         services.AddScoped<IPodAdminRepository, PodAdminRepository>();
+        services.AddSingleton<IFactoryTokens, FactoryTokens>();
+        services.AddScoped<IFactoryHeaders, FactoryHeaders>();
+        services.AddSingleton<IPinHasher, PinHasherService>();
+        services.AddScoped<FactoryRepository>();
+        services.AddScoped<IFactoryRepository>(sp => sp.GetRequiredService<FactoryRepository>());
+        services.AddScoped<IFactoryAdminRepository, FactoryAdminRepository>();
+        services.AddSingleton<IFactoryDocuments>(sp => (ShopDocuments)sp.GetRequiredService<IShopDocuments>());
+        services.AddHttpContextAccessor();
         return services;
     }
 }
