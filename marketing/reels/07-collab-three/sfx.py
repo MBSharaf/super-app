@@ -2,9 +2,9 @@
 (music ducked under the voice). Voiceover file: voiceover.mp3 (or .wav/.m4a) in this folder — see README."""
 import sys, os, glob; HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..', '_kit'))
 from sfxkit import *
-setup(18.0)
+setup(17.5)
 
-S1, S2, S3, ALL, END = 2.8, 5.6, 8.6, 12.6, 15.4
+S1, S2, S3, ALL, END = 2.75, 4.8, 7.1, 11.0, 14.7
 intro(S1, whistle_at=.08)
 for i in range(7): add(paper_slap(), .7 + i * .12, .18, (-.4, .4)[i % 2])            # the collab line-up pops in
 groove(S1, END)

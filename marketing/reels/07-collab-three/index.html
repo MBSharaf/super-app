@@ -82,15 +82,17 @@
 // the three collaborators: replace with their real Instagram handles before rendering the version to post
 const q = new URLSearchParams(location.search);
 const PARTNERS = { pitch: q.get('pitch') || '@اسم_الملعب', creator: q.get('creator') || '@اسم_الكابتن', brand: q.get('brand') || '@اسم_البراند' };
-const LINES = [
-  [0.2, 2.8, 'ماتش خماسي واحد… وتلات حكايات.'],
-  [2.8, 5.6, 'الكابتن حجز <b>الملعب</b> من Super App.'],
-  [5.6, 8.6, 'الشلة كلها دفعت <b>نصيبها</b> من الأبلكيشن.'],
-  [8.6, 12.6, 'والتيشيرتات؟ <b>براند مصري</b>، اتطبعت واتشحنت من غير مخزن.'],
-  [12.6, 15.4, 'ملعب، ولاعيبة، وبراند… كلهم في مكان واحد.'],
-  [15.4, 17.8, 'تابعونا… الإطلاق قرّب.'],
+const LINES = [   // timed to voiceover.mp3 (placed at 0.15 s; pauses from silencedetect)
+  [0.1, 2.7, 'ماتش خماسي واحد… وتلات حكايات.'],
+  [2.7, 4.8, 'الكابتن حجز <b>الملعب</b> من Super App.'],
+  [4.8, 7.1, 'الشلة كلها دفعت <b>نصيبها</b> من الأبلكيشن.'],
+  [7.1, 9.0, 'والتيشيرتات؟ <b>براند مصري</b>،'],
+  [9.0, 11.0, 'اتطبعت واتشحنت من غير مخزن.'],
+  [11.0, 13.2, 'ملعب، ولاعيبة، وبراند…'],
+  [13.2, 14.6, 'كلهم في مكان واحد.'],
+  [14.6, 17.3, 'تابعونا… الإطلاق قرّب.'],
 ];
-const DUR = 18, B = { s1: 2.8, s2: 5.6, s3: 8.6, all: 12.6, end: 15.4 };
+const DUR = 17.5, B = { s1: 2.75, s2: 4.8, s3: 7.1, all: 11.0, end: 14.7 };
 $$('.who-pill').forEach((el) => { el.querySelector('span').textContent = PARTNERS[el.dataset.k]; });
 $('#collab').innerHTML = ['Super App', PARTNERS.pitch, PARTNERS.creator, PARTNERS.brand].map((h) => `<span class="who-pill cl"><i></i>${h}</span>`).join('<span class="x cl">×</span>');
 const brand = $('#brand'); brand.innerHTML = `${MARK}<div class="wm">SUPER APP</div><div class="ln">قريب · كل الكورة في مكان واحد</div>`;

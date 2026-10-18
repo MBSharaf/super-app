@@ -137,16 +137,16 @@ ITEMS = [
          pin='أصحاب الملاعب: لسه بتستخدموا الكراسة؟ 📒',
          notes='الأسماء في الكراسة والشات مثال، وأرقام الداشبورد من بيانات تجريبية.'),
     dict(id='reel-06-cta-comment', kind='reel', title='CTA: قولنا رأيك واستنى الإطلاق', audience='لاعيبة الكورة اللي بيستخدموا كذا أبلكيشن', when='أي يوم 8–11 م، ورد على الكومنتات أول ساعة',
-         files=['reels/06-cta-comment/reel-06-cta-comment.mp4', 'reels/06-cta-comment/reel-06-cta-comment-silent.mp4', 'reels/06-cta-comment/cover.png'],
+         files=['reels/06-cta-comment/reel-06-cta-comment.mp4', 'reels/06-cta-comment/reel-06-cta-comment-silent.mp4', 'reels/06-cta-comment/reel-06-cta-comment-voice-only.mp4', 'reels/06-cta-comment/cover.png'],
          caption='''تطبيق واحد للكورة كلها: حجز ملاعب، فانتازي، ماتشات، ومتجر ⚽
 قولنا في الكومنتات: إيه أول حاجة نفسك فيها؟ 1، 2، 3 ولا 4؟
 والإطلاق قرّب… خليك معانا.
 
 #حجز_ملاعب #فانتازي #ماتش_خماسي #سوبر_اب''',
          pin='إحنا هنقرا كل الكومنتات… واللي يكسب هنبدأ بيه 👀',
-         notes='من غير فويس أوفر دلوقتي (الترجمة على الشاشة). عد الإجابات عشان تعرف تبدأ الإطلاق بأنهي ميزة.'),
+         notes='فيه فويس أوفر (صوت Ziad من ElevenLabs) وترجمة على الشاشة. لو عايز مزيكا تريند استخدم reel-voice-only.mp4. عد الإجابات عشان تعرف تبدأ الإطلاق بأنهي ميزة.'),
     dict(id='reel-07-collab-three', kind='reel', title='Collab: ماتش واحد، 3 حكايات', audience='لاعيبة الكورة (جمهور الملعب + الكابتن + البراند)', when='بعد موافقة الشركاء التلاتة',
-         files=['reels/07-collab-three/reel-07-collab-three.mp4', 'reels/07-collab-three/reel-07-collab-three-silent.mp4', 'reels/07-collab-three/cover.png'],
+         files=['reels/07-collab-three/reel-07-collab-three.mp4', 'reels/07-collab-three/reel-07-collab-three-silent.mp4', 'reels/07-collab-three/reel-07-collab-three-voice-only.mp4', 'reels/07-collab-three/cover.png'],
          caption='''ماتش خماسي واحد… وتلات حكايات ⚽👕
 ملعب، ولاعيبة، وبراند مصري، كلهم في مكان واحد.
 تابعونا… الإطلاق قرّب.
@@ -227,6 +227,6 @@ if __name__ == '__main__':
             for f in it['files']:
                 name = os.path.basename(f)
                 if it['kind'] == 'reel':   # clean names inside the pack
-                    name = 'cover.png' if name.startswith('cover') else ('reel-no-sound.mp4' if 'silent' in name else 'reel.mp4')
+                    name = 'cover.png' if name.startswith('cover') else ('reel-no-sound.mp4' if 'silent' in name else 'reel-voice-only.mp4' if 'voice-only' in name else 'reel.mp4')
                 z.write(os.path.join(HERE, f), f'{base}/{name}', compress_type=zipfile.ZIP_STORED if name.endswith('.mp4') else zipfile.ZIP_DEFLATED)
     print('wrote', os.path.relpath(zp, HERE), f'({os.path.getsize(zp) / 1e6:.1f} MB)', 'and CAPTIONS.md')
