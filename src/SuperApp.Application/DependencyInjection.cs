@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<ICheckInService, CheckInService>();
         services.AddScoped<IPackageOptionsService, PackageOptionsService>();
         services.AddScoped<IPackagesService, PackagesService>();
+        Features.Fantasy.FantasyRegistration.AddFantasy(services);   // Phase 6 (branch phase-6-fantasy)
         return services;
     }
 }
