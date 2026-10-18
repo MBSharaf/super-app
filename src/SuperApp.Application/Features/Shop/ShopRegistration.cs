@@ -51,6 +51,9 @@ public static class ShopRegistration
         services.AddScoped<IFactoryOpsService, FactoryOpsService>();
         services.AddScoped<ICatalogueChangesService, CatalogueChangesService>();
         services.AddScoped<IAdminFactoryService, AdminFactoryService>();
+
+        services.AddScoped<Returns.IReturnsService, Returns.ReturnsService>();
+        services.AddScoped<Returns.IReturnDecisionsService, Returns.ReturnDecisionsService>();
         return services;
     }
 }

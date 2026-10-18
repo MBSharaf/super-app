@@ -47,6 +47,7 @@ public static class ShopInfrastructure
         services.AddScoped<IFactoryAdminRepository, FactoryAdminRepository>();
         services.AddSingleton<IFactoryDocuments>(sp => (ShopDocuments)sp.GetRequiredService<IShopDocuments>());
         services.AddHttpContextAccessor();
+        services.AddScoped<Application.Features.Shop.Returns.IReturnRepository, ReturnRepository>();
         return services;
     }
 }
