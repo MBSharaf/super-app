@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Shop.Catalog;
 using SuperApp.Application.Features.Shop.Orders;
+using SuperApp.Application.Features.Shop.Pod;
+using SuperApp.Application.Features.Shop.Shipping;
+using SuperApp.Application.Features.Shop.Stores;
 
 namespace SuperApp.Application.Features.Shop;
 
@@ -21,6 +24,14 @@ public static class ShopRegistration
         services.AddScoped<OrderNotices>();
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<IMyOrdersService, MyOrdersService>();
+
+        services.AddScoped<ShipmentBooker>();
+        services.AddScoped<ISellerAccess, SellerAccess>();
+        services.AddScoped<IStoreScopes, StoreScopes>();
+        services.AddScoped<IStoreProfileService, StoreProfileService>();
+        services.AddScoped<IStoreProductsService, StoreProductsService>();
+        services.AddScoped<IStoreOrdersService, StoreOrdersService>();
+        services.AddScoped<IAdminProductsService, AdminProductsService>();
         return services;
     }
 }

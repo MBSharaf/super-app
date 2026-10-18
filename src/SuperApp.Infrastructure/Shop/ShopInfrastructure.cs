@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperApp.Application.Features.Shop.Catalog;
 using SuperApp.Application.Features.Shop.Orders;
+using SuperApp.Application.Features.Shop.Pod;
+using SuperApp.Application.Features.Shop.Shipping;
+using SuperApp.Application.Features.Shop.Stores;
 
 namespace SuperApp.Infrastructure.Shop;
 
@@ -21,6 +24,12 @@ public static class ShopInfrastructure
         services.AddScoped<IShopSettings, ShopSettings>();
         services.AddSingleton<IIdempotencyCache, IdempotencyCache>();
         services.AddSingleton<IShopDocuments, ShopDocuments>();
+        services.AddScoped<IStoreRepository, StoreRepository>();
+        services.AddSingleton<SimulatedCourier>();
+        services.AddSingleton<IShippingProvider>(sp => sp.GetRequiredService<SimulatedCourier>());
+        services.AddScoped<IShippingProviders, ShippingProviders>();
+        services.AddScoped<IShipmentRepository, ShipmentRepository>();
+        services.AddScoped<ISellerScopes, SellerScopes>();
         return services;
     }
 }
