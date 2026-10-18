@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SuperApp.Api.Security;
 using SuperApp.Application.Features.Bookings;
+using SuperApp.Application.Features.Reviews;
 
 namespace SuperApp.Api.Controllers;
 
@@ -12,7 +13,7 @@ namespace SuperApp.Api.Controllers;
 /// </summary>
 [Route("api/v1/bookings")]
 [Authorize]
-public sealed class BookingsController(IBookingsService bookings, IMyBookingsService mine) : ApiControllerBase
+public sealed class BookingsController(IBookingsService bookings, IMyBookingsService mine, IReviewsService reviews) : ApiControllerBase
 {
     [HttpPost("hold")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
@@ -38,6 +39,16 @@ public sealed class BookingsController(IBookingsService bookings, IMyBookingsSer
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Cancel(string code, CancellationToken ct) =>
         Ok(await mine.CancelAsync(code, ct), "Booking cancelled.");
+
+    /// <summary>Review a game you played (1–5 stars and a few words). Not played yet → 422 not_played; twice → 409 already_reviewed.</summary>
+    [HttpPost("{code}/review")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Review(string code, ReviewRequest request, CancellationToken ct) =>
+        Created(await reviews.CreateAsync(code, request, ct), "Thanks for your review.");
+
+    /// <summary>My review of this booking (null when there is none).</summary>
+    [HttpGet("{code}/review")]
+    public async Task<ActionResult<object>> MyReview(string code, CancellationToken ct) => Ok(await reviews.MineAsync(code, ct));
 
     /// <summary>The booking's QR as a PNG, to show at the gate.</summary>
     [HttpGet("{code}/qr")]

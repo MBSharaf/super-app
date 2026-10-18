@@ -33,6 +33,7 @@ public static class PipelineExtensions
         app.UseOutputCache();
 
         app.MapControllers();
+        Hubs.Phase6Api.MapFantasyHubs(app);   // Phase 6 (branch phase-6-fantasy)
         // Unknown API addresses answer in the unified shape too, not an empty 404
         app.Map("/api/{**path}", (HttpContext http) => Results.Json(
             ApiResponse.Fail("This address does not exist.", new Dictionary<string, string[]> { ["code"] = ["not_found"] }, http.TraceIdentifier),

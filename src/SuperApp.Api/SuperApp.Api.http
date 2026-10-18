@@ -342,3 +342,264 @@ Content-Type: application/json
 X-CSRF-TOKEN: {{csrf}}
 
 { "status": "Delivered" }
+#######################################################################
+# Phase 6 — Fantasy & content (branch phase-6-fantasy)
+#######################################################################
+
+### Fantasy: competitions (public)
+GET {{api}}/fantasy/competitions
+
+### Fantasy: everything for the fantasy pages (clubs, players, gameweeks)
+GET {{api}}/fantasy/egy/bootstrap
+
+### Fantasy: players (sort: total, price, form, selected, goals, value)
+GET {{api}}/fantasy/epl/players?position=FWD&sort=price&pageSize=10
+
+### Fantasy: fixtures of a gameweek
+GET {{api}}/fantasy/egy/fixtures?gameweek=9
+
+### Fantasy: the real league table
+GET {{api}}/fantasy/egy/table
+
+### Fantasy: my team (404 no_team → create one)
+GET {{api}}/fantasy/egy/team
+
+### Fantasy: create a team (15 player ids from the bootstrap)
+POST {{api}}/fantasy/egy/team
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "Nile Strikers", "picks": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], "lineup": null }
+
+### Fantasy: lineup (11 starters, bench with the substitute keeper first, captain, vice)
+PUT {{api}}/fantasy/egy/team/lineup
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "starters": [1,3,4,5,8,9,10,11,12,13,14], "bench": [2,6,7,15], "captainId": 13, "viceCaptainId": 10 }
+
+### Fantasy: transfers (same position; free ones, then -4 each)
+POST {{api}}/fantasy/egy/team/transfers
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "transfers": [ { "out": 10, "in": 40 } ] }
+
+### Fantasy: play a chip (wildcard, benchboost, triplecaptain)
+POST {{api}}/fantasy/egy/team/chips/benchboost
+X-CSRF-TOKEN: {{csrf}}
+
+### Fantasy: history
+GET {{api}}/fantasy/egy/team/history
+
+### Fantasy: my groups, official leagues, paid groups
+GET {{api}}/fantasy/egy/groups
+
+### Fantasy: create a private group
+POST {{api}}/fantasy/egy/groups
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "Office League" }
+
+### Fantasy: join a group by its code
+POST {{api}}/fantasy/groups/join
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "inviteCode": "SA-XXXXXX" }
+
+### Fantasy: group table
+GET {{api}}/fantasy/groups/1/table
+
+### Fantasy Pass: status
+GET {{api}}/fantasy/pass
+
+### Fantasy Pass: buy (new Idempotency-Key each purchase)
+POST {{api}}/fantasy/pass
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+Idempotency-Key: pass-0001
+
+{ "plan": "both" }
+
+### Admin fantasy (fantasy.manage): sync now
+POST {{api}}/admin/fantasy/sync?competition=EGY
+X-CSRF-TOKEN: {{csrf}}
+
+### Admin fantasy: re-score a finished gameweek
+POST {{api}}/admin/fantasy/rescore/8?competition=EGY
+X-CSRF-TOKEN: {{csrf}}
+
+### Admin fantasy: API-FOOTBALL usage bar
+GET {{api}}/admin/fantasy/usage
+
+### Admin fantasy: sponsor
+POST {{api}}/admin/fantasy/sponsors
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "Nile Cola", "tier": "Gold", "contactEmail": "deals@nilecola.example", "contractValue": 60000, "startsOn": "2026-08-01", "endsOn": "2027-05-31", "color": "#C8102E" }
+
+### Admin fantasy: official prize league (prizes are rewards and vouchers, never cash)
+POST {{api}}/admin/fantasy/groups
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "competition": "EGY", "name": "Cairo Derby Cup", "type": "Official", "sponsorId": 1, "prizeText": "Two derby tickets + signed kit", "prizeValue": 60000, "monthlyPrice": null }
+
+### Admin fantasy: winners → shop vouchers
+POST {{api}}/admin/fantasy/winners
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "groupId": 1, "places": [ { "rank": 1, "amount": 1000 }, { "rank": 2, "amount": 500 } ] }
+
+### Matches of a day (Cairo date)
+GET {{api}}/matches?date=2026-10-17&competition=EGY
+
+### One match with its players
+GET {{api}}/matches/1
+
+### News (public)
+GET {{api}}/news?category=league
+
+### Admin news (content.news)
+POST {{api}}/admin/news
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "category": "league", "title": "Cairo derby moved to Friday night", "excerpt": "The league moved the derby by one day to give both clubs more rest.", "body": "Full story.", "isBreaking": true, "isHidden": false, "publishedAt": null }
+
+### Content: home banners and announcement
+GET {{api}}/content/home
+
+### Content: pop-ups and timing
+GET {{api}}/content/popups
+
+### Content: count a pop-up view
+POST {{api}}/content/popups/1/event
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "kind": "shown" }
+
+### Cookie choice
+POST {{api}}/consents/cookies
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "visitorId": "v-123", "analytics": false }
+
+### Legal: documents
+GET {{api}}/legal
+
+### Legal: accept the current terms
+POST {{api}}/legal/terms/accept
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "context": "site", "contextId": null }
+
+### Help center: search
+GET {{api}}/help/articles?q=refund
+
+### Help center: "was this helpful"
+POST {{api}}/help/articles/1/vote
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "helpful": true, "visitorId": "v-123" }
+
+### SEO from live data
+GET {{api}}/seo/sitemap.xml
+
+### Admin content: announcement bar
+PUT {{api}}/admin/announcement
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "on": true, "text": "Pitch bookings are 10% off this weekend", "link": "#/pitches", "cta": "Book", "tone": "success", "until": null }
+
+### Admin content: legal draft (then POST …/versions/2/publish)
+POST {{api}}/admin/legal/privacy/versions
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "summaryEn": "Short summary", "summaryAr": "ملخص", "bodyEn": "Full text", "bodyAr": "النص الكامل" }
+
+### Communities: list
+GET {{api}}/communities
+
+### Communities: join
+POST {{api}}/communities/fantasy/join
+X-CSRF-TOKEN: {{csrf}}
+
+### Communities: post with a poll (Super App links become cards)
+POST {{api}}/communities/fantasy/posts
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "text": "Captain this week? #/communities/players", "pollOptions": ["Salah", "Haaland"] }
+
+### Communities: comment
+POST {{api}}/posts/1/comments
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "text": "Salah every week" }
+
+### Communities: react
+PUT {{api}}/posts/1/reaction
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "type": "Fire" }
+
+### Communities: report
+POST {{api}}/posts/1/report
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "reason": "Spam", "detail": "Selling" }
+
+### Admin community: remove and mute the author (community.moderate)
+POST {{api}}/admin/community/reports/1/mute-author
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "days": 3, "reason": "Selling is not allowed here." }
+
+### Admin community: post as Super App Admin (community.postAsAdmin)
+POST {{api}}/admin/communities/fantasy/posts
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "text": "Welcome! Keep it friendly.", "pollOptions": null, "isPinned": true, "isAnnouncement": true }
+
+### Support: open a ticket (auto-reply in the chat and by email)
+POST {{api}}/support/tickets
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "topic": "Booking", "subject": "The pitch lights were off", "message": "We could not play the second half.", "openedFrom": "Site", "bookingCode": null, "orderCode": null, "disputeAmount": null }
+
+### Support: my tickets
+GET {{api}}/support/tickets/mine
+
+### Admin support: inbox (support.read)
+GET {{api}}/admin/support/tickets
+
+### Admin support: reply (support.reply)
+POST {{api}}/admin/support/tickets/TK-XXXXXX/messages
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "body": "We are checking with the venue.", "internalNote": false }
+
+### Admin support: decide a dispute (disputes.decide; refund paid in Phase 5)
+POST {{api}}/admin/support/tickets/TK-XXXXXX/dispute
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "refund": 250, "paidBy": "Partner", "note": "Venue fault." }

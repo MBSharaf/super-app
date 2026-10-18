@@ -8,6 +8,7 @@ using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Files;
 using SuperApp.Application.Features.Packages;
 using SuperApp.Application.Features.Partners;
+using SuperApp.Application.Features.Reviews;
 using SuperApp.Application.Features.Pitches;
 
 namespace SuperApp.Application;
@@ -44,6 +45,10 @@ public static class DependencyInjection
         services.AddScoped<IPackageOptionsService, PackageOptionsService>();
         services.AddScoped<IPackagesService, PackagesService>();
         Features.Shop.ShopRegistration.AddShop(services);
+        services.AddScoped<IReviewsService, ReviewsService>();
+        services.AddScoped<Features.Waitlist.IWaitlistService, Features.Waitlist.WaitlistService>();
+        services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();
+        Features.Fantasy.FantasyRegistration.AddFantasy(services);   // Phase 6 (branch phase-6-fantasy)
         return services;
     }
 }

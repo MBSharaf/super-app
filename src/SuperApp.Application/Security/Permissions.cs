@@ -67,6 +67,7 @@ public static class Permissions
         new("content.categories", "Content", "Edit categories", "تعديل الفئات"),
         new("content.holidays", "Content", "Confirm public holidays", "تأكيد الإجازات الرسمية"),
         new("games.moderate", "Content", "Moderate games", "الإشراف على الماتشات"),
+        new("reviews.moderate", "Content", "Moderate pitch reviews", "الإشراف على تقييمات الملاعب"),
 
         new("community.moderate", "Community", "Moderate communities", "الإشراف على المجتمعات"),
         new("community.manage", "Community", "Create and edit communities", "إنشاء وتعديل المجتمعات"),

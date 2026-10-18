@@ -1,0 +1,70 @@
+/** Arabic dictionary — Phase 6 (API mode): fantasy, groups, Fantasy Pass, content, communities and support messages from the server. */
+(function (SA) {
+  const D = SA.data.i18nAr;
+  Object.assign(D.strings, {
+    /* ---------- Fantasy (site) ---------- */
+    'Gameweeks are scored automatically after the matches.': 'نقط الجولات بتتحسب أوتوماتيك بعد الماتشات.',
+    'Chips are played on the server.': 'الكروت بتتلعب من السيرفر.',
+    'League not found.': 'الدوري مش موجود.',
+    'Fantasy Pass active': 'الـ Fantasy Pass اتفعّل',
+    'Prize leagues are open.': 'دوريات الجوايز مفتوحة ليك.',
+    'Both leagues': 'الدوريين',
+    'Super App Grand League': 'دوري Super App الكبير',
+    'Super App Premier League Cup': 'كأس Super App للدوري الإنجليزي',
+    'Everyone who builds a team is entered automatically.': 'أي حد يعمل فريق بيدخل أوتوماتيك.',
+    'You': 'إنت',
+
+    /* ---------- Fantasy (server messages) ---------- */
+    'Your team is ready.': 'فريقك جاهز.',
+    'Lineup saved.': 'التشكيلة اتحفظت.',
+    'Transfers made.': 'التغييرات اتعملت.',
+    'Chip played.': 'الكارت اتلعب.',
+    'Pick 15 different players.': 'اختار 15 لاعب مختلفين.',
+    'At most 3 players from one club.': '3 لاعيبة بالكتير من نفس النادي.',
+    'Start 1 goalkeeper, at least 3 defenders, 2 midfielders and 1 forward.': 'ابدأ بحارس واحد و3 مدافعين على الأقل ولاعبين وسط ومهاجم.',
+    'The substitute goalkeeper sits first on the bench.': 'الحارس الاحتياطي أول واحد على الدكة.',
+    'Pick a captain and a different vice-captain from your starting XI.': 'اختار كابتن ونائب كابتن مختلف من التشكيلة الأساسية.',
+    'A player can only be replaced by a player in the same position.': 'اللاعب يتغير بلاعب في نفس المركز بس.',
+    'Each transfer takes one of your players out and brings in a player you don\'t have.': 'كل تغيير بيطلّع لاعب من فريقك ويدخّل لاعب مش عندك.',
+    'You have already played this chip.': 'إنت لعبت الكارت ده قبل كده.',
+    'You already have a team in this league.': 'عندك فريق في الدوري ده بالفعل.',
+    'You have no team in this league yet. Pick your 15 players to start.': 'لسه ماعندكش فريق في الدوري ده. اختار الـ 15 لاعب بتوعك عشان تبدأ.',
+    'The deadline has passed and no gameweek is open for changes.': 'الديدلاين عدّى ومفيش جولة مفتوحة للتغييرات.',
+    'This league has no season yet.': 'الدوري ده لسه مفيهوش موسم.',
+    'Create your fantasy team for this league first.': 'اعمل فريق الفانتازي بتاعك في الدوري ده الأول.',
+    'Prize leagues need a Fantasy Pass for this league.': 'دوريات الجوايز محتاجة Fantasy Pass للدوري ده.',
+    'No group uses that code. Check it with the person who invited you.': 'مفيش مجموعة بالكود ده. اتأكد منه مع اللي عزمك.',
+    'This group has a monthly fee; paying for groups opens with online payments.': 'المجموعة دي باشتراك شهري؛ الدفع للمجموعات هيفتح مع الدفع أونلاين.',
+    'Only members see this group\'s table.': 'جدول المجموعة دي للأعضاء بس.',
+    'Group created. Share the invite code.': 'المجموعة اتعملت. شارك كود الدعوة.',
+    'You joined the group.': 'انضميت للمجموعة.',
+    'You left the group.': 'خرجت من المجموعة.',
+    'Choose egy, epl or both.': 'اختار الدوري المصري أو الإنجليزي أو الاتنين.',
+
+    /* ---------- Communities (server messages) ---------- */
+    'Posted.': 'اتنشر.',
+    'Comment added.': 'التعليق اتضاف.',
+    'Reply added.': 'الرد اتضاف.',
+    'Vote counted.': 'صوتك اتحسب.',
+    'Welcome to the community.': 'أهلاً بيك في المجتمع.',
+    'You left the community.': 'خرجت من المجتمع.',
+    'Thanks — the Super App team will look at it.': 'شكراً — فريق Super App هيشوفه.',
+    'Join the community to take part.': 'انضم للمجتمع عشان تشارك.',
+    'Links to other websites are not allowed. Share Super App links instead.': 'لينكات المواقع التانية ممنوعة. شارك لينكات Super App بدالها.',
+    'Phone numbers are not allowed — there are no private messages in communities.': 'أرقام التليفونات ممنوعة — مفيش رسايل خاصة في المجتمعات.',
+    'Please keep it friendly — your text has a word that is not allowed here.': 'خلّي الكلام ودّي — فيه كلمة مش مسموحة هنا.',
+    'You have already voted in this poll.': 'إنت صوّت في الاستطلاع ده قبل كده.',
+    'You have already reported this.': 'إنت بلّغت عن ده قبل كده.',
+    'Comments are closed on this post.': 'التعليقات مقفولة على البوست ده.',
+    'This community is archived.': 'المجتمع ده مؤرشف.',
+    'This community is for Super App sellers.': 'المجتمع ده لبائعين Super App.',
+    'This community is for Pro and Elite sellers.': 'المجتمع ده لبائعين Pro و Elite.',
+
+    /* ---------- Support (server messages) ---------- */
+    'We got your message. The team replies within 24 hours.': 'رسالتك وصلت. الفريق هيرد خلال 24 ساعة.',
+    'Thanks for reaching out — the Super App team replies within 24 hours. You can add details or photos here meanwhile.': 'شكراً إنك كلمتنا — فريق Super App بيرد خلال 24 ساعة. تقدر تضيف تفاصيل أو صور هنا لحد ما نرد.',
+    'This ticket is closed. Open a new one if you still need help.': 'التذكرة دي مقفولة. افتح واحدة جديدة لو لسه محتاج مساعدة.',
+    'Ticket closed.': 'التذكرة اتقفلت.',
+    'Super App': 'Super App',
+  });
+})(window.SA);

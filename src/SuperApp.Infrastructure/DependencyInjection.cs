@@ -16,6 +16,7 @@ using SuperApp.Application.Abstractions.Documents;
 using SuperApp.Application.Features.CheckIn;
 using SuperApp.Application.Features.Packages;
 using SuperApp.Application.Features.Partners;
+using SuperApp.Application.Features.Reviews;
 using SuperApp.Infrastructure.Documents;
 using SuperApp.Application.Features.Pitches;
 using SuperApp.Domain.Entities.Auth;
@@ -63,6 +64,7 @@ public static class DependencyInjection
         Shop.ShopInfrastructure.AddShopInfrastructure(services);
 
         services.AddSeed(configuration);
+        Fantasy.FantasyInfrastructureRegistration.AddFantasyInfrastructure(services, configuration);   // Phase 6 (branch phase-6-fantasy)
         return services;
     }
 
@@ -94,6 +96,8 @@ public static class DependencyInjection
         services.AddScoped<IPartnerStaffRepository, PartnerStaffRepository>();
         services.AddScoped<ICheckInRepository, CheckInRepository>();
         services.AddScoped<IPackageRepository, PackageRepository>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<Application.Features.Waitlist.IWaitlistRepository, WaitlistRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
         services.AddSingleton<IQrTokens, QrTokens>();
