@@ -418,6 +418,125 @@
       return SL.get(SELLER);
     },
   });
+  /* ---------------- Factory (on the server) ---------------- */
+
+  const F = SA.services.factory;
+  const demoFactory = { ...F, auth: { ...F.auth } };
+  const FACTORY = 'fc-live';
+  const DEVICE_KEY = 'superapp.factory.device';
+  const SESSION_KEY = 'superapp.factory.apiSession';
+  const STAFF_SESSION = 'superapp.factory.session';
+  const FSTAGE = { New: 'new', Printing: 'printing', QualityCheck: 'qc', Packing: 'packing', Ready: 'ready', Shipped: 'shipped', Cancelled: 'cancelled' };
+  const FROLE = { Owner: 'owner', Supervisor: 'supervisor', Printer: 'printer', QualityCheck: 'qc', Packer: 'packer' };
+  const TO_API = { printing: 'Printing', qc: 'QualityCheck', packing: 'Packing', ready: 'Ready' };
+  const ISSUE = { 'Out of this colour or size': 'OutOfBlanks', 'Print file problem': 'BadArtwork', 'Machine down': 'MachineDown', 'Damaged blank': 'Damaged' };
+  let factoryLoad = null;
+  let factoryOn = false;
+  const local = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* private mode */ } return null; };
+
+  /** Factory calls carry the device token and the staff session (owners use their account cookie) */
+  const fcall = async (method, path, body) => {
+    const headers = { Accept: 'application/json' };
+    if (local(DEVICE_KEY)) headers['X-Factory-Device'] = local(DEVICE_KEY);
+    if (local(SESSION_KEY)) headers['X-Factory-Session'] = local(SESSION_KEY);
+    if (method === 'GET') {
+      const res = await fetch(`${api.BASE}${path}`, { credentials: 'same-origin', headers });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) { const err = new ApiError(json?.message || 'Something went wrong.', json?.errors?.code?.[0] || 'error'); err.status = res.status; throw err; }
+      return json.meta ? json.data : json.data;
+    }
+    return api.post(path, body ?? {}, { headers });
+  };
+
+  const toJob = (j, staff) => ({
+    id: j.code, live: true, orderId: j.orderCode, designId: null, sellerId: null, catalogId: (SA.services.db.all('podCatalog').find((c) => c.name === j.productName) || {}).id || 'pod-tee',
+    title: j.title.replace(/ — .*$/, ''), color: j.color, size: j.size, qty: j.qty, price: 0, base: 0, profit: 0, partnerCost: 0, customer: { id: '', name: '', city: j.city, phone: '', address: '' },
+    payment: '', status: j.stage === 'Cancelled' ? 'cancelled' : j.stage === 'Shipped' ? 'shipped' : 'printing', history: [], placedAt: Date.parse(j.dueAt) - 48 * 36e5, deliveredAt: 0,
+    createdAt: Date.parse(j.dueAt) - 48 * 36e5, updatedAt: Date.now(), factoryId: FACTORY, stage: FSTAGE[j.stage] || 'new', steps: [], dueAt: Date.parse(j.dueAt),
+    qcFails: j.reprintCount, reprints: j.reprintCount, assignedTo: staff.find((s) => s.name === j.assignedTo)?.id || '', sample: j.isSample,
+  });
+
+  /** Loads the factory, its staff and jobs into the local shape (records marked live). Owners sign in with the account; this device is registered once. */
+  const loadFactory = async () => {
+    let me = await fcall('GET', '/factory/me').catch((err) => { if (err.status === 401 && local(SESSION_KEY)) { local(SESSION_KEY, null); return fcall('GET', '/factory/me'); } throw err; });
+    if (me.staffId == null && !local(DEVICE_KEY)) {
+      const device = await api.post('/factory/devices/register', { name: navigator.userAgent.includes('Mobile') ? 'Phone' : 'Computer' });
+      local(DEVICE_KEY, device.token);
+      me = await fcall('GET', '/factory/me');
+    }
+    const [names, jobs, settings] = await Promise.all([fcall('GET', '/factory/staff/list'), fcall('GET', '/factory/jobs?stage=all&pageSize=200'), fcall('GET', '/factory/settings')]);
+    const raw = SA.services.db.raw();
+    const template = raw.factories.find((x) => !x.live) || {};
+    raw.factories = [{ ...template, id: FACTORY, live: true, name: me.factoryName, capacity: settings.capacityPerDay, slaHours: settings.slaHours, intake: !settings.intakePaused, status: 'active', address: settings.address },
+      ...raw.factories.filter((x) => x.id !== FACTORY)];
+    const staff = [{ id: 'fs-live-owner', live: true, factoryId: FACTORY, name: me.staffId == null ? me.name : 'Owner', role: 'owner', active: me.staffId == null, avatar: 2, pin: null },
+      ...names.map((s) => ({ id: `fs-live-${s.id}`, live: true, apiId: s.id, factoryId: FACTORY, name: s.name, role: FROLE[s.role] || 'printer', active: true, avatar: s.id % 15, pin: null }))];
+    raw.factoryStaff = [...staff, ...raw.factoryStaff.filter((s) => !s.live)];
+    raw.podOrders = [...jobs.map((j) => toJob(j, staff)), ...raw.podOrders.filter((o) => !o.live)];
+    local(STAFF_SESSION, me.staffId == null ? 'fs-live-owner' : `fs-live-${me.staffId}`);
+    factoryOn = true;
+    ['factories', 'factoryStaff', 'podOrders'].forEach((col) => SA.services.db.touch?.(col));
+  };
+
+  const factoryReady = async () => {
+    await api.ready;
+    if (!live()) return;
+    if (!SA.services.session.loaded()) await SA.services.session.load();
+    factoryLoad ||= loadFactory().catch((err) => { if (![401, 403].includes(err.status)) console.error(err); }).finally(() => setTimeout(() => { factoryLoad = null; }, 10000));
+    await factoryLoad;
+  };
+
+  const liveJob = (id) => factoryOn && SA.services.db.find('podOrders', String(id))?.live;
+  /** Shows the change at once, sends it to the server, then reloads (a refused step is undone with the server's message) */
+  const sync = (request) => request.then(() => { factoryLoad = null; return factoryReady(); }).then(() => SA.app.rerender?.())
+    .catch((err) => { SA.ui.overlay?.toast(err.message, { type: 'error' }); factoryLoad = null; factoryReady().then(() => SA.app.rerender?.()); });
+
+  Object.assign(F, {
+    list: () => (factoryOn && live() ? SA.services.db.all('factories').filter((x) => x.live) : demoFactory.list()),
+    move(id, to) {
+      if (!liveJob(id)) return demoFactory.move(id, to);
+      const o = SA.services.db.find('podOrders', id);
+      const s = F.me();
+      SA.services.db.update('podOrders', id, { stage: to, steps: [...(o.steps || []), { stage: to, at: Date.now(), by: s?.id || '', name: s?.name || '' }] });
+      sync(o.stage === 'qc' && to === 'packing' ? fcall('POST', `/factory/jobs/${id}/qc`, { pass: true }) : fcall('POST', `/factory/jobs/${id}/advance`, { toStage: TO_API[to] }));
+      return SA.services.db.find('podOrders', id);
+    },
+    qcFail(id, reason) {
+      if (!liveJob(id)) return demoFactory.qcFail(id, reason);
+      SA.services.db.update('podOrders', id, { stage: 'printing' });
+      sync(fcall('POST', `/factory/jobs/${id}/qc`, { pass: false, reason }));
+      return SA.services.db.find('podOrders', id);
+    },
+    assign(id, staffId) {
+      if (!liveJob(id)) return demoFactory.assign(id, staffId);
+      SA.services.db.update('podOrders', id, { assignedTo: staffId || '' });
+      sync(fcall('POST', `/factory/jobs/${id}/assign`, { staffId: SA.services.db.find('factoryStaff', staffId)?.apiId ?? null }));
+      return SA.services.db.find('podOrders', id);
+    },
+    reportIssue(id, { type, note = '' }) {
+      if (!liveJob(id)) return demoFactory.reportIssue(id, { type, note });
+      SA.services.db.update('podOrders', id, { issue: { type, note, by: F.me()?.name || '', at: Date.now(), resolved: false } });
+      sync(fcall('POST', `/factory/jobs/${id}/problem`, { kind: ISSUE[type] || 'Other', detail: `${type}${note ? ` — ${note}` : ''}` }));
+      return SA.services.db.find('podOrders', id);
+    },
+    saveSettings(v) {
+      if (!factoryOn || !live()) return demoFactory.saveSettings(v);
+      const f = SA.services.db.find('factories', FACTORY);
+      sync(api.put('/factory/settings', { capacityPerDay: +v.capacity || f.capacity, slaHours: +v.slaHours || f.slaHours, intakePaused: !f.intake }));
+      return demoFactory.saveSettings(v);
+    },
+  });
+  F.auth.signIn = (staffId, pin) => {
+    const s = SA.services.db.find('factoryStaff', staffId);
+    if (!factoryOn || !s?.live) return demoFactory.auth.signIn(staffId, pin);
+    return fcall('POST', '/factory/auth/pin', { staffId: s.apiId, pin: String(pin) }).then((session) => {
+      local(SESSION_KEY, session.token);
+      local(STAFF_SESSION, s.id);
+      factoryLoad = null;
+      return factoryReady().then(() => F.auth.current());
+    });
+  };
+  F.auth.signOut = () => { local(SESSION_KEY, null); demoFactory.auth.signOut(); };
   /* ---------------- Start ---------------- */
 
   const start = async () => {
@@ -428,5 +547,5 @@
     SA.services.session?.subscribe?.(() => { loadCart().catch(() => null); loadWishes().catch(() => null); });
   };
   start();
-  SA.services.liveShop = { sellerReady, loadCart, SELLER };
+  SA.services.liveShop = { sellerReady, factoryReady, loadCart, SELLER, FACTORY };
 })(window.SA);
