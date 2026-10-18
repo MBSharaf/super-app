@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel 01 v2 — أنواع اللاعيبة في ماتش الخماسي</title>
+<!-- Super App reel 01 v2 · collage style from docs/brand/references (recoloured to brand tokens) · 1080×1920 · 15 s.
+     Deterministic: window.render(t) draws the frame at t seconds; render.js steps it at 30 fps. -->
+<style>
+@font-face { font-family: "Archivo"; src: url(../../../vendor/fonts/archivo-latin.woff2) format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: "Cairo"; src: url(../../../vendor/fonts/cairo-arabic.woff2) format("woff2"); font-weight: 400 800; }
+:root {
+  --paper: #F1F2EE; --cream: #F4EEDF; --surface: #FFFFFF; --ink: #0D1411; --ink-2: #46514B;
+  --turf: #0B6E4F; --turf-fill: #0B6E4F; --turf-tint: #E1F0E8; --blaze: #FF5B14; --gold: #C9920F; --gold-tint: #FBF1D6;
+  --font: "Cairo", "Archivo", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+body { font-family: var(--font); color: var(--ink); position: relative; }
+.abs { position: absolute; }
+.scene { position: absolute; inset: 0; overflow: hidden; }
+.bg-ink { background: var(--ink); }
+.bg-turf { background-color: var(--turf-fill); background-image: linear-gradient(rgba(255,255,255,.16) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.16) 2px, transparent 2px); background-size: 54px 54px; }
+.bg-cream { background-color: var(--cream); background-image: linear-gradient(rgba(13,20,17,.05) 2px, transparent 2px), linear-gradient(90deg, rgba(13,20,17,.05) 2px, transparent 2px); background-size: 54px 54px; }
+.halftone { inset: 0; opacity: .14; background-image: radial-gradient(rgba(255,255,255,.9) 1.6px, transparent 2px); background-size: 14px 14px; }
+.block { display: inline-block; font-weight: 800; line-height: 1.12; padding: 6px 30px 18px; box-shadow: 0 16px 24px -14px rgba(0,0,0,.55); }
+.b-ink { background: var(--ink); color: #fff; }
+.b-paper { background: var(--surface); color: var(--ink); }
+.b-blaze { background: var(--blaze); color: #fff; }
+.b-cream { background: var(--cream); color: var(--ink); }
+.note { background: var(--gold-tint); background-image: repeating-linear-gradient(transparent 0 58px, rgba(11,110,79,.22) 58px 60px); color: var(--ink); font-weight: 700; padding: 22px 40px 30px; box-shadow: 0 18px 26px -16px rgba(0,0,0,.5); line-height: 60px; }
+.note mark { background: linear-gradient(transparent 55%, rgba(255,91,20,.55) 55%); color: inherit; padding: 0 4px; }
+.tape { width: 170px; height: 52px; background: rgba(251,241,214,.78); box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.stampbox { width: 190px; height: 230px; background: var(--surface); border: 12px dotted currentColor; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 14px 20px -12px rgba(0,0,0,.5); }
+.stampbox b { font: 800 84px "Archivo", sans-serif; line-height: 1; color: var(--ink); direction: ltr; }
+.stampbox span { font: 800 20px "Archivo", sans-serif; letter-spacing: .12em; color: var(--ink-2); direction: ltr; }
+.tag { top: 270px; right: 60px; height: 70px; padding: 0 30px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 34px; display: flex; align-items: center; gap: 14px; z-index: 50; box-shadow: 0 8px 16px -10px rgba(0,0,0,.5); }
+.tag i { width: 14px; height: 14px; border-radius: 50%; background: var(--turf); display: block; }
+.count { top: 270px; left: 60px; z-index: 50; height: 70px; padding: 0 26px; background: var(--cream); color: var(--ink); font: 800 34px "Archivo", sans-serif; letter-spacing: .06em; display: flex; align-items: center; direction: ltr; box-shadow: 0 8px 16px -10px rgba(0,0,0,.5); }
+.mark-x { width: 34px; height: 34px; z-index: 40; }
+.grain { inset: 0; z-index: 60; pointer-events: none; mix-blend-mode: multiply; opacity: .55; }
+.pill { display: inline-flex; align-items: center; height: 76px; padding: 0 34px 6px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 38px; box-shadow: 0 10px 18px -12px rgba(0,0,0,.5); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const DUR = 15, HOOK_END = 1.6, SCENE0 = 1.6, SCENE = 2.4, END = 13.6, WIPE = .32;
+const BODY = 'M14 6 L22 3 Q32 8 42 3 L50 6 L60 16 L52 25 L48 22 L48 60 L16 60 L16 22 L12 25 L4 16 Z';
+
+// Brand easing
+function bezier(p1x, p1y, p2x, p2y) {
+  const cx = 3 * p1x, bx = 3 * (p2x - p1x) - cx, ax = 1 - cx - bx, cy = 3 * p1y, by = 3 * (p2y - p1y) - cy, ay = 1 - cy - by;
+  const sx = (t) => ((ax * t + bx) * t + cx) * t, sy = (t) => ((ay * t + by) * t + cy) * t;
+  return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
+    for (let i = 0; i < 8; i++) { const d = (3 * ax * t + 2 * bx) * t + cx, e = sx(t) - x; if (Math.abs(e) < 1e-5 || !d) break; t -= e / d; }
+    return sy(Math.min(1, Math.max(0, t))); };
+}
+const ease = bezier(.2, .8, .2, 1), spring = bezier(.34, 1.56, .64, 1);
+const clamp = (v) => Math.min(1, Math.max(0, v)), prog = (t, a, d) => clamp((t - a) / d), lerp = (a, b, p) => a + (b - a) * p;
+// Stop-motion jitter: a new random offset 12 times a second, like hand-moved paper
+const jit = (seed, t, amp) => { const k = Math.floor(t * 12) * 97 + seed * 131; const r = Math.sin(k * 12.9898) * 43758.5453; return ((r - Math.floor(r)) - .5) * 2 * amp; };
+
+function torn(seed, w, h, amp = 12, step = 26, sides = 'tblr') {
+  let s = seed; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  const p = [];
+  for (let x = 0; x <= w; x += step) p.push(`${x}px ${sides.includes('t') ? r() * amp : 0}px`);
+  for (let y = 0; y <= h; y += step) p.push(`${w - (sides.includes('r') ? r() * amp : 0)}px ${y}px`);
+  for (let x = w; x >= 0; x -= step) p.push(`${x}px ${h - (sides.includes('b') ? r() * amp : 0)}px`);
+  for (let y = h; y >= 0; y -= step) p.push(`${sides.includes('l') ? r() * amp * 2.2 : 0}px ${y}px`);
+  return `polygon(${p.join(',')})`;
+}
+
+const KITS = [
+  { n: '10', a: '#1E3A8A', b: '#F8D24A', p: 'stripes', ink: '#fff', bg: 'turf', halo: 'var(--blaze)', words: ['اللي', 'مبيباصيش'], quote: 'الكورة بتاعته <mark>من البيت</mark>' },
+  { n: '1', a: '#9BE15D', b: '#0D1411', p: 'solid', ink: '#0D1411', bg: 'cream', halo: 'var(--turf-fill)', words: ['الحارس', 'بالدور'], quote: '<mark>خمس دقايق</mark> بس وراجع قدام' },
+  { n: '7', a: '#E5E7EB', b: '#0B6E4F', p: 'hoops', ink: '#0D1411', bg: 'ink', halo: 'var(--blaze)', words: ['اللي', 'جاي', 'متأخر'], quote: 'أنا تحت البيت… <mark>من ساعة</mark>' },
+  { n: '8', a: '#334155', b: '#94A3B8', p: 'half', ink: '#fff', bg: 'turf', halo: 'var(--gold)', words: ['المحلل'], quote: 'لو كنت باصيت <mark>شمال</mark> كان جول' },
+  { n: '5', a: '#0E7490', b: '#FFFFFF', p: 'solid', ink: '#fff', bg: 'cream', halo: 'var(--blaze)', words: ['اللي', 'بيلم', 'الفلوس'], quote: 'يا رجالة اللي مدفعش <mark>الـ 45 جنيه</mark>', stamp: '45', note: 'على Super App كل واحد بيدفع نصيبه' },
+];
+const STYLES = { turf: ['b-blaze', 'b-paper', 'b-ink'], cream: ['b-ink', 'b-blaze', 'b-paper'], ink: ['b-paper', 'b-blaze', 'b-cream'] };
+const CHALK = { turf: '#FFFFFF', cream: '#0D1411', ink: '#FFFFFF' };
+
+function kitSvg(k, i) {
+  const id = 'k' + i;
+  const pat = { solid: '', stripes: [18, 28, 38].map((x) => `<rect x="${x}" y="0" width="5" height="64" fill="${k.b}"/>`).join(''),
+    hoops: [24, 36, 48].map((y) => `<rect x="0" y="${y}" width="64" height="5" fill="${k.b}"/>`).join(''),
+    half: `<rect x="32" y="0" width="32" height="64" fill="${k.b}"/>`, sash: `<path d="M10 10 L22 6 L56 60 L44 64 Z" fill="${k.b}"/>` }[k.p];
+  // printed-photo look: halftone dots and a soft shade, clipped to the shirt
+  return `<svg width="560" height="560" viewBox="-4 -4 72 72" style="overflow:visible">
+    <defs><clipPath id="${id}"><path d="${BODY}"/></clipPath>
+      <pattern id="${id}h" width="1.6" height="1.6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx=".8" cy=".8" r=".42" fill="rgba(13,20,17,.28)"/></pattern>
+      <linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>
+    <path d="${BODY}" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+    <g clip-path="url(#${id})"><rect x="-4" y="-4" width="72" height="72" fill="${k.a}"/>${pat}<rect x="-4" y="-4" width="72" height="72" fill="url(#${id}h)"/><rect x="-4" y="-4" width="72" height="72" fill="url(#${id}g)"/></g>
+    <path d="M24 4.2 Q32 10 40 4.2" fill="none" stroke="${k.p === 'solid' ? k.b : 'rgba(0,0,0,.35)'}" stroke-width="2.4"/>
+    <text x="32" y="44" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="20" fill="${k.ink}">${k.n}</text>
+  </svg>`;
+}
+const markX = (x, y, c) => `<svg class="abs mark-x" style="left:${x}px;top:${y}px" viewBox="0 0 34 34"><circle cx="17" cy="17" r="10" fill="none" stroke="${c}" stroke-width="2.5"/><path d="M17 0v34M0 17h34" stroke="${c}" stroke-width="2.5"/></svg>`;
+const brandMark = (s) => `<svg width="${s}" height="${s}" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>`;
+
+// ---------- build ----------
+const root = document.getElementById('root');
+let html = '';
+
+// Hook (ink, Vox-like)
+html += `<div class="scene bg-ink" id="hook" style="z-index:1">
+  <div class="abs halftone"></div>
+  ${markX(90, 420, '#ffffff55')}${markX(960, 1460, '#ffffff55')}
+  <div class="abs" style="right:70px;left:70px;top:520px;display:flex;flex-direction:column;align-items:flex-start;gap:22px">
+    <span class="block b-paper hw" style="font-size:92px;transform:rotate(-3deg)">في كل</span>
+    <span class="block b-blaze hw" style="font-size:150px;transform:rotate(2deg);margin-inline-start:120px">ماتش</span>
+    <span class="block b-paper hw" style="font-size:170px;transform:rotate(-1.5deg);clip-path:${torn(5, 760, 260, 10)}">خماسي</span>
+    <span class="note hw" style="font-size:54px;transform:rotate(1.5deg);margin-top:16px">فيه <mark>الخمسة دول</mark>… انت واحد منهم</span>
+  </div>
+  <div class="abs" id="film" style="left:-40px;bottom:470px;width:620px;height:150px;background:#111;transform:rotate(-4deg);display:flex;gap:18px;padding:26px 40px;align-items:center;box-shadow:0 14px 22px -12px #000">
+    ${KITS.map((k, i) => `<div style="width:96px;height:96px;background:#2a2f2d;display:grid;place-items:center;filter:grayscale(1) contrast(1.2)">${kitSvg(k, 'f' + i).replace('width="560" height="560"', 'width="80" height="80"')}</div>`).join('')}
+    <div class="abs" style="inset:6px 0 auto;height:12px;background:repeating-linear-gradient(90deg,#fff 0 14px,transparent 14px 34px);opacity:.75"></div>
+    <div class="abs" style="inset:auto 0 6px;height:12px;background:repeating-linear-gradient(90deg,#fff 0 14px,transparent 14px 34px);opacity:.75"></div>
+  </div>
+</div>`;
+
+// Five scenes
+KITS.forEach((k, i) => {
+  const st = STYLES[k.bg], chalk = CHALK[k.bg];
+  html += `<div class="scene bg-${k.bg}" id="s${i}" style="z-index:${2 + i};clip-path:${torn(20 + i, 1080, 1920, 28, 34, 'l')}">
+    ${k.bg === 'ink' ? '<div class="abs halftone"></div>' : ''}
+    ${markX(80, 1480, chalk + '66')}${markX(966, 410, chalk + '66')}
+    <div class="abs halo" style="left:250px;top:400px;width:580px;height:580px;border-radius:50%;background:${k.halo}"></div>
+    <div class="abs sticker" style="left:260px;top:380px;width:560px;height:560px;filter:drop-shadow(0 28px 26px rgba(0,0,0,.38))">${kitSvg(k, i)}
+      <div class="abs tape" style="top:30px;left:70px;transform:rotate(-24deg)"></div>
+      <div class="abs tape" style="top:46px;right:40px;transform:rotate(28deg);width:140px"></div>
+    </div>
+    <svg class="abs scribble" width="1080" height="1920" viewBox="0 0 1080 1920" style="inset:0">
+      <path d="M470 630 C 600 570, 700 650, 655 750 C 610 835, 455 810, 448 720 C 444 665, 500 620, 560 618" fill="none" stroke="${chalk}" stroke-width="9" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+    </svg>
+    <div class="abs stampbox" style="left:70px;top:390px;color:${k.bg === 'cream' ? 'var(--cream)' : k.bg === 'ink' ? 'var(--ink)' : 'var(--turf-fill)'}">
+      <b>${k.stamp ? k.stamp : '#' + k.n}</b><span>${k.stamp ? 'EGP' : 'SUPER APP'}</span>
+    </div>
+    <div class="abs words" style="right:70px;left:70px;top:990px;display:flex;flex-wrap:wrap;gap:16px 18px;justify-content:flex-start;align-items:flex-end">
+      ${k.words.map((w, j) => `<span class="block ${st[j % 3]} w" style="font-size:${w.length > 6 ? 104 : 112}px">${w}</span>`).join('')}
+    </div>
+    <div class="abs quote" style="right:90px;left:150px;top:1345px;display:flex">
+      <div class="note" style="font-size:52px;clip-path:${torn(60 + i, 900, 160, 8)}">${k.quote}</div>
+    </div>
+    ${k.note ? `<div class="abs pnote" style="right:90px;top:1460px"><span class="pill">${k.note}</span></div>` : ''}
+  </div>`;
+});
+
+// End card
+html += `<div class="scene bg-turf" id="end" style="z-index:9;clip-path:${torn(90, 1080, 1920, 28, 34, 'l')}">
+  ${markX(80, 420, '#ffffff66')}${markX(966, 1480, '#ffffff66')}
+  <div class="abs" style="right:70px;left:70px;top:560px;display:flex;flex-direction:column;align-items:flex-start;gap:20px">
+    <span class="block b-blaze ew" style="font-size:170px;transform:rotate(-2deg)">منشن</span>
+    <span class="block b-paper ew" style="font-size:150px;transform:rotate(1.5deg);margin-inline-start:140px">صاحبك</span>
+    <span class="block b-ink ew" style="font-size:150px;transform:rotate(-1deg)">ده</span>
+    <span class="note ew" style="font-size:54px;transform:rotate(1.5deg);margin-top:10px">وانت… <mark>رقم كام</mark> فيهم؟</span>
+  </div>
+  <div class="abs" id="seal" style="left:90px;top:1150px;width:300px;height:300px">
+    <svg width="300" height="300" viewBox="0 0 300 300" class="abs" id="ring">
+      <defs><path id="circ" d="M150 150 m-112 0 a112 112 0 1 1 224 0 a112 112 0 1 1 -224 0"/></defs>
+      <circle cx="150" cy="150" r="146" fill="var(--cream)"/><circle cx="150" cy="150" r="138" fill="none" stroke="#0D1411" stroke-width="3" stroke-dasharray="2 7"/>
+      <text font-family="Cairo" font-weight="800" font-size="27" fill="#0D1411"><textPath href="#circ">كل الكورة في مكان واحد · SUPER APP · </textPath></text>
+    </svg>
+    <div class="abs" style="left:90px;top:90px">${brandMark(120)}</div>
+  </div>
+</div>`;
+
+// Persistent overlays
+html += `<div class="abs tag"><i></i>ماتش خماسي</div><div class="abs count" id="count">01 / 05</div>
+<svg class="abs grain" width="1080" height="1920" aria-hidden="true">
+  <filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .2 0"/></filter>
+  <rect width="1080" height="1920" filter="url(#n)"/>
+</svg>`;
+root.innerHTML = html;
+
+// ---------- animate ----------
+const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const baseTf = new Map();
+$$('.hw, .ew').forEach((el) => baseTf.set(el, el.style.transform || ''));
+
+function wipeIn(el, at, t) { // torn-paper sheet slides in from the right (reading direction)
+  const p = ease(prog(t, at - WIPE, WIPE));
+  el.style.display = t < at - WIPE ? 'none' : 'block';
+  el.style.transform = `translateX(${(1 - p) * 1160}px)`;
+}
+
+window.render = function (t) {
+  // Hook
+  const hook = $('#hook');
+  $$('.hw', hook).forEach((el, i) => {
+    const p = spring(prog(t, .04 + i * .16, .32));
+    el.style.opacity = clamp(p * 4);
+    el.style.transform = `${baseTf.get(el)} translate(${jit(i, t, 3)}px, ${jit(i + 9, t, 3)}px) scale(${lerp(1.6, 1, p)})`;
+  });
+  const fp = ease(prog(t, .5, .5));
+  $('#film').style.transform = `rotate(-4deg) translateX(${(fp - 1) * 700}px)`;
+
+  // Scenes
+  let active = -1;
+  KITS.forEach((k, i) => {
+    const a = SCENE0 + i * SCENE, el = $('#s' + i);
+    wipeIn(el, a, t);
+    if (t < a - WIPE || t > a + SCENE + .05 + WIPE) return;
+    if (t >= a - .1) active = i;
+    const s = spring(prog(t, a - .05, .45));
+    $('.halo', el).style.transform = `scale(${lerp(.2, 1, ease(prog(t, a - .15, .4)))})`;
+    $('.sticker', el).style.transform = `translate(${jit(i, t, 4)}px, ${jit(i + 3, t, 4) - (1 - s) * 220}px) rotate(${[-6, 5, -4, 7, -5][i] + jit(i + 5, t, 1.2) + (1 - s) * -22}deg) scale(${lerp(.5, 1, s)})`;
+    $('.sticker', el).style.opacity = clamp(s * 3);
+    $('.scribble path', el).style.strokeDashoffset = 1 - ease(prog(t, a + .5, .4));
+    const sp = spring(prog(t, a + .9, .3));
+    $('.stampbox', el).style.transform = `rotate(${-8 + jit(i + 7, t, 1)}deg) scale(${lerp(1.8, 1, sp)})`;
+    $('.stampbox', el).style.opacity = clamp(sp * 3);
+    $$('.w', el).forEach((w, j) => {
+      const p = spring(prog(t, a + .22 + j * .1, .3));
+      w.style.opacity = clamp(p * 4);
+      w.style.transform = `rotate(${[2.5, -2, 1.5][j % 3] + jit(j + i * 3, t, .8)}deg) scale(${lerp(1.7, 1, p)})`;
+    });
+    const q = ease(prog(t, a + .6, .3));
+    $('.quote', el).style.opacity = q;
+    $('.quote', el).style.transform = `translateY(${(1 - q) * 50}px) rotate(${-1.2 + jit(i + 11, t, .5)}deg)`;
+    const pn = $('.pnote', el);
+    if (pn) { const n = spring(prog(t, a + 1.15, .35)); pn.style.opacity = clamp(n * 3); pn.style.transform = `scale(${lerp(.5, 1, n)}) rotate(1.5deg)`; }
+  });
+  $('#count').textContent = active >= 0 ? `0${active + 1} / 05` : '';
+  $('#count').style.opacity = active >= 0 && t < END - .1 ? 1 : 0;
+
+  // End
+  const end = $('#end');
+  wipeIn(end, END, t);
+  $$('.ew', end).forEach((el, i) => {
+    const p = spring(prog(t, END + .05 + i * .12, .32));
+    el.style.opacity = clamp(p * 4);
+    el.style.transform = `${baseTf.get(el)} translate(${jit(i + 20, t, 3)}px, ${jit(i + 29, t, 3)}px) scale(${lerp(1.6, 1, p)})`;
+  });
+  const sl = spring(prog(t, END + .55, .4));
+  $('#seal').style.opacity = clamp(sl * 3);
+  $('#seal').style.transform = `scale(${lerp(1.8, 1, sl)}) rotate(${-10 + (t - END) * 6}deg)`;
+  $('#ring').style.transform = `rotate(${(t - END) * 30}deg)`;
+};
+window.DURATION = DUR;
+render(0);
+</script>
+</body>
+</html>

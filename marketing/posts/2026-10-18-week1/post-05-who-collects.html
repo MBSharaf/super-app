@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Post 05 — مين هيلم الفلوس؟</title>
+<!-- Audience: team captains / organisers. Goal: shares + follows. Real app screen: match page (players 11/14, your share 95 EGP).
+     The receipt uses the same numbers as the screen (14 players × 95 = 1,330 EGP). -->
+<link rel="stylesheet" href="collage.css">
+<style>
+  .receipt { position: absolute; background: #fff; width: 430px; padding: 34px 34px 50px; font-weight: 700; font-size: 28px; color: var(--ink); box-shadow: 0 24px 30px -16px rgba(0,0,0,.45);
+    clip-path: polygon(0 0,100% 0,100% calc(100% - 18px),95% 100%,90% calc(100% - 18px),85% 100%,80% calc(100% - 18px),75% 100%,70% calc(100% - 18px),65% 100%,60% calc(100% - 18px),55% 100%,50% calc(100% - 18px),45% 100%,40% calc(100% - 18px),35% 100%,30% calc(100% - 18px),25% 100%,20% calc(100% - 18px),15% 100%,10% calc(100% - 18px),5% 100%,0 calc(100% - 18px)); }
+  .receipt h4 { font-size: 34px; font-weight: 800; text-align: center; letter-spacing: .02em; }
+  .receipt .row { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 2px dashed rgba(13,20,17,.18); }
+  .receipt .row b { font-family: "Archivo", sans-serif; direction: ltr; }
+  .receipt .total { font-size: 34px; font-weight: 800; border-bottom: 0; }
+</style></head>
+<body class="bg-cream">
+  <div class="abs tag" style="top:56px;right:64px"><i></i>كابتن الماتش</div>
+  <div class="abs" style="left:64px;top:60px;display:flex;align-items:center;gap:14px;direction:ltr">
+    <svg width="64" height="64" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>
+    <span class="handle" style="font-size:30px;font-weight:850;font-stretch:125%">SUPER APP</span>
+  </div>
+
+  <div class="abs" style="right:64px;top:150px;display:flex;flex-direction:column;align-items:flex-start;gap:16px">
+    <div style="display:flex;gap:16px;align-items:flex-end">
+      <span class="block b-ink" style="font-size:130px;transform:rotate(-2deg)">مين</span>
+      <span class="block b-paper" style="font-size:130px;transform:rotate(1.5deg)">هيلم</span>
+    </div>
+    <span class="block b-blaze" style="font-size:150px;transform:rotate(-1.5deg)">الفلوس؟</span>
+  </div>
+
+  <!-- the receipt -->
+  <div class="receipt" style="right:64px;top:572px;transform:rotate(2deg);padding-top:26px">
+    <h4>إيصال ماتش الخميس</h4>
+    <div class="row"><span>الملعب · 90 دقيقة</span><b>1,330</b></div>
+    <div class="row"><span>عدد اللاعيبة</span><b>14</b></div>
+    <div class="row total"><span>على كل واحد</span><b>95 EGP</b></div>
+    <div class="row"><span>دفعوا</span><b>11</b></div>
+    <div class="row" style="border:0"><span>لسه</span><b style="color:var(--blaze)">3</b></div>
+  </div>
+  <div class="abs tape" style="right:220px;top:556px;transform:rotate(-3deg);width:150px"></div>
+  <svg class="abs" style="inset:0" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <path d="M612 925 C 650 920, 668 947, 660 975 C 650 1003, 600 1005, 585 980 C 572 955, 588 929, 625 927" fill="none" stroke="#FF5B14" stroke-width="7" stroke-linecap="round"/>
+  </svg>
+
+  <!-- the real app: everyone pays their own share when they join -->
+  <div class="abs" style="left:-30px;top:560px;width:480px;height:480px;border-radius:50%;background:var(--turf)"></div>
+  <div class="abs phone" style="left:60px;top:520px;width:410px;height:880px;transform:rotate(-6deg)">
+    <div class="screen"><img src="assets/app-match.png" alt=""></div>
+  </div>
+  <div class="abs tape" style="left:44px;top:520px;transform:rotate(-36deg)"></div>
+  <svg class="abs" style="inset:0" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <path d="M610 1150 C 560 1180, 520 1190, 470 1185" fill="none" stroke="#0D1411" stroke-width="8" stroke-linecap="round"/>
+    <path d="M500 1162 L 466 1184 L 498 1208" fill="none" stroke="#0D1411" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
+  <div class="abs note" style="right:64px;top:1070px;width:460px;font-size:34px;transform:rotate(-1.2deg);line-height:52px">
+    على Super App <mark>كل واحد بيدفع نصيبه</mark> وهو بينضم. ومحدش يلم من حد.
+  </div>
+  <div class="abs" style="left:300px;top:1272px;z-index:6"><span class="cta" style="font-size:28px;height:62px;padding:0 28px 4px">تابعنا · قريب</span></div>
+
+  <svg class="abs grain" width="1080" height="1350"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .22 0"/></filter><rect width="1080" height="1350" filter="url(#n)"/></svg>
+</body></html>

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel 02 — من التصميم للتيشيرت (3D)</title>
+<!-- Super App reel 02 · audience: people who want to start a clothing brand / designers · 1080×1920 · 15 s.
+     Collage style (docs/brand/references.md) on ink. The tee is our own 3D model rendered by tee-turn.html into tee-frames/.
+     Deterministic: window.render(t); ../01-khomasi-types/render.js-style renderer in render.js. -->
+<style>
+@font-face { font-family: "Archivo"; src: url(../../../vendor/fonts/archivo-latin.woff2) format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: "Cairo"; src: url(../../../vendor/fonts/cairo-arabic.woff2) format("woff2"); font-weight: 400 800; }
+:root { --cream: #F4EEDF; --surface: #FFFFFF; --ink: #0D1411; --ink-2: #46514B; --turf: #0B6E4F; --turf-tint: #E1F0E8; --blaze: #FF5B14; --gold-tint: #FBF1D6; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+body { font-family: "Cairo", "Archivo", sans-serif; color: var(--ink); position: relative; }
+.abs { position: absolute; }
+.halftone { inset: 0; opacity: .13; background-image: radial-gradient(rgba(255,255,255,.95) 1.6px, transparent 2px); background-size: 14px 14px; }
+.block { display: inline-block; font-weight: 800; line-height: 1.12; padding: 6px 32px 18px; box-shadow: 0 16px 24px -14px rgba(0,0,0,.6); white-space: nowrap; }
+.b-ink { background: #25322B; color: #fff; } .b-paper { background: var(--surface); color: var(--ink); } .b-blaze { background: var(--blaze); color: #fff; } .b-cream { background: var(--cream); color: var(--ink); }
+.note { background: var(--gold-tint); background-image: repeating-linear-gradient(transparent 0 58px, rgba(11,110,79,.22) 58px 60px); color: var(--ink); font-weight: 700; padding: 20px 40px 28px; line-height: 60px; box-shadow: 0 18px 26px -16px rgba(0,0,0,.5); }
+.note mark { background: linear-gradient(transparent 55%, rgba(255,91,20,.55) 55%); color: inherit; padding: 0 4px; }
+.tape { width: 170px; height: 52px; background: rgba(251,241,214,.8); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.tag { top: 270px; right: 60px; height: 70px; padding: 0 30px; border-radius: 999px; background: var(--turf-tint); color: var(--turf); font-weight: 800; font-size: 34px; display: flex; align-items: center; gap: 14px; z-index: 50; }
+.tag i { width: 14px; height: 14px; border-radius: 50%; background: var(--turf); display: block; }
+.step { top: 268px; left: 60px; z-index: 50; height: 74px; padding: 0 26px; background: var(--cream); font: 800 36px "Archivo", sans-serif; letter-spacing: .06em; display: flex; align-items: center; direction: ltr; }
+.cap { left: 60px; right: 140px; top: 1290px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.toast { display: flex; align-items: center; gap: 20px; background: var(--surface); border-radius: 28px; padding: 22px 30px; width: 760px; box-shadow: 0 22px 30px -16px rgba(0,0,0,.6); }
+.toast .ic { width: 76px; height: 76px; border-radius: 22px; background: var(--ink); display: grid; place-items: center; flex: none; }
+.toast b { font-size: 36px; font-weight: 800; display: block; }
+.toast span { font-size: 28px; font-weight: 700; color: var(--ink-2); }
+.grain { inset: 0; z-index: 60; pointer-events: none; mix-blend-mode: multiply; opacity: .5; }
+#tee img { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
+</style>
+</head>
+<body>
+<div class="abs halftone"></div>
+<div class="abs tag"><i></i>براند تيشيرتات</div>
+<div class="abs step" id="step">01 / 04</div>
+
+<!-- hook -->
+<div class="abs" id="hook" style="right:70px;left:70px;top:560px;display:flex;flex-direction:column;align-items:flex-start;gap:22px">
+  <span class="block b-paper hw" style="font-size:130px">عندك فكرة</span>
+  <span class="block b-blaze hw" style="font-size:150px;margin-inline-start:90px">تيشيرت؟</span>
+  <span class="note hw" style="font-size:52px;margin-top:14px;white-space:nowrap">خليها <mark>براند</mark> في 4 خطوات</span>
+</div>
+
+<!-- halo + the design sticker + the 3D tee -->
+<div class="abs" id="halo" style="left:190px;top:470px;width:700px;height:700px;border-radius:50%;background:var(--blaze)"></div>
+<div class="abs" id="tee" style="left:135px;top:360px;width:810px;height:900px"></div>
+<div class="abs" id="sticker" style="left:330px;top:520px;width:420px;height:460px;filter:drop-shadow(0 26px 24px rgba(0,0,0,.5))">
+  <svg width="420" height="460" viewBox="0 0 512 560">
+    <rect x="-20" y="-20" width="552" height="600" rx="40" fill="#fff"/>
+    <circle cx="256" cy="190" r="160" fill="none" stroke="#0D1411" stroke-width="22"/>
+    <path d="M256 128 L315 171 L292 240 L220 240 L197 171 Z" fill="#0D1411"/>
+    <path d="M256 128 L256 32 M315 171 L408 141 M292 240 L350 320 M220 240 L162 320 M197 171 L104 141" stroke="#0D1411" stroke-width="14"/>
+    <rect x="36" y="400" width="440" height="140" fill="#FF5B14"/>
+    <text x="256" y="505" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="104" fill="#fff">خماسي</text>
+  </svg>
+  <div class="abs tape" style="top:-18px;left:120px;transform:rotate(-6deg)"></div>
+</div>
+
+<!-- shipping box (step 3) -->
+<div class="abs" id="box" style="left:190px;top:560px;width:700px;height:620px">
+  <svg width="700" height="620" viewBox="0 0 700 620">
+    <path d="M60 210 L350 110 L640 210 L640 520 L350 610 L60 520 Z" fill="#C89B6A" stroke="#0D1411" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M60 210 L350 310 L640 210 M350 310 L350 610" fill="none" stroke="#0D1411" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M60 210 L350 310 L350 610 L60 520 Z" fill="#B88A5A"/>
+    <path d="M200 160 L490 260 L490 330" fill="none" stroke="#E9D3B0" stroke-width="40" opacity=".8"/>
+    <g transform="translate(395 360) rotate(-6)"><rect width="210" height="140" fill="#fff" stroke="#0D1411" stroke-width="5"/>
+      <text x="105" y="50" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="30" fill="#0D1411">SUPER APP</text>
+      <rect x="22" y="70" width="166" height="44" fill="none" stroke="#0D1411" stroke-width="3"/>
+      <path d="M32 76v32M40 76v32M50 76v32M56 76v32M66 76v32M76 76v32M82 76v32M94 76v32M100 76v32M112 76v32M120 76v32M128 76v32M140 76v32M148 76v32M160 76v32M170 76v32M178 76v32" stroke="#0D1411" stroke-width="4"/></g>
+  </svg>
+</div>
+<div class="abs" id="shipped" style="left:70px;top:420px;z-index:5;transform:rotate(-12deg)">
+  <div style="width:290px;height:290px;border-radius:50%;border:12px solid var(--blaze);display:grid;place-items:center;color:var(--blaze);font:800 60px Cairo;text-align:center;line-height:1.1;background:var(--ink)">تم<br>الشحن</div>
+</div>
+
+<!-- orders (step 4) -->
+<div class="abs" id="orders" style="left:160px;top:470px;display:flex;flex-direction:column;gap:26px">
+  ${''}
+</div>
+
+<!-- captions per step -->
+<div class="abs cap" id="cap"></div>
+
+<!-- end -->
+<div class="abs" id="end" style="right:70px;left:70px;top:560px;display:flex;flex-direction:column;align-items:flex-start;gap:22px">
+  <span class="block b-paper ew" style="font-size:130px">افتح براندك</span>
+  <span class="block b-blaze ew" style="font-size:150px;margin-inline-start:70px">بـ 0 جنيه</span>
+  <span class="note ew" style="font-size:50px;margin-top:10px;white-space:nowrap">من غير <mark>مخزن ولا مصنع</mark></span>
+</div>
+<div class="abs" id="brand" style="left:0;right:0;top:1250px;display:flex;flex-direction:column;align-items:center;gap:16px">
+  <svg width="120" height="120" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#25322B"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>
+  <div style="font:800 40px Archivo,sans-serif;font-stretch:125%;color:#fff;direction:ltr">SUPER APP</div>
+  <div style="font-size:36px;font-weight:700;color:rgba(255,255,255,.8)">قريب · كل الكورة في مكان واحد</div>
+</div>
+
+<svg class="abs grain" width="1080" height="1920"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .2 0"/></filter><rect width="1080" height="1920" filter="url(#n)"/></svg>
+<script>
+const DUR = 15, N = 90;
+const T = { hook: [0, 1.6], s1: 1.6, s2: 4.0, s3: 8.0, s4: 10.8, end: 13.4 };
+function bezier(p1x, p1y, p2x, p2y) { const cx = 3 * p1x, bx = 3 * (p2x - p1x) - cx, ax = 1 - cx - bx, cy = 3 * p1y, by = 3 * (p2y - p1y) - cy, ay = 1 - cy - by; const sx = (t) => ((ax * t + bx) * t + cx) * t, sy = (t) => ((ay * t + by) * t + cy) * t; return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x; for (let i = 0; i < 8; i++) { const d = (3 * ax * t + 2 * bx) * t + cx, e = sx(t) - x; if (Math.abs(e) < 1e-5 || !d) break; t -= e / d; } return sy(Math.min(1, Math.max(0, t))); }; }
+const ease = bezier(.2, .8, .2, 1), spring = bezier(.34, 1.56, .64, 1);
+const clamp = (v) => Math.min(1, Math.max(0, v)), prog = (t, a, d) => clamp((t - a) / d), lerp = (a, b, p) => a + (b - a) * p;
+const jit = (seed, t, amp) => { const k = Math.floor(t * 12) * 97 + seed * 131; const r = Math.sin(k * 12.9898) * 43758.5453; return ((r - Math.floor(r)) - .5) * 2 * amp; };
+const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+
+// tee frames: blank + one full turn with the print
+const tee = $('#tee');
+tee.innerHTML = '<img id="blank" src="tee-frames/blank.png">' + Array.from({ length: N }, (_, i) => `<img data-i="${i}" src="tee-frames/turn-${String(i).padStart(3, '0')}.png">`).join('');
+const frames = $$('#tee img[data-i]');
+window.ready = Promise.all($$('img').map((im) => im.decode().catch(() => {})));
+
+// orders
+$('#orders').innerHTML = ['أوردر جديد · تيشيرت خماسي · مقاس L', 'أوردر جديد · تيشيرت خماسي · مقاس XL', 'أوردر جديد · تيشيرت خماسي · مقاس M']
+  .map((x) => `<div class="toast"><span class="ic"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 12.1a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9L5 8Z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/></svg></span><span><b>${x.split(' · ')[0]}</b><span>${x.split(' · ').slice(1).join(' · ')}</span></span></div>`).join('')
+  + `<div class="toast" style="background:var(--turf-tint)"><span class="ic" style="background:var(--turf)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="7.5" width="16.5" height="12" rx="2.2"/><path d="M15.5 13.5h2.5"/></svg></span><span><b style="color:var(--turf)">ربحك وصل المحفظة</b><span>بعد ما الأوردر يتسلم</span></span></div>`;
+
+const CAPS = {
+  s1: ['01', 'ارفع تصميمك', 'PNG أو SVG… <mark>أي فكرة في دماغك</mark>'],
+  s2: ['02', 'شوفه 3D', 'قبل ما تنشر… <mark>لف التيشيرت</mark> وشوف الطباعة'],
+  s3: ['03', 'إحنا بنطبع ونشحن', 'انت مش محتاج <mark>مخزن ولا مكنة</mark>'],
+  s4: ['04', 'وإنت بتكسب', 'كل أوردر… <mark>ربح في محفظتك</mark>'],
+};
+const capHTML = (k) => `<span class="block b-paper cw" style="font-size:96px">${CAPS[k][1]}</span><span class="note cw" style="font-size:44px">${CAPS[k][2]}</span>`;
+let capKey = '';
+
+function show(el, o, tf) { if (el.dataset.d === undefined) el.dataset.d = el.style.display; el.style.opacity = o; el.style.display = o > 0.001 ? el.dataset.d : 'none'; if (tf !== undefined) el.style.transform = tf; }
+
+window.render = function (t) {
+  // hook
+  const hookOut = prog(t, T.hook[1] - .25, .3);
+  show($('#hook'), t < T.hook[1] + .1 ? 1 - hookOut : 0, `translateX(${-ease(hookOut) * 1100}px)`);
+  $$('.hw').forEach((el, i) => { const p = spring(prog(t, .05 + i * .16, .32)); el.style.opacity = clamp(p * 4); el.style.transform = `translate(${jit(i, t, 3)}px,${jit(i + 9, t, 3)}px) rotate(${[-2, 1.5, 1][i]}deg) scale(${lerp(1.6, 1, p)})`; });
+
+  // step badge + caption
+  const step = t < T.s1 ? 0 : t < T.s2 ? 1 : t < T.s3 ? 2 : t < T.s4 ? 3 : t < T.end ? 4 : 0;
+  show($('#step'), step ? 1 : 0); if (step) $('#step').textContent = `0${step} / 04`;
+  const key = step ? 's' + step : '';
+  if (key !== capKey) { $('#cap').innerHTML = key ? capHTML(key) : ''; capKey = key; }
+  if (key) { const a = T[key]; $$('.cw').forEach((el, i) => { const p = spring(prog(t, a + .15 + i * .14, .32)); el.style.opacity = clamp(p * 4); el.style.transform = `rotate(${[-1.5, 1.2][i] + jit(i + 3, t, .6)}deg) scale(${lerp(1.5, 1, p)})`; }); }
+
+  // halo: from step 1 to the end of step 2
+  const haloIn = ease(prog(t, T.s1 - .1, .4)), haloOut = ease(prog(t, T.s3 - .2, .3));
+  show($('#halo'), t > T.s1 - .1 && t < T.s3 + .2 ? haloIn * (1 - haloOut) : 0, `scale(${lerp(.2, 1, haloIn) * (1 - .3 * haloOut)})`);
+
+  // sticker: lands in step 1, flies onto the chest at s2 + 0.7
+  const st = $('#sticker'), land = spring(prog(t, T.s1 + .05, .45)), fly = ease(prog(t, T.s2 + .55, .45));
+  const stickerOn = t > T.s1 && t < T.s2 + 1.0;
+  show(st, stickerOn ? clamp(land * 3) * (1 - prog(t, T.s2 + .9, .1)) : 0,
+    `translate(${jit(1, t, 3)}px, ${lerp(-200, 0, land) + fly * 40}px) rotate(${lerp(-18, -5, land) * (1 - fly)}deg) scale(${lerp(.5, 1, land) * lerp(1, .38, fly)})`);
+
+  // tee: blank slides in at s2, print appears when the sticker lands, then one full turn
+  const teeIn = spring(prog(t, T.s2 + .05, .5)), teeOut = ease(prog(t, T.s3 - .1, .45));
+  const teeOn = t > T.s2 && t < T.s3 + .4;
+  show(tee, teeOn ? clamp(teeIn * 3) : 0, `translateY(${(1 - teeIn) * 500 + teeOut * 120}px) scale(${lerp(.7, 1, teeIn) * (1 - .6 * teeOut)})`);
+  const printed = t >= T.s2 + 1.0;
+  $('#blank').style.display = teeOn && !printed ? 'block' : 'none';
+  const turnP = prog(t, T.s2 + 1.1, 2.6), fi = Math.min(N - 1, Math.floor(ease(turnP) * N) % N);
+  frames.forEach((im, i) => { im.style.display = teeOn && printed && i === fi ? 'block' : 'none'; });
+
+  // box + shipped stamp
+  const bx = spring(prog(t, T.s3 + .15, .45)), bxOut = ease(prog(t, T.s4 - .25, .3));
+  show($('#box'), t > T.s3 && t < T.s4 + .1 ? clamp(bx * 3) * (1 - bxOut) : 0, `translate(${jit(4, t, 3)}px, ${(1 - bx) * 260}px) rotate(${jit(5, t, 1)}deg) scale(${lerp(.6, 1, bx)})`);
+  const sh = spring(prog(t, T.s3 + 1.0, .3));
+  show($('#shipped'), t > T.s3 + 1 && t < T.s4 ? clamp(sh * 3) * (1 - bxOut) : 0, `rotate(-12deg) scale(${lerp(2, 1, sh)})`);
+
+  // orders pile up
+  const ordOn = t > T.s4 && t < T.end + .1, ordOut = ease(prog(t, T.end - .25, .3));
+  show($('#orders'), ordOn ? 1 - ordOut : 0);
+  $$('#orders .toast').forEach((el, i) => { const p = spring(prog(t, T.s4 + .2 + i * .4, .35)); el.style.opacity = clamp(p * 3); el.style.transform = `translateX(${(1 - p) * -500}px) rotate(${[-2, 1.5, -1, 1][i]}deg)`; });
+
+  // end
+  const endOn = t >= T.end;
+  show($('#end'), endOn ? 1 : 0);
+  $$('.ew').forEach((el, i) => { const p = spring(prog(t, T.end + .05 + i * .14, .32)); el.style.opacity = clamp(p * 4); el.style.transform = `translate(${jit(i + 20, t, 3)}px,${jit(i + 29, t, 3)}px) rotate(${[-2, 1.5, 1][i]}deg) scale(${lerp(1.6, 1, p)})`; });
+  const br = ease(prog(t, T.end + .5, .4));
+  show($('#brand'), endOn ? br : 0, `translateY(${(1 - br) * 40}px)`);
+};
+window.DURATION = DUR;
+render(0);
+</script>
+</body>
+</html>

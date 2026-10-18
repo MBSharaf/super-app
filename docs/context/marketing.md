@@ -4,6 +4,15 @@
 `docs/marketing/` (plans, calendars, copy) and produce visuals with the design system
 ([design-system.md](design-system.md)). Never change the website code. Ask window 1 through its Inbox.
 
+## Content already made (start here)
+Made in the design-system chat (branch `claude/design-system-extraction-9z03sr`) and copied here on 2026-10-18:
+- [`marketing/HANDOFF.md`](../../marketing/HANDOFF.md): what exists, how it is made, open items.
+- [`marketing/CLAUDE.md`](../../marketing/CLAUDE.md): brand, content and design rules for every post, reel and ad.
+- `docs/brand/`: audiences, content strategy, social and video specs, prompts, moodboard, competitor Yalla Hagz, idea bank, YouTube voice.
+- `.agents/product-marketing.md`: product, positioning and stage.
+- `marketing/CAPTIONS.md`: every caption, hooks and a two-week posting order.
+- `marketing/posts/` (posts 01–07 and 2 carousels) and `marketing/reels/` (reels 01–07 + `_kit`).
+
 ## What to read first
 1. [project-brief.md](project-brief.md): the product, users and money.
 2. [decisions.md](decisions.md): prices, points, fantasy rules and what must not be promised.
@@ -40,4 +49,4 @@
 - *(empty)*
 
 ## Done
-- *(empty)*
+- 2026-10-17/18 (design-system chat): brand docs, posts 01–07, 2 carousels, reels 01–07 with covers, sound and voiceover, captions. See `marketing/HANDOFF.md`.

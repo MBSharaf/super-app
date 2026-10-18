@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Post 01 — الماتش ناقصه 2؟</title>
+<!-- Audience: footballers (5-a-side regulars). Goal: follows before launch. Real app screen: /players (open games). -->
+<link rel="stylesheet" href="collage.css"></head>
+<body class="bg-cream">
+  <!-- blaze halo + the real app screen in a phone, taped to the page -->
+  <div class="abs" style="left:-40px;top:430px;width:560px;height:560px;border-radius:50%;background:var(--blaze)"></div>
+  <div class="abs phone" style="left:60px;top:350px;width:440px;height:915px;transform:rotate(-7deg)">
+    <div class="screen"><img src="assets/app-players.png" alt=""></div>
+  </div>
+  <div class="abs tape" style="left:40px;top:330px;transform:rotate(-38deg)"></div>
+  <div class="abs tape" style="left:350px;top:300px;transform:rotate(24deg);width:150px"></div>
+
+  <!-- chalk arrow from the headline to the open spots in the app -->
+  <svg class="abs" style="inset:0" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <path d="M640 640 C 600 700, 560 720, 470 700" fill="none" stroke="#0D1411" stroke-width="9" stroke-linecap="round"/>
+    <path d="M500 678 L 466 700 L 500 724" fill="none" stroke="#0D1411" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="282" cy="572" rx="92" ry="34" fill="none" stroke="#FF5B14" stroke-width="7" transform="rotate(-7 282 572)"/>
+  </svg>
+
+  <!-- headline: ransom-note blocks -->
+  <div class="abs tag" style="top:56px;right:64px"><i></i>ماتش خماسي</div>
+  <div class="abs" style="right:64px;top:160px;display:flex;flex-direction:column;align-items:flex-start;gap:18px">
+    <span class="block b-ink" style="font-size:132px;transform:rotate(-2deg)">الماتش</span>
+    <span class="block b-paper" style="font-size:132px;transform:rotate(1.5deg);margin-inline-start:40px">ناقصه</span>
+    <span class="block b-blaze" style="font-size:176px;transform:rotate(-3deg);padding:0 46px 14px">2؟</span>
+  </div>
+
+  <!-- the player spots: 8 in, 2 open -->
+  <div class="abs" style="right:64px;top:770px;background:var(--surface);padding:22px 30px;display:flex;gap:12px;transform:rotate(1.5deg);box-shadow:0 14px 22px -14px rgba(0,0,0,.45)">
+    <i style="width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 5px var(--blaze);display:block"></i><i style="width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 5px var(--blaze);display:block"></i>
+    <i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i><i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i><i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i><i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i>
+    <i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i><i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i><i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i><i style="width:34px;height:34px;border-radius:50%;background:var(--turf);display:block"></i>
+  </div>
+
+  <!-- typewriter note -->
+  <div class="abs note" style="right:64px;top:880px;width:500px;font-size:42px;transform:rotate(-1.2deg)">
+    انشر الماتش… والناس <mark>تنضم وتدفع نصيبها</mark> أونلاين
+  </div>
+  <div class="abs tape" style="right:330px;top:862px;transform:rotate(-6deg);width:120px"></div>
+
+  <!-- stamp + CTA -->
+  <div class="abs stampbox" style="right:300px;top:1095px;color:var(--cream);transform:rotate(-8deg);width:160px;height:190px"><b style="font-size:52px">قريب</b><span>SUPER APP</span></div>
+  <div class="abs" style="right:64px;top:1160px;display:flex;flex-direction:column;align-items:flex-start;gap:10px">
+    <span class="cta" style="font-size:32px;height:76px">تابعنا<span class="dot"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></span>
+  </div>
+
+  <!-- brand mark -->
+  <div class="abs" style="left:64px;top:60px;display:flex;align-items:center;gap:14px;direction:ltr">
+    <svg width="64" height="64" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>
+    <span class="handle" style="font-size:30px;font-weight:850;font-stretch:125%">SUPER APP</span>
+  </div>
+
+  <svg class="abs grain" width="1080" height="1350"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .08  0 0 0 0 .07  0 0 0 0 .05  0 0 0 .22 0"/></filter><rect width="1080" height="1350" filter="url(#n)"/></svg>
+</body></html>
