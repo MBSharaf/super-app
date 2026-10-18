@@ -70,6 +70,9 @@ decisions here (with the date) from any window.
   - every payment gets a PDF
   - every export is Excel with a dashboard sheet
 
+## Marketing
+- **Launch (2026-10-18):** the public launch is at the end of October 2026; the posting schedule assumes Sat 31 Oct (`marketing/SCHEDULE-2026-10.md`).
+
 ## Postponed
 - Freelancer services: after the launch. The owner has his own idea, so ask him first.
 - The 3D hoodie model: the GPU quota ran out (the tee is done).
