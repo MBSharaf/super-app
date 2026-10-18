@@ -10,6 +10,7 @@ not touched. One quick browser check per step (main window), and branch screens 
 |---|---|---|---|
 | Main (development) | `main` | Phase 3 (finish), then Phase 5 money, Phase 7 admin & CEO, Phases 8–9; merges the other branches | Phases 3, 5, 7, 8, 9 |
 | Shop & POD | `phase-4-shop` | Phase 4: stores, products, orders, POD catalogue, designs, studio uploads, factory, courier adapter, returns, and the site / seller / factory screens in API mode | Phase 4 |
+| Admin & CEO (part 1) | `phase-7-admin` | Phase 7 without money screens: admin console and CEO system on the API, AI-agent API keys (`X-Api-Key`), org chart, switches, integrations registry, API catalogue. Money screens wait for Phase 5 | Phase 7 |
 | Fantasy & content | `phase-6-fantasy` | Phase 6: API-FOOTBALL sync and scoring, fantasy, groups, content, pop-ups, communities, support chat, and their screens in API mode | Phase 6 |
 
 Money (Phase 5) waits for Phases 3 and 4, because bookings and orders call it; the main window builds it.

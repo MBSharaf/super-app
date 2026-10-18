@@ -150,3 +150,10 @@ Decisions for this phase:
 - The site's root `robots.txt` / `sitemap.xml` are still the static files; the live versions are at `/api/v1/seo/robots.txt` and `/api/v1/seo/sitemap.xml` — point the root files there at launch (Phase 9).
 - *(done on main too)* **Missing files in git (fixed on this branch):** the `.gitignore` rule `storage/` also matched `src/SuperApp.Application/Abstractions/Storage/` and `src/SuperApp.Infrastructure/Storage/`, so `IFileStorage.cs` and `LocalFileStorage.cs` were never committed (a fresh clone does not build). This branch changes the rule to `/storage/` and commits both files (copied unchanged from the main folder).
 - **Hangfire** is referenced but not configured. The football sync runs from the hosted service `FootballScheduler` until then; when the jobs dashboard is wired up, make it a recurring job that calls `IFootballSyncService.SyncAsync(null)` with the same "due" rule.
+
+## Phase 7 — Admin & CEO (branch `phase-7-admin`, started 2026-10-19)
+Part 1 (no money screens) built in its own window — see `docs/context/parallel.md`.
+### Schema requests
+- *(none)*
+### Requests to main
+- *(none)*
