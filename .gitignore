@@ -36,7 +36,7 @@ src/SuperApp.Api/storage/
 src/SuperApp.Api/emails/
 src/SuperApp.Api/keys/
 src/SuperApp.Api/logs/
-storage/
+/storage/
 emails/
 keys/
 logs/
