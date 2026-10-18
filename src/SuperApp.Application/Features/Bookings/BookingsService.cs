@@ -29,7 +29,8 @@ public sealed class BookingsService(
     ICurrentUser currentUser,
     IRequestInfo requestInfo,
     IValidator<HoldRequest> holdRules,
-    IValidator<CreateBookingRequest> createRules) : IBookingsService
+    IValidator<CreateBookingRequest> createRules,
+    Waitlist.IWaitlistService waitlist) : IBookingsService
 {
     public async Task<HoldResponse> HoldAsync(HoldRequest request, CancellationToken ct)
     {
@@ -57,6 +58,7 @@ public sealed class BookingsService(
         }
         var booking = await NewBookingAsync(plan, request, me, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);
+        await waitlist.BookedAsync(booking, ct);
         await AfterBookingAsync(booking, plan, ct);
         return BookingMapper.ToResponse(booking, plan.Pitch.Slug, plan.Pitch.Name, plan.Pitch.Address, qr.Create(booking.Code));
     }

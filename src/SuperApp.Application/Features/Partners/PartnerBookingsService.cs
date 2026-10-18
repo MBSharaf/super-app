@@ -42,7 +42,8 @@ public sealed class PartnerBookingsService(
     IClock clock,
     IValidator<PartnerBookingsQuery> queryRules,
     IValidator<WalkInRequest> walkInRules,
-    IValidator<VenueCancelRequest> cancelRules) : IPartnerBookingsService
+    IValidator<VenueCancelRequest> cancelRules,
+    Waitlist.IWaitlistService waitlist) : IPartnerBookingsService
 {
     private const int MaxExportRows = 5000;
 
@@ -120,6 +121,8 @@ public sealed class PartnerBookingsService(
         booking.RefundAmount = booking.PayAtVenue ? 0 : booking.Total;
         await unitOfWork.SaveChangesAsync(ct);
         await bookings.ReleaseSlotsAsync(booking.Id, ct);
+        var info = await bookings.PitchInfoAsync(booking.PitchId, ct);
+        await waitlist.HoursFreedAsync(booking, info.Name, info.Slug, ct);
         await TellCustomerAsync(booking, "The venue cancelled your booking",
             $"{request.Reason.Trim()} · {(booking.RefundAmount > 0 ? $"full refund {booking.RefundAmount:0} EGP" : "nothing was paid in the app")}", NotificationTone.Danger, ct);
         await audit.LogAsync(AuditSystem.Partner, "booking.cancelled_by_venue", $"Booking {booking.Code} cancelled by the venue: {request.Reason.Trim()}", "Booking", booking.Code, ct: ct);

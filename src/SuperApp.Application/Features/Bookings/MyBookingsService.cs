@@ -30,7 +30,8 @@ public sealed class MyBookingsService(
     INotifier notifier,
     IAuditLogger audit,
     ICurrentUser currentUser,
-    IClock clock) : IMyBookingsService
+    IClock clock,
+    Waitlist.IWaitlistService waitlist) : IMyBookingsService
 {
     private static readonly string[] Tabs = ["upcoming", "past", "cancelled"];
 
@@ -70,6 +71,8 @@ public sealed class MyBookingsService(
         booking.RefundAmount = preview.RefundAmount;
         await unitOfWork.SaveChangesAsync(ct);
         await bookings.ReleaseSlotsAsync(booking.Id, ct);
+        var info = await bookings.PitchInfoAsync(booking.PitchId, ct);
+        await waitlist.HoursFreedAsync(booking, info.Name, info.Slug, ct);
         await TellAboutCancelAsync(booking, ct);
         return await ToResponseAsync(booking, withQr: false, ct);
     }
