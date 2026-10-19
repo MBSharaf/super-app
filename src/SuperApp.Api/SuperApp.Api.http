@@ -603,3 +603,99 @@ Content-Type: application/json
 X-CSRF-TOKEN: {{csrf}}
 
 { "refund": 250, "paidBy": "Partner", "note": "Venue fault." }
+
+
+# ================= Phase 7 — Admin & CEO (part 1) =================
+
+### CEO: create an AI agent (starts Paused)
+POST {{api}}/ceo/agents
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "Echo", "titleEn": "Support agent", "titleAr": "وكيل الدعم", "description": "Answers tickets", "model": "claude-sonnet-5-5", "platform": "N8n", "moneyLimit": 0, "monthlyBudget": 50, "permissions": ["support.read", "support.reply"], "positionId": null }
+
+### CEO: new API key for agent 1 (the key is shown once)
+POST {{api}}/ceo/agents/1/keys
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "name": "n8n production", "rateLimitPerMinute": 600 }
+
+### CEO: resume agent 1
+POST {{api}}/ceo/agents/1/resume
+X-CSRF-TOKEN: {{csrf}}
+
+### CEO: emergency stop every agent / release
+POST {{api}}/ceo/agents/emergency-stop
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "reason": "Drill" }
+
+###
+POST {{api}}/ceo/agents/emergency-release
+X-CSRF-TOKEN: {{csrf}}
+
+### Agent (n8n): who am I — header X-Api-Key, no cookie, no CSRF
+@agentKey = sa_paste-the-key-here
+GET {{api}}/agent/me
+X-Api-Key: {{agentKey}}
+
+### Agent: an admin endpoint it holds the permission for
+GET {{api}}/admin/support/tickets
+X-Api-Key: {{agentKey}}
+
+### Agent: report a run and its cost
+POST {{api}}/agent/runs
+Content-Type: application/json
+X-Api-Key: {{agentKey}}
+
+{ "summary": "Morning ticket sweep" }
+
+###
+PATCH {{api}}/agent/runs/1
+Content-Type: application/json
+X-Api-Key: {{agentKey}}
+
+{ "result": "Done", "summary": "12 tickets answered", "inputTokens": 12000, "outputTokens": 3000, "costUsd": 0.42 }
+
+### CEO: kill switches / switch one off
+GET {{api}}/ceo/switches
+
+###
+PUT {{api}}/ceo/switches/kill.community
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "enabled": false, "reason": "Moderation backlog" }
+
+### CEO: API catalogue, AI panel, org chart, integrations
+GET {{api}}/ceo/api-catalogue
+
+###
+GET {{api}}/ceo/ai
+
+###
+GET {{api}}/ceo/org
+
+###
+GET {{api}}/ceo/integrations/football.apifootball
+
+### CEO: report (Excel with dashboard sheet)
+GET {{api}}/ceo/reports/operations?from=2026-10-01&to=2026-10-31
+
+### Admin: overview, customers, audit
+GET {{api}}/admin/overview
+
+###
+GET {{api}}/admin/customers?q=ahmed
+
+###
+GET {{api}}/admin/audit?system=ApiOrAgent
+
+### Admin: broadcast to partners now
+POST {{api}}/admin/broadcasts
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{ "title": "Ramadan hours", "body": "Pitches open late this month.", "link": "#/dash", "segment": "Partners", "sendEmail": false }
