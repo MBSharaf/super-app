@@ -16,7 +16,8 @@ public sealed class AntiforgeryFilter(IAntiforgery antiforgery) : IAsyncAuthoriz
     {
         var method = context.HttpContext.Request.Method;
         if (HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method)
-            || context.ActionDescriptor.EndpointMetadata.OfType<IgnoreAntiforgeryTokenAttribute>().Any())
+            || context.ActionDescriptor.EndpointMetadata.OfType<IgnoreAntiforgeryTokenAttribute>().Any()
+            || Security.AgentKeys.IsAgent(context.HttpContext.User))
         {
             return;
         }

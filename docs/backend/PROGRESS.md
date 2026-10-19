@@ -152,8 +152,35 @@ Decisions for this phase:
 - **Hangfire** is referenced but not configured. The football sync runs from the hosted service `FootballScheduler` until then; when the jobs dashboard is wired up, make it a recurring job that calls `IFootballSyncService.SyncAsync(null)` with the same "due" rule.
 
 ## Phase 7 — Admin & CEO (branch `phase-7-admin`, started 2026-10-19)
-Part 1 (no money screens) built in its own window — see `docs/context/parallel.md`.
+Part 1 (no money screens) built in its own window — see `docs/context/parallel.md`. Code: `Application/Features/{Agents,CeoSystem,AdminConsole}/**`
+(registered by `AdminRegistration.AddAdmin()`), `Infrastructure/Admin/**` (`AdminInfrastructure.AddAdminInfrastructure()`), `Api/Security/AgentKeys.cs`
+(`AgentKeys.AddAgentKeys()`), `Api/Controllers/{Agent,Ceo,Admin}/…`, tests `AgentKeysTests`, `CeoSystemTests`, `AdminConsoleTests`.
+
+Decisions for this phase:
+- **Agent keys:** `X-Api-Key: sa_` + 40 random characters. Only the SHA-256 hash and the 8-character prefix (`ai.ApiKeys.Prefix` is char(8)) are stored; the key is shown once. A policy scheme picks the key handler when the header is present, else the site cookie. The key's agent signs in as its service account with its permission codes and a strong-auth mark (counts as 2FA), so it can call every admin endpoint it holds the permission for — never `/ceo/*` (CEO role). Writes need no CSRF token for key callers. 401 `invalid_api_key` (unknown / revoked / expired), 423 `agent_paused`, 423 `agents_stopped` (switch `kill.agents` off or agent EmergencyStopped).
+- **Per-key limit** (default 600/min) — kept in the JSON column `Scopes` as `{"rate":600}` until it has its own column; the global limiter is wrapped so key callers use their own limit, everyone else keeps the site's.
+- **Audit:** the audit logger is replaced (one registration) by an agent-aware one: `ActorAgentId` + system ApiOrAgent for every line written during a key call; plus one `agent.call` line per call (EntityId = API group, used by the API catalogue's 24 h counts).
+- **Budget:** when an agent's runs this month cost more than its monthly budget it is paused and the CEO told. Money permissions cannot be given to agents until Phase 5.
+- Emergency stop = `kill.agents` off + Active agents → EmergencyStopped; release turns them Active again (paused ones stay paused).
+- Secrets stay in `.env` only: the integrations registry shows whether each secret is set; Test / Live modes need it (422 `secret_missing`). No secret-writing endpoint.
+- Settings: groups `money`, `limits` and money keys (loyalty, holds, fees, pass price) are read-only (403 `money_setting`); maintenance = `kill.bookings` / `kill.shop` with a message.
+- Broadcasts go to the bell of every active account in the segment (one batch); scheduled ones (202) are sent by `BroadcastScheduler` (hosted service, off in Testing). Email for broadcasts waits for a batch email outbox.
+
+- [x] 7.1 AI-agent API keys — `CeoAgentsController` `/ceo/agents` (list with runs / errors 30 d and cost this month, detail with keys / tasks / last 20 runs, create (service account, Paused), edit, permissions, tasks, pause / resume (409 `agents_stopped`), keys (201 shown once) / revoke (409 twice), emergency-stop / release, delete = soft, keys revoked, service account suspended); `AgentController` `/agent/me`, `/agent/tasks`, `POST /agent/runs`, `PATCH /agent/runs/{id}` (switch `api.agents` → 423); `ApiKeyAuthenticationHandler`, `AgentAwareLimiter`, `AgentCallAuditFilter`.
+- [x] 7.2 CEO system — `/ceo/switches` (9 kill switches; off needs a reason; staff told), `/ceo/api-catalogue` (17 groups, permission, callers, switch, agent calls 24 h; PUT only for groups with a switch, 422 `no_switch`), `/ceo/ai` (AI panel), `/ceo/org` + `/ceo/org/positions` (holders human / agent / vacant; loop → 400; 409 `has_reports`), `/ceo/integrations` (+ `/{key}` with 30 days usage, PUT mode / enabled / primary (one per category) / config, POST test), `/ceo/reports/{kind}` (Excel), `/ceo/audit`.
+- [x] 7.3 Admin console — `/admin/overview` (any staff; counts only), customers (search, drawer, block / unblock, prepay rule, note, export.xlsx), partners (list, drawer, suspend / reactivate), sellers (list, drawer, suspend / reactivate, feature), `/admin/orders`, `/admin/bookings` (read), `/admin/audit` (+ export.xlsx), `/admin/reports/{kind}.xlsx` (operations, customers, partners, sellers, support, agents; money kinds 422 `money_report_later`), `/admin/settings[/{group}]`, `/admin/maintenance`, `/admin/broadcasts`. Phase 6's admin endpoints (content, news, communities, support, fantasy) are already on the API.
+- [x] 7.4 Site bridge `js/services/liveAdmin.js` (+ `js/data/i18n-ar-admin-live.js`): in API mode the CEO system loads the server's switches and agents into its local shape and sends switch changes, agent pause / resume and the emergency stop / release to the server; `SA.services.liveAdmin` exposes the API-only calls (keys, AI panel, org, integrations, catalogue, audit, reports). `.http` requests under "Phase 7".
+- [ ] Left for the end-of-backend browser pass: admin people / orders / audit / reports tabs and the CEO org / integrations / catalogue screens reading `SA.services.liveAdmin` directly; money screens (payouts, CFO approvals, wallets, revenue) wait for Phase 5.
+
+**How n8n builders get a key:** the CEO opens the AI panel (or `POST /ceo/agents`) → gives the agent its permissions → `POST /ceo/agents/{id}/keys` → copies the key (shown once) into an n8n "Header Auth" credential (name `X-Api-Key`) → resumes the agent. Every n8n HTTP node then calls `https://<host>/api/v1/...` with that credential: `/agent/me` to check, any admin endpoint the agent holds the permission for, and `/agent/runs` to report work and cost.
+
 ### Schema requests
-- *(none)*
+- `ai.ApiKeys.RateLimitPerMinute int NOT NULL DEFAULT 600` — today the per-key limit is kept in `Scopes` JSON (`{"rate":600}`).
+- `ai.ApiKeys.Prefix` char(8) → varchar(12) (optional) — a longer public prefix makes keys easier to tell apart.
 ### Requests to main
-- *(none)*
+- **Phase 1 code, one line:** `AntiforgeryFilter` skips requests signed in with an agent key (`AgentKeys.IsAgent(User)`) — agents send no cookie and no CSRF token.
+- Api layer: one call line `Security.AgentKeys.AddAgentKeys(services)` in `ApiServiceExtensions`; it makes the default scheme a policy scheme (cookie, or the key handler when `X-Api-Key` is present) and wraps the global rate limiter.
+- `IAuditLogger` is re-registered (`services.Replace`) with `AgentAwareAuditLogger` — same line as `AuditLogger` plus the agent; the old class can be removed when merged.
+- **Hangfire:** `BroadcastScheduler` (hosted service) sends scheduled broadcasts every minute; make it a recurring job calling `IPlatformService.SendDueAsync` when Hangfire is wired.
+- **Phase 5:** agent money limits (`Agent.MoneyLimit`) should be checked by refunds / credits / payouts when an agent calls them (`ICurrentAgent.Caller`), with `/agent/approvals` for amounts over the limit.
+- Flaky test seen once (passes alone): `NewsAndMatchesTests.Admins_write_news_and_hidden_or_scheduled_posts_stay_out_of_the_public_list` (Phase 6).
