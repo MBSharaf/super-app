@@ -37,7 +37,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     }
 }
 
-/// <summary>Stores DateTime as is and reads it back with Kind = Utc (SQL Server keeps no time zone).</summary>
+/// <summary>
+/// Stores DateTime in UTC and reads it back with Kind = Utc (SQL Server keeps no time zone). Columns are datetime2(0):
+/// the fraction of a second is cut off here, because SQL Server would round it up and a time stored "now" could land
+/// up to half a second in the future.
+/// </summary>
 public sealed class UtcDateTimeConverter() : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
-    v => v.Kind == DateTimeKind.Local ? v.ToUniversalTime() : v,
+    v => new DateTime((v.Kind == DateTimeKind.Local ? v.ToUniversalTime() : v).Ticks / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond, DateTimeKind.Utc),
     v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
