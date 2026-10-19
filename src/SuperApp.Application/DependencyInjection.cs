@@ -49,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<Features.Waitlist.IWaitlistService, Features.Waitlist.WaitlistService>();
         services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();
         services.AddScoped<Features.FreeSlots.IFreeSlotsService, Features.FreeSlots.FreeSlotsService>();
+        services.AddScoped<Features.Games.IGamesService, Features.Games.GamesService>();
         Features.Fantasy.FantasyRegistration.AddFantasy(services);   // Phase 6 (branch phase-6-fantasy)
         Features.AdminConsole.AdminRegistration.AddAdmin(services);   // Phase 7 (branch phase-7-admin)
         return services;

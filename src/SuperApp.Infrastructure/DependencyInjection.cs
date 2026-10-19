@@ -99,6 +99,7 @@ public static class DependencyInjection
         services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<Application.Features.FreeSlots.IFreeSlotRepository, FreeSlotRepository>();
+        services.AddScoped<Application.Features.Games.IGameRepository, GameRepository>();
         services.AddScoped<Application.Features.Waitlist.IWaitlistRepository, WaitlistRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
