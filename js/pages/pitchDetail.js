@@ -192,8 +192,8 @@
             ${S.waitlist.countFor(p.id, sel.date, h) ? `<p class="xs muted">${S.waitlist.countFor(p.id, sel.date, h)} player${S.waitlist.countFor(p.id, sel.date, h) === 1 ? ' is' : 's are'} waiting.</p>` : ''}</div>`,
           footer: entry ? `<button class="btn btn-outline" data-close>Close</button><button class="btn btn-ghost" data-leave style="color:var(--danger)">Leave waitlist</button>` : `<button class="btn btn-outline" data-close>Not now</button><button class="btn btn-primary" data-join>${icon('bell', 15)} Notify me</button>`,
           onMount(m, close) {
-            m.querySelector('[data-join]')?.addEventListener('click', () => { try { S.waitlist.join({ pitchId: p.id, date: sel.date, hour: h }); close(); SA.ui.overlay.toast('You’re on the waitlist — we’ll notify you', { type: 'success' }); draw(); } catch (err) { close(); SA.ui.overlay.toast(err.message, { type: err.code === 'available' ? 'info' : 'error' }); draw(); } });
-            m.querySelector('[data-leave]')?.addEventListener('click', () => { S.waitlist.leave(entry.id); close(); SA.ui.overlay.toast('Removed from the waitlist'); draw(); });
+            m.querySelector('[data-join]')?.addEventListener('click', async () => { try { await S.waitlist.join({ pitchId: p.id, date: sel.date, hour: h }); close(); SA.ui.overlay.toast('You’re on the waitlist — we’ll notify you', { type: 'success' }); draw(); } catch (err) { close(); SA.ui.overlay.toast(err.message, { type: err.code === 'available' ? 'info' : 'error' }); draw(); } });
+            m.querySelector('[data-leave]')?.addEventListener('click', async () => { await S.waitlist.leave(entry.id); close(); SA.ui.overlay.toast('Removed from the waitlist'); draw(); });
           },
         });
       };

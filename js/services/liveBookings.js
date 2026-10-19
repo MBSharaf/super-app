@@ -119,7 +119,7 @@
       throw err;
     }
     const p = fromDetails(d);
-    await loadDays(p.id);
+    await Promise.all([loadDays(p.id), loadWaits().catch(() => [])]);
     return { ...p };
   };
 
@@ -131,7 +131,7 @@
     slotsSync: (id, date) => (isLivePitch(id) ? days.get(`${id}|${date}`) || [] : demo.pitches.slotsSync(id, date)),
     nearest: ready(async (n = 4) => (live() ? (await search({ sort: 'distance' })).slice(0, n) : demo.pitches.nearest(n))),
     // Reviews and owner offers arrive with Phase 3.6; offer prices already show on each hour
-    reviews: (id, n) => (isLivePitch(id) ? Promise.resolve([]) : demo.pitches.reviews(id, n)),
+    reviews: (id, n = 6) => (isLivePitch(id) ? api.get(`/pitches/${slugOf(id)}/reviews?pageSize=${n}`).then((r) => (r.items || r).map(fromReview)).catch(() => []) : demo.pitches.reviews(id, n)),
     activePromos: (p) => (p?.live && live() ? [] : demo.pitches.activePromos(p)),
     bookable: (p) => (p?.live && live() ? p.status === 'active' : demo.pitches.bookable(p)),
   });
@@ -211,6 +211,8 @@
     // The ticket shows the pitch's address and photo, and a package match shows its package
     if (!pitches.has(idOf(r.pitchSlug))) await getPitch(idOf(r.pitchSlug)).catch(() => null);
     if (r.packageCode) await loadPackage(r.packageCode).catch(() => null);
+    const mineReview = await api.get(`/bookings/${encodeURIComponent(r.code)}/review`).catch(() => null);
+    if (mineReview) myReviews.set(r.code, fromReview(mineReview));
     return { ...fromBooking(r) };
   };
 
@@ -317,6 +319,45 @@
 
   const isLiveBooking = (id) => live() && bookings.has(id);
 
+  /* ---------------- Waitlist and reviews (3.6) ---------------- */
+
+  const waits = new Map();   // `${pitchId}|${gridDate}|${gridHour}` → server entry
+  const waitKey = (pitchId, date, hour) => `${pitchId}|${date}|${hour}`;
+  const toWait = (e) => ({ id: e.id, live: true, pitchId: idOf(e.pitchSlug), pitchName: e.pitchName, date: e.date, hour: e.hour, status: e.status === 'FreeNow' ? 'notified' : 'waiting', createdAt: Date.parse(e.createdAt) });
+  const loadWaits = async () => {
+    if (!SA.services.session?.me()) return [];
+    const list = await api.get('/waitlist/mine').catch(() => []);
+    [...waits.keys()].forEach((k) => waits.delete(k));
+    list.forEach((e) => waits.set(waitKey(idOf(e.pitchSlug), e.date, e.hour), e));
+    return list.map(toWait);
+  };
+  const W = SA.services.waitlist;
+  const demoW = { ...W };
+  Object.assign(W, {
+    entryFor: (pitchId, date, hour) => {
+      if (!isLivePitch(pitchId)) return demoW.entryFor(pitchId, date, hour);
+      const e = waits.get(waitKey(pitchId, date, hour));
+      return e && e.status === 'Waiting' ? toWait(e) : null;
+    },
+    countFor: (pitchId, date, hour) => (isLivePitch(pitchId) ? (days.get(`${pitchId}|${date}`) || []).find((s) => s.hour === hour)?.waiting || 0 : demoW.countFor(pitchId, date, hour)),
+    join: (args) => {
+      if (!isLivePitch(args.pitchId)) return demoW.join(args);
+      return api.post('/waitlist', { pitchSlug: slugOf(args.pitchId), date: args.date, hour: args.hour })
+        .then((e) => { waits.set(waitKey(args.pitchId, args.date, args.hour), e); return toWait(e); });
+    },
+    leave: (id) => {
+      const hit = [...waits.entries()].find(([, e]) => String(e.id) === String(id));
+      if (!live() || !hit) return demoW.leave(id);
+      return api.del(`/waitlist/${id}`).then(() => waits.delete(hit[0]));
+    },
+    mine: () => (live() ? [...waits.values()].map(toWait) : demoW.mine()),
+    load: ready(() => (live() ? loadWaits() : demoW.mine())),
+  });
+
+  const myReviews = new Map();   // booking code → my review
+  const fromReview = (r) => ({ id: r.id, rating: r.stars, text: r.text || '', createdAt: Date.parse(r.createdAt), customer: { name: r.customerName, avatar: 0 },
+    reply: r.reply ? { text: r.reply, at: Date.parse(r.repliedAt) } : null });
+
   const isLivePackage = (code) => live() && packs.has(code);
   Object.assign(B, {
     quoteSeries: (args) => (isLivePitch(args.pitchId) ? quoteSeries(args) : demo.bookings.quoteSeries(args)),
@@ -336,8 +377,8 @@
     venueRecord: (id) => (isLiveBooking(id) ? (bookings.get(id).checkedIn ? { checkedIn: true } : null) : demo.bookings.venueRecord(id)),
     // The gate scans the server's signed token
     checkInCode: (id) => (isLiveBooking(id) && bookings.get(id).qrToken ? bookings.get(id).qrToken : demo.bookings.checkInCode(id)),
-    review: (id, d) => (isLiveBooking(id) ? Promise.reject(new ApiError('Reviews open soon on the live site.', 'not_allowed')) : demo.bookings.review(id, d)),
-    reviewOf: (b) => (b?.live ? null : demo.bookings.reviewOf(b)),
+    review: (id, d) => (isLiveBooking(id) ? api.post(`/bookings/${encodeURIComponent(id)}/review`, { stars: Math.round(+d.rating), text: (d.text || '').trim() }).then((r) => { myReviews.set(id, fromReview(r)); return myReviews.get(id); }) : demo.bookings.review(id, d)),
+    reviewOf: (b) => (b?.live ? myReviews.get(b.id) || null : demo.bookings.reviewOf(b)),
     upcomingSync: () => (live() ? [...bookings.values()].filter((b) => b.status === 'confirmed' && b.startsAt > Date.now()).sort((a, b) => a.startsAt - b.startsAt) : demo.bookings.upcomingSync()),
   });
 })(window.SA);

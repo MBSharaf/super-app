@@ -9,6 +9,7 @@
       const { upcoming, past } = await S.bookings.list();
       const tab = ['past', 'waitlist'].includes(ctx.query.tab) ? ctx.query.tab : 'upcoming';
       const list = tab === 'past' ? past : upcoming;
+      await S.waitlist.load?.();
       const wl = S.waitlist.mine();
       return `${c.pageHead({ crumbs: [['Home', '#/'], ['My bookings']], title: 'My bookings', actions: c.cta('Book a pitch', { href: '#/pitches' }) })}
       <div class="container">
@@ -29,7 +30,7 @@
       </div>`;
     },
     mount(el) {
-      el.addEventListener('click', (e) => { const b = e.target.closest('[data-leave-wl]'); if (b) { S.waitlist.leave(b.dataset.leaveWl); SA.ui.overlay.toast('Removed from the waitlist'); SA.app.rerender(); } });
+      el.addEventListener('click', async (e) => { const b = e.target.closest('[data-leave-wl]'); if (b) { await S.waitlist.leave(b.dataset.leaveWl); SA.ui.overlay.toast('Removed from the waitlist'); SA.app.rerender(); } });
     },
   };
 })(window.SA);
