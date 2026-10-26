@@ -39,20 +39,37 @@ public static class SiteHosting
             });
         }
         app.MapGet("/", () => Results.Redirect($"{BasePath}/")).ExcludeFromDescription();
-        app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path) => ServePage(http, root, path)).ExcludeFromDescription();
+        app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, path, seo, ct)).ExcludeFromDescription();
         return app;
     }
 
-    private static IResult ServePage(HttpContext http, string root, string? path)
+    private static async Task<IResult> ServePageAsync(HttpContext http, string root, string? path, SeoPages seo, CancellationToken ct)
     {
         http.Response.Headers.CacheControl = "no-cache";
         var name = string.IsNullOrEmpty(path) ? "index.html" : path;
-        if (RootFiles.Contains(name, StringComparer.OrdinalIgnoreCase))
+        if (RootFiles.Contains(name, StringComparer.OrdinalIgnoreCase) && name != "index.html")
         {
             return Results.File(Path.Combine(root, name), ContentType(name));
         }
         // A page address (no extension) opens the app; anything else that is not a site file does not exist
-        return Path.HasExtension(name) ? Results.NotFound() : Results.File(Path.Combine(root, "index.html"), "text/html; charset=utf-8");
+        if (Path.HasExtension(name) && name != "index.html")
+        {
+            return Results.NotFound();
+        }
+        var index = await File.ReadAllTextAsync(Path.Combine(root, "index.html"), ct);
+        // Main public pages carry their own title, tags and readable HTML for search engines (SeoPages)
+        SeoPage? page = null;
+        try
+        {
+            page = await seo.BuildAsync(name == "index.html" ? "" : name, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // The site never breaks because of search-engine extras: without them the page is served as before
+            http.RequestServices.GetRequiredService<ILogger<SeoPages>>().LogWarning(ex, "SEO content skipped for {Path}", name);
+        }
+        var html = page is null ? index : SeoPages.Render(index, page, $"{http.Request.Scheme}://{http.Request.Host}");
+        return Results.Content(html, "text/html; charset=utf-8");
     }
 
     private static string ContentType(string name) => Path.GetExtension(name).ToLowerInvariant() switch

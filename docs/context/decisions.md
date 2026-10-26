@@ -62,6 +62,8 @@ decisions here (with the date) from any window.
 
 - **Test data (2026-10-17):** test accounts and test data stay in the local database until the backend is finished; they are deleted together with the demo data at launch (Phase 9).
 
+- **SEO without a rewrite (2026-10-26):** the server writes search-engine HTML into the main public pages (home, pitches, a pitch, news, an article): title, description, canonical, share tags, JSON-LD and readable content, which the app replaces on load (`src/SuperApp.Api/Site/SeoPages.cs`). A React / Next.js move is not planned for now.
+
 ## Technology
 - **Backend stack:** ASP.NET Core .NET 10 Web API with SQL Server (LocalDB in development), Clean Architecture. The existing site is served by the API at `/super-app/` and is unchanged.
 - **Demo data:** it stays as seed data so the site is not empty; it is switched off before launch.
