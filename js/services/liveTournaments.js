@@ -84,7 +84,13 @@
   const reloadMine = () => api.get('/partner/tournaments').then((list) => { mineCache = list.map(keep); SA.app?.rerender?.(); }, () => {});
   const send = (promise, after) => promise.then((d) => { if (d?.id) keep(d); reloadMine(); after?.(d); }, fail);
 
-  T.mine = (opts = {}) => (!isLivePartner() ? demo.mine(opts) : mineCache);
+  let loaded = false;
+  /** The first read (a direct page load) fetches the venue's tournaments and re-renders */
+  T.mine = (opts = {}) => {
+    if (!isLivePartner()) return demo.mine(opts);
+    if (!loaded) { loaded = true; reloadMine(); }
+    return mineCache;
+  };
   T.manage = (id) => {
     if (!isLiveId(id)) return demo.manage(id);
     const t = byId.get(id);

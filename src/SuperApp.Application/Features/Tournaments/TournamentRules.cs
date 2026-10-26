@@ -31,7 +31,8 @@ public static class TournamentRules
 
     public static DateOnly DayOf(DateOnly startsOn, int round) => startsOn.AddDays(7 * (round - 1));
 
-    public static int Hour(Tournament t) => int.Parse(t.MatchHours, System.Globalization.CultureInfo.InvariantCulture);
+    /// <summary>The first match hour. New tournaments keep one hour ("18"); the demo seed keeps the day's hours ("16,17,18,19").</summary>
+    public static int Hour(Tournament t) => int.Parse(t.MatchHours.Split(',')[0].Trim(), System.Globalization.CultureInfo.InvariantCulture);
 
     public static DateOnly RegistrationClosesOn(Tournament t) => t.StartsOn.AddDays(-RegistrationClosesDaysBefore);
 

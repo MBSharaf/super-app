@@ -30,7 +30,7 @@ public sealed class TournamentViews(ITournamentStore store, ICurrentUser current
         var active = TournamentRules.Active(t).ToList();
         var teams = t.Teams.Where(x => x.Status == TournamentTeamStatus.Registered || organiser).OrderBy(x => x.Id).Select(x => new TournamentTeamDto(x.Id, x.Name,
             names.GetValueOrDefault(x.CaptainId, "Captain"), organiser ? x.Phone : null, x.PaymentId is not null && x.Payment?.Status == PaymentStatus.Paid,
-            me is not null && x.CaptainId == me, x.Status.ToString())).ToList();
+            me is not null && x.CaptainId == me && x.CaptainId != t.Partner.UserId, x.Status.ToString())).ToList();
         var matches = t.Matches.Where(m => m.Booking is not null).OrderBy(m => m.Round).ThenBy(m => m.Booking!.StartHour)
             .Select(m => new TournamentMatchDto(m.Id, m.Round, m.Booking!.StartHour - hour, m.Booking.Date, m.Booking.StartHour, m.HomeTeamId, m.AwayTeamId,
                 m.HomeGoals, m.AwayGoals, m.HomePens is null ? null : m.HomePens > m.AwayPens ? m.HomeTeamId : m.AwayTeamId, m.WinnerTeamId, m.HomeGoals is not null)).ToList();
