@@ -40,6 +40,7 @@ decisions here (with the date) from any window.
 
 - **Store paused (2026-10-26):** the store, sellers, print-on-demand factory and shipping are paused — the site shows "Coming soon" and their links are hidden (`SA.config.storeEnabled` in `js/core/namespace.js`), and the store APIs answer 423 `store_paused` (`Features:StoreEnabled` in `appsettings.json`). All code and data stay; set both to true to bring them back.
 
+- **Football data (owner, 2026-10-27):** free sources only for now. English fantasy, fixtures and results come from the public fantasy.premierleague.com API (no key, current season; unofficial, so the lawyer checks it before launch). Egyptian fixtures and results come from TheSportsDB (free key, round by round; a cheap paid plan for commercial use is decided before launch). **Egyptian fantasy is paused.** API-FOOTBALL stays in the code: its free plan only opens seasons 2022–2024, so the owner's key is not put in `.env`; a paid plan would bring back Egyptian fantasy.
 - **Payment company: Paymob** (owner, 2026-10-26). Keys go only into `.env` (owner enters them); until then the simulated gateway pays at once. Online bookings wait for Paymob's signed callback (15 minutes, then the hours are freed).
 - **API-FOOTBALL key:** not received yet (2026-10-26). The owner puts it in `.env` (`FOOTBALL__APIFOOTBALL__KEY`); simulated football data until then.
 
