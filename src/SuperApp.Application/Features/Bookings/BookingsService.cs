@@ -32,6 +32,7 @@ public sealed class BookingsService(
     Payments.IPaymentsService payments,
     BookingNotices notices,
     Money.ILedger ledger,
+    Money.LoyaltyService loyalty,
     IUnitOfWork unitOfWork) : IBookingsService
 {
     public async Task<HoldResponse> HoldAsync(HoldRequest request, CancellationToken ct)
@@ -58,14 +59,23 @@ public sealed class BookingsService(
         {
             throw new BusinessRuleException("This pitch takes online payment only.", "cash_not_allowed");
         }
+        var discount = await loyalty.ForBookingAsync(me, request.PromoCode, request.VoucherCode, plan.Pitch.Id, plan.Pitch.OwnerUserId, plan.PitchAmount, plan.Total, ct);
         var booking = await NewBookingAsync(plan, request, me, ct);
+        booking.DiscountAmount = discount.Total;
+        booking.Total = plan.Total - discount.Total;
+        loyalty.Use(discount, booking);
         var paymentUrl = await PayAsync(booking, plan, me, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);
+        if (discount.Voucher is { } voucher && discount.VoucherAmount > 0)
+        {
+            voucher.UsedOnId = booking.Id;
+        }
         await waitlist.BookedAsync(booking, ct);
         if (booking.WaiverVersionId is { } waiver)
         {
             legal.AddAcceptance(waiver, me, "booking", requestInfo.IpAddress);
         }
+        await unitOfWork.SaveChangesAsync(ct);
         if (booking.Status == BookingStatus.Confirmed)
         {
             await ledger.BookingPaidAsync(booking, ct);

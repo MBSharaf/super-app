@@ -71,7 +71,8 @@ public sealed class ReviewsService(
     IAuditLogger audit,
     ICurrentUser currentUser,
     IClock clock,
-    IValidator<ReviewRequest> rules) : IReviewsService
+    IValidator<ReviewRequest> rules,
+    Money.LoyaltyService loyalty) : IReviewsService
 {
     public async Task<ReviewDto> CreateAsync(string bookingCode, ReviewRequest request, CancellationToken ct)
     {
@@ -88,9 +89,9 @@ public sealed class ReviewsService(
             throw new ConflictException("You already reviewed this game.", "already_reviewed");
         }
         reviews.Add(new Review { PitchId = b.PitchId, BookingId = b.Id, UserId = b.CustomerId!.Value, Stars = (byte)request.Stars, Text = request.Text.Trim() });
+        await loyalty.EarnForReviewAsync(b.CustomerId!.Value, b.Id, b.Code, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await reviews.RecountAsync(b.PitchId, ct);
-        // The +20 points bonus is paid by the points ledger in Phase 5 (money)
         await notifier.NotifyUserAsync(target.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings, $"New {request.Stars}★ review for {target.PitchName}",
             request.Text.Trim().Length > 80 ? request.Text.Trim()[..80] + "…" : request.Text.Trim(), "#/dash/reviews"), ct);
         await audit.LogAsync(AuditSystem.Site, "review.created", $"{request.Stars}★ review for {target.PitchName}", "Booking", b.Code, ct: ct);

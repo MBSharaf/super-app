@@ -33,7 +33,8 @@ public sealed class CheckInService(
     ICurrentUser currentUser,
     IClock clock,
     IValidator<ScanRequest> rules,
-    IAuditLogger audit) : ICheckInService
+    IAuditLogger audit,
+    Money.LoyaltyService loyalty) : ICheckInService
 {
     public static readonly TimeSpan EarlyWindow = TimeSpan.FromMinutes(60);
 
@@ -148,6 +149,7 @@ public sealed class CheckInService(
         {
             t.Booking.Status = BookingStatus.CheckedIn;
             t.Booking.CheckedInAt = clock.UtcNow;
+            await loyalty.EarnForBookingAsync(t.Booking, ct);
         }
         scans.Add(new QrScan
         {

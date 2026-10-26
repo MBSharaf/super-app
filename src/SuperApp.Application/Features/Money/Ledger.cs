@@ -55,25 +55,31 @@ public interface ILedger
     Task BookingRefundAsync(Booking booking, Guid requestedById, string reason, CancellationToken ct);
 }
 
-public sealed class Ledger(IMoneyStore store, IClock clock) : ILedger
+public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
 {
     public static readonly TimeSpan HoldAfterKickOff = TimeSpan.FromHours(24);
 
     public async Task BookingPaidAsync(Booking booking, CancellationToken ct)
     {
         var payment = booking.Payment ?? (booking.PaymentId is { } id ? await store.PaymentAsync(id, ct) : null);
-        if (payment is not { Status: PaymentStatus.Paid } || booking.CustomerId is null)
+        var fullyDiscounted = !booking.PayAtVenue && booking.Total == 0 && booking.DiscountAmount > 0;
+        if (!(payment is { Status: PaymentStatus.Paid } || fullyDiscounted) || booking.CustomerId is null)
         {
             return;
         }
-        var (earning, commission, fee) = Shares(booking);
+        var voucher = await loyalty.VoucherOnBookingAsync(booking.Id, ct);
+        var (earning, commission, fee) = Shares(booking, voucher);
         var group = Guid.NewGuid();
         var partner = await store.WalletAsync(await store.PitchOwnerAsync(booking.PitchId, ct), WalletType.PartnerBookings, ct);
         var revenue = await store.WalletAsync(null, WalletType.PlatformRevenue, ct);
         Post(partner, earning, LedgerBucket.Pending, LedgerKind.BookingEarning, booking, Release(booking), group);
         Post(revenue, commission, LedgerBucket.Available, LedgerKind.Commission, booking, null, group);
         Post(revenue, fee, LedgerBucket.Available, LedgerKind.ServiceFee, booking, null, group);
-        await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Payment, booking.Total, booking.Id, ct);
+        Post(revenue, -voucher, LedgerBucket.Available, LedgerKind.Voucher, booking, null, group);
+        if (booking.Total > 0)
+        {
+            await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Payment, booking.Total, booking.Id, ct);
+        }
     }
 
     public async Task BookingRefundAsync(Booking booking, Guid requestedById, string reason, CancellationToken ct)
@@ -84,18 +90,16 @@ public sealed class Ledger(IMoneyStore store, IClock clock) : ILedger
             return;
         }
         var share = booking.RefundAmount / booking.Total;
-        var (earning, commission, _) = Shares(booking);
+        var (earning, _, _) = Shares(booking, await loyalty.VoucherOnBookingAsync(booking.Id, ct));
         var partnerBack = Math.Round(earning * share, 2);
-        var commissionBack = Math.Round(commission * share, 2);
-        var feeBack = booking.RefundAmount - partnerBack - commissionBack;
+        var platformBack = booking.RefundAmount - partnerBack;
         var group = Guid.NewGuid();
         var customer = await store.WalletAsync(booking.CustomerId, WalletType.Customer, ct);
         var partner = await store.WalletAsync(await store.PitchOwnerAsync(booking.PitchId, ct), WalletType.PartnerBookings, ct);
         var revenue = await store.WalletAsync(null, WalletType.PlatformRevenue, ct);
         Post(customer, booking.RefundAmount, LedgerBucket.Available, LedgerKind.Refund, booking, null, group);
         Post(partner, -partnerBack, LedgerBucket.Pending, LedgerKind.Refund, booking, Release(booking), group);
-        Post(revenue, -commissionBack, LedgerBucket.Available, LedgerKind.Refund, booking, null, group);
-        Post(revenue, -feeBack, LedgerBucket.Available, LedgerKind.Refund, booking, null, group);
+        Post(revenue, -platformBack, LedgerBucket.Available, LedgerKind.Refund, booking, null, group);
         store.Add(new Refund
         {
             Payment = payment, Amount = booking.RefundAmount, Destination = RefundDestination.SuperAppWallet, Reason = reason,
@@ -106,11 +110,15 @@ public sealed class Ledger(IMoneyStore store, IClock clock) : ILedger
         await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Refund, booking.RefundAmount, booking.Id, ct);
     }
 
-    /// <summary>Partner earning, commission (on the pitch amount) and the service fee; they add up to the total.</summary>
-    private static (decimal Earning, decimal Commission, decimal Fee) Shares(Booking b)
+    /// <summary>
+    /// Partner earning (pitch amount − the venue's own promo discount − commission), commission and service fee. A Super Points
+    /// voucher is paid by Super App, so earning + commission + fee − voucher = the total paid.
+    /// </summary>
+    private static (decimal Earning, decimal Commission, decimal Fee) Shares(Booking b, decimal voucher)
     {
-        var commission = Math.Round(b.PitchAmount * b.CommissionRate / 100, 2);
-        return (b.Total - b.ServiceFee - commission, commission, b.ServiceFee);
+        var net = b.PitchAmount - (b.DiscountAmount - voucher);
+        var commission = Math.Round(net * b.CommissionRate / 100, 2);
+        return (net - commission, commission, b.ServiceFee);
     }
 
     private static DateTime Release(Booking b) =>
