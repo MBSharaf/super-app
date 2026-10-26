@@ -5,6 +5,13 @@ decisions here (with the date) from any window.
 
 ## Product and money
 - **Commission and fees:** booking commission 10% (can be set per partner), store commission 12%, service fee 3%, VAT 14% included.
+- **Pitch partner offer (2026-10-18, sales window — replaces the booking line above for pitches):**
+  - Booking commission is **5%, paid by the player**, not the pitch owner; the owner gets the full hour price.
+  - Each pitch pays a **small monthly subscription** (amount not set yet).
+  - **First month free**, on two conditions: Super App posters at the venue, and every booking goes through the app.
+  - **Cash bookings:** the player pays a **deposit of 5%, at least 50 EGP**.
+  - **No-show:** Super App covers **half the hour price** with the owner.
+  - Payouts to the owner's bank (or InstaPay) weekly or monthly, as agreed.
 - **Points:**
   - 20 points = 1 EGP.
   - Points go to vouchers only, from 2,000 points (= 100 EGP).
@@ -30,6 +37,8 @@ decisions here (with the date) from any window.
 - **No private messages** between customers; communities cover that.
 
 - **Walk-ins (2026-10-17):** a booking taken at the venue pays there, with no service fee and no commission.
+
+- **Store paused (2026-10-26):** the store, sellers, print-on-demand factory and shipping are paused — the site shows "Coming soon" and their links are hidden (`SA.config.storeEnabled` in `js/core/namespace.js`), and the store APIs answer 423 `store_paused` (`Features:StoreEnabled` in `appsettings.json`). All code and data stay; set both to true to bring them back.
 
 ## Print on demand
 - **Partner:** a contracted factory prints and ships, DTF only for now. One factory to start, with the code ready for several.

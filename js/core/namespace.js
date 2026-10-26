@@ -14,6 +14,9 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // Fallback when location permission is denied: Tahrir Square, Cairo
   fallbackLocation: { lat: 30.0444, lng: 31.2357, label: 'Downtown Cairo' },
   storageKey: 'superapp.state.v1',
+  // Store, sellers, print-on-demand factory and shipping are paused for now (owner's decision, 2026-10-26).
+  // Everything stays in the code: set true to bring them back.
+  storeEnabled: false,
   // WhatsApp support — paste the chat link here (e.g. https://wa.me/20XXXXXXXXXX). Empty = not live yet.
   whatsapp: { url: '', hours: 'Daily 9 AM – 1 AM' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.

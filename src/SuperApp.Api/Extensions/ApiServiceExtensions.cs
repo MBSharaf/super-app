@@ -21,6 +21,7 @@ public static class ApiServiceExtensions
 
         services.AddControllers(o =>
         {
+            o.Filters.Add<StorePausedFilter>();
             o.Filters.Add<AntiforgeryFilter>();
             o.Filters.Add<ValidationFilter>();
         });

@@ -37,6 +37,7 @@ public class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseSetting("Features:StoreEnabled", "true");   // the store is paused on the site; its tests keep running
         builder.UseSetting("ConnectionStrings:Default", $"Server=(localdb)\\MSSQLLocalDB;Database={database};Trusted_Connection=True;TrustServerCertificate=True");
         builder.UseSetting("Security:Data_Protection_Keys_Path", Path.Combine(Path.GetTempPath(), "superapp-test-keys"));
         builder.UseSetting("Seed:Ceo_Email", CeoEmail);

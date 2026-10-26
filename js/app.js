@@ -8,6 +8,24 @@
   /** An old address that moved: open the new one in its place (keeps the query string) */
   P.moved = (to) => ({ title: 'Super App', render(ctx) { const t = typeof to === 'function' ? to(ctx) : to; const q = SA.core.router.location().split('?')[1]; setTimeout(() => router.go(`${t}${q ? `?${q}` : ''}`, { replace: true })); return ''; } });
 
+  /* ---------- Store paused (SA.config.storeEnabled = false): its pages show "Coming soon", its links are hidden ---------- */
+  const STORE_PATHS = /^\/(shop|cart|checkout|orders?|wishlist|sell|s|seller|factory)(\/|$)|^\/dash\/(orders|pod-catalog|pod-review|print|store|seller)(\/|$)|^\/admin\/(returns|designs|catalog|store|store-orders|sellers|orders)(\/|$)/;
+  if (!SA.config.storeEnabled) {
+    P.comingSoon = {
+      title: 'Coming soon — Super App',
+      render: () => `<div class="container section-tight"><section class="panel panel-pad" style="text-align:center;max-width:560px;margin:48px auto">
+        <span class="service-ico" style="margin:0 auto">${SA.ui.icon('bag', 26)}</span>
+        <h1 class="h2" style="margin-top:16px">The Super App store is coming soon</h1>
+        <p class="lead soft" style="margin-top:10px">We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.</p>
+        <div class="row wrap" style="--gap:10px;justify-content:center;margin-top:20px"><a class="btn btn-primary" href="#/pitches">Book a pitch</a><a class="btn btn-outline" href="#/">Home</a></div></section></div>`,
+    };
+    const add = router.add.bind(router);
+    router.add = (path, page, opts) => add(path, STORE_PATHS.test(path) ? P.comingSoon : page, opts);
+    const css = ['shop', 'cart', 'checkout', 'order', 'orders', 'wishlist', 'sell', 's/', 'seller', 'factory', 'dash/orders', 'dash/pod-catalog', 'dash/pod-review', 'dash/print', 'dash/store', 'dash/seller', 'admin/returns', 'admin/designs', 'admin/catalog', 'admin/store', 'admin/sellers', 'admin/orders']
+      .map((p) => `a[href="#/${p}"],a[href^="#/${p}/"],a[href^="#/${p}?"]`).join(',');
+    document.head.insertAdjacentHTML('beforeend', `<style id="store-paused">${css},[data-cart-target]{display:none!important}</style>`);
+  }
+
   router
     .add('/', P.home)
     .add('/pitches', P.pitches)
