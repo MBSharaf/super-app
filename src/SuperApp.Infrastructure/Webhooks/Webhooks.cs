@@ -102,14 +102,19 @@ public sealed class WebhookSender(IHttpClientFactory http, IConfiguration config
 /// <summary>
 /// Every 5 seconds, sends waiting events to each enabled webhook that follows them. A failed webhook is tried again after
 /// 1 minute, 5 minutes, 30 minutes, 2 hours and 6 hours, then the event is marked failed; a webhook that already received an
-/// event is not sent it again.
+/// event is not sent it again. Off in the "Testing" environment (tests call <see cref="RunOnceAsync"/>, which returns how many
+/// events it handled).
 /// </summary>
-public sealed class WebhookDispatcher(IServiceScopeFactory scopes, ILogger<WebhookDispatcher> logger) : BackgroundService
+public sealed class WebhookDispatcher(IServiceScopeFactory scopes, IHostEnvironment environment, ILogger<WebhookDispatcher> logger) : BackgroundService
 {
     private static readonly TimeSpan[] Backoff = [TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(30), TimeSpan.FromHours(2), TimeSpan.FromHours(6)];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (environment.IsEnvironment("Testing"))
+        {
+            return;
+        }
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -124,7 +129,7 @@ public sealed class WebhookDispatcher(IServiceScopeFactory scopes, ILogger<Webho
         }
     }
 
-    public async Task RunOnceAsync(CancellationToken ct)
+    public async Task<int> RunOnceAsync(CancellationToken ct)
     {
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -134,7 +139,7 @@ public sealed class WebhookDispatcher(IServiceScopeFactory scopes, ILogger<Webho
             .OrderBy(e => e.Id).Take(20).ToListAsync(ct);
         if (events.Count == 0)
         {
-            return;
+            return 0;
         }
         var subs = await db.Set<WebhookSubscription>().Where(w => w.IsEnabled).ToListAsync(ct);
         foreach (var e in events)
@@ -142,6 +147,7 @@ public sealed class WebhookDispatcher(IServiceScopeFactory scopes, ILogger<Webho
             await DeliverAsync(db, sender, subs, e, now, ct);
         }
         await db.SaveChangesAsync(ct);
+        return events.Count;
     }
 
     private static async Task DeliverAsync(AppDbContext db, IWebhookSender sender, List<WebhookSubscription> subs, OutboxEvent e, DateTime now, CancellationToken ct)

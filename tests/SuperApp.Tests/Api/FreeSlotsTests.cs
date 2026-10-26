@@ -66,4 +66,19 @@ public sealed class FreeSlotsTests(AccountsApiFactory api) : IClassFixture<Accou
         await api.DbAsync(db => db.Set<Partner>().Where(p => p.Id == partnerId).ExecuteUpdateAsync(u => u.SetProperty(p => p.SlotPostingBlocked, true)));
         (await partner.PostAsync("/api/v1/partner/free-slots", new { pitchId = id, date = PartnerKit.Day(4), hour = 10, discountPercent = 10m })).Body.Code().ShouldBe("posting_blocked");
     }
+
+    [Fact]
+    public async Task Only_the_follower_can_remove_an_alert()
+    {
+        var (_, _, _, pitch) = await kit.PartnerWithPitchAsync(live: true);
+        var (player, _) = await kit.PersonAsync(partner: false);
+        var made = await player.PostAsync("/api/v1/alerts", new { pitchSlug = pitch.GetProperty("slug").GetString(), areaId = (int?)null, fromHour = 18, toHour = 23 });
+        made.Status.ShouldBe(HttpStatusCode.Created, made.Body.ToString());
+        var id = made.Body.Data().GetProperty("id").GetInt64();
+
+        var (stranger, _) = await kit.PersonAsync(partner: false);
+        (await stranger.SendAsync(HttpMethod.Delete, $"/api/v1/alerts/{id}")).Status.ShouldBe(HttpStatusCode.NotFound);
+        (await player.SendAsync(HttpMethod.Delete, $"/api/v1/alerts/{id}")).Status.ShouldBe(HttpStatusCode.OK);
+        (await player.SendAsync(HttpMethod.Delete, $"/api/v1/alerts/{id}")).Status.ShouldBe(HttpStatusCode.NotFound);
+    }
 }

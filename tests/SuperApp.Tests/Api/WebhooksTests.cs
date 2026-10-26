@@ -65,7 +65,11 @@ public sealed class WebhooksTests(AccountsApiFactory api) : IClassFixture<Accoun
         var (_, _, _, pitch) = await kit.PartnerWithPitchAsync(live: true);
         var (player, _) = await kit.PersonAsync(partner: false);
         await player.PostAsync("/api/v1/bookings", new { pitchSlug = pitch.GetProperty("slug").GetString(), date = PartnerKit.Day(3), hour = 20, duration = 1, payAtVenue = false, acceptWaiver = true });
-        await api.Services.GetRequiredService<WebhookDispatcher>().RunOnceAsync(CancellationToken.None);
+        var dispatcher = api.Services.GetRequiredService<WebhookDispatcher>();
+        while (await dispatcher.RunOnceAsync(CancellationToken.None) > 0)
+        {
+            // 20 events per run: earlier events (the partner's set-up) may come before the booking
+        }
 
         var booking = n8n.Got.ToArray().Single(g => g.Event == "booking.created");
         booking.Body.ShouldContain("\"type\":\"booking.created\"");

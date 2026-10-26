@@ -213,4 +213,26 @@ public sealed class AuthTests(AccountsApiFactory api) : IClassFixture<AccountsAp
         me.GetProperty("dashboards").EnumerateArray().Select(d => d.GetString()).ShouldContain("ceo");
         me.GetProperty("permissions").GetArrayLength().ShouldBe(SuperApp.Application.Security.Permissions.All.Count);
     }
+
+    [Fact]
+    public async Task Signing_out_ends_this_session_and_signing_out_everywhere_ends_the_others()
+    {
+        (await (await api.ClientAsync()).PostAsync("/api/v1/auth/sign-up", NewCustomer(out var email, out _))).Status.ShouldBe(HttpStatusCode.Created);
+        async Task<ApiClient> SessionAsync()
+        {
+            var c = await api.ClientAsync();
+            await c.SignInAsync(email, "Football2026");
+            return c;
+        }
+        var phone = await SessionAsync();
+        var laptop = await SessionAsync();
+        (await phone.PostAsync("/api/v1/auth/sign-out")).Status.ShouldBe(HttpStatusCode.NoContent);
+        (await phone.GetAsync("/api/v1/me")).Status.ShouldBe(HttpStatusCode.Unauthorized);
+        (await laptop.GetAsync("/api/v1/me")).Status.ShouldBe(HttpStatusCode.OK);
+
+        var tablet = await SessionAsync();
+        (await laptop.PostAsync("/api/v1/auth/sign-out-everywhere")).Status.ShouldBe(HttpStatusCode.NoContent);
+        (await laptop.GetAsync("/api/v1/me")).Status.ShouldBe(HttpStatusCode.Unauthorized);
+        (await tablet.GetAsync("/api/v1/me")).Status.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }

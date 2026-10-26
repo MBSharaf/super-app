@@ -44,11 +44,13 @@ public sealed class NewsAndMatchesTests(FantasyApiFactory api) : IClassFixture<F
         (await ceo.PostAsync("/api/v1/admin/news", post with { title = "Scheduled story for next week", publishedAt = (DateTime?)DateTime.UtcNow.AddDays(7) })).Status.ShouldBe(HttpStatusCode.Created);
 
         var guest = await api.ClientAsync();
-        var list = (await guest.GetAsync("/api/v1/news?category=league")).Body;
-        list.Data().GetArrayLength().ShouldBe(1);
+        var (listStatus, list) = await guest.GetAsync("/api/v1/news?category=league");
+        // Seen failing once in a full run and never since: the answer is printed so a repeat shows its cause
+        (listStatus, list.Data().GetArrayLength()).ShouldBe((HttpStatusCode.OK, 1), list.ToString());
         list.Data()[0].GetProperty("body").ValueKind.ShouldBe(System.Text.Json.JsonValueKind.Null);
         (await guest.GetAsync($"/api/v1/news/{id}")).Body.Data().GetProperty("body").GetString().ShouldBe("Full story here.");
-        (await ceo.GetAsync("/api/v1/admin/news")).Body.Data().GetArrayLength().ShouldBe(3);
+        var all = (await ceo.GetAsync("/api/v1/admin/news")).Body;
+        all.Data().GetArrayLength().ShouldBe(3, all.ToString());
 
         var (customer, _) = await kit.PersonAsync(partner: false);
         (await customer.PostAsync("/api/v1/admin/news", post)).Status.ShouldBe(HttpStatusCode.Forbidden);

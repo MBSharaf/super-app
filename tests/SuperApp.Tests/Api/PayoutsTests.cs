@@ -77,4 +77,33 @@ public sealed class PayoutsTests(AccountsApiFactory api) : IClassFixture<Account
         var statement = await partner.Http.GetAsync("/api/v1/wallet/statement.xlsx");
         statement.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task A_rejected_withdrawal_goes_back_to_the_available_balance()
+    {
+        var (partner, partnerId, _, _) = await kit.PartnerWithPitchAsync(live: true);
+        using (var scope = api.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Set<Partner>().Where(p => p.UserId == partnerId).ExecuteUpdateAsync(u => u.SetProperty(p => p.PayoutDetail, "EG98 7654 3210").SetProperty(p => p.Status, PartnerStatus.Active));
+            var wallet = new Wallet { OwnerUserId = partnerId, Type = WalletType.PartnerBookings, AvailableBalance = 8000 };
+            db.Add(wallet);
+            db.Add(new LedgerEntry { Wallet = wallet, Amount = 8000, Bucket = LedgerBucket.Available, Kind = LedgerKind.Adjustment, RefType = "Test", RefId = 2, GroupId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow });
+            await db.SaveChangesAsync();
+        }
+        var code = (await partner.PostAsync("/api/v1/wallet/payouts", new { amount = 3000 })).Body.Data().GetProperty("code").GetString();
+        Available(await partner.GetAsync("/api/v1/wallet")).ShouldBe(5000);
+
+        var ceo = await api.CeoAsync();
+        (await ceo.PostAsync($"/api/v1/admin/payouts/{code}/reject", new { reason = "" })).Body.Code().ShouldBe("reason");
+        (await ceo.PostAsync($"/api/v1/admin/payouts/{code}/reject", new { reason = "The IBAN does not match the account name." })).Body.Data()
+            .GetProperty("status").GetString().ShouldBe("Rejected");
+        Available(await partner.GetAsync("/api/v1/wallet")).ShouldBe(8000);
+        (await ceo.PostAsync($"/api/v1/admin/payouts/{code}/reject", new { reason = "Again." })).Body.Code().ShouldBe("payout_closed");
+        var ledger = await partner.GetAsync("/api/v1/wallet/ledger?type=PartnerBookings");
+        ledger.Status.ShouldBe(HttpStatusCode.OK, ledger.Body.ToString());
+    }
+
+    private static decimal Available((HttpStatusCode Status, System.Text.Json.JsonElement Body) wallets) =>
+        wallets.Body.Data().EnumerateArray().Single(w => w.GetProperty("type").GetString() == "PartnerBookings").GetProperty("available").GetDecimal();
 }

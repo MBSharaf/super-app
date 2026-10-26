@@ -92,4 +92,27 @@ public sealed class TournamentsTests(AccountsApiFactory api) : IClassFixture<Acc
             .Status.ShouldBe(HttpStatusCode.Created);
         (await player.GetAsync($"/api/v1/tournaments/{id}")).Status.ShouldBe(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task A_venue_removing_a_team_and_an_admin_cancelling_both_refund_the_entry_fee()
+    {
+        var (partner, _, _, pitch) = await kit.PartnerWithPitchAsync(live: true);
+        var id = (await partner.PostAsync("/api/v1/partner/tournaments", Cup(pitch.GetProperty("id").GetInt64(), "knockout", 4, 6))).Body.Data().GetProperty("id").GetInt64();
+        var removed = await TeamAsync(id, "Maadi Movers");
+        var kept = await TeamAsync(id, "Zamalek Kids");
+        var teamId = (await removed.GetAsync($"/api/v1/tournaments/{id}")).Body.Data().GetProperty("teams").EnumerateArray()
+            .Single(t => t.GetProperty("mine").GetBoolean()).GetProperty("id").GetInt64();
+
+        var (stranger, _, _, _) = await kit.PartnerWithPitchAsync(live: true);
+        (await stranger.SendAsync(HttpMethod.Delete, $"/api/v1/partner/tournaments/{id}/teams/{teamId}")).Status.ShouldBe(HttpStatusCode.NotFound);
+        (await partner.SendAsync(HttpMethod.Delete, $"/api/v1/partner/tournaments/{id}/teams/{teamId}")).Status.ShouldBe(HttpStatusCode.OK);
+        Wallet((await removed.GetAsync("/api/v1/wallet")).Body.Data(), "Customer").ShouldBe(500);
+
+        (await partner.GetAsync("/api/v1/admin/tournaments")).Status.ShouldBe(HttpStatusCode.Forbidden);
+        var ceo = await api.CeoAsync();
+        (await ceo.GetAsync("/api/v1/admin/tournaments")).Body.Data().EnumerateArray().ShouldContain(t => t.GetProperty("id").GetInt64() == id);
+        (await ceo.PostAsync($"/api/v1/admin/tournaments/{id}/cancel")).Body.Data().GetProperty("status").GetString().ShouldBe("cancelled");
+        Wallet((await kept.GetAsync("/api/v1/wallet")).Body.Data(), "Customer").ShouldBe(500);
+        Wallet((await removed.GetAsync("/api/v1/wallet")).Body.Data(), "Customer").ShouldBe(500);   // refunded once, not again
+    }
 }

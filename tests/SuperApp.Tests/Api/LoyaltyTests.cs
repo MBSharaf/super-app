@@ -62,4 +62,24 @@ public sealed class LoyaltyTests(AccountsApiFactory api) : IClassFixture<Account
         (await player.PostAsync("/api/v1/bookings", new { pitchSlug = slug, date = PartnerKit.Day(6), hour = 19, duration = 1, payAtVenue = false, acceptWaiver = true, voucherCode = code }))
             .Body.Code().ShouldBe("voucher_used");
     }
+
+    [Fact]
+    public async Task A_venue_edits_pauses_and_deletes_its_own_codes_only()
+    {
+        var (partner, _, _, _) = await kit.PartnerWithPitchAsync(live: true);
+        var body = new { code = "EDIT" + Random.Shared.Next(1000, 9999), discountType = "Percent", value = 10, minSpend = 0, maxUses = 10, perCustomer = 1,
+            startsOn = PartnerKit.Day(-1), endsOn = (string?)null, label = "Edit me", pitchIds = Array.Empty<long>() };
+        var id = (await partner.PostAsync("/api/v1/partner/codes", body)).Body.Data().GetProperty("id").GetInt64();
+
+        var (other, _, _, _) = await kit.PartnerWithPitchAsync(live: true);
+        (await other.SendAsync(HttpMethod.Put, $"/api/v1/partner/codes/{id}", body with { value = 90 })).Status.ShouldBe(HttpStatusCode.NotFound);
+        (await other.PostAsync($"/api/v1/partner/codes/{id}/pause")).Status.ShouldBe(HttpStatusCode.NotFound);
+        (await other.SendAsync(HttpMethod.Delete, $"/api/v1/partner/codes/{id}")).Status.ShouldBe(HttpStatusCode.NotFound);
+
+        (await partner.SendAsync(HttpMethod.Put, $"/api/v1/partner/codes/{id}", body with { value = 15 })).Body.Data().GetProperty("value").GetDecimal().ShouldBe(15);
+        (await partner.PostAsync($"/api/v1/partner/codes/{id}/pause")).Body.Data().GetProperty("status").GetString().ShouldBe("Paused");
+        (await partner.PostAsync($"/api/v1/partner/codes/{id}/pause")).Body.Data().GetProperty("status").GetString().ShouldBe("Active");
+        (await partner.SendAsync(HttpMethod.Delete, $"/api/v1/partner/codes/{id}")).Status.ShouldBe(HttpStatusCode.OK);
+        (await partner.GetAsync("/api/v1/partner/codes")).Body.Data().EnumerateArray().ShouldNotContain(c => c.GetProperty("id").GetInt64() == id);
+    }
 }

@@ -174,4 +174,22 @@ public sealed class TeamTests(AccountsApiFactory api) : IClassFixture<AccountsAp
         var body = (await ceo.PostAsync("/api/v1/auth/2fa/recovery-codes", new { code = Totp.Code(api.CeoKey!) })).Body;
         return body.Data().GetProperty("recoveryCodes").EnumerateArray().Select(c => c.GetString()!).ToList();
     }
+
+    [Fact]
+    public async Task The_ceo_resets_a_lost_authenticator_and_the_admin_sets_it_up_again()
+    {
+        var ceo = await CeoAsync();
+        var (id, email) = await InviteAdminAsync(ceo, ["Moderator"]);
+        await AcceptInviteAsync(id, email, "Moderate2026");
+        var admin = await api.ClientAsync();
+        await admin.SignInAsync(email, "Moderate2026");
+        await admin.EnableTwoFactorAsync();
+        (await (await api.ClientAsync()).SignInAsync(email, "Moderate2026")).Data().GetProperty("requires2fa").GetBoolean().ShouldBeTrue();
+
+        (await admin.PostAsync($"/api/v1/ceo/admins/{id}/reset-2fa")).Status.ShouldBe(HttpStatusCode.Forbidden);
+        (await ceo.PostAsync($"/api/v1/ceo/admins/{id}/reset-2fa")).Status.ShouldBe(HttpStatusCode.OK);
+        var again = await api.ClientAsync();
+        (await again.SignInAsync(email, "Moderate2026")).Data().GetProperty("requires2fa").GetBoolean().ShouldBeFalse();
+        (await again.GetAsync("/api/v1/admin/overview")).Body.Code().ShouldBe("2fa_required");
+    }
 }
