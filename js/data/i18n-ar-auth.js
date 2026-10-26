@@ -3,7 +3,7 @@
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
     /* ---------- Money (API mode, Phase 5) ---------- */
-    'Waiting for payment': 'مستني الدفع', 'Wallet top-ups are coming soon.': 'شحن المحفظة قريب.', 'Refund': 'استرجاع', 'Withdrawal': 'سحب',
+    'Waiting for payment': 'مستني الدفع', 'Give 5% to 90% off to post a free slot.': 'حط خصم من 5% لـ 90% عشان تنزل الساعة الفاضية.', 'Loading the tournament…': 'بنحمّل البطولة…', 'Wallet top-ups are coming soon.': 'شحن المحفظة قريب.', 'Refund': 'استرجاع', 'Withdrawal': 'سحب',
     'Money released': 'فلوس اتحررت', 'Adjustment': 'تسوية', 'Deduction': 'خصم', 'Booking': 'حجز', 'Commission': 'عمولة', 'Service fee': 'رسوم الخدمة',
     'The minimum withdrawal is 500 EGP.': 'أقل سحب 500 جنيه.', 'Minimum 500 EGP': 'أقل حاجة 500 جنيه', 'That is more than your available balance.': 'ده أكتر من رصيدك المتاح.',
     'More than your available balance': 'أكتر من رصيدك المتاح', 'This withdrawal is waiting for a finance approval.': 'طلب السحب ده مستني موافقة الماليات.',
