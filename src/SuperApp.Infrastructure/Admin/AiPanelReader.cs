@@ -62,6 +62,15 @@ public sealed class AgentAwareAuditLogger(AppDbContext db, ICurrentUser currentU
             Ip = request.IpAddress,
             CorrelationId = request.CorrelationId,
         });
+        // Events n8n follows are queued in the same save as their activity line (sent by WebhookDispatcher)
+        if (Application.Features.Webhooks.WebhookEvents.FromAudit(action) is { } evt)
+        {
+            db.Set<Domain.Entities.Ops.OutboxEvent>().Add(new Domain.Entities.Ops.OutboxEvent
+            {
+                Type = evt.Type, OccurredAt = clock.UtcNow,
+                PayloadJson = SeedFile.ToJson(new { entityType, entityId, summary, by = evt.By, data }),
+            });
+        }
         await db.SaveChangesAsync(ct);
     }
 }

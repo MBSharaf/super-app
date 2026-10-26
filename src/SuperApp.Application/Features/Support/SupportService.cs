@@ -39,7 +39,8 @@ public sealed class SupportService(
     ICurrentUser currentUser,
     IClock clock,
     IValidator<OpenTicketRequest> openRules,
-    IValidator<TicketMessageRequest> messageRules) : ISupportService
+    IValidator<TicketMessageRequest> messageRules,
+    IAuditLogger audit) : ISupportService
 {
     public const string AutoReply = "Thanks for reaching out — the Super App team replies within 24 hours. You can add details or photos here meanwhile.";
 
@@ -62,6 +63,7 @@ public sealed class SupportService(
         repository.Add(new TicketMessage { Ticket = ticket, SenderId = UserId, Body = request.Message.Trim() });
         await unitOfWork.SaveChangesAsync(ct);
         await TellAsync(ticket, ct);
+        await audit.LogAsync(AuditSystem.Site, "ticket.opened", $"Ticket {ticket.Code}: {ticket.Subject}", "Ticket", ticket.Code, new { topic = ticket.Topic.ToString(), dispute = ticket.IsDispute }, ct);
         return (await repository.TicketDtoAsync(ticket.Code, UserId, false, ct))!;
     }
 

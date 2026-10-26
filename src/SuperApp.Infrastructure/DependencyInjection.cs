@@ -100,6 +100,7 @@ public static class DependencyInjection
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<Application.Features.FreeSlots.IFreeSlotRepository, FreeSlotRepository>();
         services.AddScoped<Application.Features.Games.IGameRepository, GameRepository>();
+        Webhooks.WebhookRegistration.AddWebhooks(services);
         services.AddScoped<Application.Features.Waitlist.IWaitlistRepository, WaitlistRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();

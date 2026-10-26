@@ -32,7 +32,8 @@ public sealed class CheckInService(
     INotifier notifier,
     ICurrentUser currentUser,
     IClock clock,
-    IValidator<ScanRequest> rules) : ICheckInService
+    IValidator<ScanRequest> rules,
+    IAuditLogger audit) : ICheckInService
 {
     public static readonly TimeSpan EarlyWindow = TimeSpan.FromMinutes(60);
 
@@ -154,6 +155,11 @@ public sealed class CheckInService(
             Result = result, MatchNumber = matchNumber, Device = request.Device?.Trim() is { Length: > 0 } d ? d[..Math.Min(d.Length, 100)] : null, IdempotencyKey = key,
         });
         await unitOfWork.SaveChangesAsync(ct);
+        if (result == QrScanResult.Accepted && t is not null)
+        {
+            await audit.LogAsync(AuditSystem.Partner, "checkin.accepted", $"Checked in {t.Booking.Code} at {t.PitchName}", "Booking", t.Booking.Code,
+                new { pitch = t.PitchName, customer = t.CustomerName, match = matchNumber }, ct);
+        }
         if (result == QrScanResult.Accepted && t?.Booking.CustomerId is { } customer)
         {
             await notifier.NotifyUserAsync(customer, new NotificationMessage(NotificationCategory.Bookings, $"Checked in at {t.PitchName}",
