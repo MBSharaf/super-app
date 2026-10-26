@@ -23,7 +23,7 @@
     router.add = (path, page, opts) => add(path, STORE_PATHS.test(path) ? P.comingSoon : page, opts);
     const css = ['shop', 'cart', 'checkout', 'order', 'orders', 'wishlist', 'sell', 's/', 'seller', 'factory', 'dash/orders', 'dash/pod-catalog', 'dash/pod-review', 'dash/print', 'dash/store', 'dash/seller', 'admin/returns', 'admin/designs', 'admin/catalog', 'admin/store', 'admin/sellers', 'admin/orders']
       .map((p) => `a[href="#/${p}"],a[href^="#/${p}/"],a[href^="#/${p}?"]`).join(',');
-    document.head.insertAdjacentHTML('beforeend', `<style id="store-paused">${css},[data-cart-target]{display:none!important}</style>`);
+    document.head.insertAdjacentHTML('beforeend', `<style id="store-paused">${css},[data-cart-target],.fc-product{display:none!important}</style>`);
   }
 
   router

@@ -45,7 +45,7 @@
     { key: 'players', title: 'Find players', text: 'Short on numbers? Post your booking and players nearby join in minutes.', href: '#/players', icon: 'users', img: 'menPlaying', cta: 'Browse open games' },
     { key: 'fantasy', title: 'Play fantasy', text: 'Egyptian Premier League fantasy with private groups and paid prize leagues.', href: '#/fantasy', icon: 'trophy', img: 'stadiumNight', cta: 'Pick your team' },
     { key: 'shop', title: 'Shop gear', text: 'Boots, balls, kits and padel — original brands, delivered across Egypt.', href: '#/shop', icon: 'bag', img: 'goalTrees', productImg: 'photo-1511886929837-354d827aae26', cta: 'Shop now' },
-  ];
+  ].filter((x) => x.key !== 'shop' || SA.config.storeEnabled);
 
   SA.pages.home = {
     title: 'Super App — Book, play, compete',
@@ -71,7 +71,7 @@
         ...nearby.filter((p) => p.freeSlots > 0).slice(0, 3).map((p) => `<span class="t-turf"><i></i><b>${esc(p.name)}</b> has ${p.freeSlots} free slots today from ${money(p.price)}</span>`),
         ...topPlayers.slice(0, 2).map((p) => `<span class="t-gold"><i></i><b>${esc(p.name)}</b> is the most transferred-in player this week</span>`),
         `<span class="t-gold"><i></i><b>${leagues[0]?.participants.toLocaleString()}</b> managers are playing for ${esc(leagues[0]?.prizes[0][1] || '')} in ${esc(leagues[0]?.name || '')}</span>`,
-        ...products.filter((p) => p.discount).slice(0, 2).map((p) => `<span><i></i><b>${esc(p.name)}</b> is ${p.discount}% off today</span>`),
+        ...products.filter((p) => p.discount && SA.config.storeEnabled).slice(0, 2).map((p) => `<span><i></i><b>${esc(p.name)}</b> is ${p.discount}% off today</span>`),
       ];
       const ticker = tickerItems.join('');
 
@@ -95,7 +95,7 @@
 
       <section class="container">
         <nav class="quick-nav reveal" aria-label="Everything in Super App">
-          ${['pitches', 'players', 'tournaments', 'community', 'matches', 'news', 'fantasy', 'shop'].map((k) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item"><span class="quick-nav-ico">${icon(n.icon, 22)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${n.label}</span></a>`; }).join('')}
+          ${['pitches', 'players', 'tournaments', 'community', 'matches', 'news', 'fantasy', 'shop'].filter((k) => k !== 'shop' || SA.config.storeEnabled).map((k) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item"><span class="quick-nav-ico">${icon(n.icon, 22)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${n.label}</span></a>`; }).join('')}
         </nav>
       </section>
 
@@ -187,7 +187,7 @@
         <div class="promo-grid">${S.content.banners().map((b, i) => `<a class="promo promo-${'abc'[i]} reveal" ${i ? `style="--d:${i * 80}ms"` : ''} href="${esc(b.link || '#/')}"><img src="${media.photo(b.image, 900, 700)}" alt="" loading="lazy" /><div>${b.badge ? `<span class="badge ${i ? 'badge-glass' : 'badge-blaze'}">${esc(b.badge)}</span>` : ''}<h3 class="${i ? 'h3' : 'h2'}">${esc(b.title)}</h3>${!i && b.cta ? `<span class="link" style="color:#fff">${esc(b.cta)} ${icon('arrowRight', 16)}</span>` : ''}</div></a>`).join('')}</div>
       </section>
 
-      <section class="container section">
+      ${SA.config.storeEnabled ? '' : '<!-- store paused -->'}<section class="container section" ${SA.config.storeEnabled ? '' : 'hidden'}>
         <div class="sec-head"><div><h2 class="h2">Popular in the shop</h2><p>Gear players in your area are buying this week.</p></div><a class="btn btn-ghost btn-sm" href="#/shop">All products ${icon('arrowRight', 16)}</a></div>
         <div class="product-grid">${products.filter((p) => !p.service).slice(0, 8).map((p) => cards.product(p)).join('')}</div>
       </section>
