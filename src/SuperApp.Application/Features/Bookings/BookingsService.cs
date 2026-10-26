@@ -30,7 +30,9 @@ public sealed class BookingsService(
     IValidator<CreateBookingRequest> createRules,
     Waitlist.IWaitlistService waitlist,
     Payments.IPaymentsService payments,
-    BookingNotices notices) : IBookingsService
+    BookingNotices notices,
+    Money.ILedger ledger,
+    IUnitOfWork unitOfWork) : IBookingsService
 {
     public async Task<HoldResponse> HoldAsync(HoldRequest request, CancellationToken ct)
     {
@@ -66,6 +68,8 @@ public sealed class BookingsService(
         }
         if (booking.Status == BookingStatus.Confirmed)
         {
+            await ledger.BookingPaidAsync(booking, ct);
+            await unitOfWork.SaveChangesAsync(ct);
             await notices.ConfirmedAsync(booking, plan.Pitch.Name, plan.Pitch.OwnerUserId, ct);
         }
         return BookingMapper.ToResponse(booking, plan.Pitch.Slug, plan.Pitch.Name, plan.Pitch.Address, qr.Create(booking.Code)) with { PaymentUrl = paymentUrl };

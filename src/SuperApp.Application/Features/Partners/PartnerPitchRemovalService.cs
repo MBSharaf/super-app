@@ -26,7 +26,8 @@ public sealed class PartnerPitchRemovalService(
     IUnitOfWork unitOfWork,
     INotifier notifier,
     IAuditLogger audit,
-    IClock clock) : IPartnerPitchRemovalService
+    IClock clock,
+    Money.ILedger ledger) : IPartnerPitchRemovalService
 {
     public async Task<PitchRemovedDto> RemoveAsync(long pitchId, CancellationToken ct)
     {
@@ -44,6 +45,7 @@ public sealed class PartnerPitchRemovalService(
             b.Status = BookingStatus.CancelledByVenue;
             b.CancelledAt = clock.UtcNow;
             b.RefundAmount = b.PayAtVenue ? 0 : b.Total;
+            await ledger.BookingRefundAsync(b, scope.OwnerUserId, "The pitch was removed", ct);
         }
         pitch.IsDeleted = true;
         pitch.DeletedAt = clock.UtcNow;

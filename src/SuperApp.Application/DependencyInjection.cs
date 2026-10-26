@@ -33,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IBookingsService, BookingsService>();
         services.AddScoped<IMyBookingsService, MyBookingsService>();
         services.AddScoped<BookingNotices>();
+        services.AddScoped<Features.Money.ILedger, Features.Money.Ledger>();
+        services.AddScoped<Features.Money.IWalletService, Features.Money.WalletService>();
         services.AddScoped<Features.Payments.IPaymentListener, BookingPaymentListener>();
         services.AddScoped<Features.Payments.IPaymentsService, Features.Payments.PaymentsService>();
         services.AddScoped<IPartnerAccess, PartnerAccess>();

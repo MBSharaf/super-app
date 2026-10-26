@@ -43,7 +43,8 @@ public sealed class PartnerBookingsService(
     IValidator<PartnerBookingsQuery> queryRules,
     IValidator<WalkInRequest> walkInRules,
     IValidator<VenueCancelRequest> cancelRules,
-    Waitlist.IWaitlistService waitlist) : IPartnerBookingsService
+    Waitlist.IWaitlistService waitlist,
+    Money.ILedger ledger) : IPartnerBookingsService
 {
     private const int MaxExportRows = 5000;
 
@@ -119,6 +120,7 @@ public sealed class PartnerBookingsService(
         booking.Status = BookingStatus.CancelledByVenue;
         booking.CancelledAt = clock.UtcNow;
         booking.RefundAmount = booking.PayAtVenue ? 0 : booking.Total;
+        await ledger.BookingRefundAsync(booking, scope.OwnerUserId, $"Cancelled by the venue: {request.Reason.Trim()}", ct);
         await unitOfWork.SaveChangesAsync(ct);
         await bookings.ReleaseSlotsAsync(booking.Id, ct);
         var info = await bookings.PitchInfoAsync(booking.PitchId, ct);

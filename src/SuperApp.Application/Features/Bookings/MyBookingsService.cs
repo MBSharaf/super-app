@@ -31,7 +31,8 @@ public sealed class MyBookingsService(
     IAuditLogger audit,
     ICurrentUser currentUser,
     IClock clock,
-    Waitlist.IWaitlistService waitlist) : IMyBookingsService
+    Waitlist.IWaitlistService waitlist,
+    Money.ILedger ledger) : IMyBookingsService
 {
     private static readonly string[] Tabs = ["upcoming", "past", "cancelled"];
 
@@ -69,6 +70,7 @@ public sealed class MyBookingsService(
         booking.Status = BookingStatus.CancelledByCustomer;
         booking.CancelledAt = clock.UtcNow;
         booking.RefundAmount = preview.RefundAmount;
+        await ledger.BookingRefundAsync(booking, booking.CustomerId!.Value, "Cancelled by the customer", ct);
         await unitOfWork.SaveChangesAsync(ct);
         await bookings.ReleaseSlotsAsync(booking.Id, ct);
         var info = await bookings.PitchInfoAsync(booking.PitchId, ct);

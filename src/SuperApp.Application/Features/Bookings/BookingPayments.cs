@@ -23,7 +23,7 @@ public sealed class BookingNotices(INotifier notifier, IAuditLogger audit)
 }
 
 /// <summary>The gateway confirmed (or refused) a booking's payment.</summary>
-public sealed class BookingPaymentListener(IBookingRepository bookings, BookingNotices notices, INotifier notifier, IUnitOfWork unitOfWork) : IPaymentListener
+public sealed class BookingPaymentListener(IBookingRepository bookings, BookingNotices notices, Money.ILedger ledger, INotifier notifier, IUnitOfWork unitOfWork) : IPaymentListener
 {
     public PaymentPurpose Purpose => PaymentPurpose.Booking;
 
@@ -35,6 +35,8 @@ public sealed class BookingPaymentListener(IBookingRepository bookings, BookingN
             return;
         }
         booking.Status = BookingStatus.Confirmed;
+        booking.Payment = payment;
+        await ledger.BookingPaidAsync(booking, ct);
         await unitOfWork.SaveChangesAsync(ct);
         var info = await bookings.PitchInfoAsync(booking.PitchId, ct);
         var pitch = await bookings.PitchAsync(info.Slug, ct);

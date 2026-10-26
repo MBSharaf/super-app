@@ -114,6 +114,10 @@ public static class PaymentsInfrastructure
         {
             services.AddSingleton<IPaymentGateway, SimulatedGateway>();
         }
+        services.AddScoped<SuperApp.Application.Features.Money.IMoneyStore, MoneyStore>();
+        services.AddSingleton<SuperApp.Application.Features.Money.IMoneyDocuments, MoneyDocuments>();
+        services.AddSingleton<MoneyReleaseJob>();
+        services.AddHostedService(sp => sp.GetRequiredService<MoneyReleaseJob>());
         services.AddSingleton<AwaitingPaymentExpiry>();
         services.AddHostedService(sp => sp.GetRequiredService<AwaitingPaymentExpiry>());
         return services;
