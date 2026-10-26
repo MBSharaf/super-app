@@ -17,7 +17,7 @@
         ${l.sponsor ? `<p class="xs lc-dim lc-sponsor">${icon('sparkle', 12)} Prizes from <b>${esc(l.sponsor.name)}</b></p>` : ''}
       </div>
       <div class="lc-figs">
-        <div><span class="xs lc-dim">1st prize</span><b class="small lc-prize">${esc(l.prizes[0][1])}</b></div>
+        <div><span class="xs lc-dim">1st prize</span><b class="small lc-prize">${esc(l.prizes?.[0]?.[1] || l.prizeText || '—')}</b></div>
         <div><span class="xs lc-dim">Prizes worth</span><b class="num">${money(l.prizeValue || 0)}</b></div>
         <div><span class="xs lc-dim">Managers</span><b class="num">${fmtNum(l.participants)}${l.cap ? `<span class="xs lc-dim"> / ${fmtNum(l.cap)}</span>` : ''}</b></div>
         <div><span class="xs lc-dim">${me ? 'Your rank' : `GW${meta.gw} locks in`}</span><b class="num">${me ? '#' + fmtNum(me.rank) : c.countdown(lock, { compact: true })}</b></div>

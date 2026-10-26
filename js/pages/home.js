@@ -34,10 +34,10 @@
         <span class="xs">Gameweek ${meta.gw} deadline</span>
         ${c.countdown(meta.deadline, { compact: true })}
       </div>
-      <div class="float-card fc-product">
+      ${product ? `<div class="float-card fc-product">
         <img src="${media.u(product.images[0], 200, 200)}" alt="" />
         <div><span class="xs muted">${esc(product.brand)}</span><b>${esc(product.name.split(' ').slice(0, 2).join(' '))}</b><span class="price small">${money(product.price)}</span></div>
-      </div>
+      </div>` : ''}
     </div>`;
 
   const services = [
@@ -50,7 +50,7 @@
   SA.pages.home = {
     title: 'Super App — Book, play, compete',
     async render() {
-      const [nearby, matches, products] = await Promise.all([S.pitches.list({ sort: 'distance' }), S.matches.list({ sort: 'soon' }), S.shop.list({ sort: 'featured' })]);
+      const [nearby, matches, products] = await Promise.all([S.pitches.list({ sort: 'distance' }), S.matches.list({ sort: 'soon' }), SA.config.storeEnabled ? S.shop.list({ sort: 'featured' }) : Promise.resolve([])]);  // the store is paused: its API answers 423
       const meta = S.fantasy.meta();
       const loc = S.location.current();
       const user = S.user.me();
@@ -70,7 +70,7 @@
         ...matches.filter((m) => m.spotsLeft > 0).slice(0, 4).map((m, i) => `<span><i></i><b>${esc(people[(i * 7 + 3) % people.length].split(' ')[0])}</b> joined a ${m.type} at ${esc(m.pitch.name)} — ${m.spotsLeft} spot${m.spotsLeft > 1 ? 's' : ''} left</span>`),
         ...nearby.filter((p) => p.freeSlots > 0).slice(0, 3).map((p) => `<span class="t-turf"><i></i><b>${esc(p.name)}</b> has ${p.freeSlots} free slots today from ${money(p.price)}</span>`),
         ...topPlayers.slice(0, 2).map((p) => `<span class="t-gold"><i></i><b>${esc(p.name)}</b> is the most transferred-in player this week</span>`),
-        `<span class="t-gold"><i></i><b>${leagues[0]?.participants.toLocaleString()}</b> managers are playing for ${esc(leagues[0]?.prizes[0][1] || '')} in ${esc(leagues[0]?.name || '')}</span>`,
+        `<span class="t-gold"><i></i><b>${leagues[0]?.participants.toLocaleString()}</b> managers are playing for ${esc(leagues[0]?.prizes?.[0]?.[1] || '')} in ${esc(leagues[0]?.name || '')}</span>`,
         ...products.filter((p) => p.discount && SA.config.storeEnabled).slice(0, 2).map((p) => `<span><i></i><b>${esc(p.name)}</b> is ${p.discount}% off today</span>`),
       ];
       const ticker = tickerItems.join('');
