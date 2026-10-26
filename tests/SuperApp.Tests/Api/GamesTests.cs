@@ -45,6 +45,9 @@ public sealed class GamesTests(AccountsApiFactory api) : IClassFixture<AccountsA
 
         (await second.PostAsync($"/api/v1/games/{code}/requests", new { })).Body.Data().GetProperty("myStatus").GetString().ShouldBe("Waitlisted");
         (await first.SendAsync(HttpMethod.Delete, $"/api/v1/games/{code}/requests/mine")).Status.ShouldBe(HttpStatusCode.OK);
+        // The 70 EGP share paid when asking comes back to the wallet when leaving
+        (await first.GetAsync("/api/v1/wallet")).Body.Data().EnumerateArray().Single(w => w.GetProperty("type").GetString() == "Customer").GetProperty("available").GetDecimal().ShouldBe(70);
+        (await first.GetAsync("/api/v1/receipts")).Body.Data().GetArrayLength().ShouldBe(2);
         var after = (await second.GetAsync($"/api/v1/games/{code}")).Body.Data();
         after.GetProperty("myStatus").GetString().ShouldBe("Waiting");
         after.GetProperty("game").GetProperty("status").GetString().ShouldBe("Open");

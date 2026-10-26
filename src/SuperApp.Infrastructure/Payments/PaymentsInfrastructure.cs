@@ -99,8 +99,15 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
             t.Status = TournamentTeamStatus.Withdrawn;
             t.Payment!.Status = PaymentStatus.Failed;
         }
+        var requests = await db.Set<GameRequest>().Include(r => r.Payment)
+            .Where(r => r.Status != GameRequestStatus.Withdrawn && r.Payment != null && r.Payment.Status == PaymentStatus.Pending && r.Payment.CreatedAt <= now - PayWithin).Take(100).ToListAsync(ct);
+        foreach (var r in requests)
+        {
+            r.Status = GameRequestStatus.Withdrawn;
+            r.Payment!.Status = PaymentStatus.Failed;
+        }
         await db.SaveChangesAsync(ct);
-        return late.Count + teams.Count;
+        return late.Count + teams.Count + requests.Count;
     }
 }
 

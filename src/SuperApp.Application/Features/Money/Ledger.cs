@@ -69,6 +69,9 @@ public interface ILedger
     /// <summary>An entry fee the venue earns (tournaments): its share held until <c>release</c>, commission to revenue, a receipt.</summary>
     Task EntryFeeAsync(Payment payment, Guid venueOwnerId, decimal commissionRate, string refType, long refId, DateTime release, CancellationToken ct);
 
+    /// <summary>A player's game share, held in the host's Super App wallet until kick-off; a receipt for the player.</summary>
+    Task HeldShareAsync(Payment payment, Guid hostId, string refType, long refId, DateTime release, CancellationToken ct);
+
     /// <summary>Undoes every row of a paid thing and gives the payment back to the customer's wallet (refund + receipt).</summary>
     Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct);
 }
@@ -149,6 +152,16 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
         var group = Guid.NewGuid();
         PostRaw(await store.WalletAsync(venueOwnerId, WalletType.PartnerBookings, ct), payment.Amount - commission, LedgerBucket.Pending, LedgerKind.BookingEarning, refType, refId, release, group);
         PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), commission, LedgerBucket.Available, LedgerKind.Commission, refType, refId, null, group);
+        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = payer, Kind = ReceiptKind.Payment, Amount = payment.Amount, RefType = refType, RefId = refId });
+    }
+
+    public async Task HeldShareAsync(Payment payment, Guid hostId, string refType, long refId, DateTime release, CancellationToken ct)
+    {
+        if (payment.Status != PaymentStatus.Paid || payment.PayerUserId is not { } payer)
+        {
+            return;
+        }
+        PostRaw(await store.WalletAsync(hostId, WalletType.Customer, ct), payment.Amount, LedgerBucket.Pending, LedgerKind.WalletPayment, refType, refId, release, Guid.NewGuid());
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = payer, Kind = ReceiptKind.Payment, Amount = payment.Amount, RefType = refType, RefId = refId });
     }
 

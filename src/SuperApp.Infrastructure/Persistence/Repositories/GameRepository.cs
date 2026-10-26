@@ -24,7 +24,10 @@ public sealed class GameRepository(AppDbContext db) : IGameRepository
     public Task<GameDto?> CardAsync(string code, CancellationToken ct) => Cards(db.Set<Game>().Where(g => g.Code == code && !g.HiddenByAdmin)).FirstOrDefaultAsync(ct);
 
     public Task<Game?> FindAsync(string code, CancellationToken ct) =>
-        db.Set<Game>().Include(g => g.Booking).Include(g => g.Requests).FirstOrDefaultAsync(g => g.Code == code && !g.HiddenByAdmin, ct);
+        db.Set<Game>().Include(g => g.Booking).Include(g => g.Requests).ThenInclude(r => r.Payment).FirstOrDefaultAsync(g => g.Code == code && !g.HiddenByAdmin, ct);
+
+    public Task<GameRequest?> RequestByPaymentAsync(long paymentId, CancellationToken ct) =>
+        db.Set<GameRequest>().Include(r => r.Payment).Include(r => r.Game).ThenInclude(g => g.Booking).FirstOrDefaultAsync(r => r.PaymentId == paymentId, ct);
 
     public async Task<IReadOnlyList<GameRequestDto>> RequestsAsync(long gameId, CancellationToken ct) =>
         await db.Set<GameRequest>().Where(r => r.GameId == gameId).OrderBy(r => r.CreatedAt)

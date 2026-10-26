@@ -19,7 +19,7 @@ public sealed record GameDto(string Code, string? Title, string PitchSlug, strin
 public sealed record GameRequestDto(long Id, Guid PlayerId, string PlayerName, string? Position, string? Message, string Status, DateTime CreatedAt);
 
 /// <summary>The game page: the host also sees every request; players see who is in.</summary>
-public sealed record GameDetailDto(GameDto Game, IReadOnlyList<GameRequestDto> Players, IReadOnlyList<GameRequestDto>? Requests, string? MyStatus);
+public sealed record GameDetailDto(GameDto Game, IReadOnlyList<GameRequestDto> Players, IReadOnlyList<GameRequestDto>? Requests, string? MyStatus, string? PaymentUrl = null);
 
 public sealed record PostGameRequest(string BookingCode, int PlayersNeeded, string Level, string? Positions, string? Title, decimal SharePrice, bool AutoAccept);
 
@@ -55,6 +55,9 @@ public interface IGameRepository
 
     void AddRequest(GameRequest request);
 
+    /// <summary>The join request paid with this payment (with its game and booking).</summary>
+    Task<GameRequest?> RequestByPaymentAsync(long paymentId, CancellationToken ct);
+
     Task<List<PlayerRating>> RatingsAsync(long gameId, CancellationToken ct);
 
     void AddRating(PlayerRating rating);
@@ -63,8 +66,9 @@ public interface IGameRepository
 }
 
 /// <summary>
-/// Find players (API §3.8): a player posts one of their bookings as a game, others ask to join (their share is held by
-/// Super App until Phase 5 moves money), the host accepts or declines, and rates who showed up after kick-off.
+/// Find players (API §3.8): a player posts one of their bookings as a game, others ask to join and pay their share (held
+/// for the host until kick-off, then the host's to spend; refunded to the player's wallet when declined, removed or
+/// withdrawn), the host accepts or declines, and rates who showed up after kick-off.
 /// </summary>
 public interface IGamesService
 {
@@ -96,7 +100,9 @@ public sealed class GamesService(
     IClock clock,
     IValidator<PostGameRequest> postRules,
     IValidator<EditGameRequest> editRules,
-    IValidator<RatingsRequest> ratingRules) : IGamesService
+    IValidator<RatingsRequest> ratingRules,
+    Payments.IPaymentsService payments,
+    Money.ILedger ledger) : IGamesService
 {
     public Task<IReadOnlyList<GameDto>> OpenAsync(GamesQuery query, CancellationToken ct) => games.OpenAsync(query, Today(), ct);
 
@@ -170,12 +176,39 @@ public sealed class GamesService(
         }
         var full = game.Requests.Count(r => r.Status == GameRequestStatus.Accepted) >= game.PlayersNeeded;
         var status = full ? GameRequestStatus.Waitlisted : game.AutoAccept ? GameRequestStatus.Accepted : GameRequestStatus.Waiting;
-        // The share is held by Super App until the game (money moves in Phase 5)
-        games.AddRequest(new GameRequest { GameId = game.Id, PlayerId = me, Position = request.Position?.Trim(), Message = request.Message?.Trim(), Status = status });
+        var row = new GameRequest { GameId = game.Id, PlayerId = me, Position = request.Position?.Trim(), Message = request.Message?.Trim(), Status = status };
+        games.AddRequest(row);
+        var url = await PayShareAsync(row, game, me, code, ct);
         Refill(game, status == GameRequestStatus.Accepted ? 1 : 0);
         await unitOfWork.SaveChangesAsync(ct);
+        if (url is null && row.Payment is { } paid)
+        {
+            await ledger.HeldShareAsync(paid, game.HostId, "GameRequest", row.Id, CairoTime.ToUtc(Start(game.Booking)), ct);
+            await unitOfWork.SaveChangesAsync(ct);
+        }
         await Tell(game.HostId, status == GameRequestStatus.Accepted ? "A player joined your game" : "A player asked to join your game", game, ct);
-        return await GetAsync(code, ct);
+        return await GetAsync(code, ct) with { PaymentUrl = url };
+    }
+
+    /// <summary>The player's share is paid when asking to join (simulated: at once; Paymob: its page).</summary>
+    private async Task<string?> PayShareAsync(GameRequest row, Game game, Guid me, string code, CancellationToken ct)
+    {
+        if (game.SharePrice <= 0)
+        {
+            return null;
+        }
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.GameShare, game.SharePrice, me, $"Game {code} share", $"#/games/{code}"), ct);
+        row.Payment = started.Payment;
+        return started.RedirectUrl;
+    }
+
+    /// <summary>A paid share goes back to the player's wallet.</summary>
+    private async Task RefundShareAsync(GameRequest row, Guid by, string reason, CancellationToken ct)
+    {
+        if (row.Payment is { Status: PaymentStatus.Paid } payment)
+        {
+            await ledger.ReverseAsync(payment, row.PlayerId, "GameRequest", row.Id, by, reason, ct);
+        }
     }
 
     public async Task<GameDetailDto> DecideAsync(string code, long requestId, string action, CancellationToken ct)
@@ -191,6 +224,10 @@ public sealed class GamesService(
             "remove" when request.Status == GameRequestStatus.Accepted => (GameRequestStatus.Removed, "The host removed you from the game — your share is refunded"),
             _ => throw new BusinessRuleException("This request can't be changed that way.", "wrong_status"),
         };
+        if (request.Status is GameRequestStatus.Declined or GameRequestStatus.Removed)
+        {
+            await RefundShareAsync(request, game.HostId, request.Status == GameRequestStatus.Declined ? "Declined by the host" : "Removed by the host", ct);
+        }
         Refill(game, 0);
         await unitOfWork.SaveChangesAsync(ct);
         await Tell(request.PlayerId, message, game, ct);
@@ -205,6 +242,7 @@ public sealed class GamesService(
             ?? throw new NotFoundException("You haven’t asked to join this game.");
         if (Start(game.Booking) <= CairoTime.Now(clock)) { throw new BusinessRuleException("The game has started.", "started"); }
         mine.Status = GameRequestStatus.Withdrawn;
+        await RefundShareAsync(mine, me, "Left the game", ct);
         Refill(game, 0);
         await unitOfWork.SaveChangesAsync(ct);
         await Tell(game.HostId, "A player left your game", game, ct);
@@ -288,5 +326,30 @@ public sealed class RatingsRequestValidator : AbstractValidator<RatingsRequest>
     {
         RuleFor(x => x.Ratings).NotEmpty().Must(r => r.Count <= 21);
         RuleForEach(x => x.Ratings).ChildRules(r => r.RuleFor(x => x.Stars).InclusiveBetween(1, 5).When(x => x.Stars is not null));
+    }
+}
+
+/// <summary>The gateway confirmed (or refused) a player's game share.</summary>
+public sealed class GameSharePaymentListener(IGameRepository games, Money.ILedger ledger, IUnitOfWork unitOfWork) : Payments.IPaymentListener
+{
+    public PaymentPurpose Purpose => PaymentPurpose.GameShare;
+
+    public async Task PaidAsync(Domain.Entities.Money.Payment payment, CancellationToken ct)
+    {
+        if (await games.RequestByPaymentAsync(payment.Id, ct) is { } row && row.Status != GameRequestStatus.Withdrawn)
+        {
+            var b = row.Game.Booking;
+            await ledger.HeldShareAsync(payment, row.Game.HostId, "GameRequest", row.Id, CairoTime.ToUtc(b.Date.ToDateTime(new TimeOnly(b.StartHour, 0))), ct);
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+    }
+
+    public async Task FailedAsync(Domain.Entities.Money.Payment payment, CancellationToken ct)
+    {
+        if (await games.RequestByPaymentAsync(payment.Id, ct) is { } row && row.Status != GameRequestStatus.Withdrawn)
+        {
+            row.Status = GameRequestStatus.Withdrawn;
+            await unitOfWork.SaveChangesAsync(ct);
+        }
     }
 }
