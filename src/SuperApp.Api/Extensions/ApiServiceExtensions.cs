@@ -34,6 +34,7 @@ public static class ApiServiceExtensions
 
         services.AddSuperAppAuth();
         services.AddSuperAppRateLimits(configuration);
+        services.AddReverseProxy(configuration);
         services.AddOutputCache(o =>
         {
             o.AddPolicy(LookupsController.CachePolicy, p => p.Expire(TimeSpan.FromHours(1)).Tag(LookupsController.CachePolicy));

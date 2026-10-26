@@ -12,6 +12,7 @@ public static class PipelineExtensions
 {
     public static WebApplication UseApiPipeline(this WebApplication app)
     {
+        app.UseForwardedHeaders();   // first: the real client IP and https behind nginx (see ReverseProxy)
         app.UseExceptionHandler();
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseSerilogRequestLogging();

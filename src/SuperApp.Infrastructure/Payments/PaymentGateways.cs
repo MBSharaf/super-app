@@ -75,7 +75,20 @@ public sealed class PaymobGateway(HttpClient http, IConfiguration configuration)
         return new GatewaySession($"{BaseAddress}unifiedcheckout/?publicKey={Uri.EscapeDataString(Setting("PublicKey"))}&clientSecret={Uri.EscapeDataString(secret!)}", order);
     }
 
+    /// <summary>A body that is not Paymob's JSON is treated like a bad signature (null → 400), never a server error.</summary>
     public GatewayEvent? VerifyWebhook(IReadOnlyDictionary<string, string> query, string body)
+    {
+        try
+        {
+            return Verify(query, body);
+        }
+        catch (Exception e) when (e is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+        {
+            return null;
+        }
+    }
+
+    private GatewayEvent? Verify(IReadOnlyDictionary<string, string> query, string body)
     {
         if (!query.TryGetValue("hmac", out var hmac) || string.IsNullOrEmpty(Setting("HmacSecret")))
         {

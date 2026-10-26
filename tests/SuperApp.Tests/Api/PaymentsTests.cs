@@ -92,6 +92,8 @@ public sealed class PaymentsTests(PaymobApiFactory api) : IClassFixture<PaymobAp
         var reference = api.References.Last();
 
         (await PostCallbackAsync(Callback(reference, cents, success: true, secret: "wrong"))).ShouldBe(HttpStatusCode.BadRequest);
+        (await PostCallbackAsync(("not json {", "abc123"))).ShouldBe(HttpStatusCode.BadRequest);
+        (await PostCallbackAsync(("{\"obj\":{}}", "abc123"))).ShouldBe(HttpStatusCode.BadRequest);
         (await PostCallbackAsync(Callback(reference, cents - 100, success: true))).ShouldBe(HttpStatusCode.OK);   // wrong amount → failed
         (await player.GetAsync($"/api/v1/bookings/{code}")).Body.Data().GetProperty("status").GetString().ShouldBe("AwaitingPayment");
 
@@ -102,6 +104,8 @@ public sealed class PaymentsTests(PaymobApiFactory api) : IClassFixture<PaymobAp
         (await player.GetAsync($"/api/v1/bookings/{code}")).Body.Data().GetProperty("status").GetString().ShouldBe("Confirmed");
         (await player.GetAsync($"/api/v1/payments/{payment}")).Body.Data().GetProperty("status").GetString().ShouldBe("Paid");
         (await player.PostAsync($"/api/v1/payments/{payment}/retry")).Status.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        var (stranger, _) = await kit.PersonAsync(partner: false);
+        (await stranger.GetAsync($"/api/v1/payments/{payment}")).Status.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
