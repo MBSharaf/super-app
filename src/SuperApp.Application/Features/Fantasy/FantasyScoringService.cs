@@ -37,12 +37,7 @@ public sealed class FantasyScoringService(
         return gameweek.Number;
     }
 
-    private async Task TellManagersAsync(GameweekToScore gameweek, IReadOnlyList<TeamToScore> teams, IReadOnlyList<TeamScored> scores, CancellationToken ct)
-    {
-        foreach (var (team, score) in teams.Zip(scores))
-        {
-            await notifier.NotifyUserAsync(team.UserId, new NotificationMessage(NotificationCategory.Fantasy,
-                $"Gameweek {gameweek.Number} is complete", $"You scored {score.Net} points.", "#/fantasy", NotificationTone.Success), ct);
-        }
-    }
+    private Task TellManagersAsync(GameweekToScore gameweek, IReadOnlyList<TeamToScore> teams, IReadOnlyList<TeamScored> scores, CancellationToken ct) =>
+        notifier.NotifyManyAsync(teams.Zip(scores).Select(x => (x.First.UserId, new NotificationMessage(NotificationCategory.Fantasy,
+            $"Gameweek {gameweek.Number} is complete", $"You scored {x.Second.Net} points.", "#/fantasy", NotificationTone.Success))).ToList(), ct);
 }

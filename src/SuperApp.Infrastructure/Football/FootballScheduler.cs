@@ -15,8 +15,6 @@ namespace SuperApp.Infrastructure.Football;
 /// Runs the football sync on a schedule that fits the free plan (INTEGRATIONS §7.2): every 6 hours, and every 10 minutes
 /// only while one of our matches is being played or a finished match still waits for its statistics. Off in the
 /// "Testing" environment and when <c>Football:Scheduler:Enabled</c> is false.
-/// Note for the main window: when Hangfire is wired up (jobs dashboard), this loop becomes a recurring job calling
-/// <see cref="IFootballSyncService.SyncAsync"/> with the same rule.
 /// </summary>
 public sealed class FootballScheduler(IServiceScopeFactory scopes, IHostEnvironment environment, IConfiguration configuration, ILogger<FootballScheduler> logger)
     : BackgroundService

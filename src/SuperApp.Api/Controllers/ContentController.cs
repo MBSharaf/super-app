@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
+using SuperApp.Api.Extensions;
 using SuperApp.Api.Security;
 using SuperApp.Application.Features.Content;
 
@@ -11,6 +13,7 @@ namespace SuperApp.Api.Controllers;
 public sealed class ContentController(IContentService content, ILegalHelpService legal) : ApiControllerBase
 {
     [HttpGet("content/home")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Home(CancellationToken ct) => Ok(await content.HomeAsync(ct));
 
     /// <summary>Active pop-ups and their timing (pop-ups marked "hide from sellers" are left out for sellers).</summary>
@@ -35,9 +38,11 @@ public sealed class ContentController(IContentService content, ILegalHelpService
     }
 
     [HttpGet("legal")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Legal(CancellationToken ct) => Ok(await legal.DocumentsAsync(ct));
 
     [HttpGet("legal/{key}")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> LegalDocument(string key, CancellationToken ct) => Ok(await legal.DocumentAsync(key, ct));
 
     /// <summary>Records the acceptance of the current version (with the IP).</summary>
@@ -51,9 +56,11 @@ public sealed class ContentController(IContentService content, ILegalHelpService
     }
 
     [HttpGet("help/topics")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> HelpTopics(CancellationToken ct) => Ok(await legal.TopicsAsync(ct));
 
     [HttpGet("help/articles")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> HelpArticles([FromQuery] HelpQuery query, CancellationToken ct) => Ok(await legal.ArticlesAsync(query, false, ct));
 
     [HttpPost("help/articles/{id:long}/vote")]

@@ -26,6 +26,9 @@ public interface IApplicationRepository
 
     Task<ApplicantResponse> ApplicantAsync(Guid userId, CancellationToken ct);
 
+    /// <summary>The applicants of a page of applications, in one query.</summary>
+    Task<IReadOnlyDictionary<Guid, ApplicantResponse>> ApplicantsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
+
     Task<bool> AreaExistsAsync(int areaId, CancellationToken ct);
 
     Task<bool> StoreHandleTakenAsync(string handle, CancellationToken ct);

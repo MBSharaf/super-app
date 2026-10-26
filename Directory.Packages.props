@@ -11,9 +11,6 @@
     <PackageVersion Include="DotNetEnv" Version="3.2.0" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
-    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.25" />
-    <PackageVersion Include="Hangfire.Core" Version="1.8.25" />
-    <PackageVersion Include="Hangfire.SqlServer" Version="1.8.25" />
     <PackageVersion Include="HtmlSanitizer" Version="9.2.1039" />
     <PackageVersion Include="libphonenumber-csharp" Version="9.0.41" />
     <PackageVersion Include="MailKit" Version="4.18.1" />

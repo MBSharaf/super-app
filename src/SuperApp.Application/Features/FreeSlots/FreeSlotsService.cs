@@ -137,11 +137,14 @@ public sealed class FreeSlotsService(
 
     private async Task TellFollowersAsync(long pitchId, string pitchName, PostFreeSlotRequest r, int hour, CancellationToken ct)
     {
-        foreach (var user in await slots.FollowersAsync(pitchId, hour, ct))
+        var followers = await slots.FollowersAsync(pitchId, hour, ct);
+        if (followers.Count == 0)
         {
-            await notifier.NotifyUserAsync(user, new NotificationMessage(NotificationCategory.Bookings, $"Free slot at {pitchName}: {r.DiscountPercent:0}% off",
-                $"{r.Date:ddd d MMM} · {hour:00}:00", $"#/pitches/p-{(await bookings.PitchInfoAsync(pitchId, ct)).Slug}?date={r.Date:yyyy-MM-dd}", NotificationTone.Success), ct);
+            return;
         }
+        var message = new NotificationMessage(NotificationCategory.Bookings, $"Free slot at {pitchName}: {r.DiscountPercent:0}% off",
+            $"{r.Date:ddd d MMM} · {hour:00}:00", $"#/pitches/p-{(await bookings.PitchInfoAsync(pitchId, ct)).Slug}?date={r.Date:yyyy-MM-dd}", NotificationTone.Success);
+        await notifier.NotifyManyAsync(followers.Select(u => (u, message)).ToList(), ct);
     }
 
     public async Task RemoveAsync(long id, CancellationToken ct)

@@ -584,7 +584,7 @@ sequenceDiagram
 | NFR-PERF-01 | API p95 < 300 ms for reads and < 600 ms for writes under normal load; pages stay as fast as today |
 | NFR-PERF-02 | Pagination on every list; indexes on every foreign key and every filter/sort column (see ERD) |
 | NFR-PERF-03 | Caching for public read data (pitches, products, fixtures, content) with invalidation on change; response compression; static files with long cache headers |
-| NFR-PERF-04 | Background jobs (Hangfire) for email, webhooks, fantasy scoring, settlements, holds, renewals, reports — never inside a request |
+| NFR-PERF-04 | Background jobs (hosted services; Hangfire dropped 2026-10-26, see PROGRESS 8.3) for email, webhooks, fantasy scoring, settlements, holds, renewals, reports — never inside a request |
 | NFR-PERF-05 | Health checks (database, storage, background jobs); structured logs (Serilog) with a correlation id per request |
 | NFR-PERF-06 | Daily database backups with 14-day retention; restore tested before launch |
 

@@ -74,6 +74,8 @@ decisions here (with the date) from any window.
 - **Hosting:** free hosting for testing, then Hostinger (a VPS is needed for .NET and SQL Server).
 - **Email:** emails are saved as files until the domain exists.
 - **E-receipts (ETA):** built but switched off until the commercial register and tax card are ready.
+- **Background jobs:** hosted services inside the API (money release, unpaid expiry, webhooks, football sync, scheduled broadcasts); Hangfire was dropped on 2026-10-26 (never set up, one VPS). It can come back if a jobs dashboard is wanted.
+- **Caching:** public reads are cached for 60 seconds for guests and cleared whenever the team or a venue changes something; signed-in users always get fresh data.
 - **Opening hours:** a pitch open after midnight keeps one row per day, with the closing hour up to 30 (26 = 2 AM).
 
 ## Website rules

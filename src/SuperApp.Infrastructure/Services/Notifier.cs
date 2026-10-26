@@ -11,10 +11,23 @@ namespace SuperApp.Infrastructure.Services;
 /// <summary>Writes notifications to notify.Notifications (the site's bell). Live push (SignalR) comes with Phase 6.</summary>
 public sealed class Notifier(AppDbContext db) : INotifier
 {
+    private const int BatchSize = 1000;
+
     public async Task NotifyUserAsync(Guid userId, NotificationMessage message, CancellationToken ct)
     {
         db.Set<Notification>().Add(ToRow(userId, message));
         await db.SaveChangesAsync(ct);
+    }
+
+    public async Task NotifyManyAsync(IReadOnlyList<(Guid UserId, NotificationMessage Message)> items, CancellationToken ct)
+    {
+        foreach (var batch in items.Chunk(BatchSize))
+        {
+            var rows = batch.Select(i => ToRow(i.UserId, i.Message)).ToList();
+            db.Set<Notification>().AddRange(rows);
+            await db.SaveChangesAsync(ct);
+            rows.ForEach(r => db.Entry(r).State = EntityState.Detached);   // keeps memory flat for large audiences
+        }
     }
 
     public async Task NotifyStaffAsync(string permission, NotificationMessage message, CancellationToken ct)

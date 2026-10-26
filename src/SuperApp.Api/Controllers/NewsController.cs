@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
+using SuperApp.Api.Extensions;
 using SuperApp.Api.Security;
 using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Features.Content;
@@ -12,11 +14,13 @@ public sealed class MatchesController(INewsService news) : ApiControllerBase
 {
     /// <summary>?date=yyyy-MM-dd (Cairo day, default today) &amp;competition=EGY|EPL.</summary>
     [HttpGet]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> List([FromQuery] DateOnly? date, [FromQuery] string? competition, CancellationToken ct) =>
         Ok(await news.MatchesAsync(date, competition, ct));
 
     /// <summary>The match with every player's line (minutes, goals, assists, cards, fantasy points).</summary>
     [HttpGet("{id:long}")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Get(long id, CancellationToken ct) => Ok(await news.MatchAsync(id, ct));
 }
 
@@ -25,9 +29,11 @@ public sealed class MatchesController(INewsService news) : ApiControllerBase
 public sealed class NewsController(INewsService news) : ApiControllerBase
 {
     [HttpGet]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> List([FromQuery] NewsQuery query, CancellationToken ct) => OkPage(await news.NewsAsync(query, false, ct));
 
     [HttpGet("{id:long}")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Get(long id, CancellationToken ct) => Ok(await news.PostAsync(id, false, ct));
 }
 

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
+using SuperApp.Api.Extensions;
 using SuperApp.Api.Security;
 using SuperApp.Application.Features.Fantasy;
 
@@ -15,25 +17,31 @@ namespace SuperApp.Api.Controllers;
 public sealed class FantasyController(IFantasyService fantasy, IFantasyTeamService teams) : ApiControllerBase
 {
     [HttpGet("competitions")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Competitions(CancellationToken ct) => Ok(await fantasy.CompetitionsAsync(ct));
 
     /// <summary>Competition, clubs (kit colours, no logos), every player and the gameweeks — one call for the fantasy pages.</summary>
     [HttpGet("{comp}/bootstrap")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Bootstrap(string comp, CancellationToken ct) => Ok(await fantasy.BootstrapAsync(comp, ct));
 
     [HttpGet("{comp}/players")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Players(string comp, [FromQuery] PlayersQuery query, CancellationToken ct) =>
         OkPage(await fantasy.PlayersAsync(comp, query, ct));
 
     [HttpGet("{comp}/players/{id:long}")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Player(string comp, long id, CancellationToken ct) => Ok(await fantasy.PlayerAsync(comp, id, ct));
 
     [HttpGet("{comp}/fixtures")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Fixtures(string comp, [FromQuery] int? gameweek, CancellationToken ct) =>
         Ok(await fantasy.FixturesAsync(comp, gameweek, ct));
 
     /// <summary>The real league table from finished matches.</summary>
     [HttpGet("{comp}/table")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Table(string comp, CancellationToken ct) => Ok(await fantasy.TableAsync(comp, ct));
 
     /// <summary>My squad for the gameweek open for changes — 404 <c>no_team</c> → create one.</summary>

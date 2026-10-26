@@ -69,6 +69,10 @@ public sealed class ApplicationRepository(AppDbContext db, IDataProtectionProvid
         db.Users.IgnoreQueryFilters().Where(u => u.Id == userId)
             .Select(u => new ApplicantResponse(u.Id, u.FullName, u.Email!, u.PhoneNumber)).SingleAsync(ct);
 
+    public async Task<IReadOnlyDictionary<Guid, ApplicantResponse>> ApplicantsAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct) =>
+        await db.Users.IgnoreQueryFilters().Where(u => userIds.Contains(u.Id))
+            .Select(u => new ApplicantResponse(u.Id, u.FullName, u.Email!, u.PhoneNumber)).ToDictionaryAsync(a => a.Id, ct);
+
     public Task<bool> AreaExistsAsync(int areaId, CancellationToken ct) => db.Set<Area>().AnyAsync(a => a.Id == areaId && a.IsActive, ct);
 
     public Task<bool> StoreHandleTakenAsync(string handle, CancellationToken ct) => db.Set<Store>().IgnoreQueryFilters().AnyAsync(s => s.Handle == handle, ct);

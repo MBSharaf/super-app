@@ -17,8 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
-    <PackageReference Include="Hangfire.Core" />
-    <PackageReference Include="Hangfire.SqlServer" />
     <PackageReference Include="HtmlSanitizer" />
     <PackageReference Include="MailKit" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />

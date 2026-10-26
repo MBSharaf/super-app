@@ -108,7 +108,7 @@ SuperApp/
 │   │   │   ├── Holidays/            # NagerDateClient, CalendarificClient
 │   │   │   ├── Storage/             # LocalFileStorage
 │   │   │   └── Webhooks/            # outgoing webhook dispatcher (n8n)
-│   │   ├── Jobs/                    # Hangfire jobs: holds release, fantasy sync/scoring, emails, outbox…
+│   │   ├── Jobs/                    # background jobs (hosted services): holds release, fantasy sync/scoring, emails, outbox…
 │   │   ├── Pdf/  Excel/  Qr/        # QuestPDF documents, ClosedXML exports, QR signing
 │   │   └── DependencyInjection.cs   # services.AddInfrastructure(config)
 │   └── SuperApp.Api/
@@ -253,7 +253,7 @@ All versions are pinned once in `Directory.Packages.props` (the latest stable re
 | `FluentValidation` + `FluentValidation.DependencyInjectionExtensions` | Application | validation of every request (run by our ValidationFilter) |
 | `Microsoft.AspNetCore.OpenApi` + `Scalar.AspNetCore` | Api | OpenAPI document and the interactive docs at `/docs`; also feeds the CEO API catalogue |
 | `Serilog.AspNetCore` + `Serilog.Sinks.File` + `Serilog.Sinks.MSSqlServer` | Api / Infrastructure | structured logs with traceId |
-| `Hangfire.AspNetCore` + `Hangfire.SqlServer` | Infrastructure | background jobs: emails, outbox, holds release, fantasy sync and scoring, renewals, reports |
+| *(decision 2026-10-26: no Hangfire — hosted services, see PROGRESS 8.3)* | Infrastructure | background jobs: emails, outbox, holds release, fantasy sync and scoring, renewals, reports |
 | `MailKit` | Infrastructure | SMTP email |
 | `QRCoder` | Infrastructure | QR images for tickets, packages and job tickets |
 | `QuestPDF` | Infrastructure | receipts, statements, labels, tickets (Community licence: free for companies under USD 1 M yearly revenue) |

@@ -49,11 +49,8 @@ public sealed class ApprovalsService(
         ApplicationStatus? status = Enum.TryParse<ApplicationStatus>(query.Status, ignoreCase: true, out var s) ? s : null;
         var page = new PageRequest(query.Page, query.PageSize);
         var result = await applications.ListAsync(allowed, status, page.SafePage, page.SafePageSize, ct);
-        var items = new List<ApplicationResponse>();
-        foreach (var app in result.Items)
-        {
-            items.Add(ApplicationJson.ToResponse(app, await applications.ApplicantAsync(app.ApplicantId, ct)));
-        }
+        var applicants = await applications.ApplicantsAsync(result.Items.Select(a => a.ApplicantId).Distinct().ToList(), ct);
+        var items = result.Items.Select(app => ApplicationJson.ToResponse(app, applicants[app.ApplicantId])).ToList();
         return new PagedResult<ApplicationResponse>(items, result.Page, result.PageSize, result.Total);
     }
 

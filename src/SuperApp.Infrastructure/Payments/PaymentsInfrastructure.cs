@@ -78,7 +78,7 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
         var late = await db.Set<Booking>().Include(b => b.Payment)
-            .Where(b => b.Status == BookingStatus.AwaitingPayment && b.CreatedAt <= now - PayWithin).Take(100).ToListAsync(ct);
+            .Where(b => b.Status == BookingStatus.AwaitingPayment && b.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var b in late)
         {
             b.Status = BookingStatus.CancelledByCustomer;
@@ -93,14 +93,14 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
         await db.Set<BookingSlot>().Where(s => ids.Contains(s.BookingId)).ExecuteUpdateAsync(u => u.SetProperty(s => s.IsActive, false), ct);
         // Tournament teams whose entry fee was never paid give their spot back
         var teams = await db.Set<TournamentTeam>().Include(t => t.Payment)
-            .Where(t => t.Status == TournamentTeamStatus.Registered && t.Payment != null && t.Payment.Status == PaymentStatus.Pending && t.Payment.CreatedAt <= now - PayWithin).Take(100).ToListAsync(ct);
+            .Where(t => t.Status == TournamentTeamStatus.Registered && t.Payment != null && t.Payment.Status == PaymentStatus.Pending && t.Payment.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var t in teams)
         {
             t.Status = TournamentTeamStatus.Withdrawn;
             t.Payment!.Status = PaymentStatus.Failed;
         }
         var requests = await db.Set<GameRequest>().Include(r => r.Payment)
-            .Where(r => r.Status != GameRequestStatus.Withdrawn && r.Payment != null && r.Payment.Status == PaymentStatus.Pending && r.Payment.CreatedAt <= now - PayWithin).Take(100).ToListAsync(ct);
+            .Where(r => r.Status != GameRequestStatus.Withdrawn && r.Payment != null && r.Payment.Status == PaymentStatus.Pending && r.Payment.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var r in requests)
         {
             r.Status = GameRequestStatus.Withdrawn;

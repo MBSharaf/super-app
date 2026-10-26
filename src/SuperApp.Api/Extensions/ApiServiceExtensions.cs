@@ -25,6 +25,7 @@ public static class ApiServiceExtensions
             o.Filters.Add<StorePausedFilter>();
             o.Filters.Add<AntiforgeryFilter>();
             o.Filters.Add<ValidationFilter>();
+            o.Filters.Add<PublicCacheEvictionFilter>();
         });
         // Invalid JSON / model binding errors go through the same unified 400 response
         services.Configure<ApiBehaviorOptions>(o => o.InvalidModelStateResponseFactory = ValidationResponse.FromModelState);
@@ -38,6 +39,7 @@ public static class ApiServiceExtensions
         services.AddOutputCache(o =>
         {
             o.AddPolicy(LookupsController.CachePolicy, p => p.Expire(TimeSpan.FromHours(1)).Tag(LookupsController.CachePolicy));
+            o.AddPolicy(PublicCache.Read, p => p.Expire(TimeSpan.FromSeconds(60)).SetVaryByQuery("*").Tag(PublicCache.Read));
             o.AddPolicy(PitchesController.AvailabilityCache, p => p.Expire(TimeSpan.FromSeconds(30)).SetVaryByQuery("from", "days").Tag(PitchesController.AvailabilityCache));
         });
         services.AddOpenApi();
@@ -47,4 +49,14 @@ public static class ApiServiceExtensions
         Security.AgentKeys.AddAgentKeys(services);   // Phase 7 (branch phase-7-admin)
         return services;
     }
+}
+
+/// <summary>
+/// Public reads that are the same for every guest (pitches, news, matches, fantasy data, home content, legal, help) are
+/// kept for 60 seconds. Signed-in requests are never stored or served from it (the default output-cache rule), so
+/// anything personal (my team, "mine" flags) always comes fresh.
+/// </summary>
+public static class PublicCache
+{
+    public const string Read = "public-read";
 }

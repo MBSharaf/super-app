@@ -66,7 +66,7 @@ public sealed class BroadcastRepository(AppDbContext db, AdminReader reader) : I
 
 /// <summary>
 /// Sends scheduled broadcasts every minute. Off in the "Testing" environment and when <c>Broadcasts:Scheduler:Enabled</c> is
-/// false. When Hangfire is wired up this becomes a recurring job calling <see cref="IPlatformService.SendDueAsync"/>.
+/// false.
 /// </summary>
 public sealed class BroadcastScheduler(IServiceScopeFactory scopes, IHostEnvironment environment, IConfiguration configuration, ILogger<BroadcastScheduler> logger)
     : BackgroundService

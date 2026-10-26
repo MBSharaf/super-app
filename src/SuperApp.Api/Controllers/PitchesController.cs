@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
+using SuperApp.Api.Extensions;
 using SuperApp.Application.Features.Pitches;
 using SuperApp.Application.Features.Reviews;
 
@@ -11,9 +12,11 @@ public sealed class PitchesController(IPitchesService pitches, IAvailabilityServ
 {
     /// <summary>?q &amp;areaId &amp;governorateId &amp;format=5|7|11 &amp;minPrice &amp;maxPrice &amp;facilities=lights,parking &amp;lat &amp;lng &amp;sort=rating|price|-price|distance|name &amp;page &amp;pageSize</summary>
     [HttpGet]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Search([FromQuery] PitchSearchQuery query, CancellationToken ct) => OkPage(await pitches.SearchAsync(query, ct));
 
     [HttpGet("{slug}")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Get(string slug, CancellationToken ct) => Ok(await pitches.GetAsync(slug, ct));
 
     /// <summary>?from=yyyy-MM-dd &amp;days=1..14 — the hour grid (cached 30 seconds).</summary>
@@ -24,6 +27,7 @@ public sealed class PitchesController(IPitchesService pitches, IAvailabilityServ
 
     /// <summary>?page &amp;pageSize — visible reviews, newest first, with the venue's replies.</summary>
     [HttpGet("{slug}/reviews")]
+    [OutputCache(PolicyName = PublicCache.Read)]
     public async Task<ActionResult<object>> Reviews(string slug, [FromQuery] ReviewsQuery query, CancellationToken ct) => OkPage(await reviews.ForPitchAsync(slug, query, ct));
 
     public const string AvailabilityCache = "availability";
