@@ -10,6 +10,9 @@ public class Order : BaseEntity, IHasRowVersion
 {
     public string Code { get; set; } = string.Empty;
     public Guid CustomerId { get; set; }
+
+    /// <summary>The checkout's Idempotency-Key: a retry with the same key gets this order back (unique per customer).</summary>
+    public string? IdempotencyKey { get; set; }
     public string AddressJson { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public decimal Subtotal { get; set; }

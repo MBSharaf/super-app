@@ -22,6 +22,10 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             logger.LogError(exception, "Unhandled error {TraceId} on {Method} {Path}", traceId, httpContext.Request.Method, httpContext.Request.Path);
         }
+        if (exception is TooManyRequestsException wait)
+        {
+            httpContext.Response.Headers.RetryAfter = wait.RetryAfterSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
         httpContext.Response.StatusCode = status;
         await httpContext.Response.WriteAsJsonAsync(body, cancellationToken);
         return true;
@@ -39,6 +43,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         BusinessRuleException e => (StatusCodes.Status422UnprocessableEntity, WithCode(e, traceId)),
         FeatureDisabledException e => (StatusCodes.Status423Locked, WithCode(e, traceId)),
         LockedException e => (StatusCodes.Status423Locked, WithCode(e, traceId)),
+        TooManyRequestsException e => (StatusCodes.Status429TooManyRequests, WithCode(e, traceId)),
         DbUpdateConcurrencyException => (StatusCodes.Status409Conflict,
             ApiResponse.Fail("Someone else changed this a moment ago. Refresh and try again.", Code("stale"), traceId)),
         BadHttpRequestException => (StatusCodes.Status400BadRequest,

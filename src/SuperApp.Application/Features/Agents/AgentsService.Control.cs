@@ -43,7 +43,7 @@ public sealed partial class AgentsService
         var key = new ApiKey
         {
             AgentId = id, Name = request.Name.Trim(), Prefix = ApiKeys.PrefixOf(secret), KeyHash = ApiKeys.Hash(secret),
-            Scopes = ApiKeys.ScopesFor(rate), ExpiresAt = request.ExpiresAt,
+            RateLimitPerMinute = rate, ExpiresAt = request.ExpiresAt,
         };
         agents.Add(key);
         await unitOfWork.SaveChangesAsync(ct);

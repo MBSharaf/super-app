@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IMyBookingsService, MyBookingsService>();
         services.AddScoped<BookingNotices>();
         services.AddScoped<Features.Money.ILedger, Features.Money.Ledger>();
+        services.AddScoped<Features.Money.MoneyLimits>();
         services.AddScoped<Features.Money.IWalletService, Features.Money.WalletService>();
         services.AddScoped<Features.Money.PayoutsService>();
         services.AddScoped<Features.Money.LoyaltyService>();

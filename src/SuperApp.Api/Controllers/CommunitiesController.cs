@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using SuperApp.Api.Hubs;
 using SuperApp.Api.Security;
 using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Features.Communities;
@@ -13,7 +12,6 @@ namespace SuperApp.Api.Controllers;
 /// sellers-only ones need the role (403 audience). Live updates: hub <c>/hubs/community</c>.
 /// </summary>
 [Route("api/v1")]
-[SlowModeFilter]
 public sealed class CommunitiesController(ICommunitiesService communities, IPostsService posts) : ApiControllerBase
 {
     private const long MaxUpload = 6 * 1024 * 1024;

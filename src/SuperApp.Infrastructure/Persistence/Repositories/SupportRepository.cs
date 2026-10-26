@@ -16,6 +16,9 @@ public sealed class SupportRepository(AppDbContext db) : ISupportRepository
 {
     private const string Letters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+    public Task<bool> IsAttachmentAsync(long fileId, CancellationToken ct) =>
+        db.Set<TicketAttachment>().AnyAsync(a => a.FileId == fileId, ct);
+
     public async Task<string> NewCodeAsync(CancellationToken ct)
     {
         while (true)

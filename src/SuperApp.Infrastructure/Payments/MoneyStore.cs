@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Common.Responses;
 using SuperApp.Application.Features.Money;
+using SuperApp.Domain.Entities.Ai;
+using SuperApp.Domain.Entities.Auth;
 using SuperApp.Domain.Entities.Bookings;
 using SuperApp.Domain.Entities.Pitches;
 using SuperApp.Domain.Entities.Money;
@@ -65,6 +67,12 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
     }
 
     public Task<IReadOnlyList<ReceiptDto>> ReceiptsOfAsync(Guid userId, CancellationToken ct) => ReceiptsAsync(userId, null, ct);
+
+    public async Task<decimal> RefundLimitAsync(Guid userId, CancellationToken ct) =>
+        await db.Set<StaffLimit>().Where(l => l.UserId == userId).Select(l => (decimal?)l.RefundLimit).FirstOrDefaultAsync(ct) ?? 0;
+
+    public async Task<decimal> AgentMoneyLimitAsync(long agentId, CancellationToken ct) =>
+        await db.Set<Agent>().Where(a => a.Id == agentId).Select(a => (decimal?)a.MoneyLimit).FirstOrDefaultAsync(ct) ?? 0;
 
     public async Task<ReceiptDto?> ReceiptAsync(Guid userId, string number, CancellationToken ct) { var list = await ReceiptsAsync(userId, number, ct); return list.Count > 0 ? list[0] : null; }
 

@@ -43,7 +43,8 @@ public sealed class SupportAdminService(
     IClock clock,
     IValidator<TeamMessageRequest> replyRules,
     IValidator<DisputeRequest> disputeRules,
-    Money.ILedger ledger) : ISupportAdminService
+    Money.ILedger ledger,
+    Money.MoneyLimits limits) : ISupportAdminService
 {
     private Guid UserId => currentUser.UserId ?? throw new UnauthorizedException();
 
@@ -127,6 +128,7 @@ public sealed class SupportAdminService(
         {
             throw new BusinessRuleException($"The refund can't be more than the {asked:0.##} EGP asked for.", "over_dispute_amount");
         }
+        await limits.EnsureRefundAsync(request.Refund, ct);
         var byVenue = string.Equals(request.PaidBy, "Partner", StringComparison.OrdinalIgnoreCase) && ticket.AgainstUserId is not null;
         await ledger.CreditAsync(ticket.OpenedById, request.Refund, byVenue ? ticket.AgainstUserId : null, "Ticket", ticket.Id, ct);
         var decision = request.Refund > 0 ? $"Refund {request.Refund:0.##} EGP to the Super App wallet, paid by {(byVenue ? "the venue" : "Super App")}." : "No refund.";

@@ -37,6 +37,13 @@ public sealed class FeatureDisabledException(string message = "This is paused fo
 public sealed class LockedException(string message = "Too many wrong attempts. Try again in 15 minutes.", string code = "locked_out")
     : AppException(message, code);
 
+/// <summary>429 — the caller must wait before trying again (slow mode, daily limits); sent with Retry-After.</summary>
+public class TooManyRequestsException(string message, int retryAfterSeconds, string code = "too_many_requests")
+    : AppException(message, code)
+{
+    public int RetryAfterSeconds { get; } = retryAfterSeconds;
+}
+
 /// <summary>400 with a machine code, for a bad request that is not a single form field (for example an expired link).</summary>
 public sealed class BadRequestException(string message, string code = "bad_request")
     : AppException(message, code);

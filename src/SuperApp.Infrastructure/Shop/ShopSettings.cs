@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using SuperApp.Application.Features.Shop.Orders;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Infrastructure.Persistence;
@@ -29,12 +28,4 @@ public sealed class ShopSettings(AppDbContext db) : IShopSettings
 
     private static decimal Number(JsonElement root, string name, decimal fallback) =>
         root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number ? v.GetDecimal() : fallback;
-}
-
-/// <summary>Idempotency answers kept in memory for 24 hours (one server). A database column would survive restarts — see PROGRESS schema requests.</summary>
-public sealed class IdempotencyCache(IMemoryCache cache) : IIdempotencyCache
-{
-    public string? Get(string scope, string key) => cache.TryGetValue($"idem:{scope}:{key}", out string? value) ? value : null;
-
-    public void Set(string scope, string key, string value) => cache.Set($"idem:{scope}:{key}", value, TimeSpan.FromHours(24));
 }

@@ -401,6 +401,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("char(8)")
                         .IsFixedLength();
 
+                    b.Property<int>("RateLimitPerMinute")
+                        .HasColumnType("int")
+                        .HasDefaultValue(600);
+
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2(0)");
 
@@ -420,6 +424,8 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("ApiKeys", "ai", t =>
                         {
+                            t.HasCheckConstraint("CK_ApiKeys_RateLimitPerMinute", "[RateLimitPerMinute] BETWEEN 1 AND 6000");
+
                             t.HasCheckConstraint("CK_ApiKeys_Scopes_IsJson", "[Scopes] IS NULL OR ISJSON([Scopes]) = 1");
                         });
                 });
@@ -8970,6 +8976,11 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("decimal(12,2)")
                         .HasDefaultValue(0m);
 
+                    b.Property<string>("IdempotencyKey")
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
                     b.Property<long?>("PaymentId")
                         .HasColumnType("bigint");
 
@@ -9023,6 +9034,11 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerId", "CreatedAt")
                         .HasDatabaseName("IX_Orders_CustomerId_CreatedAt");
+
+                    b.HasIndex("CustomerId", "IdempotencyKey")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_Orders_CustomerId_IdempotencyKey")
+                        .HasFilter("[IdempotencyKey] IS NOT NULL");
 
                     b.HasIndex("Status", "CreatedAt")
                         .HasDatabaseName("IX_Orders_Status_CreatedAt");

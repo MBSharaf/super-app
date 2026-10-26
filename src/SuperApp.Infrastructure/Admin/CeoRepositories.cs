@@ -18,10 +18,10 @@ public sealed class AgentKeyStore(AppDbContext db) : IAgentKeyStore
             .Select(k => new
             {
                 k.Id, AgentId = k.AgentId!.Value, k.Agent!.ServiceUserId, k.Agent.Name, k.Prefix, k.KeyHash, Status = k.Agent.Status,
-                k.ExpiresAt, k.RevokedAt, k.LastUsedAt, k.Scopes, Permissions = k.Agent.Permissions.Select(p => p.Permission.Code).ToList(),
+                k.ExpiresAt, k.RevokedAt, k.LastUsedAt, k.RateLimitPerMinute, Permissions = k.Agent.Permissions.Select(p => p.Permission.Code).ToList(),
             }).FirstOrDefaultAsync(ct);
         return row is null ? null : new AgentKeyIdentity(row.Id, row.AgentId, row.ServiceUserId, row.Name, row.Prefix, row.KeyHash, row.Status.ToString(),
-            row.ExpiresAt, row.RevokedAt, row.LastUsedAt, ApiKeys.RateOf(row.Scopes), row.Permissions);
+            row.ExpiresAt, row.RevokedAt, row.LastUsedAt, row.RateLimitPerMinute, row.Permissions);
     }
 
     public Task TouchAsync(long keyId, DateTime now, CancellationToken ct) =>

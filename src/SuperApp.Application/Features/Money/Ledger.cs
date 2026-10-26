@@ -40,6 +40,12 @@ public interface IMoneyStore
 
     Task<IReadOnlyList<ReceiptDto>> ReceiptsOfAsync(Guid userId, CancellationToken ct);
 
+    /// <summary>The refund limit the CEO set for this staff member (0 when none is set).</summary>
+    Task<decimal> RefundLimitAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>The money limit of the agent calling with an API key (0 when unknown).</summary>
+    Task<decimal> AgentMoneyLimitAsync(long agentId, CancellationToken ct);
+
     Task<ReceiptDto?> ReceiptAsync(Guid userId, string number, CancellationToken ct);
 }
 

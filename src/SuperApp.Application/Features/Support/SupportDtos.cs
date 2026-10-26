@@ -64,6 +64,9 @@ public interface ISupportRepository
     Task<TicketOwner> OwnerAsync(Guid userId, CancellationToken ct);
 
     Task<bool> IsStaffAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>True when the stored file is attached to a ticket message (the support team may open it).</summary>
+    Task<bool> IsAttachmentAsync(long fileId, CancellationToken ct);
 }
 
 /// <summary>Live chat events on a ticket (SignalR group per ticket): <c>message</c>, <c>read</c>, <c>statusChanged</c>, <c>assigned</c>.</summary>

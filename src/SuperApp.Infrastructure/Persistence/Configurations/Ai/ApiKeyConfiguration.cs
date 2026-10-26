@@ -12,11 +12,13 @@ internal sealed class ApiKeyConfiguration : IEntityTypeConfiguration<ApiKey>
         builder.ToTable("ApiKeys", "ai", t =>
         {
             t.HasCheckConstraint("CK_ApiKeys_Scopes_IsJson", "[Scopes] IS NULL OR ISJSON([Scopes]) = 1");
+            t.HasCheckConstraint("CK_ApiKeys_RateLimitPerMinute", "[RateLimitPerMinute] BETWEEN 1 AND 6000");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).HasMaxLength(80);
         builder.Property(x => x.Prefix).HasMaxLength(8).IsUnicode(false).IsFixedLength();
         builder.Property(x => x.KeyHash).HasMaxLength(64);
+        builder.Property(x => x.RateLimitPerMinute).HasDefaultValue(600).ValueGeneratedNever();
         builder.HasIndex(x => x.Prefix).IsUnique().HasDatabaseName("UQ_ApiKeys_Prefix");
         builder.HasOne(x => x.Agent).WithMany(p => p.ApiKeys).HasForeignKey(x => x.AgentId).OnDelete(DeleteBehavior.Cascade);
     }

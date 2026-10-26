@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.SignalR;
-using SuperApp.Application.Common.Responses;
 using SuperApp.Application.Features.Communities;
 using SuperApp.Application.Features.Support;
 using SuperApp.Api.Services;
@@ -74,24 +71,6 @@ public sealed class SignalRSupportLive(IHubContext<SupportHub> hub) : ISupportLi
 {
     public Task PublishAsync(string ticketCode, string eventName, object payload, CancellationToken ct) =>
         hub.Clients.Group(SupportHub.Group(ticketCode)).SendAsync(eventName, payload, ct);
-}
-
-/// <summary>Slow mode → 429 in the unified shape, with Retry-After (the shared error handler has no 429 case for services yet).</summary>
-public sealed class SlowModeFilterAttribute : ExceptionFilterAttribute
-{
-    public override void OnException(ExceptionContext context)
-    {
-        if (context.Exception is not SlowModeException slow)
-        {
-            return;
-        }
-        context.HttpContext.Response.Headers.RetryAfter = slow.RetryAfterSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        context.Result = new ObjectResult(ApiResponse.Fail(slow.Message, new Dictionary<string, string[]> { ["code"] = [slow.Code] }, context.HttpContext.TraceIdentifier))
-        {
-            StatusCode = StatusCodes.Status429TooManyRequests,
-        };
-        context.ExceptionHandled = true;
-    }
 }
 
 /// <summary>Phase 6 additions to the Api layer — one call each from <c>AddApiLayer</c> and <c>UseApiPipeline</c>.</summary>

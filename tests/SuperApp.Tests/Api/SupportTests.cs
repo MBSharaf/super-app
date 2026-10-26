@@ -97,4 +97,55 @@ public sealed class SupportTests(AccountsApiFactory api) : IClassFixture<Account
         (await ceo.PostAsync($"/api/v1/admin/support/tickets/{plain}/resolve")).Status.ShouldBe(HttpStatusCode.OK);
         (await other.PostAsync($"/api/v1/support/tickets/{plain}/close")).Body.Data().GetProperty("status").GetString().ShouldBe("Closed");
     }
+
+    [Fact]
+    public async Task Ticket_attachments_open_for_the_customer_and_the_support_team_only()
+    {
+        var (customer, _) = await kit.PersonAsync(partner: false);
+        var code = (await customer.PostAsync("/api/v1/support/tickets", Ticket())).Body.Data().GetProperty("code").GetString()!;
+        using (var form = new MultipartFormDataContent { { new StringContent("Screenshot"), "body" }, { new ByteArrayContent(Png), "files", "shot.png" } })
+        {
+            (await customer.Http.PostAsync($"/api/v1/support/tickets/{code}/attachments", form)).StatusCode.ShouldBe(HttpStatusCode.Created);
+        }
+        var url = (await customer.GetAsync($"/api/v1/support/tickets/{code}")).Body.Data().GetProperty("messages").EnumerateArray()
+            .SelectMany(m => m.GetProperty("attachments").EnumerateArray()).Single().GetProperty("url").GetString()!;
+
+        var team = await TeamMemberAsync(new { fullName = "Support Agent", roles = new[] { "Support" } });
+        var (stranger, _) = await kit.PersonAsync(partner: false);
+
+        (await customer.Http.GetAsync(url)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await team.Http.GetAsync(url)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await stranger.Http.GetAsync(url)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task A_dispute_refund_over_the_deciders_refund_limit_is_refused()
+    {
+        var (customer, _, booking, _) = await BookedCustomerAsync();
+        var code = (await customer.PostAsync("/api/v1/support/tickets", Ticket(booking, 250))).Body.Data().GetProperty("code").GetString()!;
+        var team = await TeamMemberAsync(new { fullName = "Dispute Desk", roles = new[] { "Support" }, permissions = new[] { "disputes.decide" },
+            limits = new { refund = 100, credit = 0, payout = 0, canSecondApprove = false } });
+        await team.EnableTwoFactorAsync();
+
+        var over = await team.PostAsync($"/api/v1/admin/support/tickets/{code}/dispute", new { refund = 250m, paidBy = "SuperApp", note = "Lights off." });
+        (over.Status, over.Body.Code()).ShouldBe((HttpStatusCode.Forbidden, "over_refund_limit"));
+        (await team.PostAsync($"/api/v1/admin/support/tickets/{code}/dispute", new { refund = 100m, paidBy = "SuperApp", note = "Half the game." }))
+            .Body.Data().GetProperty("status").GetString().ShouldBe("Resolved");
+    }
+
+    /// <summary>A staff member invited by the CEO (the request's roles, permissions and limits), signed in.</summary>
+    private async Task<ApiClient> TeamMemberAsync(object invite)
+    {
+        var ceo = await api.CeoAsync();
+        var email = $"team.{Guid.NewGuid():N}"[..20] + "@superapp.test";
+        var body = JsonSerializer.SerializeToElement(invite).EnumerateObject().ToDictionary(p => p.Name, p => (object)p.Value);
+        body["email"] = email;
+        var created = (await ceo.PostAsync("/api/v1/ceo/admins", body)).Body.Data();
+        var link = api.Emails.LinkTo(email, "auth/invite")!;
+        var token = System.Web.HttpUtility.ParseQueryString(link.Fragment[(link.Fragment.IndexOf('?', StringComparison.Ordinal) + 1)..])["t"];
+        await (await api.ClientAsync()).PostAsync("/api/v1/auth/accept-invite", new { userId = created.GetProperty("id").GetGuid(), token, password = "Team2026pass" });
+        var member = await api.ClientAsync();
+        await member.SignInAsync(email, "Team2026pass");
+        return member;
+    }
 }

@@ -153,7 +153,4 @@ public interface ICommunityLive
 
 /// <summary>Slow mode (429): the member must wait before posting again.</summary>
 public sealed class SlowModeException(int seconds)
-    : AppException($"Slow mode is on — you can post again in {seconds} seconds.", "slow_mode")
-{
-    public int RetryAfterSeconds { get; } = seconds;
-}
+    : TooManyRequestsException($"Slow mode is on — you can post again in {seconds} seconds.", seconds, "slow_mode");

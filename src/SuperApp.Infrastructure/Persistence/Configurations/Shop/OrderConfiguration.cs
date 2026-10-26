@@ -35,6 +35,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(OrderStatus.Placed).ValueGeneratedNever();
         builder.Property(x => x.DeliverySpeed).HasConversion<byte>().HasDefaultValue(DeliverySpeed.Standard).ValueGeneratedNever();
         builder.HasIndex(x => x.Code).IsUnique().HasDatabaseName("UQ_Orders_Code");
+        builder.Property(x => x.IdempotencyKey).HasMaxLength(64).IsUnicode(false);
+        builder.HasIndex(x => new { x.CustomerId, x.IdempotencyKey }).IsUnique().HasFilter("[IdempotencyKey] IS NOT NULL")
+            .HasDatabaseName("UQ_Orders_CustomerId_IdempotencyKey");
         builder.HasIndex(x => new { x.CustomerId, x.CreatedAt }).HasDatabaseName("IX_Orders_CustomerId_CreatedAt");
         builder.HasIndex(x => new { x.Status, x.CreatedAt }).HasDatabaseName("IX_Orders_Status_CreatedAt");
         builder.HasOne(x => x.Customer).WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.NoAction);

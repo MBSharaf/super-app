@@ -25,7 +25,7 @@ public sealed class AgentRepository(AppDbContext db, UserManager<User> users) : 
             return null;
         }
         var keys = (await db.Set<ApiKey>().AsNoTracking().Where(k => k.AgentId == id).OrderByDescending(k => k.CreatedAt).ToListAsync(ct))
-            .Select(k => new ApiKeyDto(k.Id, k.Name, k.Prefix, ApiKeys.RateOf(k.Scopes), k.CreatedAt, k.ExpiresAt, k.RevokedAt, k.LastUsedAt)).ToList();
+            .Select(k => new ApiKeyDto(k.Id, k.Name, k.Prefix, k.RateLimitPerMinute, k.CreatedAt, k.ExpiresAt, k.RevokedAt, k.LastUsedAt)).ToList();
         var runs = await db.Set<AgentRun>().AsNoTracking().Where(r => r.AgentId == id).OrderByDescending(r => r.StartedAt).Take(20)
             .Select(r => new AgentRunDto(r.Id, r.TaskId, r.StartedAt, r.FinishedAt, r.Result.ToString(), r.Summary, r.InputTokens, r.OutputTokens, r.CostUsd))
             .ToListAsync(ct);

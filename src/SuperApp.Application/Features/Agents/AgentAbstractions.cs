@@ -72,8 +72,8 @@ public interface ICurrentAgent
 
 /// <summary>
 /// Agent API keys: <c>sa_</c> + 40 random characters. Only the SHA-256 hash and the first 8 characters (the prefix,
-/// used to find the key) are stored; the key is shown once. The per-key limit is kept in the JSON column <c>Scopes</c> as <c>{"rate":600}</c>
-/// until the schema gets its own column (see PROGRESS "Schema requests").
+/// used to find the key) are stored; the key is shown once. Each key has its own limit per minute
+/// (<c>ai.ApiKeys.RateLimitPerMinute</c>, default 600).
 /// </summary>
 public static class ApiKeys
 {
@@ -94,19 +94,4 @@ public static class ApiKeys
 
     public static bool LooksValid(string? key) => key is { Length: 43 } && key.StartsWith(Start, StringComparison.Ordinal);
 
-    public static string ScopesFor(int ratePerMinute) => $"{{\"rate\":{ratePerMinute}}}";
-
-    public static int RateOf(string? scopes)
-    {
-        try
-        {
-            using var json = System.Text.Json.JsonDocument.Parse(scopes ?? "{}");
-            return json.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object && json.RootElement.TryGetProperty("rate", out var rate)
-                && rate.TryGetInt32(out var n) && n > 0 ? n : DefaultRatePerMinute;
-        }
-        catch (System.Text.Json.JsonException)
-        {
-            return DefaultRatePerMinute;
-        }
-    }
 }

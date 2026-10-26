@@ -29,7 +29,6 @@ public sealed class CheckoutService(
     CartService cart,
     IShopSettings shopSettings,
     ISettingsReader settings,
-    IIdempotencyCache idempotency,
     IFeatureFlags flags,
     IMyOrdersService myOrders,
     OrderNotices notices,
@@ -37,8 +36,6 @@ public sealed class CheckoutService(
     IClock clock,
     IValidator<CheckoutRequest> rules) : ICheckoutService
 {
-    private const string Scope = "checkout";
-
     public async Task<CheckoutResultDto> CheckoutAsync(CheckoutRequest request, string idempotencyKey, CancellationToken ct)
     {
         await rules.ValidateAndThrowAsync(request, ct);
@@ -47,7 +44,7 @@ public sealed class CheckoutService(
         {
             throw new BadRequestException("Send an Idempotency-Key header (up to 64 characters) with each checkout.", "idempotency_key");
         }
-        if (idempotency.Get(Scope, $"{me}:{idempotencyKey}") is { } placed)
+        if (await orders.CodeByKeyAsync(me, idempotencyKey, ct) is { } placed)
         {
             return await ResultAsync(placed, ct);
         }
@@ -62,9 +59,9 @@ public sealed class CheckoutService(
         var promo = string.IsNullOrWhiteSpace(request.PromoCode) ? null : await cart.EvaluateAsync(request.PromoCode, lines, me, ct);
         var (address, phone) = await AddressAsync(request, me, ct);
         var order = await BuildOrderAsync(lines, request, promo, payment, address, phone, me, ct);
+        order.IdempotencyKey = idempotencyKey;
         var jobs = await JobsAsync(order, factory, ct);
         await orders.PlaceAsync(order, jobs, StockOf(order), PromoUse(order, promo, me), lines.Select(l => l.Id).ToList(), ct);
-        idempotency.Set(Scope, $"{me}:{idempotencyKey}", order.Code);
         await notices.PlacedAsync(order, lines, factory?.OwnerUserId, ct);
         return await ResultAsync(order.Code, ct);
     }

@@ -45,6 +45,9 @@ public interface IOrderRepository
 {
     Task<string> NewCodeAsync(CancellationToken ct);
 
+    /// <summary>The code of the customer's order placed with this Idempotency-Key, if any.</summary>
+    Task<string?> CodeByKeyAsync(Guid customerId, string idempotencyKey, CancellationToken ct);
+
     Task<string> NewJobCodeAsync(CancellationToken ct);
 
     /// <summary>The factory that takes the next printed items (active, intake open, least busy).</summary>
@@ -91,14 +94,6 @@ public interface IOrderRepository
 public interface IShopSettings
 {
     Task<DeliveryFees> DeliveryFeesAsync(CancellationToken ct);
-}
-
-/// <summary>Remembers the answer to a request with an Idempotency-Key for 24 hours, so a retry never places twice.</summary>
-public interface IIdempotencyCache
-{
-    string? Get(string scope, string key);
-
-    void Set(string scope, string key, string value);
 }
 
 /// <summary>The order receipt as a PDF ("every payment has a PDF").</summary>

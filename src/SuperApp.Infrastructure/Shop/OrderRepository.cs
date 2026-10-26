@@ -17,6 +17,9 @@ public sealed partial class OrderRepository(AppDbContext db) : IOrderRepository
 {
     private const string CodeLetters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+    public Task<string?> CodeByKeyAsync(Guid customerId, string idempotencyKey, CancellationToken ct) =>
+        db.Set<Order>().Where(o => o.CustomerId == customerId && o.IdempotencyKey == idempotencyKey).Select(o => o.Code).FirstOrDefaultAsync(ct);
+
     public async Task<string> NewCodeAsync(CancellationToken ct)
     {
         while (true)

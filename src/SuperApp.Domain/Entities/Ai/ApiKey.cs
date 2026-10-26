@@ -10,6 +10,7 @@ public class ApiKey : BaseEntity
     public string Prefix { get; set; } = string.Empty;
     public byte[] KeyHash { get; set; } = [];
     public string? Scopes { get; set; }
+    public int RateLimitPerMinute { get; set; } = 600;
     public DateTime? ExpiresAt { get; set; }
     public DateTime? RevokedAt { get; set; }
     public DateTime? LastUsedAt { get; set; }
