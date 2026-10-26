@@ -31,6 +31,9 @@ public interface IMoneyStore
 
     Task<Payment?> PaymentAsync(long paymentId, CancellationToken ct);
 
+    /// <summary>Every ledger row for one thing (with its wallet), to undo it.</summary>
+    Task<IReadOnlyList<LedgerEntry>> EntriesForAsync(string refType, long refId, CancellationToken ct);
+
     Task<IReadOnlyList<WalletDto>> WalletsOfAsync(Guid userId, CancellationToken ct);
 
     Task<PagedResult<LedgerRowDto>> LedgerOfAsync(Guid userId, WalletType type, int page, int pageSize, CancellationToken ct);
@@ -62,6 +65,12 @@ public interface ILedger
     /// (its available balance, else its held money) or to Super App, with a refund receipt.
     /// </summary>
     Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct);
+
+    /// <summary>An entry fee the venue earns (tournaments): its share held until <c>release</c>, commission to revenue, a receipt.</summary>
+    Task EntryFeeAsync(Payment payment, Guid venueOwnerId, decimal commissionRate, string refType, long refId, DateTime release, CancellationToken ct);
+
+    /// <summary>Undoes every row of a paid thing and gives the payment back to the customer's wallet (refund + receipt).</summary>
+    Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct);
 }
 
 public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
@@ -128,6 +137,36 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
         var revenue = await store.WalletAsync(null, WalletType.PlatformRevenue, ct);
         PostRaw(revenue, payment.Amount, LedgerBucket.Available, LedgerKind.ServiceFee, refType, refId, null, Guid.NewGuid());
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = payer, Kind = ReceiptKind.Payment, Amount = payment.Amount, RefType = refType, RefId = refId });
+    }
+
+    public async Task EntryFeeAsync(Payment payment, Guid venueOwnerId, decimal commissionRate, string refType, long refId, DateTime release, CancellationToken ct)
+    {
+        if (payment.Status != PaymentStatus.Paid || payment.PayerUserId is not { } payer)
+        {
+            return;
+        }
+        var commission = Math.Round(payment.Amount * commissionRate / 100, 2);
+        var group = Guid.NewGuid();
+        PostRaw(await store.WalletAsync(venueOwnerId, WalletType.PartnerBookings, ct), payment.Amount - commission, LedgerBucket.Pending, LedgerKind.BookingEarning, refType, refId, release, group);
+        PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), commission, LedgerBucket.Available, LedgerKind.Commission, refType, refId, null, group);
+        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = payer, Kind = ReceiptKind.Payment, Amount = payment.Amount, RefType = refType, RefId = refId });
+    }
+
+    public async Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct)
+    {
+        var group = Guid.NewGuid();
+        var entries = await store.EntriesForAsync(refType, refId, ct);
+        foreach (var e in entries.Where(e => e.Kind != LedgerKind.ReleaseFromHold))
+        {
+            // Held money already released is taken back from the available balance
+            var released = e.Bucket == LedgerBucket.Pending && entries.Any(x => x.Kind == LedgerKind.ReleaseFromHold && x.WalletId == e.WalletId);
+            PostRaw(e.Wallet, -e.Amount, released ? LedgerBucket.Available : e.Bucket, LedgerKind.Refund, refType, refId, released ? null : e.AvailableAt, group);
+        }
+        PostRaw(await store.WalletAsync(customerId, WalletType.Customer, ct), payment.Amount, LedgerBucket.Available, LedgerKind.Refund, refType, refId, null, group);
+        store.Add(new Refund { Payment = payment, Amount = payment.Amount, Destination = RefundDestination.SuperAppWallet, Reason = reason, PaidBy = RefundPayer.Partner,
+            Status = RefundStatus.Done, RequestedById = requestedById });
+        payment.Status = PaymentStatus.Refunded;
+        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = customerId, Kind = ReceiptKind.Refund, Amount = payment.Amount, RefType = refType, RefId = refId });
     }
 
     public async Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct)

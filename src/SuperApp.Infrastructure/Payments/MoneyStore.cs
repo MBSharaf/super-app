@@ -49,6 +49,9 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
 
     public Task<Payment?> PaymentAsync(long paymentId, CancellationToken ct) => db.Set<Payment>().FirstOrDefaultAsync(p => p.Id == paymentId, ct);
 
+    public async Task<IReadOnlyList<LedgerEntry>> EntriesForAsync(string refType, long refId, CancellationToken ct) =>
+        await db.Set<LedgerEntry>().Include(e => e.Wallet).Where(e => e.RefType == refType && e.RefId == refId).ToListAsync(ct);
+
     public async Task<IReadOnlyList<WalletDto>> WalletsOfAsync(Guid userId, CancellationToken ct) =>
         await db.Set<Wallet>().Where(w => w.OwnerUserId == userId).OrderBy(w => w.Type)
             .Select(w => new WalletDto(w.Type.ToString(), w.PendingBalance, w.AvailableBalance, w.SettledTotal, w.Currency)).ToListAsync(ct);

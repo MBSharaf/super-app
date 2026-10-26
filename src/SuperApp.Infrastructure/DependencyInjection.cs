@@ -97,6 +97,7 @@ public static class DependencyInjection
         services.AddScoped<IPitchReviewRepository, PitchReviewRepository>();
         services.AddScoped<IPartnerStaffRepository, PartnerStaffRepository>();
         services.AddScoped<ICheckInRepository, CheckInRepository>();
+        services.AddScoped<Application.Features.Tournaments.ITournamentStore, TournamentStore>();
         services.AddScoped<IPackageRepository, PackageRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<Application.Features.FreeSlots.IFreeSlotRepository, FreeSlotRepository>();
