@@ -116,6 +116,7 @@ public static class PaymentsInfrastructure
         }
         services.AddScoped<SuperApp.Application.Features.Money.IMoneyStore, MoneyStore>();
         services.AddSingleton<SuperApp.Application.Features.Money.IMoneyDocuments, MoneyDocuments>();
+        services.AddScoped<SuperApp.Application.Features.Money.IPayoutStore, PayoutStore>();
         services.AddSingleton<MoneyReleaseJob>();
         services.AddHostedService(sp => sp.GetRequiredService<MoneyReleaseJob>());
         services.AddSingleton<AwaitingPaymentExpiry>();
