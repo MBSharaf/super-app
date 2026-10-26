@@ -88,6 +88,8 @@ public sealed class BookingRepository(AppDbContext db, IClock clock) : IBookingR
         return new PagedResult<Booking>(items, page, pageSize, total);
     }
 
+    public Task<Booking?> ByPaymentAsync(long paymentId, CancellationToken ct) => db.Set<Booking>().FirstOrDefaultAsync(b => b.PaymentId == paymentId, ct);
+
     public Task ReleaseSlotsAsync(long bookingId, CancellationToken ct) =>
         db.Set<BookingSlot>().Where(s => s.BookingId == bookingId).ExecuteUpdateAsync(u => u.SetProperty(s => s.IsActive, false), ct);
 

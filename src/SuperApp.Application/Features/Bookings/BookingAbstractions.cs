@@ -33,6 +33,8 @@ public interface IBookingRepository
 
     /// <summary>The code of the package a match belongs to.</summary>
     Task<string?> PackageCodeAsync(long packageId, CancellationToken ct);
+
+    Task<Booking?> ByPaymentAsync(long paymentId, CancellationToken ct);
 }
 
 /// <summary>Platform settings (ops.Settings) as numbers.</summary>

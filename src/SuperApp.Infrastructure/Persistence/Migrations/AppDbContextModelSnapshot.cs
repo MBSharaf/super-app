@@ -1219,7 +1219,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("CK_Bookings_StartHour", "[StartHour] <= 23");
 
-                            t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 5");
+                            t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 6");
 
                             t.HasCheckConstraint("CK_Bookings_Total", "[Total] >= 0");
                         });

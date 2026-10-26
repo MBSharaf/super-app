@@ -187,6 +187,8 @@
     [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
     const b = fromBooking(r);
     b.players = players || b.players;
+    // A live gateway (Paymob) returns its payment page; the booking is confirmed by the gateway's callback
+    if (r.paymentUrl) window.location.assign(r.paymentUrl);
     return b;
   };
 

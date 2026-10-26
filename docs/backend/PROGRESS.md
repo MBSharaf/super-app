@@ -120,6 +120,17 @@ Decisions for this phase:
 ### Requests to main
 - ~~**`.gitignore` hides two source files:**~~ (done on main 2026-10-18) the pattern `storage/` also matches `src/SuperApp.Application/Abstractions/Storage/IFileStorage.cs` and `src/SuperApp.Infrastructure/Storage/LocalFileStorage.cs`, so they are not in the repository and a fresh clone does not build. Change the pattern to `/storage/` (and keep `src/SuperApp.Api/storage/`), then `git add` the two files. This branch builds only with local copies of them.
 
+## Phase 5 — Money (Paymob) (started 2026-10-26)
+The owner chose **Paymob** (2026-10-26). The store is paused, so this phase covers bookings, packages, games, Fantasy Pass, wallets and payouts; shop orders keep their seam (`CheckoutService.PayAsync`) until the store returns.
+Keys go only into `.env` (owner): `PAYMENTS__PAYMOB__SECRETKEY`, `__PUBLICKEY`, `__HMACSECRET`, `__INTEGRATIONIDS` (comma list) and `PAYMENTS__PUBLICBASEURL`. Without the secret key the **simulated gateway** is used (pays at once — the site works as before).
+
+- [x] 5.1 Payment gateway — `IPaymentGateway` (`SimulatedGateway`, `PaymobGateway`: Intention API → Unified Checkout page; callback HMAC-SHA512 over Paymob's 20 transaction fields, `?hmac=`; refund API), `PaymentsService` (start, status, retry = new merchant ref `code.time`, webhook: wrong signature 400, wrong amount → Failed, repeats change nothing, `IPaymentListener` per purpose), `PaymentsController` (`GET /payments/{code}`, `POST /payments/{code}/retry` (422 `already_paid`), `POST /webhooks/payments/{provider}`). Bookings: online bookings get a `money.Payments` row (simulated → Paid, booking Confirmed as before; Paymob → booking **AwaitingPayment** (new status 6, migration `Phase5_BookingAwaitingPayment`) + `paymentUrl` in the answer; the site goes to the Paymob page). Confirmation notices and the `booking.created` audit / webhook come only when paid (`BookingNotices`, `BookingPaymentListener`). `AwaitingPaymentExpiry` (hosted, every minute): unpaid after 15 minutes → cancelled, hours freed, payment Failed. Tests: 2.
+- [ ] 5.2 Ledger and wallets — partner booking earnings (pending → available after the game), commission and service fee rows, customer Super App wallet; cancellations refund to the wallet (or the card through the gateway); receipt PDFs for payments and refunds.
+- [ ] 5.3 Payouts and CFO approvals — `/wallet`, ledger, statements (Excel / PDF), payout requests (min 500, ID verified, payout method), approvals over limits, agent money limits (`Agent.MoneyLimit`), payout advice PDFs.
+- [ ] 5.4 Points, vouchers and codes — points for bookings and reviews (+20), redeem 2,000 → 100 EGP voucher, partner codes, `/codes/check`.
+- [ ] 5.5 Other purposes — packages, game shares, tournament fees, Fantasy Pass (`FantasyPass.PaymentId`), dispute refunds from support.
+- [ ] 5.6 Site in API mode for the money screens (wallet, payouts, CFO approvals, revenue) + "waiting for payment" on the booking page; Arabic; `.http`; docs.
+
 ## Phase 6 — Fantasy & content (branch `phase-6-fantasy`, started 2026-10-17)
 Built in its own window — see `docs/context/parallel.md`.
 

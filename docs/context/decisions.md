@@ -40,6 +40,9 @@ decisions here (with the date) from any window.
 
 - **Store paused (2026-10-26):** the store, sellers, print-on-demand factory and shipping are paused — the site shows "Coming soon" and their links are hidden (`SA.config.storeEnabled` in `js/core/namespace.js`), and the store APIs answer 423 `store_paused` (`Features:StoreEnabled` in `appsettings.json`). All code and data stay; set both to true to bring them back.
 
+- **Payment company: Paymob** (owner, 2026-10-26). Keys go only into `.env` (owner enters them); until then the simulated gateway pays at once. Online bookings wait for Paymob's signed callback (15 minutes, then the hours are freed).
+- **API-FOOTBALL key:** not received yet (2026-10-26). The owner puts it in `.env` (`FOOTBALL__APIFOOTBALL__KEY`); simulated football data until then.
+
 ## Print on demand
 - **Partner:** a contracted factory prints and ships, DTF only for now. One factory to start, with the code ready for several.
 - **Courier:** Super App holds the courier contract (Bosta as a trial), behind a switchable adapter.

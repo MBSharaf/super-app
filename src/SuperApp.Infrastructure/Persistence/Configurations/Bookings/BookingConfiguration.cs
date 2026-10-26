@@ -25,7 +25,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             t.HasCheckConstraint("CK_Bookings_ServiceFee", "[ServiceFee] >= 0");
             t.HasCheckConstraint("CK_Bookings_Total", "[Total] >= 0");
             t.HasCheckConstraint("CK_Bookings_CommissionRate", "[CommissionRate] BETWEEN 0 AND 100");
-            t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 5");
+            t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 6");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).HasMaxLength(12).IsUnicode(false);

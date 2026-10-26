@@ -66,6 +66,7 @@ public static class DependencyInjection
         services.AddSeed(configuration);
         Fantasy.FantasyInfrastructureRegistration.AddFantasyInfrastructure(services, configuration);   // Phase 6 (branch phase-6-fantasy)
         Admin.AdminInfrastructure.AddAdminInfrastructure(services);   // Phase 7 (branch phase-7-admin)
+        Payments.PaymentsInfrastructure.AddPayments(services, configuration);   // Phase 5
         return services;
     }
 

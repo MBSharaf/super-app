@@ -9,7 +9,7 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Bookings;
 
-/// <summary>Holding and booking hours (API §3.3). Payments arrive in Phase 5: until then the booking is confirmed straight away.</summary>
+/// <summary>Holding and booking hours (API §3.3). Online bookings are paid through <see cref="Payments.IPaymentsService"/>.</summary>
 public interface IBookingsService
 {
     Task<HoldResponse> HoldAsync(HoldRequest request, CancellationToken ct);
@@ -24,13 +24,13 @@ public sealed class BookingsService(
     ISettingsReader settings,
     IQrTokens qr,
     IFeatureFlags flags,
-    INotifier notifier,
-    IAuditLogger audit,
     ICurrentUser currentUser,
     IRequestInfo requestInfo,
     IValidator<HoldRequest> holdRules,
     IValidator<CreateBookingRequest> createRules,
-    Waitlist.IWaitlistService waitlist) : IBookingsService
+    Waitlist.IWaitlistService waitlist,
+    Payments.IPaymentsService payments,
+    BookingNotices notices) : IBookingsService
 {
     public async Task<HoldResponse> HoldAsync(HoldRequest request, CancellationToken ct)
     {
@@ -57,10 +57,38 @@ public sealed class BookingsService(
             throw new BusinessRuleException("This pitch takes online payment only.", "cash_not_allowed");
         }
         var booking = await NewBookingAsync(plan, request, me, ct);
+        var paymentUrl = await PayAsync(booking, plan, me, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);
         await waitlist.BookedAsync(booking, ct);
-        await AfterBookingAsync(booking, plan, ct);
-        return BookingMapper.ToResponse(booking, plan.Pitch.Slug, plan.Pitch.Name, plan.Pitch.Address, qr.Create(booking.Code));
+        if (booking.WaiverVersionId is { } waiver)
+        {
+            legal.AddAcceptance(waiver, me, "booking", requestInfo.IpAddress);
+        }
+        if (booking.Status == BookingStatus.Confirmed)
+        {
+            await notices.ConfirmedAsync(booking, plan.Pitch.Name, plan.Pitch.OwnerUserId, ct);
+        }
+        return BookingMapper.ToResponse(booking, plan.Pitch.Slug, plan.Pitch.Name, plan.Pitch.Address, qr.Create(booking.Code)) with { PaymentUrl = paymentUrl };
+    }
+
+    /// <summary>
+    /// Online bookings get a payment. The simulated gateway pays at once (booking confirmed); a real gateway returns its page
+    /// and the booking waits for the webhook (AwaitingPayment, hours kept for 15 minutes).
+    /// </summary>
+    private async Task<string?> PayAsync(Booking booking, BookingPlan plan, Guid me, CancellationToken ct)
+    {
+        if (booking.PayAtVenue || booking.Total <= 0)
+        {
+            return null;
+        }
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Booking, booking.Total, me,
+            $"Booking {booking.Code} at {plan.Pitch.Name}", $"#/booking/{booking.Code}"), ct);
+        booking.Payment = started.Payment;
+        if (started.RedirectUrl is not null)
+        {
+            booking.Status = BookingStatus.AwaitingPayment;
+        }
+        return started.RedirectUrl;
     }
 
     /// <summary>A repeated request (double tap, retry) gets the booking it already made, before any hour check.</summary>
@@ -88,21 +116,6 @@ public sealed class BookingsService(
             PitchAmount = plan.PitchAmount, ServiceFee = plan.ServiceFee, Total = plan.Total, CommissionRate = commission,
             PayAtVenue = request.PayAtVenue, PolicyKey = plan.Pitch.PolicyKey, WaiverVersionId = waiver, Status = BookingStatus.Confirmed,
         };
-    }
-
-    /// <summary>Waiver acceptance, notifications to the customer and the pitch owner, audit.</summary>
-    private async Task AfterBookingAsync(Booking booking, BookingPlan plan, CancellationToken ct)
-    {
-        if (booking.WaiverVersionId is { } waiver)
-        {
-            legal.AddAcceptance(waiver, booking.CustomerId!.Value, "booking", requestInfo.IpAddress);
-        }
-        var when = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{booking.Date:ddd d MMM} · {plan.Lines[0].Hour % 24:00}:00 · {booking.Duration} h");
-        await notifier.NotifyUserAsync(booking.CustomerId!.Value, new NotificationMessage(NotificationCategory.Bookings,
-            $"Booking confirmed: {plan.Pitch.Name}", $"{when} · {booking.Code}", $"#/booking/{booking.Code}", NotificationTone.Success), ct);
-        await notifier.NotifyUserAsync(plan.Pitch.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings,
-            $"New booking at {plan.Pitch.Name}", $"{when} · {booking.Total:0} EGP", "#/dash/bookings", NotificationTone.Info), ct);
-        await audit.LogAsync(AuditSystem.Site, "booking.created", $"Booking {booking.Code} at {plan.Pitch.Name}", "Booking", booking.Code, ct: ct);
     }
 
     private Guid Me() => currentUser.UserId ?? throw new UnauthorizedException();

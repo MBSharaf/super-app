@@ -88,8 +88,8 @@ public sealed class MyBookingsService(
     {
         var kickOff = b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
         var hoursLeft = Math.Round((kickOff - CairoTime.Now(clock)).TotalHours, 1);
-        var open = b.Status == BookingStatus.Confirmed && hoursLeft > 0;
-        var percent = !open ? 0 : hoursLeft >= fullHours ? 100 : hoursLeft >= halfHours ? 50 : 0;
+        var open = b.Status is BookingStatus.Confirmed or BookingStatus.AwaitingPayment && hoursLeft > 0;
+        var percent = !open || b.Status == BookingStatus.AwaitingPayment ? 0 : hoursLeft >= fullHours ? 100 : hoursLeft >= halfHours ? 50 : 0;
         return new RefundPreview(b.Code, hoursLeft, percent, Math.Round(b.Total * percent / 100, 2), open);
     }
 
