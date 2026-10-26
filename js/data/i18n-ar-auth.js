@@ -2,6 +2,12 @@
 (function (SA) {
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
+    /* ---------- Money (API mode, Phase 5) ---------- */
+    'Waiting for payment': 'مستني الدفع', 'Wallet top-ups are coming soon.': 'شحن المحفظة قريب.', 'Refund': 'استرجاع', 'Withdrawal': 'سحب',
+    'Money released': 'فلوس اتحررت', 'Adjustment': 'تسوية', 'Deduction': 'خصم', 'Booking': 'حجز', 'Commission': 'عمولة', 'Service fee': 'رسوم الخدمة',
+    'The minimum withdrawal is 500 EGP.': 'أقل سحب 500 جنيه.', 'Minimum 500 EGP': 'أقل حاجة 500 جنيه', 'That is more than your available balance.': 'ده أكتر من رصيدك المتاح.',
+    'More than your available balance': 'أكتر من رصيدك المتاح', 'This withdrawal is waiting for a finance approval.': 'طلب السحب ده مستني موافقة الماليات.',
+    'Prepared — it now needs a finance approval.': 'اتجهز — محتاج دلوقتي موافقة الماليات.', 'Prepared — another team member sends it.': 'اتجهز — حد تاني من الفريق هو اللي يبعته.',
     /* ---------- Account pages ---------- */
     'Sign in': 'تسجيل الدخول', 'Use your email or mobile number.': 'استخدم الإيميل أو رقم الموبايل.', 'Email or mobile': 'الإيميل أو الموبايل', 'Password': 'الباسورد',
     'Forgot your password?': 'نسيت الباسورد؟', 'New here?': 'جديد هنا؟', 'Create an account': 'اعمل حساب', 'Create account': 'اعمل حساب',
@@ -70,6 +76,8 @@
     ['^The highest package discount is (.+)$', 'أعلى خصم للباقات {1}'],
     ['^(.+) Match (\\d+) of (\\d+)\\.$', '{t1} الماتش {2} من {3}.'],
     ['^(.+) was sent for Super App review$', '{1} اتبعت لمراجعة Super App'],
+    ['^The smallest voucher is 100 EGP \(([\d,]+) points\)\.$', 'أقل قسيمة 100 جنيه ({1} نقطة).'],
+    ['^(Payment|Refund|Withdrawal) — (.+)$', '{t1} — {2}'],
     ['^If (.+) has an account, a link is on its way\\. It works for 30 minutes\\.$', 'لو {1} ليه حساب، اللينك في الطريق. شغال نص ساعة.'],
   );
 })(window.SA);

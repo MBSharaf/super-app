@@ -7,7 +7,7 @@
  * the async methods (list, get, bookings.get/list) fill it first.
  *
  * Site ids are `p-<slug>` (as in the demo data); the API uses the slug. Booking ids are the booking codes.
- * Not on the server yet (later phases) and still demo-only: weekly packages, promo codes, reviews, waitlist.
+ * Promo codes and Super Points vouchers go to the server with the booking (the server's total is what is charged).
  */
 (function (SA) {
   const api = SA.services.api;
@@ -152,7 +152,7 @@
       listPrice: +r.pitchAmount, pitchTotal: +r.pitchAmount, serviceFee: +r.serviceFee, total: +r.total,
       discount: 0, discountAmount: 0, promo: null, publishedMatchId: prev.publishedMatchId || null,
       payment: r.payAtVenue ? { method: 'cash', label: 'Pay at the venue' } : { method: 'card', label: 'Paid in the app' },
-      status: r.status.startsWith('Cancelled') ? 'cancelled' : 'confirmed', checkedIn: ['CheckedIn', 'Played'].includes(r.status),
+      status: r.status.startsWith('Cancelled') ? 'cancelled' : 'confirmed', awaitingPayment: r.status === 'AwaitingPayment', checkedIn: ['CheckedIn', 'Played'].includes(r.status),
       refund: +r.refundAmount, createdAt: Date.parse(r.createdAt), cancelledAt: r.cancelledAt ? Date.parse(r.cancelledAt) : 0,
       policy: r.policyKey, qrToken: r.qrToken || prev.qrToken || null,
       seriesId: r.packageCode || null, sessionNo: prev.sessionNo || null, seriesSize: prev.seriesSize || null,
@@ -181,9 +181,13 @@
     return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players) };
   };
 
-  const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false }) => {
+  const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false, code }) => {
     SA.services.legal?.requireWaiver(waiver, 'booking');
-    const r = await api.post('/bookings', { pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: payment?.method === 'cash', acceptWaiver: !!waiver });
+    const r = await api.post('/bookings', {
+      pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: payment?.method === 'cash', acceptWaiver: !!waiver,
+      promoCode: code || undefined, voucherCode: payment?.voucher || undefined,
+    });
+    SA.services.liveMoney?.sync();
     [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
     const b = fromBooking(r);
     b.players = players || b.players;

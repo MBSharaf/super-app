@@ -130,7 +130,7 @@
       const checkedIn = venue?.checkedInAt || venue?.checkedIn;
       const cancelled = b.status === 'cancelled';
       const past = b.startsAt + b.duration * 36e5 < Date.now();
-      const statusLabel = cancelled ? 'Cancelled' : checkedIn && !past ? 'Checked in' : past ? 'Played' : 'Confirmed';
+      const statusLabel = cancelled ? 'Cancelled' : b.awaitingPayment ? 'Waiting for payment' : checkedIn && !past ? 'Checked in' : past ? 'Played' : 'Confirmed';
       const series = b.seriesId ? S.bookings.seriesOf(b.seriesId) : [];
       const live = series.filter((x) => x.status === 'confirmed' && parseISO(x.date).getTime() + x.hour * 36e5 > Date.now());
       const myReview = S.bookings.reviewOf(b);
@@ -146,7 +146,7 @@
           : `<div class="page-head"><a class="back-link" href="#/bookings">${icon('chevronLeft', 16)} My bookings</a><h1 class="h1" style="margin-top:10px">Booking details</h1></div>`}
         <article class="ticket">
           <div class="ticket-top">
-            <div class="media ticket-img"><img src="${media.photo(p.images[0], 1000, 500)}" alt="" /><span class="badge ${cancelled ? 'badge-danger' : past ? 'badge-glass' : 'badge-turf'} ticket-status">${statusLabel}</span></div>
+            <div class="media ticket-img"><img src="${media.photo(p.images[0], 1000, 500)}" alt="" /><span class="badge ${cancelled ? 'badge-danger' : b.awaitingPayment ? 'badge-gold' : past ? 'badge-glass' : 'badge-turf'} ticket-status">${statusLabel}</span></div>
             <div class="ticket-body">
               <div class="row-between wrap"><div><span class="xs muted">Booking ID</span><b class="ticket-id num">${b.id}</b></div>
                 <button class="btn btn-outline btn-sm" data-copy="${b.id}">${icon('copy', 14)} Copy</button></div>
