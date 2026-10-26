@@ -80,7 +80,7 @@
         <div class="hero-copy">
           <span class="badge badge-blaze hero-live"><span class="live-dot"></span>${tonight} games looking for players this week</span>
           <h1 class="display hero-title"><span>Book the pitch.</span><span>Fill the squad.</span><span>Win the <span class="rotator">${['week.', 'derby.', 'league.'].map((w, i) => `<span class="${i === 0 ? 'is-on' : ''}" ${i ? 'aria-hidden="true"' : ''}>${w}</span>`).join('')}</span></span></h1>
-          <p class="lead">Super App finds open pitches near you, fills the empty spots in your match, runs your Egyptian Premier League fantasy team and delivers your gear — with one account and one wallet.</p>
+          <p class="lead">${SA.config.storeEnabled ? 'Super App finds open pitches near you, fills the empty spots in your match, runs your Egyptian Premier League fantasy team and delivers your gear — with one account and one wallet.' : 'Super App finds open pitches near you, fills the empty spots in your match and runs your Egyptian Premier League fantasy team — with one account and one wallet.'}</p>
           <div class="row wrap hero-ctas">
             ${c.cta('Book a pitch near me', { href: '#/pitches?locate=1', size: 'lg' })}
             <a class="btn btn-outline btn-lg" href="#/players">Find a game</a>
