@@ -42,7 +42,8 @@ public sealed class SupportAdminService(
     ICurrentUser currentUser,
     IClock clock,
     IValidator<TeamMessageRequest> replyRules,
-    IValidator<DisputeRequest> disputeRules) : ISupportAdminService
+    IValidator<DisputeRequest> disputeRules,
+    Money.ILedger ledger) : ISupportAdminService
 {
     private Guid UserId => currentUser.UserId ?? throw new UnauthorizedException();
 
@@ -113,7 +114,7 @@ public sealed class SupportAdminService(
         return (await repository.TicketDtoAsync(ticket.Code, UserId, true, ct))!;
     }
 
-    /// <summary>Records the decision on the ticket (internal note + both sides told). The refund itself is Phase 5 (refunds.issue, limits).</summary>
+    /// <summary>Records the decision on the ticket (internal note + both sides told) and pays the refund into the customer's wallet.</summary>
     public async Task<TicketDto> DisputeAsync(string code, DisputeRequest request, CancellationToken ct)
     {
         await disputeRules.ValidateAndThrowAsync(request, ct);
@@ -122,7 +123,13 @@ public sealed class SupportAdminService(
         {
             throw new BusinessRuleException("This ticket is not a dispute.", "not_dispute");
         }
-        var decision = request.Refund > 0 ? $"Refund {request.Refund:0.##} EGP, paid by {request.PaidBy}." : "No refund.";
+        if (ticket.DisputeAmount is { } asked && request.Refund > asked)
+        {
+            throw new BusinessRuleException($"The refund can't be more than the {asked:0.##} EGP asked for.", "over_dispute_amount");
+        }
+        var byVenue = string.Equals(request.PaidBy, "Partner", StringComparison.OrdinalIgnoreCase) && ticket.AgainstUserId is not null;
+        await ledger.CreditAsync(ticket.OpenedById, request.Refund, byVenue ? ticket.AgainstUserId : null, "Ticket", ticket.Id, ct);
+        var decision = request.Refund > 0 ? $"Refund {request.Refund:0.##} EGP to the Super App wallet, paid by {(byVenue ? "the venue" : "Super App")}." : "No refund.";
         repository.Add(new TicketMessage { TicketId = ticket.Id, SenderId = UserId, Body = $"Dispute decided: {decision} {request.Note.Trim()}", IsInternalNote = true });
         (ticket.Status, ticket.ResolvedAt) = (TicketStatus.Resolved, clock.UtcNow);
         await unitOfWork.SaveChangesAsync(ct);

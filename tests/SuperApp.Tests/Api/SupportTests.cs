@@ -88,6 +88,8 @@ public sealed class SupportTests(AccountsApiFactory api) : IClassFixture<Account
         (await ceo.PostAsync($"/api/v1/admin/support/tickets/{code}/priority", new { priority = "Urgent" })).Body.Data().GetProperty("priority").GetString().ShouldBe("Urgent");
         (await ceo.PostAsync($"/api/v1/admin/support/tickets/{code}/dispute", new { refund = 250m, paidBy = "Partner", note = "Venue fault." })).Body.Data().GetProperty("status").GetString().ShouldBe("Resolved");
         (await customer.PostAsync($"/api/v1/support/tickets/{code}/messages", new { body = "Thanks" })).Body.Code().ShouldBe("closed");
+        (await customer.GetAsync("/api/v1/wallet")).Body.Data().EnumerateArray().Single(w => w.GetProperty("type").GetString() == "Customer")
+            .GetProperty("available").GetDecimal().ShouldBeGreaterThanOrEqualTo(250);
         (await api.DbAsync(db => db.Set<TicketMessage>().CountAsync(m => m.Ticket.Code == code && m.IsInternalNote))).ShouldBe(2);
 
         var plain = (await other.PostAsync("/api/v1/support/tickets", Ticket())).Body.Data().GetProperty("code").GetString();

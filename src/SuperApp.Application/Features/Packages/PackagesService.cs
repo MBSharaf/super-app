@@ -39,7 +39,10 @@ public sealed class PackagesService(
     ICurrentUser currentUser,
     IRequestInfo requestInfo,
     IValidator<PackageQuoteQuery> quoteRules,
-    IValidator<BuyPackageRequest> buyRules) : IPackagesService
+    IValidator<BuyPackageRequest> buyRules,
+    Payments.IPaymentsService payments,
+    Money.ILedger ledger,
+    IUnitOfWork unitOfWork) : IPackagesService
 {
     public const int ExtraWeeks = 4;
 
@@ -69,9 +72,33 @@ public sealed class PackagesService(
         {
             matches.Add((await MatchAsync(p, package, plan, request.Duration, waiver, me, ct), p.Slots));
         }
+        var paymentUrl = await PayAsync(package, matches.Select(m => m.Item1).ToList(), first, me, ct);
         await packages.SaveAsync(package, matches, ct);
+        if (paymentUrl is not null)
+        {
+            return (await GetAsync(package.Code, ct)) with { PaymentUrl = paymentUrl };
+        }
+        foreach (var (match, _) in matches)
+        {
+            await ledger.BookingPaidAsync(match, ct);
+        }
+        await unitOfWork.SaveChangesAsync(ct);
         await AfterBuyAsync(package, first, waiver, me, ct);
         return await GetAsync(package.Code, ct);
+    }
+
+    /// <summary>One payment for the whole package, shared by its matches; with Paymob the matches wait for it (AwaitingPayment).</summary>
+    private async Task<string?> PayAsync(Package package, IReadOnlyList<Booking> matches, BookingPlan first, Guid me, CancellationToken ct)
+    {
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Package, package.TotalPrice, me,
+            $"Package {package.Code} at {first.Pitch.Name}", $"#/package/{package.Code}"), ct);
+        package.Payment = started.Payment;
+        foreach (var m in matches)
+        {
+            m.Payment = started.Payment;
+            m.Status = started.RedirectUrl is null ? BookingStatus.Confirmed : BookingStatus.AwaitingPayment;
+        }
+        return started.RedirectUrl;
     }
 
     public async Task<IReadOnlyList<PackageDto>> MineAsync(CancellationToken ct) => await packages.MineAsync(Me(), ct);

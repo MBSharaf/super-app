@@ -36,7 +36,7 @@ public sealed record PassPlanDto(string Plan, decimal ListPrice, decimal Price, 
 public sealed record ActivePassDto(string Plan, DateTime StartsAt, DateTime EndsAt);
 
 /// <summary>My passes, what they cover now, and the plans to buy (30 days each; buying early adds to the end).</summary>
-public sealed record PassStatusDto(IReadOnlyList<ActivePassDto> Active, IReadOnlyDictionary<string, DateTime?> CoversUntil, IReadOnlyList<PassPlanDto> Plans);
+public sealed record PassStatusDto(IReadOnlyList<ActivePassDto> Active, IReadOnlyDictionary<string, DateTime?> CoversUntil, IReadOnlyList<PassPlanDto> Plans, string? PaymentUrl = null);
 
 /// <summary>POST /fantasy/pass — header Idempotency-Key required. Paid straight away until payments arrive (Phase 5).</summary>
 public sealed record BuyPassRequest(string Plan);
@@ -108,6 +108,8 @@ public interface IFantasyPassRepository
     Task<FantasyPass?> RecentAsync(Guid userId, int? competitionId, DateTime since, CancellationToken ct);
 
     void Add(FantasyPass pass);
+
+    Task<FantasyPass?> ByPaymentAsync(long paymentId, CancellationToken ct);
 
     /// <summary>Setting <c>fantasy.passPrice</c> (one league / both).</summary>
     Task<(decimal One, decimal Both)> PricesAsync(CancellationToken ct);

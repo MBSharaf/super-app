@@ -28,7 +28,9 @@ public sealed class FantasyPassService(
     IAuditLogger audit,
     ICurrentUser currentUser,
     IClock clock,
-    IValidator<BuyPassRequest> rules) : IFantasyPassService
+    IValidator<BuyPassRequest> rules,
+    Payments.IPaymentsService payments,
+    Money.ILedger ledger) : IFantasyPassService
 {
     public const int PassDays = 30;
     private static readonly TimeSpan RepeatWindow = TimeSpan.FromMinutes(10);
@@ -61,12 +63,42 @@ public sealed class FantasyPassService(
             var price = (await PlansAsync(competitions, ct)).Single(p => p.Plan == plan).Price;
             var pass = await NewPassAsync(competitionId, price, ct);
             passes.Add(pass);
+            var url = await PayAsync(pass, plan, ct);
             await unitOfWork.SaveChangesAsync(ct);
+            if (url is not null)
+            {
+                return await StatusAsync(ct) with { PaymentUrl = url };
+            }
+            if (pass.Payment is { } payment)
+            {
+                await ledger.PlatformSaleAsync(payment, "FantasyPass", pass.Id, ct);
+                await unitOfWork.SaveChangesAsync(ct);
+            }
             await notifier.NotifyUserAsync(UserId, new NotificationMessage(NotificationCategory.Fantasy, "Fantasy Pass active",
                 $"Prize leagues open until {pass.EndsAt:d MMM yyyy}.", "#/fantasy/leagues", NotificationTone.Success), ct);
             await audit.LogAsync(AuditSystem.Site, "fantasy.pass.bought", $"Fantasy Pass ({plan}) for {price:0.##} EGP", "FantasyPass", pass.Id.ToString(), ct: ct);
         }
         return await StatusAsync(ct);
+    }
+
+    /// <summary>
+    /// A paid pass gets a payment. The simulated gateway pays at once; with Paymob the pass waits (no days yet) until
+    /// <see cref="FantasyPassPaymentListener"/> starts it.
+    /// </summary>
+    private async Task<string?> PayAsync(FantasyPass pass, string plan, CancellationToken ct)
+    {
+        if (pass.Price <= 0)
+        {
+            return null;
+        }
+        var started = await payments.StartAsync(new Payments.PaymentRequest(Domain.Enums.PaymentPurpose.FantasyPass, pass.Price, UserId, $"Fantasy Pass ({plan})", "#/fantasy/leagues"), ct);
+        pass.Payment = started.Payment;
+        if (started.RedirectUrl is not null)
+        {
+            pass.StartsAt = clock.UtcNow.AddSeconds(-1);
+            pass.EndsAt = clock.UtcNow;
+        }
+        return started.RedirectUrl;
     }
 
     /// <summary>A renewal starts when the current pass of the same plan ends, so no days are lost.</summary>
@@ -107,4 +139,27 @@ public sealed class BuyPassRequestValidator : AbstractValidator<BuyPassRequest>
     {
         RuleFor(x => x.Plan).NotEmpty().WithMessage("Choose a plan.").MaximumLength(10);
     }
+}
+
+/// <summary>The gateway confirmed a Fantasy Pass: its 30 days start now (or when the current pass of the plan ends).</summary>
+public sealed class FantasyPassPaymentListener(IFantasyPassRepository passes, Money.ILedger ledger, IUnitOfWork unitOfWork, IClock clock) : Payments.IPaymentListener
+{
+    public Domain.Enums.PaymentPurpose Purpose => Domain.Enums.PaymentPurpose.FantasyPass;
+
+    public async Task PaidAsync(Domain.Entities.Money.Payment payment, CancellationToken ct)
+    {
+        var pass = await passes.ByPaymentAsync(payment.Id, ct);
+        if (pass is null || pass.EndsAt > clock.UtcNow)
+        {
+            return;
+        }
+        var now = clock.UtcNow;
+        var current = (await passes.ActiveAsync(pass.UserId, now, ct)).Where(p => p.CompetitionId == pass.CompetitionId && p.Id != pass.Id).Select(p => p.EndsAt).DefaultIfEmpty(now).Max();
+        pass.StartsAt = current > now ? current : now;
+        pass.EndsAt = pass.StartsAt.AddDays(FantasyPassService.PassDays);
+        await ledger.PlatformSaleAsync(payment, "FantasyPass", pass.Id, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public Task FailedAsync(Domain.Entities.Money.Payment payment, CancellationToken ct) => Task.CompletedTask;
 }

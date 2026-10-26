@@ -90,6 +90,9 @@ public sealed class BookingRepository(AppDbContext db, IClock clock) : IBookingR
 
     public Task<Booking?> ByPaymentAsync(long paymentId, CancellationToken ct) => db.Set<Booking>().FirstOrDefaultAsync(b => b.PaymentId == paymentId, ct);
 
+    public async Task<IReadOnlyList<Booking>> AllByPaymentAsync(long paymentId, CancellationToken ct) =>
+        await db.Set<Booking>().Where(b => b.PaymentId == paymentId).OrderBy(b => b.Date).ToListAsync(ct);
+
     public Task ReleaseSlotsAsync(long bookingId, CancellationToken ct) =>
         db.Set<BookingSlot>().Where(s => s.BookingId == bookingId).ExecuteUpdateAsync(u => u.SetProperty(s => s.IsActive, false), ct);
 

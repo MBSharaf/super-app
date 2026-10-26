@@ -56,7 +56,8 @@ public sealed record PackageDto(
     decimal TotalPrice,
     string Status,
     IReadOnlyList<PackageMatchDto> Matches,
-    string? QrToken);
+    string? QrToken,
+    string? PaymentUrl = null);
 
 /* ---------- Database ---------- */
 

@@ -53,6 +53,15 @@ public interface ILedger
 
     /// <summary>Adds the refund of <c>booking.RefundAmount</c> (nothing when 0 or the booking was not paid in the app).</summary>
     Task BookingRefundAsync(Booking booking, Guid requestedById, string reason, CancellationToken ct);
+
+    /// <summary>Something Super App sells itself (Fantasy Pass…): all of it to platform revenue, and a receipt.</summary>
+    Task PlatformSaleAsync(Payment payment, string refType, long refId, CancellationToken ct);
+
+    /// <summary>
+    /// Money given to a customer outside a cancellation (a dispute): to their Super App wallet at once, charged to the venue
+    /// (its available balance, else its held money) or to Super App, with a refund receipt.
+    /// </summary>
+    Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct);
 }
 
 public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
@@ -110,6 +119,38 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
         await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Refund, booking.RefundAmount, booking.Id, ct);
     }
 
+    public async Task PlatformSaleAsync(Payment payment, string refType, long refId, CancellationToken ct)
+    {
+        if (payment.Status != PaymentStatus.Paid || payment.PayerUserId is not { } payer)
+        {
+            return;
+        }
+        var revenue = await store.WalletAsync(null, WalletType.PlatformRevenue, ct);
+        PostRaw(revenue, payment.Amount, LedgerBucket.Available, LedgerKind.ServiceFee, refType, refId, null, Guid.NewGuid());
+        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = payer, Kind = ReceiptKind.Payment, Amount = payment.Amount, RefType = refType, RefId = refId });
+    }
+
+    public async Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+        var group = Guid.NewGuid();
+        PostRaw(await store.WalletAsync(customerId, WalletType.Customer, ct), amount, LedgerBucket.Available, LedgerKind.Refund, refType, refId, null, group);
+        if (chargedPartnerId is { } partnerUser)
+        {
+            var partner = await store.WalletAsync(partnerUser, WalletType.PartnerBookings, ct);
+            var bucket = partner.AvailableBalance >= amount ? LedgerBucket.Available : LedgerBucket.Pending;
+            PostRaw(partner, -amount, bucket, LedgerKind.Deduction, refType, refId, bucket == LedgerBucket.Pending ? clock.UtcNow : null, group);
+        }
+        else
+        {
+            PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), -amount, LedgerBucket.Available, LedgerKind.Refund, refType, refId, null, group);
+        }
+        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = customerId, Kind = ReceiptKind.Refund, Amount = amount, RefType = refType, RefId = refId });
+    }
+
     /// <summary>
     /// Partner earning (pitch amount − the venue's own promo discount − commission), commission and service fee. A Super Points
     /// voucher is paid by Super App, so earning + commission + fee − voucher = the total paid.
@@ -124,7 +165,10 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
     private static DateTime Release(Booking b) =>
         CairoTime.ToUtc(b.Date.ToDateTime(new TimeOnly(b.StartHour, 0))).AddHours(b.Duration) + HoldAfterKickOff;
 
-    private void Post(Wallet wallet, decimal amount, LedgerBucket bucket, LedgerKind kind, Booking b, DateTime? availableAt, Guid group)
+    private void Post(Wallet wallet, decimal amount, LedgerBucket bucket, LedgerKind kind, Booking b, DateTime? availableAt, Guid group) =>
+        PostRaw(wallet, amount, bucket, kind, "Booking", b.Id, availableAt, group);
+
+    private void PostRaw(Wallet wallet, decimal amount, LedgerBucket bucket, LedgerKind kind, string refType, long refId, DateTime? availableAt, Guid group)
     {
         if (amount == 0)
         {
@@ -132,7 +176,7 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
         }
         store.Add(new LedgerEntry
         {
-            Wallet = wallet, Amount = amount, Bucket = bucket, Kind = kind, RefType = "Booking", RefId = b.Id,
+            Wallet = wallet, Amount = amount, Bucket = bucket, Kind = kind, RefType = refType, RefId = refId,
             AvailableAt = availableAt, GroupId = group, CreatedAt = clock.UtcNow,
         });
         if (bucket == LedgerBucket.Pending)

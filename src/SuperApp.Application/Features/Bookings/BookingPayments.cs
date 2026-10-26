@@ -53,3 +53,28 @@ public sealed class BookingPaymentListener(IBookingRepository bookings, BookingN
         }
     }
 }
+
+/// <summary>The gateway confirmed a weekly package: every match is confirmed and booked into the ledger.</summary>
+public sealed class PackagePaymentListener(IBookingRepository bookings, Money.ILedger ledger, INotifier notifier, IUnitOfWork unitOfWork) : IPaymentListener
+{
+    public PaymentPurpose Purpose => PaymentPurpose.Package;
+
+    public async Task PaidAsync(Payment payment, CancellationToken ct)
+    {
+        var matches = (await bookings.AllByPaymentAsync(payment.Id, ct)).Where(b => b.Status == BookingStatus.AwaitingPayment).ToList();
+        foreach (var b in matches)
+        {
+            b.Status = BookingStatus.Confirmed;
+            b.Payment = payment;
+            await ledger.BookingPaidAsync(b, ct);
+        }
+        await unitOfWork.SaveChangesAsync(ct);
+        if (matches.Count > 0 && payment.PayerUserId is { } payer)
+        {
+            await notifier.NotifyUserAsync(payer, new NotificationMessage(NotificationCategory.Bookings, "Package confirmed",
+                $"{matches.Count} matches · {payment.Amount:0} EGP", "#/bookings", NotificationTone.Success), ct);
+        }
+    }
+
+    public Task FailedAsync(Payment payment, CancellationToken ct) => Task.CompletedTask;
+}

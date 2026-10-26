@@ -26,6 +26,8 @@ public sealed class FantasyPassRepository(AppDbContext db) : IFantasyPassReposit
 
     public void Add(FantasyPass pass) => db.Set<FantasyPass>().Add(pass);
 
+    public Task<FantasyPass?> ByPaymentAsync(long paymentId, CancellationToken ct) => db.Set<FantasyPass>().FirstOrDefaultAsync(p => p.PaymentId == paymentId, ct);
+
     public async Task<(decimal One, decimal Both)> PricesAsync(CancellationToken ct)
     {
         var json = await db.Set<Setting>().Where(s => s.Key == "fantasy.passPrice").Select(s => s.Value).FirstOrDefaultAsync(ct);

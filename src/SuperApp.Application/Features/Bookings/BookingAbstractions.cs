@@ -35,6 +35,8 @@ public interface IBookingRepository
     Task<string?> PackageCodeAsync(long packageId, CancellationToken ct);
 
     Task<Booking?> ByPaymentAsync(long paymentId, CancellationToken ct);
+
+    Task<IReadOnlyList<Booking>> AllByPaymentAsync(long paymentId, CancellationToken ct);
 }
 
 /// <summary>Platform settings (ops.Settings) as numbers.</summary>
