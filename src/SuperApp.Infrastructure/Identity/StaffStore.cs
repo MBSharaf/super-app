@@ -4,7 +4,6 @@ using SuperApp.Application.Abstractions.Identity;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Common.Exceptions;
 using SuperApp.Application.Features.Ceo.Dtos;
-using SuperApp.Application.Features.Ceo.Validators;
 using SuperApp.Application.Security;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Domain.Enums;
@@ -70,7 +69,8 @@ public sealed class StaffStore(AppDbContext db, UserManager<User> users, RoleMan
     {
         var user = await RequireAsync(userId);
         user.FullName = fullName;
-        var current = (await users.GetRolesAsync(user)).Where(AdminRoles.Allowed.Contains).ToList();
+        var adminRoles = await AdminRoleNamesAsync(ct);
+        var current = (await users.GetRolesAsync(user)).Where(adminRoles.Contains).ToList();
         IdentityErrors.Check(await users.RemoveFromRolesAsync(user, current.Except(roles)), "roles");
         IdentityErrors.Check(await users.AddToRolesAsync(user, roles.Except(current)), "roles");
     }
@@ -125,18 +125,51 @@ public sealed class StaffStore(AppDbContext db, UserManager<User> users, RoleMan
     {
         var all = await roleManager.Roles.OrderBy(r => r.Name).ToListAsync(ct);
         var codes = await db.Set<RolePermission>().Select(rp => new { rp.RoleId, rp.Permission.Code }).ToListAsync(ct);
+        var holders = await db.UserRoles.GroupBy(ur => ur.RoleId).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count, ct);
         return all.Select(r => new RoleResponse(r.Id, r.Name!, r.DescriptionEn, r.Kind.ToString(), r.IsLocked,
-            r.Name == SystemRoles.Ceo ? Permissions.All.Select(p => p.Code).ToList() : codes.Where(c => c.RoleId == r.Id).Select(c => c.Code).Order().ToList())).ToList();
+            r.Name == SystemRoles.Ceo ? Permissions.All.Select(p => p.Code).ToList() : codes.Where(c => c.RoleId == r.Id).Select(c => c.Code).Order().ToList(),
+            holders.GetValueOrDefault(r.Id))).ToList();
+    }
+
+    public async Task<IReadOnlySet<string>> AdminRoleNamesAsync(CancellationToken ct) =>
+        (await roleManager.Roles.Where(r => r.Kind == RoleKind.AdminRole).Select(r => r.Name!).ToListAsync(ct)).ToHashSet();
+
+    public async Task<RoleResponse?> RoleAsync(Guid id, CancellationToken ct) => (await ListRolesAsync(ct)).FirstOrDefault(r => r.Id == id);
+
+    public Task<bool> RoleNameTakenAsync(string name, Guid? except, CancellationToken ct)
+    {
+        var normalized = roleManager.NormalizeKey(name);
+        return roleManager.Roles.AnyAsync(r => r.NormalizedName == normalized && r.Id != except, ct);
+    }
+
+    public async Task<Guid> SaveRoleAsync(Guid? id, string name, string? description, IReadOnlyList<string> permissions, CancellationToken ct)
+    {
+        var role = id is { } existing ? await roleManager.FindByIdAsync(existing.ToString()) ?? throw new NotFoundException("This role does not exist.")
+            : new Role { Kind = RoleKind.AdminRole };
+        (role.Name, role.DescriptionEn) = (role.IsLocked ? role.Name : name, description);
+        IdentityErrors.Check(id is null ? await roleManager.CreateAsync(role) : await roleManager.UpdateAsync(role), "name");
+        var old = await db.Set<RolePermission>().Where(rp => rp.RoleId == role.Id).ToListAsync(ct);
+        db.Set<RolePermission>().RemoveRange(old);
+        var ids = await db.Set<Permission>().Where(p => permissions.Contains(p.Code)).Select(p => p.Id).ToListAsync(ct);
+        db.Set<RolePermission>().AddRange(ids.Select(pid => new RolePermission { RoleId = role.Id, PermissionId = pid }));
+        await db.SaveChangesAsync(ct);
+        return role.Id;
+    }
+
+    public async Task DeleteRoleAsync(Guid id, CancellationToken ct)
+    {
+        var role = await roleManager.FindByIdAsync(id.ToString()) ?? throw new NotFoundException("This role does not exist.");
+        await db.Set<RolePermission>().Where(rp => rp.RoleId == id).ExecuteDeleteAsync(ct);
+        IdentityErrors.Check(await roleManager.DeleteAsync(role));
     }
 
     /// <summary>People with an admin role or a direct permission — not the CEO, not AI agents.</summary>
     private IQueryable<Guid> AdminIdsQuery()
     {
-        var adminRoles = AdminRoles.Allowed.ToList();
         return db.Users
             .Where(u => u.AccountType == AccountType.Person)
             .Where(u => !db.UserRoles.Any(ur => ur.UserId == u.Id && ur.Role.Name == SystemRoles.Ceo))
-            .Where(u => db.UserRoles.Any(ur => ur.UserId == u.Id && adminRoles.Contains(ur.Role.Name!)) || db.Set<UserPermission>().Any(up => up.UserId == u.Id))
+            .Where(u => db.UserRoles.Any(ur => ur.UserId == u.Id && ur.Role.Kind == RoleKind.AdminRole) || db.Set<UserPermission>().Any(up => up.UserId == u.Id))
             .Select(u => u.Id);
     }
 

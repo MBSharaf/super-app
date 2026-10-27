@@ -34,8 +34,11 @@ public sealed record SetPermissionsRequest(List<string> Permissions, DateTime? E
 /// <summary>POST /ceo/admins/{id}/suspend.</summary>
 public sealed record SuspendRequest(string Reason);
 
-/// <summary>GET /ceo/roles — a role and its permission codes (the permission matrix).</summary>
-public sealed record RoleResponse(Guid Id, string Name, string? Description, string Kind, bool IsLocked, IReadOnlyList<string> Permissions);
+/// <summary>GET /ceo/roles — a role and its permission codes (the permission matrix). Holders = accounts that have it.</summary>
+public sealed record RoleResponse(Guid Id, string Name, string? Description, string Kind, bool IsLocked, IReadOnlyList<string> Permissions, int Holders);
+
+/// <summary>POST /ceo/roles and PUT /ceo/roles/{id} — an admin role; a locked (seeded) role keeps its name.</summary>
+public sealed record RoleRequest(string Name, string? Description, List<string> Permissions);
 
 /// <summary>GET /ceo/permissions — the catalogue with names in both languages.</summary>
 public sealed record PermissionResponse(string Code, string Area, string NameEn, string NameAr, bool IsSensitive);

@@ -7,8 +7,9 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Infrastructure.Persistence.Seed.Reference;
 
 /// <summary>
-/// Seed 2: every permission code (from <see cref="Permissions"/>) and the system roles with their permissions.
-/// Role permissions are only added, never removed, so changes the CEO made in the matrix are kept.
+/// Seed 2: every permission code (from <see cref="Permissions"/>) and the seeded roles with their permissions.
+/// A seeded role gets its permissions when it is created; later only permission codes new to the database are added,
+/// so a permission the CEO took away in the matrix stays away. Seeded roles are locked (no rename, no delete).
 /// </summary>
 public sealed class AccessSeeder(AppDbContext db, RoleManager<Role> roles) : ISeeder
 {
@@ -18,11 +19,13 @@ public sealed class AccessSeeder(AppDbContext db, RoleManager<Role> roles) : ISe
 
     public async Task<int> SeedAsync(CancellationToken ct)
     {
+        var known = await db.Set<Permission>().Select(p => p.Code).ToListAsync(ct);
         var added = await SeedPermissionsAsync(ct);
         foreach (var row in SeedFile.Read<List<RoleRow>>("Reference/roles.json"))
         {
-            var role = await EnsureRoleAsync(row);
-            added += await GrantAsync(role, Expand(row.Permissions), ct);
+            var (role, created) = await EnsureRoleAsync(row);
+            var codes = Expand(row.Permissions);
+            added += await GrantAsync(role, created ? codes : codes.Except(known).ToHashSet(), ct);
         }
         await db.SaveChangesAsync(ct);
         return added;
@@ -39,20 +42,30 @@ public sealed class AccessSeeder(AppDbContext db, RoleManager<Role> roles) : ISe
         return added;
     }
 
-    private async Task<Role> EnsureRoleAsync(RoleRow row)
+    /// <summary>Creates the role, or brings an older database's copy up to date (kind and lock).</summary>
+    private async Task<(Role Role, bool Created)> EnsureRoleAsync(RoleRow row)
     {
         var role = await roles.FindByNameAsync(row.Name);
         if (role is not null)
         {
-            return role;
+            if (role.Kind != row.Kind || !role.IsLocked)
+            {
+                (role.Kind, role.IsLocked) = (row.Kind, true);
+                Check(row, await roles.UpdateAsync(role));
+            }
+            return (role, false);
         }
-        role = new Role { Name = row.Name, Kind = row.Kind, DescriptionEn = row.Description, IsLocked = row.Name == SystemRoles.Ceo };
-        var result = await roles.CreateAsync(role);
+        role = new Role { Name = row.Name, Kind = row.Kind, DescriptionEn = row.Description, IsLocked = true };
+        Check(row, await roles.CreateAsync(role));
+        return (role, true);
+    }
+
+    private static void Check(RoleRow row, IdentityResult result)
+    {
         if (!result.Succeeded)
         {
             throw new InvalidOperationException($"Role '{row.Name}': {string.Join("; ", result.Errors.Select(e => e.Description))}");
         }
-        return role;
     }
 
     private async Task<int> GrantAsync(Role role, HashSet<string> codes, CancellationToken ct)

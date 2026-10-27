@@ -7,7 +7,7 @@
  * keeps the site role with the same title (its id, permissions, money limit and admin sections — those move to the server
  * with the team screens); positions the CEO adds get `pos-<id>`. Demo mode (GitHub Pages) is unchanged.
  *
- * SA.services.ceo gains orgLive() (true once the server chart is in), loadOrg() and addPosition / savePosition /
+ * SA.services.ceo gains orgLive() (true once the server chart is in), orgPeople() (admins who can hold a box), loadOrg() and addPosition / savePosition /
  * removePosition for POST / PUT / DELETE /ceo/org/positions.
  */
 (function (SA) {
@@ -19,6 +19,7 @@
   const live = () => api.isLive();
   const base = { depts: ORG.DEPTS.map((d) => ({ ...d })), roles: ORG.ROLES.map((r) => ({ ...r })) };
   let chart = null;             // the last GET /ceo/org
+  let people = [];              // admins who can hold a position (GET /ceo/admins)
   let loading = null;
   const roleIdOf = new Map();   // position id → site role id
 
@@ -69,21 +70,24 @@
   const load = (force = false) => {
     if (!live() || !ceo.ceoMode()) return Promise.resolve();
     if (loading && !force) return loading;
-    loading = api.get('/ceo/org').then((org) => { apply(org); SA.app.rerender?.(); })
+    loading = Promise.all([api.get('/ceo/org'), api.get('/ceo/admins').catch(() => [])])
+      .then(([org, admins]) => { people = admins.filter((a) => a.status !== 'Suspended').map((a) => ({ id: a.id, name: a.fullName })); apply(org); SA.app.rerender?.(); })
       .catch(toast).finally(() => { setTimeout(() => { loading = null; }, 30_000); });
     return loading;
   };
 
-  /** Body for POST / PUT: the holder stays as it is (people are placed from the team screens) */
+  /** Body for POST / PUT: the person chosen in the form, else the holder stays as it is (agents sit there from the AI panel) */
   const body = (v, cur) => ({
     departmentId: ORG.DEPTS.find((d) => d.key === v.dept)?.deptId ?? null,
     reportsToId: v.reportsTo ? ORG.ROLES.find((r) => r.id === v.reportsTo)?.posId ?? null : null,
-    titleEn: (v.title || '').trim(), titleAr: (v.titleAr || '').trim(), holderUserId: cur?.holderUserId || null,
+    titleEn: (v.title || '').trim(), titleAr: (v.titleAr || '').trim(), holderUserId: v.holder !== undefined ? v.holder || null : cur?.holderUserId || null,
     duties: String(v.duties || '').split('\n').map((x) => x.trim()).filter(Boolean), sortOrder: cur?.sort ?? 500,
   });
 
   Object.assign(ceo, {
     orgLive: () => live() && !!chart,
+    /** People who can hold a position: the admins on the team screen */
+    orgPeople: () => people,
     loadOrg: load,
     /** Adds a position; resolves with the new role id */
     async addPosition(v) {

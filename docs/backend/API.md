@@ -576,7 +576,7 @@ CEO only (2FA), unless noted. Every write is audited.
 | | POST | `/ceo/admins` `{ name, email, roleIds, permissions, limits }` | Create an admin → invitation email (201) |
 | | PUT | `/ceo/admins/{id}` · `/permissions` · `/limits` | Edit, grant "Approvals" to one admin, set money limits |
 | | POST | `/ceo/admins/{id}/suspend` · `/reactivate` · `/reset-2fa` | Status |
-| Roles | GET/POST/PUT/DELETE | `/ceo/roles[/{id}]` · PUT `/{id}/permissions` | Permission matrix (system roles cannot be deleted → 409) |
+| Roles | GET/POST/PUT/DELETE | `/ceo/roles[/{id}]` `{ name, description, permissions }` | Permission matrix: admin roles only (others → 403 `not_admin_role`); seeded roles keep their name and cannot be deleted (409 `role_locked`); a role someone holds cannot be deleted (409 `role_in_use`); name taken → 409 `name_taken` |
 | AI agents | GET | `/ceo/agents` · `/{id}` | Agents, status, tasks, runs, cost, errors |
 | | POST | `/ceo/agents` | Create an agent (service account + position + permissions + limit + model) |
 | | PUT | `/ceo/agents/{id}` · `/permissions` · `/tasks` | Edit role, description, tasks, limits |

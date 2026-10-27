@@ -34,9 +34,18 @@
       <div class="field"><label for="pf-dept">Department</label><select class="input" id="pf-dept" name="dept"><option value="">The board (no department)</option>${SA.data.org.DEPTS.map((d) => `<option value="${d.key}" ${r?.dept === d.key ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>
       <div class="field"><label for="pf-up">Reports to</label><select class="input" id="pf-up" name="reportsTo">${roles.filter((x) => !skip.has(x.id)).map((x) => `<option value="${x.id}" ${(r ? r.reportsTo : 'ceo') === x.id ? 'selected' : ''}>${esc(x.title)} — ${esc(x.name)}</option>`).join('')}</select></div>
     </div>
+    ${holderField(r)}
     <div class="field"><label for="pf-duties">Duties (one a line)</label><textarea class="input" id="pf-duties" name="duties" rows="4" maxlength="4000">${esc((r?.duties || []).join('\n'))}</textarea></div>`;
   };
-  const posValues = (f) => Object.fromEntries(['title', 'titleAr', 'dept', 'reportsTo', 'duties'].map((k) => [k, f.querySelector(`[name="${k}"]`).value]));
+  /** A person from the team holds it; a box with an AI agent is changed from the AI panel */
+  const holderField = (r) => {
+    if (r && r.holder === 'ai' && !r.vacant) return `<p class="xs muted">${icon('bolt', 12)} <span>Held by the AI agent</span> <b data-i18n-skip>${esc(r.name)}</b>. <span>An agent’s position is changed from the AI panel.</span></p>`;
+    const people = CE().orgPeople?.() || [];
+    const list = r?.holderUserId && !people.some((p) => p.id === r.holderUserId) ? [{ id: r.holderUserId, name: r.name }, ...people] : people;
+    return `<div class="field" style="max-width:420px"><label for="pf-holder">Who holds it</label><select class="input" id="pf-holder" name="holder"><option value="">Nobody yet</option>${list.map((p) => `<option value="${p.id}" ${r?.holderUserId === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
+      <p class="xs muted"><a class="link" href="#/ceo/team">Invite someone to the team</a> <span>to see them here.</span></p></div>`;
+  };
+  const posValues = (f) => Object.fromEntries(['title', 'titleAr', 'dept', 'reportsTo', 'duties', 'holder'].filter((k) => f.querySelector(`[name="${k}"]`)).map((k) => [k, f.querySelector(`[name="${k}"]`).value]));
 
   /* ---------- Departments ---------- */
   SA.pages.ceoDepartments = C.guard({
@@ -51,7 +60,7 @@
         ${view === 'chart' ? `<section class="dash-card"><div class="row-between"><h2 class="h4">Who reports to whom</h2><span class="xs muted">${roles.filter((r) => r.holder === 'ai').length} AI agents · ${roles.filter((r) => r.holder === 'human').length} humans</span></div>
           <p class="xs muted">${icon('info', 12)} Tap anyone to see their duties, permissions, limit and work. Humans approve; AI agents do the work and prepare.</p>${tree(roles)}</section>
           ${CE().orgLive?.() ? `<details class="dash-card"><summary class="h4">${icon('plus', 16)} Add a position</summary><form data-pos-add>${posForm(null)}
-            <p class="xs muted">${icon('info', 12)} The new box is empty. A person is placed in it from the team screens; an AI agent from the AI panel.</p>
+            <p class="xs muted">${icon('info', 12)} Choose who holds it, or leave it empty for now. An AI agent is placed in a position from the AI panel.</p>
             <button class="btn btn-primary btn-sm" type="submit" style="margin-top:10px">Add the position</button></form></details>` : ''}`
         : `<div class="ceo-depts">${H.map((d, i) => { const b = B.find((x) => x.dept === d.key); return `<a class="dash-card ceo-dcard" href="#/ceo/department/${d.key}" style="--i:${i};--t:${C.TONES[d.tone]}">
             <div class="row-between">${C.ring(d.score, d.tone, 58)}<span class="ceo-dicon" style="--c:${C.TONES[SA.data.org.DEPTS.find((x) => x.key === d.key).tone] || 'var(--turf)'}">${icon(d.icon, 20)}</span></div>
@@ -177,7 +186,7 @@
         </div>
         ${editable && CE().orgLive?.() ? `<form class="dash-card" data-pos-form>
           <div class="row-between"><h2 class="h4">Position</h2><span class="row" style="--gap:8px"><button class="btn btn-ghost btn-sm" type="button" data-pos-remove>${icon('trash', 14)} Remove</button><button class="btn btn-primary btn-sm" type="submit">Save</button></span></div>
-          <p class="xs muted">${icon('info', 12)} ${r.vacant ? 'Nobody holds this position yet.' : `<span>Held by</span> <b data-i18n-skip>${esc(r.name)}</b>.`} <span>The title, department, who it reports to and the duties are saved on the server.</span></p>
+          <p class="xs muted">${icon('info', 12)} ${r.vacant ? 'Nobody holds this position yet.' : `<span>Held by</span> <b data-i18n-skip>${esc(r.name)}</b>.`} <span>The title, department, who holds it, who it reports to and the duties are saved on the server.</span></p>
           ${posForm(r)}</form>` : ''}
         ${editable ? `<form class="dash-card" data-perm-form>
           <div class="row-between"><h2 class="h4">Permissions & limit</h2><button class="btn btn-primary btn-sm" type="submit">Save changes</button></div>

@@ -33,4 +33,16 @@ public interface IStaffStore
     Task AcceptInviteAsync(Guid userId, string token, string password);
 
     Task<IReadOnlyList<RoleResponse>> ListRolesAsync(CancellationToken ct);
+
+    /// <summary>Names of the roles the CEO can give to admins (kind AdminRole).</summary>
+    Task<IReadOnlySet<string>> AdminRoleNamesAsync(CancellationToken ct);
+
+    Task<RoleResponse?> RoleAsync(Guid id, CancellationToken ct);
+
+    Task<bool> RoleNameTakenAsync(string name, Guid? except, CancellationToken ct);
+
+    /// <summary>Creates (id null) or updates an admin role and replaces its permissions; returns its id.</summary>
+    Task<Guid> SaveRoleAsync(Guid? id, string name, string? description, IReadOnlyList<string> permissions, CancellationToken ct);
+
+    Task DeleteRoleAsync(Guid id, CancellationToken ct);
 }

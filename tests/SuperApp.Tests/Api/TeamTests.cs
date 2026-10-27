@@ -168,6 +168,56 @@ public sealed class TeamTests(AccountsApiFactory api) : IClassFixture<AccountsAp
         (await ceo.GetAsync("/api/v1/ceo/permissions")).Body.Data().GetArrayLength().ShouldBe(SuperApp.Application.Security.Permissions.All.Count);
     }
 
+    [Fact]
+    public async Task The_ceo_adds_an_admin_role_gives_it_edits_its_permissions_and_deletes_it_when_unused()
+    {
+        var ceo = await CeoAsync();
+        var name = $"Night shift {Guid.NewGuid():N}"[..20];
+        var created = await ceo.PostAsync("/api/v1/ceo/roles", new { name, description = "Answers tickets at night", permissions = new[] { "support.read", "support.reply" } });
+        created.Status.ShouldBe(HttpStatusCode.Created, created.Body.ToString());
+        var roleId = created.Body.Data().GetProperty("id").GetGuid();
+        created.Body.Data().GetProperty("kind").GetString().ShouldBe("AdminRole");
+        (await ceo.PostAsync("/api/v1/ceo/roles", new { name, permissions = Array.Empty<string>() })).Body.Code().ShouldBe("name_taken");
+
+        var (id, email) = await InviteAdminAsync(ceo, [name]);
+        await AcceptInviteAsync(id, email, "Night2026");
+        var edited = await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/roles/{roleId}", new { name, description = "Nights", permissions = new[] { "support.read", "customers.read" } });
+        edited.Status.ShouldBe(HttpStatusCode.OK, edited.Body.ToString());
+        var admin = await api.ClientAsync();
+        var perms = (await admin.SignInAsync(email, "Night2026")).Data().GetProperty("me").GetProperty("permissions").EnumerateArray().Select(p => p.GetString()).ToList();
+        perms.ShouldContain("customers.read");
+        perms.ShouldNotContain("support.reply");
+
+        var inUse = await ceo.SendAsync(HttpMethod.Delete, $"/api/v1/ceo/roles/{roleId}");
+        inUse.Status.ShouldBe(HttpStatusCode.Conflict);
+        inUse.Body.Code().ShouldBe("role_in_use");
+        (await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/admins/{id}", new { fullName = "Team Member", roles = new[] { "Support" } })).Status.ShouldBe(HttpStatusCode.OK);
+        (await ceo.SendAsync(HttpMethod.Delete, $"/api/v1/ceo/roles/{roleId}")).Status.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Seeded_roles_keep_their_name_cannot_be_deleted_and_non_admin_roles_are_not_edited()
+    {
+        var ceo = await CeoAsync();
+        var roles = (await ceo.GetAsync("/api/v1/ceo/roles")).Body.Data().EnumerateArray().ToList();
+        var support = roles.Single(r => r.GetProperty("name").GetString() == "Support");
+        support.GetProperty("isLocked").GetBoolean().ShouldBeTrue();
+        support.GetProperty("kind").GetString().ShouldBe("AdminRole");
+        var supportId = support.GetProperty("id").GetGuid();
+        var codes = support.GetProperty("permissions").EnumerateArray().Select(p => p.GetString()!).ToList();
+
+        var renamed = await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/roles/{supportId}", new { name = "Helpdesk", description = "Support", permissions = codes });
+        renamed.Body.Data().GetProperty("name").GetString().ShouldBe("Support");
+        var locked = await ceo.SendAsync(HttpMethod.Delete, $"/api/v1/ceo/roles/{supportId}");
+        locked.Body.Code().ShouldBe("role_locked");
+
+        var customerId = roles.Single(r => r.GetProperty("name").GetString() == "Customer").GetProperty("id").GetGuid();
+        var notAdmin = await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/roles/{customerId}", new { name = "Customer", permissions = new[] { "audit.read" } });
+        notAdmin.Status.ShouldBe(HttpStatusCode.Forbidden);
+        notAdmin.Body.Code().ShouldBe("not_admin_role");
+        (await ceo.PostAsync("/api/v1/ceo/roles", new { name = "1 bad", permissions = new[] { "nope" } })).Status.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
     private async Task<List<string>> NewRecoveryCodesAsync()
     {
         var ceo = await CeoAsync();

@@ -5,15 +5,6 @@ using SuperApp.Application.Security;
 
 namespace SuperApp.Application.Features.Ceo.Validators;
 
-/// <summary>Roles the CEO can give to an admin (never CEO, partner, seller or factory roles).</summary>
-public static class AdminRoles
-{
-    public static readonly IReadOnlySet<string> Allowed = new HashSet<string>
-    {
-        SystemRoles.AdminManager, SystemRoles.Support, SystemRoles.Finance, SystemRoles.Content, SystemRoles.Marketing, SystemRoles.Moderator,
-    };
-}
-
 public sealed class StaffLimitsDtoValidator : AbstractValidator<StaffLimitsDto>
 {
     public StaffLimitsDtoValidator()
@@ -30,8 +21,7 @@ public sealed class CreateAdminRequestValidator : AbstractValidator<CreateAdminR
     {
         RuleFor(x => x.FullName).PersonName();
         RuleFor(x => x.Email).Email();
-        RuleFor(x => x.Roles).NotEmpty().WithMessage("Choose at least one role.")
-            .Must(r => r.All(AdminRoles.Allowed.Contains)).WithMessage("Only admin roles can be given here.");
+        RuleFor(x => x.Roles).NotEmpty().WithMessage("Choose at least one role.");
         RuleForEach(x => x.Permissions).Must(Permissions.Exists).WithMessage("Unknown permission: {PropertyValue}.");
         RuleFor(x => x.Limits!).SetValidator(new StaffLimitsDtoValidator()).When(x => x.Limits is not null);
         RuleFor(x => x.Language).Language();
@@ -43,8 +33,7 @@ public sealed class UpdateAdminRequestValidator : AbstractValidator<UpdateAdminR
     public UpdateAdminRequestValidator()
     {
         RuleFor(x => x.FullName).PersonName();
-        RuleFor(x => x.Roles).NotEmpty().WithMessage("Choose at least one role.")
-            .Must(r => r.All(AdminRoles.Allowed.Contains)).WithMessage("Only admin roles can be given here.");
+        RuleFor(x => x.Roles).NotEmpty().WithMessage("Choose at least one role.");
     }
 }
 
@@ -62,4 +51,16 @@ public sealed class SuspendRequestValidator : AbstractValidator<SuspendRequest>
 {
     public SuspendRequestValidator() =>
         RuleFor(x => x.Reason).NotEmpty().WithMessage("Please write the reason.").Length(3, 400);
+}
+
+public sealed class RoleRequestValidator : AbstractValidator<RoleRequest>
+{
+    public RoleRequestValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Write the role's name.").Length(2, 40)
+            .Matches(@"^[A-Za-z][A-Za-z0-9 _-]*$").WithMessage("Use English letters, numbers, spaces, - or _ and start with a letter.");
+        RuleFor(x => x.Description).MaximumLength(300);
+        RuleFor(x => x.Permissions).NotNull();
+        RuleForEach(x => x.Permissions).Must(Permissions.Exists).WithMessage("Unknown permission: {PropertyValue}.");
+    }
 }

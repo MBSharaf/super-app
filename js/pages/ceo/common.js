@@ -16,6 +16,8 @@
     { group: 'Company' },
     { key: 'departments', label: 'Departments', href: '#/ceo/departments', icon: 'users' },
     { key: 'agents', label: 'AI workforce', href: '#/ceo/agents', icon: 'bolt', badge: 'paused' },
+    { key: 'team', label: 'Team', href: '#/ceo/team', icon: 'user' },
+    { key: 'roles', label: 'Roles & permissions', href: '#/ceo/roles', icon: 'shield' },
     { key: 'goals', label: 'Goals (OKRs)', href: '#/ceo/goals', icon: 'target' },
     { key: 'budgets', label: 'Budgets', href: '#/ceo/budgets', icon: 'wallet' },
     { key: 'calendar', label: 'Compliance calendar', href: '#/ceo/calendar', icon: 'calendar', badge: 'deadlines' },
