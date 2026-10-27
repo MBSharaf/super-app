@@ -158,5 +158,45 @@
     return rows.filter((b) => !f.status || b.status === f.status);
   };
 
-  api.ready.then(() => session()?.subscribe?.(() => { audits.clear(); people.clear(); bookings.clear(); details.clear(); }));
+  /* ---------------- CEO: reports and the company audit log ---------------- */
+  const CE = SA.services.ceo;
+  const reports = cached();
+  const ceoAudit = cached();
+  if (CE) {
+    const demoReport = CE.report;
+    /** Server report data → the screen's shape: columns [key, header, type], rows, KPIs, and a chart over a dated money column */
+    const fromReport = (d) => {
+      const sheet = d.sheets[0] || { headers: [], rows: [] };
+      const typeOf = (h, i) => {
+        if (/\((EGP|USD)\)/.test(h)) return 'money';
+        const v = sheet.rows.find((r) => r[i] != null)?.[i];
+        return typeof v === 'number' ? 'n' : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v) ? 'date' : 'text';
+      };
+      // A dated first column is called "date": the screen's chart labels each day with it
+      const columns = sheet.headers.map((h, i) => [i === 0 && typeOf(h, i) === 'date' ? 'date' : `c${i}`, h.replace(/ \((EGP|USD)\)$/, ''), typeOf(h, i)]);
+      const rows = sheet.rows.map((r) => Object.fromEntries(r.map((v, i) => [columns[i][0], columns[i][2] === 'date' && v ? v.slice(0, 10) : v])));
+      const money = columns.find(([, h, t]) => t === 'money' && /^Net/.test(h)) || columns.find(([, , t]) => t === 'money');
+      return { columns, rows, kpis: d.figures.map((f) => [f.label, f.value, f.isMoney ? 'money' : 'n']), chart: columns[0]?.[2] === 'date' && money ? money[0] : null, live: true };
+    };
+    const LATER = { marketing: 'The marketing report isn’t on the server yet.', returns: 'Returns come with the store — it is paused.' };
+    CE.report = (kind, r) => {
+      if (!api.isLive() || !session()?.has?.('ceo')) return demoReport(kind, r);
+      if (LATER[kind]) return { columns: [['c0', 'Report', 'text']], rows: [], kpis: [], note: LATER[kind], live: true };
+      const path = `/ceo/reports/${kind}/data?from=${r.from}&to=${r.to}`;
+      return reports.read(path, path, fromReport, { columns: [['c0', 'Loading…', 'text']], rows: [], kpis: [], live: true });
+    };
+
+    const CEO_KIND = { Ceo: 'ceo', ApiOrAgent: 'agent', Admin: 'admin', Partner: 'partner', Seller: 'seller', Factory: 'factory', Site: 'customer' };
+    /** The company audit log from the server (latest 200), in the screen's shape; null outside API mode */
+    CE.auditLog = () => {
+      if (!api.isLive() || !session()?.has?.('ceo')) return null;
+      const path = '/ceo/audit?pageSize=200';
+      return ceoAudit.read(path, path, (d) => (d.items || d).map((x) => ({
+        at: at(x.at), kind: CEO_KIND[x.system] || 'system', who: x.agent || x.actor || 'System', text: x.summary, action: x.action,
+        ref: x.entityId ? `${x.entityType || ''} ${x.entityId}`.trim() : '',
+      })), []);
+    };
+  }
+
+  api.ready.then(() => session()?.subscribe?.(() => { audits.clear(); people.clear(); bookings.clear(); details.clear(); reports.clear(); ceoAudit.clear(); }));
 })(window.SA);

@@ -302,7 +302,7 @@
       const who = ctx.query.who || '';
       const accs = new Map(db().all('accounts').map((a) => [a.id, a]));
       const kindOf = (x) => { const a = accs.get(x.actor); if (x.action?.startsWith('ceo.') || a?.teamRole === 'ceo') return 'ceo'; if (a?.agent) return 'agent'; if (a?.role === 'admin') return 'admin'; if (a?.role === 'owner') return 'partner'; if (a?.role === 'seller') return 'seller'; if (a?.role === 'printer' || x.action?.startsWith('factory.')) return 'factory'; return x.actor === 'customer' ? 'customer' : 'system'; };
-      const all = db().all('activity').map((x) => ({ ...x, kind: kindOf(x), who: accs.get(x.actor)?.name || (x.actor === 'customer' ? 'Customer' : 'System') }));
+      const all = CE().auditLog?.() || db().all('activity').map((x) => ({ ...x, kind: kindOf(x), who: accs.get(x.actor)?.name || (x.actor === 'customer' ? 'Customer' : 'System') }));
       const list = all.filter((x) => (!who || x.kind === who) && (!q || `${x.text} ${x.action} ${x.who} ${x.ref || ''}`.toLowerCase().includes(q)));
       const K = [['', 'Everyone'], ['ceo', 'CEO'], ['agent', 'AI agents'], ['admin', 'Admin team'], ['partner', 'Partners'], ['seller', 'Sellers'], ['factory', 'Factory'], ['customer', 'Customers'], ['system', 'System']];
       this._list = list;

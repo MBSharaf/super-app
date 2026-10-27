@@ -72,11 +72,11 @@ public interface IReportsReader
     Task<ReportData> AuditAsync(AuditQuery query, CancellationToken ct);
 }
 
-/// <summary>Kinds of non-money reports (CEO reports and admin exports); money reports wait for Phase 5.</summary>
+/// <summary>Kinds of reports (CEO reports and admin exports). "revenue" is another name for finance; marketing is not on the server yet.</summary>
 public static class ReportKinds
 {
-    public static readonly IReadOnlySet<string> Available = new HashSet<string> { "operations", "customers", "partners", "sellers", "support", "agents" };
-    public static readonly IReadOnlySet<string> MoneyLater = new HashSet<string> { "finance", "marketing", "revenue" };
+    public static readonly IReadOnlySet<string> Available = new HashSet<string> { "operations", "customers", "partners", "sellers", "support", "agents", "finance", "revenue", "approvals" };
+    public static readonly IReadOnlySet<string> MoneyLater = new HashSet<string> { "marketing" };
 
     public static BroadcastSegment? Segment(string value) =>
         Enum.TryParse<BroadcastSegment>(value, true, out var s) && !int.TryParse(value, out _) ? s : null;

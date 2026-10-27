@@ -65,7 +65,8 @@
           ${rep.chart ? C.columns(rep.rows.slice().reverse().length ? rep.rows : [], { key: rep.chart, label: def[1] }) : ''}
           <div class="table-wrap" style="margin-top:12px"><table class="table ceo-table"><thead><tr>${rep.columns.map(([, h, t]) => `<th ${t === 'money' || t === 'n' ? 'class="num"' : ''}>${h}</th>`).join('')}</tr></thead>
             <tbody>${show.map((x) => `<tr>${rep.columns.map(([k, , t]) => `<td ${t === 'money' || t === 'n' ? 'class="num"' : ''}>${cell(x[k], t)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${rep.columns.length}" class="small muted">Nothing in these dates.</td></tr>`}</tbody></table></div>
-          ${rep.rows.length > show.length ? `<p class="xs muted" style="margin-top:8px">Showing ${show.length} of ${rep.rows.length} lines — the Excel file has all of them.</p>` : ''}
+          ${rep.note ? `<p class="small muted" style="margin-top:8px">${icon('info', 12)} ${esc(rep.note)}</p>` : ''}
+          ${rep.rows.length > show.length ?`<p class="xs muted" style="margin-top:8px">Showing ${show.length} of ${rep.rows.length} lines — the Excel file has all of them.</p>` : ''}
           <p class="xs muted" style="margin-top:8px">${icon('info', 12)} The Excel file opens on a Dashboard sheet with live formulas and charts over the data.</p>
         </section>`;
       return C.layout('reports', { title: 'Reports', subtitle: 'Every part of the company, for any dates', body });

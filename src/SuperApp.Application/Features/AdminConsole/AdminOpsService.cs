@@ -24,6 +24,9 @@ public interface IAdminOpsService
     Task<ExcelFile> AuditExportAsync(AuditQuery query, CancellationToken ct);
 
     Task<ExcelFile> ReportAsync(string kind, ReportQuery query, CancellationToken ct);
+
+    /// <summary>The same report as data (figures and sheets) for the CEO's reports screen.</summary>
+    Task<ReportData> ReportDataAsync(string kind, ReportQuery query, CancellationToken ct);
 }
 
 public sealed class AdminOpsService(IAdminReader reader, IReportsReader reports, IExcelExporter excel, IAuditLogger audit, IClock clock) : IAdminOpsService
@@ -46,10 +49,19 @@ public sealed class AdminOpsService(IAdminReader reader, IReportsReader reports,
     /// <summary>?from&amp;to (default: the last 30 days, at most a year).</summary>
     public async Task<ExcelFile> ReportAsync(string kind, ReportQuery query, CancellationToken ct)
     {
+        var (data, from, to) = await BuildAsync(kind, query, ct);
+        await audit.LogAsync(Domain.Enums.AuditSystem.Admin, "report.exported", $"Report {kind} {from:yyyy-MM-dd} – {to:yyyy-MM-dd}", ct: ct);
+        return Build(data, kind.ToLowerInvariant(), $"{from:yyyy-MM-dd} – {to:yyyy-MM-dd}");
+    }
+
+    public async Task<ReportData> ReportDataAsync(string kind, ReportQuery query, CancellationToken ct) => (await BuildAsync(kind, query, ct)).Data;
+
+    private async Task<(ReportData Data, DateOnly From, DateOnly To)> BuildAsync(string kind, ReportQuery query, CancellationToken ct)
+    {
         kind = kind.ToLowerInvariant();
         if (ReportKinds.MoneyLater.Contains(kind))
         {
-            throw new BusinessRuleException("Money reports come with the money module.", "money_report_later");
+            throw new BusinessRuleException("This report is not on the server yet.", "report_later");
         }
         if (!ReportKinds.Available.Contains(kind))
         {
@@ -62,8 +74,7 @@ public sealed class AdminOpsService(IAdminReader reader, IReportsReader reports,
             throw new BadRequestException("Choose a range of up to one year.", "from");
         }
         var data = await reports.BuildAsync(kind, from.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), to.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct);
-        await audit.LogAsync(Domain.Enums.AuditSystem.Admin, "report.exported", $"Report {kind} {from:yyyy-MM-dd} – {to:yyyy-MM-dd}", ct: ct);
-        return Build(data, kind, $"{from:yyyy-MM-dd} – {to:yyyy-MM-dd}");
+        return (data, from, to);
     }
 
     private ExcelFile Build(ReportData data, string name, string range) =>

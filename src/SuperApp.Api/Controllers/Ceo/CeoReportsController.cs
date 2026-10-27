@@ -11,7 +11,11 @@ namespace SuperApp.Api.Controllers.Ceo;
 [Authorize(Policy = Policies.Ceo)]
 public sealed class CeoReportsController(IAdminOpsService ops) : ApiControllerBase
 {
-    /// <summary>operations · customers · partners · sellers · support · agents (?from&amp;to); finance / marketing → 422 until Phase 5.</summary>
+    /// <summary>The report as data: { title, figures, sheets } — for the reports screen (same kinds and dates as the Excel file).</summary>
+    [HttpGet("reports/{kind}/data")]
+    public async Task<ActionResult<object>> ReportData(string kind, [FromQuery] ReportQuery query, CancellationToken ct) => Ok(await ops.ReportDataAsync(kind, query, ct));
+
+    /// <summary>operations · customers · partners · sellers · support · agents · finance (revenue) · approvals (?from&amp;to); marketing → 422 report_later.</summary>
     [HttpGet("reports/{kind}")]
     public async Task<IActionResult> Report(string kind, [FromQuery] ReportQuery query, CancellationToken ct)
     {

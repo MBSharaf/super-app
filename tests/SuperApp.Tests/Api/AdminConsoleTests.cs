@@ -113,12 +113,15 @@ public sealed class AdminConsoleTests(DemoApiFactory api) : IClassFixture<DemoAp
     }
 
     [Fact]
-    public async Task Money_reports_wait_and_bad_ranges_are_refused()
+    public async Task Money_reports_come_as_excel_and_data_and_bad_ranges_are_refused()
     {
         var ceo = await api.CeoAsync();
-        var finance = await ceo.GetAsync("/api/v1/ceo/reports/finance");
-        finance.Status.ShouldBe((HttpStatusCode)422);
-        finance.Body.Code().ShouldBe("money_report_later");
+        (await ceo.Http.GetAsync("/api/v1/ceo/reports/finance")).StatusCode.ShouldBe(HttpStatusCode.OK);
+        var data = (await ceo.GetAsync("/api/v1/ceo/reports/finance/data?from=2026-10-01&to=2026-10-07")).Body.Data();
+        data.GetProperty("figures").GetArrayLength().ShouldBe(4);
+        data.GetProperty("sheets")[0].GetProperty("rows").GetArrayLength().ShouldBe(7);
+        (await ceo.GetAsync("/api/v1/ceo/reports/approvals/data")).Body.Data().GetProperty("title").GetString().ShouldBe("Approvals");
+        (await ceo.GetAsync("/api/v1/ceo/reports/marketing/data")).Body.Code().ShouldBe("report_later");
         (await ceo.GetAsync("/api/v1/ceo/reports/nothing")).Status.ShouldBe(HttpStatusCode.NotFound);
         (await ceo.GetAsync("/api/v1/ceo/reports/operations?from=2026-05-01&to=2026-01-01")).Status.ShouldBe(HttpStatusCode.BadRequest);
     }

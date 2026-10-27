@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SuperApp.Application.Abstractions.Documents;
 using SuperApp.Application.Features.AdminConsole;
+using SuperApp.Application.Features.Money;
+using SuperApp.Application.Features.Pitches;
+using SuperApp.Domain.Entities.Money;
 using SuperApp.Domain.Entities.Ai;
 using SuperApp.Domain.Entities.Bookings;
 using SuperApp.Domain.Entities.Pitches;
@@ -13,7 +16,7 @@ using SuperApp.Infrastructure.Persistence;
 namespace SuperApp.Infrastructure.Admin;
 
 /// <summary>Builds the non-money reports: figures for the dashboard sheet and one data sheet (rows capped at 50,000).</summary>
-public sealed class ReportsReader(AppDbContext db, AdminReader reader) : IReportsReader
+public sealed class ReportsReader(AppDbContext db, AdminReader reader, IRevenueReader revenue) : IReportsReader
 {
     private const int MaxRows = 50_000;
 
@@ -24,6 +27,8 @@ public sealed class ReportsReader(AppDbContext db, AdminReader reader) : IReport
         "partners" => PartnersAsync(to, ct),
         "sellers" => SellersAsync(ct),
         "support" => SupportAsync(from, to, ct),
+        "finance" or "revenue" => FinanceAsync(from, to, ct),
+        "approvals" => ApprovalsAsync(from, to, ct),
         _ => AgentsAsync(from, to, ct),
     };
 
@@ -96,6 +101,31 @@ public sealed class ReportsReader(AppDbContext db, AdminReader reader) : IReport
         return new ReportData("AI agents", [new("Runs", rows.Count), new("Failed", rows.Count(r => r.Result == AgentRunResult.Failed)), new("Cost (USD)", rows.Sum(r => r.CostUsd))],
             [Sheet("Runs", ["Agent", "Started", "Finished", "Result", "Summary", "Input tokens", "Output tokens", "Cost (USD)"],
                 rows.Select(r => Row(r.Agent, r.StartedAt, r.FinishedAt, r.Result.ToString(), r.Summary, r.InputTokens, r.OutputTokens, r.CostUsd)))]);
+    }
+
+    /// <summary>Platform revenue by Cairo day (the revenue wallet): income streams, costs, net and money through Super App.</summary>
+    private async Task<ReportData> FinanceAsync(DateTime from, DateTime to, CancellationToken ct)
+    {
+        var (f, t) = (DateOnly.FromDateTime(from), DateOnly.FromDateTime(to));
+        var (days, _, _) = await revenue.ReadAsync(CairoTime.ToUtc(from), CairoTime.ToUtc(to), ct);
+        var byDay = days.ToDictionary(d => d.Date);
+        var all = Enumerable.Range(0, t.DayNumber - f.DayNumber).Select(f.AddDays).Select(d => byDay.GetValueOrDefault(d) ?? new RevenueDayDto(d, 0, 0, 0, 0, 0, 0)).ToList();
+        static decimal Income(RevenueDayDto d) => d.Bookings + d.Fees + d.Passes;
+        static decimal Costs(RevenueDayDto d) => d.Refunds + d.Promos;
+        return new ReportData("Finance", [new("Income", all.Sum(Income), true), new("Costs", all.Sum(Costs), true), new("Net", all.Sum(d => Income(d) - Costs(d)), true),
+                new("Money through Super App", all.Sum(d => d.Gmv), true)],
+            [Sheet("By day", ["Day", "Commission (EGP)", "Service fees (EGP)", "Fantasy Pass (EGP)", "Refunds (EGP)", "Vouchers (EGP)", "Net (EGP)", "Through Super App (EGP)"],
+                all.Select(d => Row(d.Date.ToDateTime(TimeOnly.MinValue), d.Bookings, d.Fees, d.Passes, d.Refunds, d.Promos, Income(d) - Costs(d), d.Gmv)))]);
+    }
+
+    private async Task<ReportData> ApprovalsAsync(DateTime from, DateTime to, CancellationToken ct)
+    {
+        var rows = await db.Set<Approval>().AsNoTracking().Where(a => a.CreatedAt >= from && a.CreatedAt < to).OrderBy(a => a.CreatedAt).Take(MaxRows)
+            .Select(a => new { a.CreatedAt, a.Kind, a.Summary, a.Amount, a.Status, By = a.RequestedBy.FullName, a.DecidedAt }).ToListAsync(ct);
+        return new ReportData("Approvals", [new("Requests", rows.Count), new("Approved", rows.Count(r => r.Status == ApprovalStatus.Approved)),
+                new("Rejected", rows.Count(r => r.Status == ApprovalStatus.Rejected)), new("Amount approved", rows.Where(r => r.Status == ApprovalStatus.Approved).Sum(r => r.Amount), true)],
+            [Sheet("Approvals", ["Asked", "Kind", "What", "Amount (EGP)", "Status", "Asked by", "Decided"],
+                rows.Select(r => Row(r.CreatedAt, r.Kind.ToString(), r.Summary, r.Amount, r.Status.ToString(), r.By, r.DecidedAt)))]);
     }
 
     private static ExcelSheet Sheet(string name, IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<object?>> rows) => new(name, headers, rows.ToList());
