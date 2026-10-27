@@ -13,6 +13,7 @@ public class Game : BaseEntity
     public string? Title { get; set; }
     public byte PlayersNeeded { get; set; }
     public string? Positions { get; set; }
+    public string? Notes { get; set; }
     public GameLevel Level { get; set; }
     public decimal SharePrice { get; set; }
     public bool AutoAccept { get; set; }

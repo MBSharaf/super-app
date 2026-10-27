@@ -21,7 +21,7 @@ public sealed class GamesTests(AccountsApiFactory api) : IClassFixture<AccountsA
     }
 
     private static object Game(string booking, int needed = 1, bool auto = false) =>
-        new { bookingCode = booking, playersNeeded = needed, level = "Casual", positions = "GK", title = "Friday five", sharePrice = 70m, autoAccept = auto };
+        new { bookingCode = booking, playersNeeded = needed, level = "Casual", positions = "GK", title = "Friday five", sharePrice = 70m, autoAccept = auto, notes = "Bring a dark shirt" };
 
     [Fact]
     public async Task A_game_fills_up_waitlists_the_rest_and_frees_a_place_when_someone_leaves()
@@ -81,6 +81,7 @@ public sealed class GamesTests(AccountsApiFactory api) : IClassFixture<AccountsA
 
         var detail = (await host.GetAsync($"/api/v1/games/{code}")).Body.Data();
         (detail.GetProperty("autoAccept").GetBoolean(), detail.GetProperty("bookingCode").GetString()).ShouldBe((false, booking));
+        detail.GetProperty("game").GetProperty("notes").GetString().ShouldBe("Bring a dark shirt");
         detail.GetProperty("requests")[0].GetProperty("games").GetInt32().ShouldBe(0);
         (await player.GetAsync($"/api/v1/games/{code}")).Body.Data().GetProperty("bookingCode").ValueKind.ShouldBe(System.Text.Json.JsonValueKind.Null);
         var edit = new { playersNeeded = 3, level = "Casual", positions = "GK", title = "Friday five", requestsClosed = false, autoAccept = true };

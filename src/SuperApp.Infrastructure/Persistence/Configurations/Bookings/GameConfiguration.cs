@@ -22,6 +22,7 @@ internal sealed class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.Property(x => x.Code).HasMaxLength(12).IsUnicode(false);
         builder.Property(x => x.Title).HasMaxLength(100);
         builder.Property(x => x.Positions).HasMaxLength(100).IsUnicode(false);
+        builder.Property(x => x.Notes).HasMaxLength(280);
         builder.Property(x => x.Level).HasConversion<byte>();
         builder.Property(x => x.SharePrice).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.AutoAccept).HasDefaultValue(false).ValueGeneratedNever();

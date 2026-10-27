@@ -89,5 +89,5 @@ public sealed class GameRepository(AppDbContext db) : IGameRepository
     private static IQueryable<GameDto> Cards(IQueryable<Game> q) => q.Select(g => new GameDto(
         g.Code, g.Title, g.Booking.Pitch.Slug, g.Booking.Pitch.Name, g.Booking.Pitch.Venue.Area.NameEn, g.Booking.Pitch.Venue.AreaId,
         g.Booking.Date, g.Booking.StartHour, g.Booking.Duration, g.Level.ToString(), g.Positions, g.PlayersNeeded,
-        g.Requests.Count(r => r.Status == GameRequestStatus.Accepted), g.SharePrice, g.Status.ToString(), g.RequestsClosed, g.Host.FullName, g.HostId));
+        g.Requests.Count(r => r.Status == GameRequestStatus.Accepted), g.SharePrice, g.Status.ToString(), g.RequestsClosed, g.Host.FullName, g.HostId, g.Notes));
 }

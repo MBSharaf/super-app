@@ -1370,6 +1370,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<byte>("Level")
                         .HasColumnType("tinyint");
 
+                    b.Property<string>("Notes")
+                        .HasMaxLength(280)
+                        .HasColumnType("nvarchar(280)");
+
                     b.Property<byte>("PlayersNeeded")
                         .HasColumnType("tinyint");
 

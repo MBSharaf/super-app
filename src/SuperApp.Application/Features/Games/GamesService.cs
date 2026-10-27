@@ -13,7 +13,7 @@ public sealed record GamesQuery(int? AreaId = null, DateOnly? Date = null, strin
 
 /// <summary>An open game card. <c>Joined</c> counts accepted players; <c>Level</c>: Any, Casual, Intermediate, Competitive.</summary>
 public sealed record GameDto(string Code, string? Title, string PitchSlug, string PitchName, string AreaEn, int AreaId, DateOnly Date, int StartHour, int Duration,
-    string Level, string? Positions, int PlayersNeeded, int Joined, decimal SharePrice, string Status, bool RequestsClosed, string HostName, Guid HostId);
+    string Level, string? Positions, int PlayersNeeded, int Joined, decimal SharePrice, string Status, bool RequestsClosed, string HostName, Guid HostId, string? Notes = null);
 
 /// <summary>A request to join. Status: Waiting, Accepted, Declined, Withdrawn, Removed, Waitlisted.</summary>
 public sealed record GameRequestDto(long Id, Guid PlayerId, string PlayerName, string? Position, string? Message, string Status, DateTime CreatedAt,
@@ -29,7 +29,7 @@ public sealed record MyGamesDto(IReadOnlyList<GameDto> Hosting, IReadOnlyList<My
 
 public sealed record MyGameDto(GameDto Game, string MyStatus);
 
-public sealed record PostGameRequest(string BookingCode, int PlayersNeeded, string Level, string? Positions, string? Title, decimal SharePrice, bool AutoAccept);
+public sealed record PostGameRequest(string BookingCode, int PlayersNeeded, string Level, string? Positions, string? Title, decimal SharePrice, bool AutoAccept, string? Notes = null);
 
 public sealed record EditGameRequest(int PlayersNeeded, string Level, string? Positions, string? Title, bool RequestsClosed, bool? AutoAccept = null);
 
@@ -154,6 +154,7 @@ public sealed class GamesService(
         {
             Code = await games.NewCodeAsync(ct), HostId = me, BookingId = booking.Id, Title = request.Title?.Trim(), PlayersNeeded = (byte)request.PlayersNeeded,
             Positions = request.Positions?.Trim(), Level = Enum.Parse<GameLevel>(request.Level), SharePrice = request.SharePrice, AutoAccept = request.AutoAccept, Status = GameStatus.Open,
+            Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
         };
         games.Add(game);
         await unitOfWork.SaveChangesAsync(ct);
@@ -344,8 +345,9 @@ public sealed class PostGameRequestValidator : AbstractValidator<PostGameRequest
         RuleFor(x => x.PlayersNeeded).InclusiveBetween(1, 21);
         RuleFor(x => x.Level).IsEnumName(typeof(GameLevel), caseSensitive: true).WithMessage("Level is Any, Casual, Intermediate or Competitive.");
         RuleFor(x => x.SharePrice).InclusiveBetween(0, 5000);
-        RuleFor(x => x.Title).MaximumLength(120);
-        RuleFor(x => x.Positions).MaximumLength(200);
+        RuleFor(x => x.Notes).MaximumLength(280);
+        RuleFor(x => x.Title).MaximumLength(100);
+        RuleFor(x => x.Positions).MaximumLength(100);
     }
 }
 
@@ -355,8 +357,8 @@ public sealed class EditGameRequestValidator : AbstractValidator<EditGameRequest
     {
         RuleFor(x => x.PlayersNeeded).InclusiveBetween(1, 21);
         RuleFor(x => x.Level).IsEnumName(typeof(GameLevel), caseSensitive: true);
-        RuleFor(x => x.Title).MaximumLength(120);
-        RuleFor(x => x.Positions).MaximumLength(200);
+        RuleFor(x => x.Title).MaximumLength(100);
+        RuleFor(x => x.Positions).MaximumLength(100);
     }
 }
 
