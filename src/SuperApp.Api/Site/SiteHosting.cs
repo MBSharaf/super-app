@@ -12,8 +12,8 @@ namespace SuperApp.Api.Site;
 public static class SiteHosting
 {
     public const string BasePath = "/super-app";
-    private static readonly string[] Folders = ["css", "js", "models", "vendor"];
-    private static readonly string[] RootFiles = ["index.html", "404.html", "og-image.png", "robots.txt", "sitemap.xml"];
+    private static readonly string[] Folders = ["css", "js", "models", "vendor", "icons"];
+    private static readonly string[] RootFiles = ["index.html", "404.html", "og-image.png", "robots.txt", "sitemap.xml", "manifest.json", "sw.js", "offline.html"];
 
     public static WebApplication UseSuperAppSite(this WebApplication app)
     {
@@ -77,6 +77,8 @@ public static class SiteHosting
         ".html" => "text/html; charset=utf-8",
         ".png" => "image/png",
         ".xml" => "application/xml",
+        ".json" => "application/manifest+json",
+        ".js" => "text/javascript; charset=utf-8",
         _ => "text/plain; charset=utf-8",
     };
 

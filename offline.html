@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#F1F2EE" />
+  <title>You’re offline — Super App</title>
+  <link rel="icon" href="icons/icon-192.png" />
+  <style>
+    :root { --paper: #F1F2EE; --surface: #FFFFFF; --ink: #0D1411; --ink-2: #46514B; --line: #DCE0D9; --blaze: #FF5B14; color-scheme: light; }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper: #0B100E; --surface: #131A17; --ink: #EEF1EC; --ink-2: #AEB8B1; --line: #26302B; color-scheme: dark; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--paper); color: var(--ink);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif; }
+    main { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 32px 24px; text-align: center; }
+    img { width: 64px; height: 64px; border-radius: 18px; }
+    h1 { font-size: 1.4rem; margin: 18px 0 6px; }
+    p { margin: 0; color: var(--ink-2); }
+    .ar { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+    button { margin-top: 24px; border: 0; border-radius: 999px; padding: 12px 24px; background: #0D1411; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    button:focus-visible { outline: 2px solid var(--blaze); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="icons/icon-192.png" alt="Super App" />
+    <h1>You’re offline</h1>
+    <p>Check your internet connection, then try again. Your bookings and wallet are safe.</p>
+    <div class="ar" dir="rtl" lang="ar">
+      <h1>إنت مش متصل بالنت</h1>
+      <p>اتأكد من النت وجرّب تاني. حجوزاتك ومحفظتك في أمان.</p>
+    </div>
+    <button type="button" onclick="location.reload()">Try again · جرّب تاني</button>
+  </main>
+</body>
+</html>
