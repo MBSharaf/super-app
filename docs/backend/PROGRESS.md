@@ -249,3 +249,22 @@ PRD §14: security review, performance, backups, tests, Postman, PWA. Phases 4, 
 - [x] 8.6f CEO reports and audit on the server: `GET /ceo/reports/{kind}/data` (figures + sheets for the screen; Excel unchanged), finance (= revenue, from the revenue wallet) and approvals reports added; the reports screen and the company audit log read the server (marketing / returns show a note). Integrations and the API catalogue have server endpoints but no screens yet (new UI)
 - [ ] 8.6 End-of-backend browser pass (left: seller earnings / returns / factory screens — waits until the store reopens) — the screens left in 4.8d and Phase 7 (admin people / orders / audit / reports, CEO org / integrations / catalogue, seller earnings / returns, partner wallet, admin payouts) and the money screens still on demo data (wallet top-ups, CEO finance approvals, revenue charts)
 - [x] 8.7 PWA — `manifest.json` (name, icons, shortcuts: book, find players, my bookings), `sw.js` (site files network-first and kept for a bad connection, pages offline → `offline.html` in English and Arabic, the API and non-GET requests never cached; bump VERSION per release), icons drawn from the site's mark by `tools/pwa/icons.py`, iOS home-screen tags; served by SiteHosting (test SiteHostingTests). Design unchanged
+
+## Remaining work — in order (agreed 2026-10-27; tick each step, nothing is skipped)
+
+Owner's decisions (2026-10-27): finish everything step by step in this order; **reopen the store for sellers' own
+products (seller mode OwnProducts) — print on demand stays off**.
+
+- [ ] R1 CEO: integrations screen (keys present, test connection) and API catalogue screen — new screens in the CEO design (server: /ceo/integrations, /ceo/api-catalogue)
+- [ ] R2 CEO: departments and positions (org) read the server (/ceo/org); AI agents already do
+- [ ] R3 Team and permissions on the site: invite an admin, roles, permissions, money limits, suspend, reset 2FA, resend invite (server: /ceo/admins, /ceo/roles, /ceo/permissions — done in Phase 7, the CEO screens still use demo data)
+- [ ] R4 Sign-in in the header: in API mode a signed-out visitor sees "Sign in" where the demo avatar is (same header style); the sign-in, sign-up, 2FA, forgot / reset, confirm and invite pages exist since Phase 2 (#/auth/…)
+- [ ] R5 Admin actions still missing on the server: wallet credit, Super Points, refusal reset (customer drawer); commission deal, balance adjust, close a pitch (partner drawer); the list numbers that show 0 (spent; partner revenue, commission, occupancy, balance)
+- [ ] R6 Store back for sellers' own products, POD off:
+  - [ ] R6.1 Decisions with the owner (who can sell, shipping, payment methods, commission, returns policy) → this doc
+  - [ ] R6.2 Server: split the switch — `Features:StoreEnabled` on, new `Features:PodEnabled` off (designs, print orders, samples, factory, POD catalogue answer 423 pod_paused); seller applications for own products only
+  - [ ] R6.3 Site: store pages back (`SA.config.storeEnabled`), POD pages and links hidden (studio, designs, print orders, factory, admin designs / levels / samples / factories / print catalogue)
+  - [ ] R6.4 Site on the server (4.8d): seller products and bulk upload, store orders, returns, seller wallet and withdrawals, codes, analytics; admin store, orders, returns, sellers; shipping
+  - [ ] R6.5 Full browser pass of the store with test accounts, then tests
+- [ ] R7 Marketing report on the server (promo codes, broadcasts, costs)
+- [ ] R8 Launch (Phase 9) — code: production settings (domain, HTTPS, CORS, proxies), root robots.txt / sitemap.xml → the live ones, Paymob tested with its test keys, email provider tested, backups cron on the server, monitoring; owner: Paymob keys, domain, email, VPS, lawyer (legal pages, FPL use, TheSportsDB terms); last full browser pass
