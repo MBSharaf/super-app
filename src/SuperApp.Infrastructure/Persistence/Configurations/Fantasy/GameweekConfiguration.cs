@@ -12,7 +12,7 @@ internal sealed class GameweekConfiguration : IEntityTypeConfiguration<Gameweek>
     {
         builder.ToTable("Gameweeks", "fantasy", t =>
         {
-            t.HasCheckConstraint("CK_Gameweeks_Number", "[Number] BETWEEN 1 AND 50");
+            t.HasCheckConstraint("CK_Gameweeks_Number", "[Number] BETWEEN 1 AND 255");
             t.HasCheckConstraint("CK_Gameweeks_Status", "[Status] BETWEEN 0 AND 3");
         });
         builder.HasKey(x => x.Id);

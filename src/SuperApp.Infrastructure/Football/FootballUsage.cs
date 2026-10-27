@@ -45,7 +45,7 @@ public sealed class FootballUsageRecorder(IServiceScopeFactory scopes, IClock cl
 }
 
 /// <summary>Today's API-FOOTBALL usage against the daily limit: green below 70%, yellow from 70%, red from 90% (INTEGRATIONS §7.2).</summary>
-public sealed class FootballQuota(AppDbContext db, IClock clock, IFootballData provider) : IFootballQuota
+public sealed class FootballQuota(AppDbContext db, IClock clock, Microsoft.Extensions.Configuration.IConfiguration configuration) : IFootballQuota
 {
     public async Task<FootballUsage> TodayAsync(CancellationToken ct)
     {
@@ -57,14 +57,16 @@ public sealed class FootballQuota(AppDbContext db, IClock clock, IFootballData p
         var used = row?.QuotaUsed ?? row?.Calls ?? 0;
         var percent = limit <= 0 ? 0 : (int)Math.Min(100, Math.Round(used * 100m / limit));
         var level = percent >= 90 ? "red" : percent >= 70 ? "yellow" : "green";
-        var message = provider.Provider == "simulated" ? "Simulated data — no API-FOOTBALL key is set."
+        var message = !HasKey ? "Free sources (FPL, TheSportsDB) — no API-FOOTBALL key, no daily quota."
             : percent >= 90 ? "Upgrade the API-FOOTBALL plan." : null;
-        return new FootballUsage(provider.Provider, used, limit, percent, level, message);
+        return new FootballUsage(HasKey ? "api-football" : "fpl + thesportsdb", used, limit, percent, level, message);
     }
+
+    private bool HasKey => !string.IsNullOrWhiteSpace(configuration["Football:ApiFootball:Key"]);
 
     public async Task<bool> CanCallAsync(int calls, CancellationToken ct)
     {
-        if (provider.Provider == "simulated")
+        if (!HasKey)
         {
             return true;
         }

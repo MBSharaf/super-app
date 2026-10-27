@@ -9,7 +9,7 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Fantasy;
 
 /// <summary>
-/// The Fantasy Pass (FR-FAN-08): 30 days of prize leagues for one league (50 EGP) or both (80 EGP), prices from the
+/// The Fantasy Pass (FR-FAN-08): 30 days of prize leagues for one league (50 EGP) or both while two have fantasy (80 EGP), prices from the
 /// setting <c>fantasy.passPrice</c>, seller-level discount (Pro 50%, Elite free). Paid straight away until the payment
 /// gateway arrives (Phase 5: the payment and its receipt PDF are linked through <c>FantasyPass.PaymentId</c>).
 /// </summary>
@@ -115,18 +115,27 @@ public sealed class FantasyPassService(
         var (one, both) = await passes.PricesAsync(ct);
         var discount = Math.Clamp(await passes.SellerDiscountAsync(UserId, ct), 0, 1);
         PassPlanDto Plan(string key, decimal list) => new(key, list, Math.Round(list * (1 - discount), 2), discount);
-        return [.. competitions.Select(c => Plan(c.Key.ToLowerInvariant(), one)), Plan("both", both)];
+        var plans = competitions.Select(c => Plan(c.Key.ToLowerInvariant(), one)).ToList();
+        if (competitions.Count > 1)
+        {
+            plans.Add(Plan("both", both));
+        }
+        return plans;
     }
 
-    /// <summary>null for "both", else the league's id; anything else → 400 unknown_plan.</summary>
+    /// <summary>
+    /// null for "both" (offered only while two or more leagues have fantasy), else the league's id; anything else →
+    /// 400 unknown_plan.
+    /// </summary>
     private static int? CompetitionOf(string plan, IReadOnlyList<(int Id, string Key)> competitions)
     {
-        if (plan == "both")
+        if (plan == "both" && competitions.Count > 1)
         {
             return null;
         }
         var match = competitions.FirstOrDefault(c => c.Key.Equals(plan, StringComparison.OrdinalIgnoreCase));
-        return match.Id > 0 ? match.Id : throw new BadRequestException("Choose egy, epl or both.", "unknown_plan");
+        var choices = string.Join(", ", competitions.Select(c => c.Key.ToLowerInvariant()).Concat(competitions.Count > 1 ? ["both"] : []));
+        return match.Id > 0 ? match.Id : throw new BadRequestException($"Choose {choices}.", "unknown_plan");
     }
 
     private static string PlanOf(int? competitionId, IReadOnlyList<(int Id, string Key)> competitions) =>

@@ -2,8 +2,8 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Football;
 
-/// <summary>A fantasy competition to sync (EGY, EPL) with its API-FOOTBALL league id.</summary>
-public sealed record CompetitionRef(int Id, string Key, int ExternalLeagueId, string NameEn);
+/// <summary>A competition to sync, with its provider's league id and whether it has fantasy.</summary>
+public sealed record CompetitionRef(int Id, string Key, int ExternalLeagueId, string NameEn, string Provider = "api-football", bool FantasyEnabled = true);
 
 /// <summary>A gameweek as the fixtures describe it: deadline 90 minutes before its first kick-off.</summary>
 public sealed record GameweekPlan(int Number, DateTime Deadline, GameweekStatus Status);
@@ -28,6 +28,12 @@ public interface IFantasySyncRepository
 
     /// <summary>The season row (created when new) and marks it as the competition's current season.</summary>
     Task<long> EnsureSeasonAsync(int competitionId, int year, CancellationToken ct);
+
+    /// <summary>True when the season has no matches yet or its last full read is older than <paramref name="since"/>.</summary>
+    Task<bool> FullSyncDueAsync(long seasonId, DateTime since, CancellationToken ct);
+
+    /// <summary>The rounds with a match kicking off between <paramref name="from"/> and <paramref name="to"/> (what a quick sync reads).</summary>
+    Task<IReadOnlyList<int>> RoundsBetweenAsync(long seasonId, DateTime from, DateTime to, CancellationToken ct);
 
     /// <summary>True when the season already has its clubs and players (squads are re-read once a week only).</summary>
     Task<bool> SquadsFreshAsync(long seasonId, DateTime since, CancellationToken ct);
@@ -57,7 +63,7 @@ public interface IFantasySyncRepository
     /// <summary>Gameweeks whose matches are all over and that wait for (re)scoring.</summary>
     Task<IReadOnlyList<long>> GameweeksToScoreAsync(long seasonId, CancellationToken ct);
 
-    Task MarkSyncedAsync(long seasonId, DateTime at, CancellationToken ct);
+    Task MarkSyncedAsync(long seasonId, DateTime at, bool full, CancellationToken ct);
 }
 
 /// <summary>Pure rules of the sync: gameweeks from fixtures, statistics rows from a finished match.</summary>

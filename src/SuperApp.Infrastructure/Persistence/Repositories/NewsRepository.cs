@@ -33,7 +33,11 @@ public sealed class MatchesReader(AppDbContext db) : IMatchesReader
         query.AsNoTracking().Select(f => new MatchDto(f.Id, f.Gameweek.Season.Competition.Key, f.Gameweek.Number,
             new MatchClubDto(f.HomeClubId, f.HomeClub.NameEn, f.HomeClub.ShortName, f.HomeClub.KitColor, f.HomeClub.KitColor2),
             new MatchClubDto(f.AwayClubId, f.AwayClub.NameEn, f.AwayClub.ShortName, f.AwayClub.KitColor, f.AwayClub.KitColor2),
-            f.KickoffAt, f.Status.ToString(), f.HomeGoals, f.AwayGoals, f.Minute));
+            f.KickoffAt, f.Status.ToString(), f.HomeGoals, f.AwayGoals, f.Minute, f.Venue));
+
+    public async Task<IReadOnlyList<MatchCompetitionDto>> CompetitionsAsync(CancellationToken ct) =>
+        await db.Set<Competition>().AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.SortOrder)
+            .Select(c => new MatchCompetitionDto(c.Key, c.NameEn, c.NameAr, c.ShortName, c.Region, c.Color, c.FantasyEnabled)).ToListAsync(ct);
 }
 
 /// <summary>Super App news posts (soft-deleted; hidden or future posts stay out of the public list).</summary>

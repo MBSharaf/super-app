@@ -48,10 +48,10 @@ public sealed class ApiFootballClient(HttpClient http, FootballUsageRecorder usa
         }).ToList();
     }
 
-    public async Task<IReadOnlyList<FdFixture>> FixturesAsync(int leagueId, int season, CancellationToken ct)
+    public async Task<IReadOnlyList<FdFixture>> FixturesAsync(int leagueId, int season, IReadOnlyCollection<int>? rounds, CancellationToken ct)
     {
         var data = await GetAsync($"fixtures?league={leagueId}&season={season}", ct);
-        return data.EnumerateArray().Select(ToFixture).Where(f => f.Round > 0).ToList();
+        return data.EnumerateArray().Select(ToFixture).Where(f => f.Round > 0 && (rounds is null || rounds.Contains(f.Round))).ToList();
     }
 
     public async Task<IReadOnlyList<FdPlayerStat>> FixtureStatsAsync(int leagueId, int fixtureExternalId, CancellationToken ct)

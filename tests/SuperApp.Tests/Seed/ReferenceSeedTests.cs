@@ -56,7 +56,7 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         first["popups"].ShouldBe(10);
         first["communities"].ShouldBe(5);
         first["bannedWords"].ShouldBe(4);
-        first["competitions"].ShouldBe(2);
+        first["competitions"].ShouldBe(13);   // EPL (fantasy) + the Egyptian league and eleven more for the matches page
     }
 
     [Fact]

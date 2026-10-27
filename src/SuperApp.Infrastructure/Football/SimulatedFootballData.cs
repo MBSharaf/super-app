@@ -38,12 +38,12 @@ public sealed class SimulatedFootballData(IClock clock, IConfiguration configura
         return Task.FromResult(squad);
     }
 
-    public Task<IReadOnlyList<FdFixture>> FixturesAsync(int leagueId, int season, CancellationToken ct)
+    public Task<IReadOnlyList<FdFixture>> FixturesAsync(int leagueId, int season, IReadOnlyCollection<int>? rounds, CancellationToken ct)
     {
         var league = League(leagueId);
         var start = SeasonStart(season);
         IReadOnlyList<FdFixture> fixtures = Rounds(league).SelectMany((pairs, r) => pairs.Select((pair, k) =>
-            Fixture(league, r + 1, k, pair.Home, pair.Away, start))).ToList();
+            Fixture(league, r + 1, k, pair.Home, pair.Away, start))).Where(f => rounds is null || rounds.Contains(f.Round)).ToList();
         return Task.FromResult(fixtures);
     }
 

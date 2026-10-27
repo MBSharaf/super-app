@@ -60,7 +60,7 @@
       return `<div class="stat-row"><b class="num">${h}${pct ? '%' : ''}</b><div class="stat-bars"><span class="sb-h" style="--w:${(h / tot) * 100}%"></span><span class="sb-a" style="--w:${(a / tot) * 100}%"></span></div><b class="num">${a}${pct ? '%' : ''}</b><span class="stat-label xs">${label}</span></div>`;
     };
     const timeline = m.seen.length ? m.seen.map((e, i) => `<li class="tl-${e.side}" style="--i:${i}"><span class="tl-min num">${e.min}'</span><span class="tl-ico ${e.kind}">${e.kind === 'goal' ? icon('ball', 15) : ''}</span><span class="tl-text">${e.kind === 'goal' ? 'Goal' : 'Yellow card'} · ${esc(e.side === 'home' ? m.homeT.name : m.awayT.name)}</span></li>`).join('')
-      : `<li class="tl-empty small muted">${m.status === 'upcoming' ? 'Events will appear here once the match kicks off.' : 'No events yet.'}</li>`;
+      : `<li class="tl-empty small muted">${m.status === 'upcoming' ? 'Events will appear here once the match kicks off.' : m.noDetail ? 'Goal times aren’t available for this match.' : 'No events yet.'}</li>`;
     SA.ui.overlay.open({
       wide: true, label: `${m.homeT.name} vs ${m.awayT.name}`,
       body: `<div class="mc-head" style="--ca:${m.homeT.a};--cb:${m.awayT.a}">
@@ -72,7 +72,7 @@
         <p class="xs muted" style="text-align:center;margin-top:12px">${esc(m.comp.name)} · ${esc(m.round)} · ${esc(m.venue)}</p>
         <div class="mc-grid">
           <div><h3 class="small strong">Timeline</h3><ol class="timeline">${timeline}</ol></div>
-          <div><h3 class="small strong">Match stats</h3>${m.status === 'upcoming' ? '<p class="small muted" style="margin-top:10px">Stats go live at kick-off.</p>' : `<div class="stats">${statRow('Possession', m.stats.possession, true)}${statRow('Shots', m.stats.shots)}${statRow('On target', m.stats.onTarget)}${statRow('Corners', m.stats.corners)}</div>`}</div>
+          <div><h3 class="small strong">Match stats</h3>${m.status === 'upcoming' ? '<p class="small muted" style="margin-top:10px">Stats go live at kick-off.</p>' : m.noDetail ? '<p class="small muted" style="margin-top:10px">Match stats aren’t available for this match.</p>' : `<div class="stats">${statRow('Possession', m.stats.possession, true)}${statRow('Shots', m.stats.shots)}${statRow('On target', m.stats.onTarget)}${statRow('Corners', m.stats.corners)}</div>`}</div>
         </div>`,
       footer: m.status === 'upcoming' ? `<button class="btn ${m.reminder ? 'btn-outline' : 'btn-primary'}" data-mc-remind>${icon('bell', 16)} ${m.reminder ? 'Reminder on' : 'Remind me at kick-off'}</button>` : '',
       onMount(el, close) {

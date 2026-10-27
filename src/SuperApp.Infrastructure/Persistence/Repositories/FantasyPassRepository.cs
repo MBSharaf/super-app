@@ -15,7 +15,7 @@ namespace SuperApp.Infrastructure.Persistence.Repositories;
 public sealed class FantasyPassRepository(AppDbContext db) : IFantasyPassRepository
 {
     public async Task<IReadOnlyList<(int Id, string Key)>> CompetitionsAsync(CancellationToken ct) =>
-        (await db.Set<Competition>().AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.SortOrder).Select(c => new { c.Id, c.Key }).ToListAsync(ct))
+        (await db.Set<Competition>().AsNoTracking().Where(c => c.IsActive && c.FantasyEnabled).OrderBy(c => c.SortOrder).Select(c => new { c.Id, c.Key }).ToListAsync(ct))
             .Select(c => (c.Id, c.Key)).ToList();
 
     public async Task<IReadOnlyList<FantasyPass>> ActiveAsync(Guid userId, DateTime now, CancellationToken ct) =>

@@ -3641,6 +3641,13 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(9)")
+                        .HasDefaultValue("#0B6E4F");
+
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -3648,6 +3655,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("ExternalLeagueId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("FantasyEnabled")
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
@@ -3673,6 +3684,25 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
 
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(20)")
+                        .HasDefaultValue("api-football");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int")
                         .HasDefaultValue(0);
@@ -3684,17 +3714,21 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExternalLeagueId")
-                        .IsUnique()
-                        .HasDatabaseName("UQ_Competitions_ExternalLeagueId");
-
                     b.HasIndex("Key")
                         .IsUnique()
                         .HasDatabaseName("UQ_Competitions_Key");
 
+                    b.HasIndex("Provider", "ExternalLeagueId")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_Competitions_Provider_ExternalLeagueId");
+
                     b.ToTable("Competitions", "fantasy", t =>
                         {
+                            t.HasCheckConstraint("CK_Competitions_Color", "[Color] LIKE '#%'");
+
                             t.HasCheckConstraint("CK_Competitions_MaxPerClub", "[MaxPerClub] BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("CK_Competitions_Provider", "[Provider] IN ('fpl', 'thesportsdb', 'api-football')");
 
                             t.HasCheckConstraint("CK_Competitions_SquadBudget", "[SquadBudget] > 0");
                         });
@@ -3946,6 +3980,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2(0)");
 
+                    b.Property<string>("Venue")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AwayClubId");
@@ -4008,7 +4046,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("Gameweeks", "fantasy", t =>
                         {
-                            t.HasCheckConstraint("CK_Gameweeks_Number", "[Number] BETWEEN 1 AND 50");
+                            t.HasCheckConstraint("CK_Gameweeks_Number", "[Number] BETWEEN 1 AND 255");
 
                             t.HasCheckConstraint("CK_Gameweeks_Status", "[Status] BETWEEN 0 AND 3");
                         });
@@ -4271,6 +4309,9 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2(0)")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime?>("FullSyncedAt")
+                        .HasColumnType("datetime2(0)");
 
                     b.Property<bool>("IsCurrent")
                         .HasColumnType("bit")

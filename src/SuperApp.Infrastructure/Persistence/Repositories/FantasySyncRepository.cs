@@ -13,7 +13,7 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
 
     public async Task<IReadOnlyList<CompetitionRef>> CompetitionsAsync(string? key, CancellationToken ct) =>
         await db.Set<Competition>().AsNoTracking().Where(c => c.IsActive && (key == null || c.Key == key)).OrderBy(c => c.SortOrder)
-            .Select(c => new CompetitionRef(c.Id, c.Key, c.ExternalLeagueId, c.NameEn)).ToListAsync(ct);
+            .Select(c => new CompetitionRef(c.Id, c.Key, c.ExternalLeagueId, c.NameEn, c.Provider, c.FantasyEnabled)).ToListAsync(ct);
 
     public async Task<long> EnsureSeasonAsync(int competitionId, int year, CancellationToken ct)
     {
@@ -34,6 +34,13 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
         await db.SaveChangesAsync(ct);
         return season.Id;
     }
+
+    public async Task<bool> FullSyncDueAsync(long seasonId, DateTime since, CancellationToken ct) =>
+        !await db.Set<Season>().AnyAsync(s => s.Id == seasonId && s.FullSyncedAt >= since && s.Gameweeks.Any(g => g.Fixtures.Count > 0), ct);
+
+    public async Task<IReadOnlyList<int>> RoundsBetweenAsync(long seasonId, DateTime from, DateTime to, CancellationToken ct) =>
+        await db.Set<Fixture>().Where(f => f.Gameweek.SeasonId == seasonId && f.KickoffAt >= from && f.KickoffAt <= to)
+            .Select(f => (int)f.Gameweek.Number).Distinct().ToListAsync(ct);
 
     public Task<bool> SquadsFreshAsync(long seasonId, DateTime since, CancellationToken ct) =>
         db.Set<SeasonClub>().AnyAsync(sc => sc.SeasonId == seasonId && (sc.Club.UpdatedAt ?? sc.Club.CreatedAt) >= since
@@ -87,7 +94,7 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
     public async Task<IReadOnlyDictionary<int, long>> UpsertGameweeksAsync(long seasonId, IReadOnlyList<GameweekPlan> plans, CancellationToken ct)
     {
         var rows = await db.Set<Gameweek>().Where(g => g.SeasonId == seasonId).ToDictionaryAsync(g => (int)g.Number, ct);
-        foreach (var plan in plans.Where(p => p.Number is >= 1 and <= 50))
+        foreach (var plan in plans.Where(p => p.Number is >= 1 and <= 255))
         {
             if (!rows.TryGetValue(plan.Number, out var row))
             {
@@ -121,6 +128,7 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
             row.HomeGoals = (byte?)f.HomeGoals;
             row.AwayGoals = (byte?)f.AwayGoals;
             row.Minute = (byte?)f.Minute;
+            row.Venue = f.Venue is { Length: > 120 } v ? v[..120] : f.Venue;
         }
         await db.SaveChangesAsync(ct);
         return fixtures.Count;
@@ -198,6 +206,8 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
             .Where(g => g.Fixtures.Where(f => f.Status == FixtureStatus.Finished).All(f => db.Set<PlayerFixtureStat>().Any(s => s.FixtureId == f.Id)))
             .OrderBy(g => g.Number).Select(g => g.Id).ToListAsync(ct);
 
-    public Task MarkSyncedAsync(long seasonId, DateTime at, CancellationToken ct) =>
-        db.Set<Season>().Where(s => s.Id == seasonId).ExecuteUpdateAsync(u => u.SetProperty(s => s.LastSyncedAt, at), ct);
+    public Task MarkSyncedAsync(long seasonId, DateTime at, bool full, CancellationToken ct) =>
+        db.Set<Season>().Where(s => s.Id == seasonId).ExecuteUpdateAsync(u => u
+            .SetProperty(s => s.LastSyncedAt, at)
+            .SetProperty(s => s.FullSyncedAt, s => full ? at : s.FullSyncedAt), ct);
 }

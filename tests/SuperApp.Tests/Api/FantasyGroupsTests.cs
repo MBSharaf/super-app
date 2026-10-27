@@ -22,8 +22,8 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
         var (client, userId) = await kit.PersonAsync(partner: false);
         if (withTeam)
         {
-            var boot = (await client.GetAsync("/api/v1/fantasy/EGY/bootstrap")).Body.Data();
-            var created = await client.PostAsync("/api/v1/fantasy/EGY/team", new { name = "Group Test XI", picks = FantasyKit.CheapSquad(boot).Select(p => p.Id()).ToArray() });
+            var boot = (await client.GetAsync("/api/v1/fantasy/EPL/bootstrap")).Body.Data();
+            var created = await client.PostAsync("/api/v1/fantasy/EPL/team", new { name = "Group Test XI", picks = FantasyKit.CheapSquad(boot).Select(p => p.Id()).ToArray() });
             created.Status.ShouldBe(HttpStatusCode.Created, created.Body.ToString());
         }
         return (client, userId);
@@ -45,11 +45,11 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
     public async Task A_private_group_is_joined_by_its_code_and_only_members_see_the_table()
     {
         var (lonely, _) = await ManagerAsync(withTeam: false);
-        (await lonely.PostAsync("/api/v1/fantasy/EGY/groups", new { name = "No Team League" })).Body.Code().ShouldBe("no_team");
+        (await lonely.PostAsync("/api/v1/fantasy/EPL/groups", new { name = "No Team League" })).Body.Code().ShouldBe("no_team");
 
         var (owner, _) = await ManagerAsync();
-        (await owner.PostAsync("/api/v1/fantasy/EGY/groups", new { name = "ab" })).Status.ShouldBe(HttpStatusCode.BadRequest);
-        var created = await owner.PostAsync("/api/v1/fantasy/EGY/groups", new { name = "Smart Village Office" });
+        (await owner.PostAsync("/api/v1/fantasy/EPL/groups", new { name = "ab" })).Status.ShouldBe(HttpStatusCode.BadRequest);
+        var created = await owner.PostAsync("/api/v1/fantasy/EPL/groups", new { name = "Smart Village Office" });
         created.Status.ShouldBe(HttpStatusCode.Created, created.Body.ToString());
         var group = created.Body.Data();
         var code = group.GetProperty("inviteCode").GetString()!;
@@ -68,7 +68,7 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
         table.GetProperty("rows").EnumerateArray().Count(r => r.GetProperty("isMe").GetBoolean()).ShouldBe(1);
         table.GetProperty("rows")[0].GetProperty("manager").GetString().ShouldBe("Test P.");
 
-        var overview = (await friend.GetAsync("/api/v1/fantasy/EGY/groups")).Body.Data();
+        var overview = (await friend.GetAsync("/api/v1/fantasy/EPL/groups")).Body.Data();
         overview.GetProperty("mine").EnumerateArray().ShouldContain(g => g.GetProperty("id").GetInt64() == id);
         overview.GetProperty("overall").GetProperty("hasTeam").GetBoolean().ShouldBeTrue();
         overview.GetProperty("paid").GetArrayLength().ShouldBe(0);
@@ -81,6 +81,7 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
     [Fact]
     public async Task Official_prize_leagues_need_the_fantasy_pass_and_paid_groups_wait_for_payments()
     {
+        await api.EnsureSyncedAsync();
         var ceo = await api.CeoAsync();
         var sponsorBody = new { name = "Nile Cola", tier = "Gold", contactEmail = "deals@nilecola.example", contractValue = 60000m, startsOn = "2026-08-01", endsOn = "2027-05-31", color = "#C8102E" };
         (await ceo.PostAsync("/api/v1/admin/fantasy/sponsors", sponsorBody with { })).Status.ShouldBe(HttpStatusCode.Created);
@@ -89,7 +90,7 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
             .Status.ShouldBe(HttpStatusCode.BadRequest);
         var sponsorId = (await ceo.GetAsync("/api/v1/admin/fantasy/sponsors")).Body.Data().EnumerateArray().Single(s => s.GetProperty("name").GetString() == "Nile Cola").GetProperty("id").GetInt64();
 
-        var league = new { competition = "egy", name = "Cairo Derby Cup", type = "Official", sponsorId = (long?)sponsorId, prizeText = "Two derby tickets + signed kit", prizeValue = 60000m, monthlyPrice = (decimal?)null };
+        var league = new { competition = "epl", name = "Cairo Derby Cup", type = "Official", sponsorId = (long?)sponsorId, prizeText = "Two derby tickets + signed kit", prizeValue = 60000m, monthlyPrice = (decimal?)null };
         (await ceo.PostAsync("/api/v1/admin/fantasy/groups", league with { prizeText = "5,000 EGP cash" })).Status.ShouldBe(HttpStatusCode.BadRequest);
         var created = await ceo.PostAsync("/api/v1/admin/fantasy/groups", league);
         created.Status.ShouldBe(HttpStatusCode.Created, created.Body.ToString());
@@ -99,19 +100,18 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
 
         var (player, userId) = await ManagerAsync();
         (await player.PostAsync("/api/v1/admin/fantasy/groups", league)).Status.ShouldBe(HttpStatusCode.Forbidden);
-        var official = (await player.GetAsync("/api/v1/fantasy/EGY/groups")).Body.Data().GetProperty("official").EnumerateArray().Single(g => g.GetProperty("id").GetInt64() == id);
+        var official = (await player.GetAsync("/api/v1/fantasy/EPL/groups")).Body.Data().GetProperty("official").EnumerateArray().Single(g => g.GetProperty("id").GetInt64() == id);
         (official.GetProperty("needsPass").GetBoolean(), official.GetProperty("sponsor").GetProperty("name").GetString()).ShouldBe((true, "Nile Cola"));
         (await player.PostAsync("/api/v1/fantasy/groups/join", new { inviteCode = code })).Body.Code().ShouldBe("pass_required");
 
         var status = (await player.GetAsync("/api/v1/fantasy/pass")).Body.Data();
-        status.GetProperty("plans").EnumerateArray().Select(p => (p.GetProperty("plan").GetString(), p.GetProperty("price").GetDecimal())).ShouldBe([("egy", 50m), ("epl", 50m), ("both", 80m)]);
-        (await BuyPassAsync(player, "egy", null)).Body.Code().ShouldBe("idempotency_key");
+        status.GetProperty("plans").EnumerateArray().Select(p => (p.GetProperty("plan").GetString(), p.GetProperty("price").GetDecimal())).ShouldBe([("epl", 50m)]);
+        (await BuyPassAsync(player, "epl", null)).Body.Code().ShouldBe("idempotency_key");
         (await BuyPassAsync(player, "gold", "k-1")).Body.Code().ShouldBe("unknown_plan");
-        var bought = await BuyPassAsync(player, "egy", "k-2");
+        var bought = await BuyPassAsync(player, "epl", "k-2");
         bought.Status.ShouldBe(HttpStatusCode.OK, bought.Body.ToString());
-        bought.Body.Data().GetProperty("coversUntil").GetProperty("egy").ValueKind.ShouldBe(JsonValueKind.String);
-        bought.Body.Data().GetProperty("coversUntil").GetProperty("epl").ValueKind.ShouldBe(JsonValueKind.Null);
-        (await BuyPassAsync(player, "egy", "k-2")).Status.ShouldBe(HttpStatusCode.OK);
+        bought.Body.Data().GetProperty("coversUntil").GetProperty("epl").ValueKind.ShouldBe(JsonValueKind.String);
+        (await BuyPassAsync(player, "epl", "k-2")).Status.ShouldBe(HttpStatusCode.OK);
         (await api.DbAsync(db => db.Set<FantasyPass>().CountAsync(p => p.UserId == userId))).ShouldBe(1);
 
         (await player.PostAsync("/api/v1/fantasy/groups/join", new { inviteCode = code })).Status.ShouldBe(HttpStatusCode.OK);
@@ -124,7 +124,7 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
     public async Task Winners_get_shop_vouchers_once()
     {
         var ceo = await api.CeoAsync();
-        var created = await ceo.PostAsync("/api/v1/admin/fantasy/groups", new { competition = "EGY", name = "Gameweek Sprint", type = "Official", sponsorId = (long?)null,
+        var created = await ceo.PostAsync("/api/v1/admin/fantasy/groups", new { competition = "EPL", name = "Gameweek Sprint", type = "Official", sponsorId = (long?)null,
             prizeText = "1,000 EGP shop voucher", prizeValue = 1000m, monthlyPrice = (decimal?)null });
         var id = created.Body.Data().GetProperty("id").GetInt64();
         var (player, userId) = await ManagerAsync();

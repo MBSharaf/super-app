@@ -9,6 +9,7 @@ public class Season : BaseEntity
     public short Year { get; set; }
     public bool IsCurrent { get; set; }
     public DateTime? LastSyncedAt { get; set; }
+    public DateTime? FullSyncedAt { get; set; }
 
     // Navigation
     public Competition Competition { get; set; } = null!;

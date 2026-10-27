@@ -49,5 +49,14 @@
     'You are a featured seller': 'إنت بائع مميز',
     'Every AI agent was stopped': 'كل وكلاء الذكاء الاصطناعي اتوقفوا',
     'AI agents are running again': 'وكلاء الذكاء الاصطناعي رجعوا يشتغلوا',
+    // Matches page on the server (8.5b)
+    'Goal times aren’t available for this match.': 'مواعيد الأهداف مش متاحة للماتش ده.',
+    'Match stats aren’t available for this match.': 'إحصائيات الماتش مش متاحة للماتش ده.',
+    'Knockout play-off': 'الملحق الإقصائي',
+    'Round of 16': 'دور الـ16',
+    'Quarter-final': 'ربع النهائي',
+    'Semi-final': 'نصف النهائي',
+    'Final': 'النهائي',
+    'Postponed': 'مؤجل',
   });
 })(window.SA);

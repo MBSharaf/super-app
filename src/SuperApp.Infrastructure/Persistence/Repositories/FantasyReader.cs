@@ -14,7 +14,7 @@ public sealed class FantasyReader(AppDbContext db) : IFantasyReader
 
     public async Task<IReadOnlyList<CompetitionDto>> CompetitionsAsync(DateTime now, CancellationToken ct)
     {
-        var keys = await db.Set<Competition>().Where(c => c.IsActive).OrderBy(c => c.SortOrder).Select(c => c.Key).ToListAsync(ct);
+        var keys = await db.Set<Competition>().Where(c => c.IsActive && c.FantasyEnabled).OrderBy(c => c.SortOrder).Select(c => c.Key).ToListAsync(ct);
         var list = new List<CompetitionDto>();
         foreach (var key in keys)
         {
@@ -25,7 +25,7 @@ public sealed class FantasyReader(AppDbContext db) : IFantasyReader
 
     public async Task<CompetitionDto?> CompetitionAsync(string key, DateTime now, CancellationToken ct)
     {
-        var c = await db.Set<Competition>().AsNoTracking().FirstOrDefaultAsync(x => x.Key == key && x.IsActive, ct);
+        var c = await db.Set<Competition>().AsNoTracking().FirstOrDefaultAsync(x => x.Key == key && x.IsActive && x.FantasyEnabled, ct);
         if (c is null)
         {
             return null;

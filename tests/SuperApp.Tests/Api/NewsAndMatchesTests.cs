@@ -20,8 +20,8 @@ public sealed class NewsAndMatchesTests(FantasyApiFactory api) : IClassFixture<F
         var client = await api.ClientAsync();
         var day = (await client.GetAsync($"/api/v1/matches?date={cairo:yyyy-MM-dd}")).Body.Data();
         day.GetArrayLength().ShouldBeGreaterThan(0);
-        var egy = (await client.GetAsync($"/api/v1/matches?date={cairo:yyyy-MM-dd}&competition=EGY")).Body.Data();
-        egy.EnumerateArray().ShouldAllBe(m => m.GetProperty("competition").GetString() == "egy");
+        var epl = (await client.GetAsync($"/api/v1/matches?date={cairo:yyyy-MM-dd}&competition=EPL")).Body.Data();
+        epl.EnumerateArray().ShouldAllBe(m => m.GetProperty("competition").GetString() == "epl");
         var finished = day.EnumerateArray().First(m => m.GetProperty("status").GetString() == "Finished");
         var detail = (await client.GetAsync($"/api/v1/matches/{finished.GetProperty("id").GetInt64()}")).Body.Data();
         detail.GetProperty("players").GetArrayLength().ShouldBeGreaterThan(0);

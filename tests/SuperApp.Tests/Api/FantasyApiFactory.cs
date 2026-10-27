@@ -33,7 +33,9 @@ public sealed class FantasyApiFactory : AccountsApiFactory
                 // Straight through the service: the first sync of two leagues can outlast an HTTP timeout while other classes run
                 using var scope = Services.CreateScope();
                 var results = await scope.ServiceProvider.GetRequiredService<IFootballSyncService>().SyncAsync(null, CancellationToken.None);
-                results.ShouldAllBe(r => r.Skipped == null);
+                // Offline only the simulated EPL is read; the other competitions (TheSportsDB) are skipped on purpose
+                results.Where(r => r.Provider != "offline").ShouldAllBe(r => r.Skipped == null);
+                results.ShouldContain(r => r.Competition == "epl" && r.Fixtures > 0);
                 synced = true;
             }
         }

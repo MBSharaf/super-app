@@ -516,6 +516,20 @@
   });
 
   /* ======================================================================
+   * Leagues on offer: only those the server has fantasy for (Egyptian fantasy is paused, decisions 2026-10-27)
+   * ==================================================================== */
+
+  let leaguesKnown = false;
+  F.leagues = () => (live() && leaguesKnown ? demo.fantasy.leagues().filter((l) => server[l.key]) : demo.fantasy.leagues());
+  F.use = (k) => (live() && leaguesKnown && !server[k] ? undefined : demo.fantasy.use(k));
+  /** After the first load: a visitor who had a paused league selected moves to one that is on */
+  const settleLeague = () => {
+    leaguesKnown = true;
+    const on = ['egy', 'epl'].filter((k) => server[k]);
+    if (on.length && !server[F.league()]) demo.fantasy.use(on[0]);
+  };
+
+  /* ======================================================================
    * Start
    * ==================================================================== */
 
@@ -527,6 +541,7 @@
     await Promise.all([
       quiet(loadLeague('egy')), quiet(loadLeague('epl')), quiet(loadPass()), quiet(loadContent()), quiet(loadCommunities()), quiet(loadTickets()),
     ]);
+    settleLeague();
     store.set({ liveFantasyAt: Date.now() }, 'fantasy');
   });
 

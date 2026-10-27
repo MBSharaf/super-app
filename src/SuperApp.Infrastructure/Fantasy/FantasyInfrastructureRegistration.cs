@@ -8,29 +8,16 @@ using SuperApp.Infrastructure.Persistence.Repositories;
 namespace SuperApp.Infrastructure.Fantasy;
 
 /// <summary>
-/// Registers the Phase 6 infrastructure (football provider, quota, repositories, the sync schedule) — one call from
-/// <c>DependencyInjection.AddInfrastructure</c>. API-FOOTBALL is used only when <c>FOOTBALL__APIFOOTBALL__KEY</c> is set;
-/// otherwise the simulated provider answers.
+/// Registers the Phase 6 infrastructure (football providers, quota, repositories, the sync schedule) — one call from
+/// <c>DependencyInjection.AddInfrastructure</c>. Each competition names its provider (FPL, TheSportsDB, API-FOOTBALL);
+/// see <see cref="FootballSources"/>.
 /// </summary>
 public static class FantasyInfrastructureRegistration
 {
     public static IServiceCollection AddFantasyInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var key = configuration["Football:ApiFootball:Key"];
         services.AddSingleton<FootballUsageRecorder>();
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            services.AddScoped<IFootballData, SimulatedFootballData>();
-        }
-        else
-        {
-            services.AddHttpClient<IFootballData, ApiFootballClient>(http =>
-            {
-                http.BaseAddress = new Uri(ApiFootballClient.BaseAddress);
-                http.DefaultRequestHeaders.Add("x-apisports-key", key);
-                http.Timeout = TimeSpan.FromSeconds(20);
-            });
-        }
+        AddFootballProviders(services, configuration);
         services.AddScoped<IFootballQuota, FootballQuota>();
         services.AddScoped<IFantasySyncRepository, FantasySyncRepository>();
         services.AddScoped<IFantasyScoringRepository, FantasyScoringRepository>();
@@ -49,6 +36,31 @@ public static class FantasyInfrastructureRegistration
         RegisterEmails();
         services.AddHostedService<FootballScheduler>();
         return services;
+    }
+
+    private static void AddFootballProviders(IServiceCollection services, IConfiguration configuration)
+    {
+        const string agent = "SuperApp/1.0 (+https://mbsharaf.github.io/super-app/)";
+        services.AddScoped<IFootballSources, FootballSources>();
+        services.AddScoped<SimulatedFootballData>();
+        services.AddHttpClient<ApiFootballClient>(http =>
+        {
+            http.BaseAddress = new Uri(ApiFootballClient.BaseAddress);
+            http.DefaultRequestHeaders.Add("x-apisports-key", configuration["Football:ApiFootball:Key"] ?? string.Empty);
+            http.Timeout = TimeSpan.FromSeconds(20);
+        });
+        services.AddHttpClient<FplFootballData>(http =>
+        {
+            http.BaseAddress = new Uri(FplFootballData.BaseAddress);
+            http.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
+            http.Timeout = TimeSpan.FromSeconds(30);
+        });
+        services.AddHttpClient<TheSportsDbFootballData>(http =>
+        {
+            http.BaseAddress = new Uri($"{TheSportsDbFootballData.BaseAddress}{configuration["Football:TheSportsDb:Key"] ?? "123"}/");
+            http.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
+            http.Timeout = TimeSpan.FromSeconds(30);
+        });
     }
 
     /// <summary>Support emails in Arabic and English: the auto-reply when a ticket opens, and the team's replies.</summary>

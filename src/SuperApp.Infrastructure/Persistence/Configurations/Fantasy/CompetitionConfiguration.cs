@@ -13,6 +13,8 @@ internal sealed class CompetitionConfiguration : IEntityTypeConfiguration<Compet
         {
             t.HasCheckConstraint("CK_Competitions_SquadBudget", "[SquadBudget] > 0");
             t.HasCheckConstraint("CK_Competitions_MaxPerClub", "[MaxPerClub] BETWEEN 1 AND 5");
+            t.HasCheckConstraint("CK_Competitions_Provider", "[Provider] IN ('fpl', 'thesportsdb', 'api-football')");
+            t.HasCheckConstraint("CK_Competitions_Color", "[Color] LIKE '#%'");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Key).HasMaxLength(10).IsUnicode(false);
@@ -22,6 +24,11 @@ internal sealed class CompetitionConfiguration : IEntityTypeConfiguration<Compet
         builder.Property(x => x.SquadBudget).HasPrecision(6, 1).HasDefaultValue(100.0m).ValueGeneratedNever();
         builder.Property(x => x.MaxPerClub).HasDefaultValue((byte)3).ValueGeneratedNever();
         builder.HasIndex(x => x.Key).IsUnique().HasDatabaseName("UQ_Competitions_Key");
-        builder.HasIndex(x => x.ExternalLeagueId).IsUnique().HasDatabaseName("UQ_Competitions_ExternalLeagueId");
+        builder.Property(x => x.Provider).HasMaxLength(20).IsUnicode(false).HasDefaultValue("api-football").ValueGeneratedNever();
+        builder.Property(x => x.FantasyEnabled).HasDefaultValue(true).ValueGeneratedNever();
+        builder.Property(x => x.ShortName).HasMaxLength(30).HasDefaultValue(string.Empty).ValueGeneratedNever();
+        builder.Property(x => x.Region).HasMaxLength(30).HasDefaultValue(string.Empty).ValueGeneratedNever();
+        builder.Property(x => x.Color).HasMaxLength(9).IsUnicode(false).HasDefaultValue("#0B6E4F").ValueGeneratedNever();
+        builder.HasIndex(x => new { x.Provider, x.ExternalLeagueId }).IsUnique().HasDatabaseName("UQ_Competitions_Provider_ExternalLeagueId");
     }
 }

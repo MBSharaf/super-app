@@ -10,7 +10,7 @@ namespace SuperApp.Infrastructure.Persistence.Repositories;
 public sealed class FantasyTeamRepository(AppDbContext db) : IFantasyTeamRepository
 {
     public Task<SeasonInfo?> SeasonAsync(string competitionKey, DateTime now, CancellationToken ct) =>
-        db.Set<Season>().AsNoTracking().Where(s => s.IsCurrent && s.Competition.Key == competitionKey && s.Competition.IsActive)
+        db.Set<Season>().AsNoTracking().Where(s => s.IsCurrent && s.Competition.Key == competitionKey && s.Competition.IsActive && s.Competition.FantasyEnabled)
             .Select(s => new SeasonInfo(s.Id, s.CompetitionId, s.Competition.Key, s.Year, s.Competition.SquadBudget, s.Competition.MaxPerClub,
                 s.Gameweeks.Where(g => g.Deadline > now).OrderBy(g => g.Number).Select(g => new OpenGameweek(g.Id, g.Number, g.Deadline)).FirstOrDefault()))
             .FirstOrDefaultAsync(ct);

@@ -15,6 +15,7 @@ public class Fixture : BaseEntity
     public byte? HomeGoals { get; set; }
     public byte? AwayGoals { get; set; }
     public byte? Minute { get; set; }
+    public string? Venue { get; set; }
 
     // Navigation
     public Gameweek Gameweek { get; set; } = null!;

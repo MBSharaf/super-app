@@ -17,6 +17,7 @@ internal sealed class FixtureConfiguration : IEntityTypeConfiguration<Fixture>
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(FixtureStatus.Scheduled).ValueGeneratedNever();
+        builder.Property(x => x.Venue).HasMaxLength(120);
         builder.HasIndex(x => x.ExternalId).IsUnique().HasDatabaseName("UQ_Fixtures_ExternalId");
         builder.HasIndex(x => x.KickoffAt).HasDatabaseName("IX_Fixtures_KickoffAt");
         builder.HasOne(x => x.Gameweek).WithMany(p => p.Fixtures).HasForeignKey(x => x.GameweekId).OnDelete(DeleteBehavior.Cascade);

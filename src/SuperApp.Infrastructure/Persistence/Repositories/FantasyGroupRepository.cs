@@ -94,5 +94,5 @@ public sealed class FantasyGroupRepository(AppDbContext db) : IFantasyGroupRepos
             .ToListAsync(ct);
 
     public Task<long?> CurrentSeasonIdAsync(string competition, CancellationToken ct) =>
-        db.Set<Season>().Where(s => s.IsCurrent && s.Competition.Key == competition).Select(s => (long?)s.Id).FirstOrDefaultAsync(ct);
+        db.Set<Season>().Where(s => s.IsCurrent && s.Competition.Key == competition && s.Competition.FantasyEnabled).Select(s => (long?)s.Id).FirstOrDefaultAsync(ct);
 }

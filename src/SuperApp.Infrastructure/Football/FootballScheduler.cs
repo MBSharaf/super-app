@@ -12,15 +12,17 @@ using SuperApp.Infrastructure.Persistence;
 namespace SuperApp.Infrastructure.Football;
 
 /// <summary>
-/// Runs the football sync on a schedule that fits the free plan (INTEGRATIONS §7.2): every 6 hours, and every 10 minutes
-/// only while one of our matches is being played or a finished match still waits for its statistics. Off in the
-/// "Testing" environment and when <c>Football:Scheduler:Enabled</c> is false.
+/// Runs the football sync per competition: every 6 hours; a fantasy competition every 10 minutes while one of its
+/// matches is on or a finished match still waits for its statistics; the others every 30 minutes while their matches
+/// are on (the free sources have no live minute-by-minute data). Off in the "Testing" environment and when
+/// <c>Football:Scheduler:Enabled</c> is false.
 /// </summary>
 public sealed class FootballScheduler(IServiceScopeFactory scopes, IHostEnvironment environment, IConfiguration configuration, ILogger<FootballScheduler> logger)
     : BackgroundService
 {
     private static readonly TimeSpan Tick = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan Quiet = TimeSpan.FromHours(6);
+    private static readonly TimeSpan OthersWhilePlaying = TimeSpan.FromMinutes(30);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -42,9 +44,10 @@ public sealed class FootballScheduler(IServiceScopeFactory scopes, IHostEnvironm
         try
         {
             using var scope = scopes.CreateScope();
-            if (await DueAsync(scope.ServiceProvider, ct))
+            var sync = scope.ServiceProvider.GetRequiredService<IFootballSyncService>();
+            foreach (var competition in await DueAsync(scope.ServiceProvider, ct))
             {
-                await scope.ServiceProvider.GetRequiredService<IFootballSyncService>().SyncAsync(null, ct);
+                await sync.SyncAsync(competition, ct);
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -53,19 +56,24 @@ public sealed class FootballScheduler(IServiceScopeFactory scopes, IHostEnvironm
         }
     }
 
-    /// <summary>Due when never synced, quiet for 6 hours, a match is on (or about to start), or statistics are missing.</summary>
-    private static async Task<bool> DueAsync(IServiceProvider services, CancellationToken ct)
+    /// <summary>The competitions to sync now (see the class summary).</summary>
+    private static async Task<IReadOnlyList<string>> DueAsync(IServiceProvider services, CancellationToken ct)
     {
         var db = services.GetRequiredService<AppDbContext>();
         var now = services.GetRequiredService<IClock>().UtcNow;
-        var last = await db.Set<Season>().Where(s => s.IsCurrent).MinAsync(s => s.LastSyncedAt, ct);
-        if (last is null || now - last >= Quiet)
+        var (from, to) = (now.AddMinutes(-130), now.AddMinutes(10));
+        var rows = await db.Set<Competition>().AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.SortOrder).Select(c => new
         {
-            return true;
-        }
-        var from = now.AddMinutes(-130);
-        var to = now.AddMinutes(10);
-        return await db.Set<Fixture>().AnyAsync(f => f.Gameweek.Season.IsCurrent
-            && ((f.KickoffAt >= from && f.KickoffAt <= to) || (f.Status == FixtureStatus.Finished && !f.PlayerStats.Any())), ct);
+            c.Key,
+            c.FantasyEnabled,
+            Last = db.Set<Season>().Where(s => s.CompetitionId == c.Id && s.IsCurrent).Select(s => s.LastSyncedAt).FirstOrDefault(),
+            Playing = db.Set<Fixture>().Any(f => f.Gameweek.Season.CompetitionId == c.Id && f.Gameweek.Season.IsCurrent && f.KickoffAt >= from && f.KickoffAt <= to),
+            WaitingStats = c.FantasyEnabled && db.Set<Fixture>().Any(f => f.Gameweek.Season.CompetitionId == c.Id && f.Gameweek.Season.IsCurrent
+                && f.Status == FixtureStatus.Finished && !f.PlayerStats.Any()),
+        }).ToListAsync(ct);
+        return rows.Where(r => r.Last is null || now - r.Last >= Quiet
+                || (r.FantasyEnabled && (r.Playing || r.WaitingStats))
+                || (!r.FantasyEnabled && r.Playing && now - r.Last >= OthersWhilePlaying))
+            .Select(r => r.Key).ToList();
     }
 }
