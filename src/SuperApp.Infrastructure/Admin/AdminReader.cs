@@ -45,7 +45,8 @@ public sealed partial class AdminReader(AppDbContext db) : IAdminReader
             return null;
         }
         var extra = await db.Users.Where(u => u.Id == id).Select(u => new { u.AdminNote, u.SuspendedReason, u.Language }).FirstAsync(ct);
-        var bookings = await BookingRows(db.Set<Booking>().Where(b => b.CustomerId == id).OrderByDescending(b => b.CreatedAt)).Take(10).ToListAsync(ct);
+        // IgnoreQueryFilters: bookings at a pitch or venue removed since then stay in the history (bookings are never soft-deleted)
+        var bookings = await BookingRows(db.Set<Booking>().IgnoreQueryFilters().Where(b => b.CustomerId == id).OrderByDescending(b => b.CreatedAt)).Take(10).ToListAsync(ct);
         var orders = await OrderRows(db.Set<Order>().Where(o => o.CustomerId == id).OrderByDescending(o => o.CreatedAt)).Take(10).ToListAsync(ct);
         var tickets = await db.Set<Ticket>().CountAsync(t => t.OpenedById == id && t.Status != TicketStatus.Resolved && t.Status != TicketStatus.Closed, ct);
         return new CustomerDetailDto(row, extra.AdminNote, extra.SuspendedReason, extra.Language, bookings, orders, tickets);

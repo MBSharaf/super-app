@@ -26,10 +26,10 @@
       const extra = { range: q.range, from: q.from, to: q.to, q: q.q };
       let table = '', count = 0;
       if (!tab) {
-        const all = D.ledger({ from: r.from, to: r.to }).filter((b) => (!q.status || b.status === q.status) && match(q.q, b.id, b.customer?.name, b.customer?.phone, b.pitchName));
+        const all = AD().bookingsLive?.(r, { q: q.q, status: q.status }) || D.ledger({ from: r.from, to: r.to }).filter((b) => (!q.status || b.status === q.status) && match(q.q, b.id, b.customer?.name, b.customer?.phone, b.pitchName));
         count = all.length;
         table = `<thead><tr><th>Booking</th><th>When</th><th>Pitch</th><th>Customer</th><th>Source</th><th>Status</th><th class="r">Amount</th></tr></thead><tbody>
-          ${all.slice(0, n).map((b) => `<tr data-booking="${esc(b.id)}" tabindex="0"><td class="xs mono">${esc(b.id.length > 22 ? `${b.id.slice(0, 20)}…` : b.id)}</td><td class="small nowrap">${fmtDate(b.date)}<span class="xs muted" style="display:block">${fmtHour(b.hour)} · ${b.duration} h</span></td><td class="small">${esc(b.pitchName)}</td><td class="small">${esc(b.customer?.name || '')}</td><td class="xs">${esc(b.sourceLabel)}</td><td>${C.statusBadge(b.status)}</td><td class="r num">${money(b.amount)}</td></tr>`).join('')}`;
+          ${all.slice(0, n).map((b) => `<tr ${b.live ? '' : `data-booking="${esc(b.id)}" tabindex="0"`}><td class="xs mono">${esc(b.id.length > 22 ? `${b.id.slice(0, 20)}…` : b.id)}</td><td class="small nowrap">${fmtDate(b.date)}<span class="xs muted" style="display:block">${fmtHour(b.hour)} · ${b.duration} h</span></td><td class="small">${esc(b.pitchName)}</td><td class="small">${esc(b.customer?.name || '')}</td><td class="xs">${esc(b.sourceLabel)}</td><td>${C.statusBadge(b.status)}</td><td class="r num">${money(b.amount)}</td></tr>`).join('')}`;
       } else if (tab === 'shop') {
         const all = D.orders({ from: r.from, to: r.to }).filter((o) => (!q.status || o.status === q.status) && match(q.q, o.orderId, o.customer?.name, o.storeName));
         count = all.length;

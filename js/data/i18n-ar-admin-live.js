@@ -88,7 +88,9 @@
     'Free sources: the English league from the Fantasy Premier League site, the others from TheSportsDB (results, no live minutes). Egyptian fantasy is paused.': 'مصادر مجانية: الدوري الإنجليزي من موقع فانتازي البريميرليج، والباقي من TheSportsDB (نتايج من غير دقايق لايف). فانتازي الدوري المصري متوقف.',
     'Write the reason — whoever asked sees it.': 'اكتب السبب — اللي طلب هيشوفه.',
     'Above the withdrawal approval limit — a second person approves before it can be sent': 'فوق حد الموافقة على السحب — لازم شخص تاني يوافق قبل ما يتبعت',
-    'Paid from wallet': 'اتدفع من المحفظة', 'Wallet top-up — {0}': 'شحن المحفظة — {0}',
+    'Paid from wallet': 'اتدفع من المحفظة',
+    'This isn’t on the server yet — it works in the demo only.': 'الحاجة دي لسه مش على السيرفر — شغالة في وضع العرض بس.', 'Weekly package': 'باقة أسبوعية', 'Free slot': 'ساعة فاضية', 'Series': 'حجز متكرر',
+    'Venues: {0} · Pitches: {1}': 'الأماكن: {0} · الملاعب: {1}', 'Bookings (30 days): {0}': 'الحجوزات (30 يوم): {0}', 'Wallet top-up — {0}': 'شحن المحفظة — {0}',
     'Send an Idempotency-Key header with the top-up.': 'حصلت مشكلة في الطلب. جرّب تاني.', 'Top up between 50 and 20,000 EGP.': 'اشحن من 50 لـ 20,000 جنيه.', 'Whole pounds only.': 'جنيهات صحيحة بس، من غير قروش.',
   });
 })(window.SA);

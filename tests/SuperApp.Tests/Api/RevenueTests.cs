@@ -1,5 +1,7 @@
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
+using SuperApp.Domain.Entities.Pitches;
 
 namespace SuperApp.Tests.Api;
 
@@ -30,5 +32,21 @@ public sealed class RevenueTests(AccountsApiFactory api) : IClassFixture<Account
         (await ceo.GetAsync("/api/v1/admin/revenue")).Body.Data().GetProperty("daily").GetArrayLength().ShouldBe(30);
         (await ceo.GetAsync($"/api/v1/admin/revenue?from={today}&to=2020-01-01")).Body.Code().ShouldBe("range");
         (await player.GetAsync("/api/v1/admin/revenue")).Status.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task A_booking_at_a_removed_pitch_stays_in_the_admin_lists()
+    {
+        var (_, _, _, pitch) = await kit.PartnerWithPitchAsync(live: true);
+        var (player, playerId) = await kit.PersonAsync(partner: false);
+        var ceo = await api.CeoAsync();
+        var code = (await player.PostAsync("/api/v1/bookings", new { pitchSlug = pitch.GetProperty("slug").GetString(), date = PartnerKit.Day(6), hour = 20, duration = 1, payAtVenue = false, acceptWaiver = true }))
+            .Body.Data().GetProperty("code").GetString();
+        var pitchId = pitch.GetProperty("id").GetInt64();
+        await api.DbAsync(db => db.Set<Pitch>().IgnoreQueryFilters().Where(p => p.Id == pitchId).ExecuteUpdateAsync(u => u.SetProperty(p => p.IsDeleted, true)));
+
+        var detail = (await ceo.GetAsync($"/api/v1/admin/customers/{playerId}")).Body.Data();
+        detail.GetProperty("recentBookings").EnumerateArray().ShouldContain(b => b.GetProperty("code").GetString() == code);
+        (await ceo.GetAsync($"/api/v1/admin/bookings?q={code}")).Body.Data().EnumerateArray().ShouldContain(b => b.GetProperty("code").GetString() == code);
     }
 }

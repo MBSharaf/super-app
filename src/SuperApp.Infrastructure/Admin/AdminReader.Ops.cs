@@ -43,7 +43,8 @@ public sealed partial class AdminReader
 
     public async Task<PagedResult<BookingRowDto>> BookingsAsync(OrdersQuery query, CancellationToken ct)
     {
-        var bookings = db.Set<Booking>().AsQueryable();
+        // Every booking, also at a pitch or venue removed since then (bookings are never soft-deleted)
+        var bookings = db.Set<Booking>().IgnoreQueryFilters();
         if (Enum.TryParse<BookingStatus>(query.Status, true, out var status))
         {
             bookings = bookings.Where(b => b.Status == status);

@@ -22,6 +22,9 @@
       body: `<div class="adm-drawer">${render(id)}</div>`,
       onMount(m, close) {
         host = m.querySelector('.adm-drawer');
+        // API mode: the details arrive after the drawer opens
+        const refresh = () => { if (host?.isConnected) paint(); else document.removeEventListener('adm:refresh', refresh); };
+        document.addEventListener('adm:refresh', refresh);
         m.addEventListener('click', async (e) => {
           if (e.target.closest('[data-x]')) { close(); return; }
           if (await onClick(e, id, close)) { dirty = true; paint(); }
@@ -69,19 +72,19 @@
       ${c.device ? `<section class="adm-ds"><h3 class="h4">Shop orders</h3>${c.orderList.length ? `<ul class="adm-list">${c.orderList.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.id)}</b><span class="xs muted" style="display:block">${fmtDate(new Date(o.createdAt))} · ${o.lines.length} item${o.lines.length > 1 ? 's' : ''} · ${esc(o.payment?.label || '')}</span></span><b class="num small">${money(o.total)}</b></li>`).join('')}</ul>` : '<p class="small muted">No orders.</p>'}</section>` : ''}
       <section class="adm-ds"><h3 class="h4">Printed items</h3>${c.podList.length ? `<ul class="adm-list">${c.podList.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.title)}</b><span class="xs muted" style="display:block">${fmtDate(new Date(o.placedAt))} · ${esc(o.color)} · ${esc(o.size)}</span></span><span class="badge ${o.status === 'refused' ? 'badge-danger' : o.status === 'delivered' ? 'badge-turf' : ''}">${esc(o.status)}</span><b class="num small">${money(o.price)}</b></li>`).join('')}</ul>` : '<p class="small muted">No printed items.</p>'}</section>
       ${c.credits.length ? `<section class="adm-ds"><h3 class="h4">Credits from Super App</h3><ul class="adm-list">${c.credits.map((x) => `<li><span class="grow small">${esc(x.reason)}<span class="xs muted" style="display:block">${fmtDate(new Date(x.at))}</span></span><b class="num small" style="color:var(--turf)">+${money(x.amount)}</b></li>`).join('')}</ul></section>` : ''}
-      ${!c.device ? `<p class="xs muted adm-ds">${icon('info', 12)} Demo: only the shopper on this device receives notifications and wallet credits for real. Others are recorded.</p>` : ''}`;
+      ${!c.device && !c.live ? `<p class="xs muted adm-ds">${icon('info', 12)} Demo: only the shopper on this device receives notifications and wallet credits for real. Others are recorded.</p>` : ''}`;
   };
   const customerClick = async (e, id) => {
     const act = e.target.closest('[data-act]')?.dataset.act;
     try {
-      if (act === 'block') { const r = await A.reason({ title: 'Block this customer?', text: 'They can still browse, but can’t book, order, join games or buy a Fantasy Pass.', label: 'Reason (internal)', confirmLabel: 'Block', danger: true }); if (!r) return; AD().blockCustomer(id, r.reason); toast('Customer blocked', 'info'); return true; }
-      if (act === 'unblock') { AD().unblockCustomer(id); toast('Customer unblocked'); return true; }
-      if (act === 'reset') { AD().resetRefusals(id); toast('Refusals reset'); return true; }
+      if (act === 'block') { const r = await A.reason({ title: 'Block this customer?', text: 'They can still browse, but can’t book, order, join games or buy a Fantasy Pass.', label: 'Reason (internal)', confirmLabel: 'Block', danger: true }); if (!r) return; await AD().blockCustomer(id, r.reason); toast('Customer blocked', 'info'); return true; }
+      if (act === 'unblock') { await AD().unblockCustomer(id); toast('Customer unblocked'); return true; }
+      if (act === 'reset') { await AD().resetRefusals(id); toast('Refusals reset'); return true; }
       if (act === 'points') {
         const r = await A.reason({ title: 'Adjust Super Points', text: 'Use a minus sign to remove points. They see the reason in their points history.', label: 'Reason they’ll see', confirmLabel: 'Save', extra: '<div class="field"><label for="pt-a">Points (+ or −)</label><input class="input num" id="pt-a" name="points" type="number" step="10" value="100" /></div>' });
         if (!r) return; AD().adjustPoints(id, r.points, r.reason); toast('Points updated'); return true;
       }
-      if (act === 'note') { const r = await A.reason({ title: 'Add a note', text: 'Only the Super App team sees notes.', label: 'Note', confirmLabel: 'Save note' }); if (!r) return; AD().noteCustomer(id, r.reason); toast('Note saved'); return true; }
+      if (act === 'note') { const r = await A.reason({ title: 'Add a note', text: 'Only the Super App team sees notes.', label: 'Note', confirmLabel: 'Save note' }); if (!r) return; await AD().noteCustomer(id, r.reason); toast('Note saved'); return true; }
       if (act === 'credit') {
         const r = await A.reason({ title: 'Credit their wallet', text: 'Super App pays for it. It shows up in the revenue report as a cost.', label: 'Reason they’ll see', confirmLabel: 'Send credit', extra: '<div class="field"><label for="cr-a">Amount (EGP)</label><input class="input num" id="cr-a" name="amount" type="number" min="5" max="5000" value="100" /></div>' });
         if (!r) return; await AD().creditCustomer(id, r.amount, r.reason); toast(`${money(Math.round(+r.amount))} credited`); return true;
@@ -127,7 +130,7 @@
         AD().log('export', `Exported ${all.length} customers`);
       });
       const open = (id) => drawer({ title: 'Customer', id, render: customerDrawer, onClick: customerClick,
-        onChange: (e, id) => { if (!e.target.matches('[data-prepay]')) return false; try { AD().setPrepay(id, e.target.value); toast('Payment rule saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
+        onChange: async (e, id) => { if (!e.target.matches('[data-prepay]')) return false; try { await AD().setPrepay(id, e.target.value); toast('Payment rule saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
       el.addEventListener('click', (e) => { const r = e.target.closest('[data-open]'); if (r) open(r.dataset.open); });
       el.addEventListener('keydown', (e) => { const r = e.target.closest('[data-open]'); if (r && e.key === 'Enter') open(r.dataset.open); });
       if (ctx.query.open) setTimeout(() => open(ctx.query.open), 60);
@@ -152,8 +155,8 @@
           <div class="field"><label for="dl-s">Store %</label><input class="input num" id="dl-s" name="store" type="number" min="0" max="50" step="0.5" value="${d?.store != null ? +(d.store * 100).toFixed(1) : ''}" placeholder="${+(g.store * 100).toFixed(1)}" /></div>
           <div class="field span-2"><label for="dl-n">Note (internal)</label><input class="input" id="dl-n" name="note" maxlength="120" value="${esc(d?.note || '')}" placeholder="e.g. 12-month deal, 3 venues" /></div>
           <div class="span-2 row" style="--gap:8px;justify-content:flex-end">${d ? '<button type="button" class="btn btn-ghost btn-sm" data-act="deal-clear">Use platform rate</button>' : ''}<button class="btn btn-primary btn-sm" type="submit">Save deal</button></div></form></section>`; })()}
-      <section class="adm-ds"><h3 class="h4">Pitches</h3><ul class="adm-list">${pitches.map((x) => `<li><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.area)} · ${esc(x.format)} · ${money(x.price)}/h</span></span>${x.status === 'active' ? '<span class="badge badge-turf">Open</span>' : `<span class="badge badge-danger" title="${esc(x.closedReason || '')}">Closed</span>`}
-        <a class="btn btn-ghost btn-sm" href="#/pitches/${x.id}" target="_blank" rel="noopener">View</a><button class="btn btn-ghost btn-sm" data-pitch="${x.id}" data-to="${x.status === 'active' ? 'closed' : 'active'}">${x.status === 'active' ? 'Close' : 'Reopen'}</button></li>`).join('') || '<li class="small muted">No pitches yet.</li>'}</ul></section>
+      ${p.live ? `<section class="adm-ds"><h3 class="h4">Venues</h3><ul class="adm-list"><li><span class="grow"><b class="small">Venues: ${p.venues} · Pitches: ${p.pitches}</b><span class="xs muted" style="display:block">Bookings (30 days): ${p.bookings30}</span></span></li></ul></section>` : `<section class="adm-ds"><h3 class="h4">Pitches</h3><ul class="adm-list">${pitches.map((x) => `<li><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.area)} · ${esc(x.format)} · ${money(x.price)}/h</span></span>${x.status === 'active' ? '<span class="badge badge-turf">Open</span>' : `<span class="badge badge-danger" title="${esc(x.closedReason || '')}">Closed</span>`}
+        <a class="btn btn-ghost btn-sm" href="#/pitches/${x.id}" target="_blank" rel="noopener">View</a><button class="btn btn-ghost btn-sm" data-pitch="${x.id}" data-to="${x.status === 'active' ? 'closed' : 'active'}">${x.status === 'active' ? 'Close' : 'Reopen'}</button></li>`).join('') || '<li class="small muted">No pitches yet.</li>'}</ul></section>`}
       ${store ? `<section class="adm-ds"><h3 class="h4">Products</h3><ul class="adm-list">${db().all('products').filter((x) => x.storeId === store.id && !x.deleted).map((x) => `<li class="${x.hiddenByAdmin ? 'is-dim' : ''}"><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${money(x.price)} · ${x.stock} in stock${x.hiddenByAdmin ? ` · hidden: ${esc(x.hiddenReason)}` : x.status !== 'active' ? ' · draft' : ''}</span></span><a class="btn btn-ghost btn-sm" href="#/shop/${x.id}" target="_blank" rel="noopener">View</a><button class="btn btn-ghost btn-sm" data-hide-product="${x.id}" data-on="${x.hiddenByAdmin ? '' : '1'}">${x.hiddenByAdmin ? 'Show' : 'Hide'}</button></li>`).join('') || '<li class="small muted">No products.</li>'}</ul></section>` : ''}
       ${store ? `<section class="adm-ds"><h3 class="h4">Store</h3><ul class="adm-list"><li><span class="grow"><b class="small">${esc(store.name)}</b><span class="xs muted" style="display:block">${db().all('products').filter((x) => x.storeId === store.id && !x.deleted).length} products</span></span><span class="badge ${store.status === 'active' ? 'badge-turf' : 'badge-danger'}">${store.status === 'active' ? 'Live' : 'Suspended'}</span><a class="btn btn-ghost btn-sm" href="#/shop?store=${store.id}" target="_blank" rel="noopener">View</a></li></ul></section>` : ''}`;
   };
@@ -161,9 +164,9 @@
     const act = e.target.closest('[data-act]')?.dataset.act;
     try {
       if (act === 'open') { AD().openDashboard(id); window.open(SA.core.router.url('/dash'), '_blank', 'noopener'); return false; }
-      if (act === 'adjust') { A.adjustDialog(id); return false; }
-      if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super App. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
-      if (act === 'activate') { AD().setPartnerStatus(id, 'active'); toast('Partner reactivated'); return true; }
+      if (act === 'adjust') { if (String(id).startsWith('p:')) { toast('This isn’t on the server yet — it works in the demo only.', 'error'); return false; } A.adjustDialog(id); return false; }
+      if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super App. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; await AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
+      if (act === 'activate') { await AD().setPartnerStatus(id, 'active'); toast('Partner reactivated'); return true; }
       if (act === 'deal-clear') { AD().setCommissionDeal(id, {}); toast('Platform rates apply again', 'info'); return true; }
       const hp = e.target.closest('[data-hide-product]');
       if (hp) {
