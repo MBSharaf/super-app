@@ -55,6 +55,10 @@
   /** Theme + language switches (header, dashboard, menu) */
   const prefButtons = (cls = '') => `<button class="icon-btn ${cls}" data-action="toggle-theme" aria-label="${SA.core.theme.current() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}" title="${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 19)}</button><button class="icon-btn lang-btn ${cls}" data-action="toggle-lang" aria-label="${SA.i18n.isAr ? 'English' : 'العربية'}" title="${SA.i18n.isAr ? 'English' : 'العربية'}" data-i18n-skip>${SA.i18n.isAr ? 'EN' : 'ع'}</button>`;
 
+  /** API mode with no account signed in: the header shows "Sign in" instead of the wallet, alerts and avatar */
+  const signedOut = () => !!SA.services.api?.isLive() && !!SA.services.session?.loaded() && !SA.services.session.me();
+  const signInHref = (path) => `#/auth/sign-in${path && path !== '/' && !path.startsWith('/auth') ? `?next=${encodeURIComponent(SA.core.router.location())}` : ''}`;
+
   const header = (path) => {
     const s = store.get();
     const cartCount = s.cart.reduce((a, l) => a + l.qty, 0);
@@ -68,10 +72,10 @@
       <nav class="main-nav" aria-label="Main">${mainNav(path)}</nav>
       <div class="header-actions">
         ${prefButtons('hdr-pref')}
-        <a class="wallet-chip" href="#/wallet" aria-label="Wallet balance ${money(s.wallet.balance)}"><span class="w-ico">${icon('wallet', 15, 2)}</span><span class="num">${money(s.wallet.balance)}</span></a>
-        <button class="icon-btn" data-action="open-notifications" aria-label="Notifications${unread ? `, ${unread} unread` : ''}">${icon('bell')}${unread ? `<span class="dot-count">${unread}</span>` : ''}</button>
+        ${signedOut() ? '' : `<a class="wallet-chip" href="#/wallet" aria-label="Wallet balance ${money(s.wallet.balance)}"><span class="w-ico">${icon('wallet', 15, 2)}</span><span class="num">${money(s.wallet.balance)}</span></a>
+        <button class="icon-btn" data-action="open-notifications" aria-label="Notifications${unread ? `, ${unread} unread` : ''}">${icon('bell')}${unread ? `<span class="dot-count">${unread}</span>` : ''}</button>`}
         <a class="icon-btn" href="#/cart" data-cart-target aria-label="Cart${cartCount ? `, ${cartCount} items` : ''}">${icon('cart')}${cartCount ? `<span class="dot-count" data-cart-count>${cartCount}</span>` : ''}</a>
-        <a class="header-avatar" href="#/profile" aria-label="Your profile">${SA.ui.c.avatar(u)}</a>
+        ${signedOut() ? `<a class="btn btn-primary btn-sm hdr-signin" href="${signInHref(path)}">${icon('user', 15)} Sign in</a>` : `<a class="header-avatar" href="#/profile" aria-label="Your profile">${SA.ui.c.avatar(u)}</a>`}
         <button class="icon-btn menu-btn" data-action="open-menu" aria-label="Open menu">${icon('grid')}</button>
       </div>
     </div>`;
@@ -152,7 +156,8 @@
             body: `<a href="#/" class="menu-item menu-home ${path === '/' ? 'is-active' : ''}" data-close><span class="menu-ico">${icon('home', 20)}</span><span class="grow">Home</span></a>
               ${GROUPS.map((g) => `<section class="menu-group"><h3 class="menu-group-title">${g.label}</h3><nav class="menu-list" aria-label="${g.label}">${g.items.map((n) => `<a href="${n.href}" class="menu-item ${n.match(path) ? 'is-active' : ''}" style="--i:${i++}" data-close>
                 <span class="menu-ico">${icon(n.icon, 20)}</span><span class="grow menu-txt"><span>${n.label}</span><span class="xs muted">${n.text}</span></span>${linkBadge(n, live) || icon('chevronRight', 18)}</a>`).join('')}</nav></section>`).join('')}
-              <section class="menu-group"><h3 class="menu-group-title">My account</h3><div class="menu-sub">${MINE.map(([h, ic, l]) => `<a href="${h}" data-close>${icon(ic, 18)} ${l}</a>`).join('')}</div></section>
+              ${signedOut() ? `<section class="menu-group"><h3 class="menu-group-title">My account</h3><div class="menu-prefs"><a class="btn btn-primary btn-sm" href="${signInHref(path)}" data-close>${icon('user', 16)} Sign in</a><a class="btn btn-outline btn-sm" href="#/auth/sign-up" data-close>Create an account</a></div></section>`
+                : `<section class="menu-group"><h3 class="menu-group-title">My account</h3><div class="menu-sub">${MINE.map(([h, ic, l]) => `<a href="${h}" data-close>${icon(ic, 18)} ${l}</a>`).join('')}</div></section>`}
               <a class="menu-partner" href="#/dash" data-close>${icon('grid', 18)}<span class="grow"><b>Partner dashboard</b><span class="xs muted">For pitch owners, sellers and print partners</span></span>${icon('chevronRight', 16)}</a>
               <div class="menu-prefs"><button class="btn btn-outline btn-sm" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button><button class="btn btn-outline btn-sm" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
               ${SA.ui.social.render({ variant: 'light' })}`,
@@ -222,6 +227,7 @@
     SA.core.motion.init();
     window.addEventListener('resize', SA.core.utils.debounce(() => SA.core.motion.syncIndicators(), 120));
     bindGlobal();
+    SA.services.session?.subscribe(() => render());
     let prevCart = 0;
     store.subscribe((s, meta) => {
       if (meta === 'payment:new') {

@@ -11,7 +11,7 @@
   const toast = (m, type = 'success') => SA.ui.overlay.toast(m, { type });
 
   /** Only addresses inside the site are allowed after sign-in (no open redirects) */
-  const nextOf = (ctx, fallback = '/profile') => { const n = ctx.query.next || ''; return /^\/[a-z0-9/_-]*$/i.test(n) ? n : fallback; };
+  const nextOf = (ctx, fallback = '/profile') => { const n = ctx.query.next || ''; return /^\/[a-z0-9/_-]*(\?[a-z0-9=&%._+-]*)?$/i.test(n) ? n : fallback; };
   const withNext = (path, ctx) => (ctx.query.next ? `${path}?next=${encodeURIComponent(ctx.query.next)}` : path);
 
   const field = (name, label, type = 'text', extra = '') => `<div class="field"><label for="au-${name}">${label}</label><input class="input" id="au-${name}" name="${name}" type="${type}" ${extra} /><p class="field-error" data-err="${name}"></p></div>`;
