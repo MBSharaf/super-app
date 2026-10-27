@@ -39,7 +39,7 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         first["roles"].ShouldBe(13);
         first["settings"].ShouldBeGreaterThan(20);
         first["flags"].ShouldBe(12);
-        first["integrations"].ShouldBe(20);
+        first["integrations"].ShouldBe(22);
         first["facilities"].ShouldBe(14);
         first["policies"].ShouldBe(4);
         first["shopCategories"].ShouldBe(9);

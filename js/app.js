@@ -180,6 +180,8 @@
     .add('/ceo/whatif', P.ceoWhatIf)
     .add('/ceo/control', P.ceoControl)
     .add('/ceo/systems', P.ceoSystems)
+    .add('/ceo/integrations', P.ceoIntegrations)
+    .add('/ceo/apis', P.ceoApis)
     .add('/ceo/audit', P.ceoAudit)
     .add('/ceo/sitemap', P.ceoSiteMap)
     .add('/ceo/legal', P.ceoLegal)

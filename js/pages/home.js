@@ -20,16 +20,16 @@
         <div class="pitch3d-glow"></div>
         <span class="pitch3d-anchor" aria-hidden="true"></span>
       </div>
-      <div class="float-card fc-pitch">
+      ${pitch ? `<div class="float-card fc-pitch">
         <img src="${media.photo(pitch.images[0], 160, 160)}" alt="" />
         <div><b>${esc(pitch.name)}</b><span>${fmtKm(pitch.distanceKm)} · ${pitch.freeSlots} slots today</span></div>
         <span class="fc-price">${money(pitch.price)}</span>
-      </div>
-      <div class="float-card fc-match">
+      </div>` : ''}
+      ${match ? `<div class="float-card fc-match">
         <div class="row-between"><span class="badge badge-blaze"><span class="live-dot"></span>${match.spotsLeft} spots open</span><span class="xs muted">${relDay(match.date)}, ${fmtHour(match.hour)}</span></div>
         <b>${esc(match.pitch.name)}</b>
         ${c.spots(match.filled, match.total)}
-      </div>
+      </div>` : ''}
       <div class="float-card fc-fantasy">
         <span class="xs">Gameweek ${meta.gw} deadline</span>
         ${c.countdown(meta.deadline, { compact: true })}

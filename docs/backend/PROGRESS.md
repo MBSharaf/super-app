@@ -255,7 +255,7 @@ PRD §14: security review, performance, backups, tests, Postman, PWA. Phases 4, 
 Owner's decisions (2026-10-27): finish everything step by step in this order; **reopen the store for sellers' own
 products (seller mode OwnProducts) — print on demand stays off**.
 
-- [ ] R1 CEO: integrations screen (keys present, test connection) and API catalogue screen — new screens in the CEO design (server: /ceo/integrations, /ceo/api-catalogue)
+- [x] R1 CEO: integrations screen (keys present, test connection) and API catalogue screen — new screens in the CEO design (server: /ceo/integrations, /ceo/api-catalogue) — done: `js/pages/ceo/integrations.js` (#/ceo/integrations, #/ceo/apis), FPL and TheSportsDB added to the registry (on an existing database they appear at the next start; switch API-FOOTBALL off there by hand), also fixed: the home page crashed when no game or pitch was listed
 - [ ] R2 CEO: departments and positions (org) read the server (/ceo/org); AI agents already do
 - [ ] R3 Team and permissions on the site: invite an admin, roles, permissions, money limits, suspend, reset 2FA, resend invite (server: /ceo/admins, /ceo/roles, /ceo/permissions — done in Phase 7, the CEO screens still use demo data)
 - [ ] R4 Sign-in in the header: in API mode a signed-out visitor sees "Sign in" where the demo avatar is (same header style); the sign-in, sign-up, 2FA, forgot / reset, confirm and invite pages exist since Phase 2 (#/auth/…)

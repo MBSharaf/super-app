@@ -25,6 +25,8 @@
     { key: 'whatif', label: 'What-if simulator', href: '#/ceo/whatif', icon: 'sparkle' },
     { key: 'control', label: 'Control room', href: '#/ceo/control', icon: 'settings', badge: 'off' },
     { key: 'systems', label: 'All systems', href: '#/ceo/systems', icon: 'globe' },
+    { key: 'integrations', label: 'Integrations', href: '#/ceo/integrations', icon: 'bolt' },
+    { key: 'apis', label: 'API catalogue', href: '#/ceo/apis', icon: 'list' },
     { key: 'sitemap', label: 'Every page', href: '#/ceo/sitemap', icon: 'list' },
     { key: 'audit', label: 'Company audit log', href: '#/ceo/audit', icon: 'clock' },
   ];
