@@ -25,7 +25,7 @@ public sealed record CreateTournamentRequest(long PitchId, string Name, string T
     DateOnly StartsOn, int Hour, string RulesText);
 
 /// <summary>POST /tournaments/{id}/teams — the signed-in person is the captain; pays the entry fee.</summary>
-public sealed record RegisterTeamRequest(string TeamName, string Phone, bool AcceptWaiver);
+public sealed record RegisterTeamRequest(string TeamName, string Phone, bool AcceptWaiver, bool PayFromWallet = false);
 
 /// <summary>POST /partner/tournaments/{id}/teams — a team the venue adds (pays cash at the venue).</summary>
 public sealed record VenueTeamRequest(string TeamName, string? Phone);

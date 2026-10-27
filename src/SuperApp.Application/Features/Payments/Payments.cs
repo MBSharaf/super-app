@@ -42,6 +42,8 @@ public interface IPaymentRepository
     void Add(Payment payment);
 
     Task<Payment?> FindAsync(string code, CancellationToken ct);
+
+    Task<Payment?> FindByKeyAsync(string idempotencyKey, CancellationToken ct);
 }
 
 /// <summary>Called when a payment for its purpose is confirmed or fails (bookings, later orders, passes…).</summary>
@@ -54,8 +56,12 @@ public interface IPaymentListener
     Task FailedAsync(Payment payment, CancellationToken ct);
 }
 
-/// <summary>What a service asks for: who pays, how much, for what.</summary>
-public sealed record PaymentRequest(PaymentPurpose Purpose, decimal Amount, Guid PayerId, string Description, string ReturnPath);
+/// <summary>
+/// What a service asks for: who pays, how much, for what. <c>FromWallet</c> pays from the payer's Super App wallet at once
+/// (not enough money → 422 insufficient_funds); <c>IdempotencyKey</c> defaults to a new one.
+/// </summary>
+public sealed record PaymentRequest(PaymentPurpose Purpose, decimal Amount, Guid PayerId, string Description, string ReturnPath, bool FromWallet = false,
+    string? IdempotencyKey = null);
 
 /// <summary>The payment record and, for a real gateway, the page to send the payer to (null = already paid).</summary>
 public sealed record PaymentStarted(Payment Payment, string? RedirectUrl);
@@ -84,17 +90,25 @@ public sealed class PaymentsService(
     IUnitOfWork unitOfWork,
     IAuditLogger audit,
     ICurrentUser currentUser,
-    IClock clock) : IPaymentsService
+    IClock clock,
+    Money.ILedger ledger) : IPaymentsService
 {
+    public const string WalletProvider = "wallet";
+
     public async Task<PaymentStarted> StartAsync(PaymentRequest request, CancellationToken ct)
     {
         var payment = new Payment
         {
-            Code = await payments.NewCodeAsync(ct), PayerUserId = request.PayerId, Provider = gateway.Provider, Purpose = request.Purpose,
-            Method = PaymentMethod.Card, Amount = request.Amount, IdempotencyKey = Guid.NewGuid().ToString("N"), Status = PaymentStatus.Pending,
+            Code = await payments.NewCodeAsync(ct), PayerUserId = request.PayerId, Provider = request.FromWallet ? WalletProvider : gateway.Provider,
+            Purpose = request.Purpose, Method = request.FromWallet ? PaymentMethod.SuperAppWallet : PaymentMethod.Card, Amount = request.Amount,
+            IdempotencyKey = request.IdempotencyKey ?? Guid.NewGuid().ToString("N"), Status = PaymentStatus.Pending,
         };
+        if (request.FromWallet)
+        {
+            await ledger.PayFromWalletAsync(payment, ct);
+        }
         payments.Add(payment);
-        if (gateway.IsSimulated)
+        if (request.FromWallet || gateway.IsSimulated)
         {
             payment.Status = PaymentStatus.Paid;
             payment.PaidAt = clock.UtcNow;

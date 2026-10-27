@@ -72,7 +72,7 @@ public sealed class PackagesService(
         {
             matches.Add((await MatchAsync(p, package, plan, request.Duration, waiver, me, ct), p.Slots));
         }
-        var paymentUrl = await PayAsync(package, matches.Select(m => m.Item1).ToList(), first, me, ct);
+        var paymentUrl = await PayAsync(package, matches.Select(m => m.Item1).ToList(), first, me, request.PayFromWallet, ct);
         await packages.SaveAsync(package, matches, ct);
         if (paymentUrl is not null)
         {
@@ -88,10 +88,10 @@ public sealed class PackagesService(
     }
 
     /// <summary>One payment for the whole package, shared by its matches; with Paymob the matches wait for it (AwaitingPayment).</summary>
-    private async Task<string?> PayAsync(Package package, IReadOnlyList<Booking> matches, BookingPlan first, Guid me, CancellationToken ct)
+    private async Task<string?> PayAsync(Package package, IReadOnlyList<Booking> matches, BookingPlan first, Guid me, bool fromWallet, CancellationToken ct)
     {
         var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Package, package.TotalPrice, me,
-            $"Package {package.Code} at {first.Pitch.Name}", $"#/package/{package.Code}"), ct);
+            $"Package {package.Code} at {first.Pitch.Name}", $"#/package/{package.Code}", fromWallet), ct);
         package.Payment = started.Payment;
         foreach (var m in matches)
         {

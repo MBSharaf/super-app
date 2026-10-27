@@ -35,7 +35,7 @@ public sealed record PackageQuoteDto(long OptionId, int MatchCount, decimal Disc
     decimal ListPrice, decimal DiscountAmount, decimal ServiceFee, decimal Total);
 
 /// <summary>POST /packages — paid straight away until payments arrive (Phase 5). <c>AcceptWaiver</c> must be true.</summary>
-public sealed record BuyPackageRequest(string PitchSlug, long OptionId, DateOnly StartsOn, int Hour, int Duration, bool AcceptWaiver);
+public sealed record BuyPackageRequest(string PitchSlug, long OptionId, DateOnly StartsOn, int Hour, int Duration, bool AcceptWaiver, bool PayFromWallet = false);
 
 /// <summary>One match of a package. Status as for bookings (Confirmed, CheckedIn, Played, NoShow, Cancelled…).</summary>
 public sealed record PackageMatchDto(int Number, string Code, DateOnly Date, int StartHour, string Status, DateTime? CheckedInAt, decimal Total, decimal DiscountAmount);

@@ -7,8 +7,10 @@
  * The methods the pages call synchronously answer from a small cache that `sync()` fills (on start, after each
  * money action and when a money page opens). Demo mode (GitHub Pages) is unchanged.
  *
- * Not wired yet (their screens stay demo): wallet top-ups (no top-up on the server yet), the CEO finance-approvals
- * queue (server: /admin/money-approvals — exposed below for the end-of-backend pass) and the admin revenue charts.
+ * Wallet top-ups go through the server (the simulated gateway pays at once; Paymob opens its page and the money arrives
+ * with its callback), and "Pay from wallet" is sent with bookings, packages, tournament entries and the Fantasy Pass.
+ * Not wired yet (their screens stay demo): the CEO finance-approvals queue (server: /admin/money-approvals — exposed
+ * below) and the admin revenue charts.
  */
 (function (SA) {
   const api = SA.services.api;
@@ -26,7 +28,10 @@
   const KIND = {
     Refund: 'Refund', Payout: 'Withdrawal', Adjustment: 'Adjustment', ReleaseFromHold: 'Money released', Voucher: 'Voucher',
     BookingEarning: 'Booking', Deduction: 'Deduction', Commission: 'Commission', ServiceFee: 'Service fee',
+    WalletTopUp: 'Wallet top-up', WalletPayment: 'Paid from wallet',
   };
+  const RECEIPT = { Refund: 'refund', PayoutAdvice: 'payout', TopUp: 'topup' };
+  const RECEIPT_LABEL = { Refund: 'Refund', PayoutAdvice: 'Withdrawal', TopUp: 'Wallet top-up' };
   const PAYOUT = { Requested: 'processing', Prepared: 'processing', WaitingForApproval: 'processing', Sent: 'paid', Rejected: 'rejected', Failed: 'rejected' };
 
   const get = (path) => api.get(path).catch(() => null);
@@ -54,11 +59,19 @@
   });
 
   S.payment.receipts = () => (!live() ? demo.payment.receipts() : cache.receipts.map((r) => ({
-    id: r.number, kind: r.kind === 'Refund' ? 'refund' : r.kind === 'PayoutAdvice' ? 'payout' : 'payment', amount: r.amount, at: at(r.createdAt),
-    label: `${r.kind === 'Refund' ? 'Refund' : r.kind === 'PayoutAdvice' ? 'Withdrawal' : 'Payment'}${r.refCode ? ` — ${r.refCode}` : ''}`, method: r.number, pdf: `/api/v1/receipts/${r.number}.pdf`,
+    id: r.number, kind: RECEIPT[r.kind] || 'payment', amount: r.amount, at: at(r.createdAt),
+    label: `${RECEIPT_LABEL[r.kind] || 'Payment'}${r.refCode ? ` — ${r.refCode}` : ''}`, method: r.number, pdf: `/api/v1/receipts/${r.number}.pdf`,
   })));
   S.payment.walletBalance = () => (!live() ? demo.payment.walletBalance() : wallet('Customer').available);
-  S.payment.topUp = (...args) => (!live() ? demo.payment.topUp(...args) : Promise.reject(new ApiError('Wallet top-ups are coming soon.', 'not_available')));
+  /** The card is entered on the gateway's page (Paymob); the simulated gateway pays at once. One key per click. */
+  S.payment.topUp = async (amount, ...rest) => {
+    if (!live()) return demo.payment.topUp(amount, ...rest);
+    const key = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    const r = await api.post('/wallet/top-ups', { amount: Math.round(+amount) }, { headers: { 'Idempotency-Key': key } });
+    if (r.paymentUrl) { window.location.assign(r.paymentUrl); return r; }
+    await sync();
+    return r;
+  };
 
   /** The receipt button opens the server's PDF for server receipts (the docs component loads after the services) */
   const patchDocs = () => {

@@ -94,7 +94,7 @@ public sealed class TournamentsService(
         var team = new TournamentTeam { Tournament = t, Name = request.TeamName.Trim(), CaptainId = me, Phone = request.Phone.Trim(),
             WaiverVersionId = await legal.CurrentVersionIdAsync("waiver", ct), Status = TournamentTeamStatus.Registered };
         t.Teams.Add(team);
-        var url = await PayAsync(team, t, me, ct);
+        var url = await PayAsync(team, t, me, request.PayFromWallet, ct);
         if (team.WaiverVersionId is { } waiver)
         {
             legal.AddAcceptance(waiver, me, "tournament", requestInfo.IpAddress);
@@ -124,13 +124,13 @@ public sealed class TournamentsService(
     }
 
     /// <summary>Starts the payment (null = nothing to pay or paid at once by the simulated gateway).</summary>
-    private async Task<string?> PayAsync(TournamentTeam team, Tournament t, Guid captain, CancellationToken ct)
+    private async Task<string?> PayAsync(TournamentTeam team, Tournament t, Guid captain, bool fromWallet, CancellationToken ct)
     {
         if (t.EntryFee <= 0)
         {
             return null;
         }
-        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.TournamentFee, t.EntryFee, captain, $"{t.Name} entry — {team.Name}", $"#/tournaments/{t.Id}"), ct);
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.TournamentFee, t.EntryFee, captain, $"{t.Name} entry — {team.Name}", $"#/tournaments/{t.Id}", fromWallet), ct);
         team.Payment = started.Payment;
         return started.RedirectUrl;
     }

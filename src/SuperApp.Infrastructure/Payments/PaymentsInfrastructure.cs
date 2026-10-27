@@ -33,6 +33,9 @@ public sealed class PaymentRepository(AppDbContext db) : IPaymentRepository
     public void Add(Payment payment) => db.Set<Payment>().Add(payment);
 
     public Task<Payment?> FindAsync(string code, CancellationToken ct) => db.Set<Payment>().FirstOrDefaultAsync(p => p.Code == code, ct);
+
+    public Task<Payment?> FindByKeyAsync(string idempotencyKey, CancellationToken ct) =>
+        db.Set<Payment>().FirstOrDefaultAsync(p => p.IdempotencyKey == idempotencyKey, ct);
 }
 
 public sealed class PayerDirectory(AppDbContext db) : IPayerDirectory

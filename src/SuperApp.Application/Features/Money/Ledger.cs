@@ -78,6 +78,15 @@ public interface ILedger
     /// <summary>A player's game share, held in the host's Super App wallet until kick-off; a receipt for the player.</summary>
     Task HeldShareAsync(Payment payment, Guid hostId, string refType, long refId, DateTime release, CancellationToken ct);
 
+    /// <summary>
+    /// Takes a payment from the payer's Super App wallet (available money only); not enough → 422 insufficient_funds. The row
+    /// points at the payment by its code (the payment has no id until it is saved).
+    /// </summary>
+    Task PayFromWalletAsync(Payment payment, CancellationToken ct);
+
+    /// <summary>A paid top-up: the money to the payer's wallet at once and a top-up receipt. Runs once per payment.</summary>
+    Task<bool> TopUpAsync(Payment payment, CancellationToken ct);
+
     /// <summary>Undoes every row of a paid thing and gives the payment back to the customer's wallet (refund + receipt).</summary>
     Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct);
 }
@@ -85,6 +94,8 @@ public interface ILedger
 public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
 {
     public static readonly TimeSpan HoldAfterKickOff = TimeSpan.FromHours(24);
+
+    public const string TopUpRef = "WalletTopUp";
 
     public async Task BookingPaidAsync(Booking booking, CancellationToken ct)
     {
@@ -169,6 +180,28 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
         }
         PostRaw(await store.WalletAsync(hostId, WalletType.Customer, ct), payment.Amount, LedgerBucket.Pending, LedgerKind.WalletPayment, refType, refId, release, Guid.NewGuid());
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = payer, Kind = ReceiptKind.Payment, Amount = payment.Amount, RefType = refType, RefId = refId });
+    }
+
+    public async Task PayFromWalletAsync(Payment payment, CancellationToken ct)
+    {
+        var wallet = await store.WalletAsync(payment.PayerUserId, WalletType.Customer, ct);
+        if (wallet.AvailableBalance < payment.Amount)
+        {
+            throw new Common.Exceptions.BusinessRuleException(
+                $"Your wallet has {wallet.AvailableBalance:0.##} EGP. Top up {payment.Amount - wallet.AvailableBalance:0.##} EGP or pay by card.", "insufficient_funds");
+        }
+        PostRaw(wallet, -payment.Amount, LedgerBucket.Available, LedgerKind.WalletPayment, payment.Code, 0, null, Guid.NewGuid());
+    }
+
+    public async Task<bool> TopUpAsync(Payment payment, CancellationToken ct)
+    {
+        if (payment.Status != PaymentStatus.Paid || payment.PayerUserId is not { } payer || (await store.EntriesForAsync(TopUpRef, payment.Id, ct)).Count > 0)
+        {
+            return false;
+        }
+        PostRaw(await store.WalletAsync(payer, WalletType.Customer, ct), payment.Amount, LedgerBucket.Available, LedgerKind.WalletTopUp, TopUpRef, payment.Id, null, Guid.NewGuid());
+        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.TopUp, ct), UserId = payer, Kind = ReceiptKind.TopUp, Amount = payment.Amount, RefType = TopUpRef, RefId = payment.Id });
+        return true;
     }
 
     public async Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct)

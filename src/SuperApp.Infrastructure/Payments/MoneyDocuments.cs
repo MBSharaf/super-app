@@ -26,7 +26,7 @@ public sealed class MoneyDocuments : IMoneyDocuments
             row.RelativeItem().Column(c =>
             {
                 c.Item().Text("Super App").FontSize(16).Bold().FontColor(Green);
-                c.Item().Text(receipt.Kind switch { "Refund" => "Refund receipt", "PayoutAdvice" => "Payout advice", _ => "Payment receipt" }).FontSize(11).SemiBold();
+                c.Item().Text(receipt.Kind switch { "Refund" => "Refund receipt", "PayoutAdvice" => "Payout advice", "TopUp" => "Top-up receipt", _ => "Payment receipt" }).FontSize(11).SemiBold();
             });
             row.RelativeItem().AlignRight().Column(c =>
             {
@@ -38,9 +38,9 @@ public sealed class MoneyDocuments : IMoneyDocuments
         {
             col.Spacing(8);
             col.Item().Text($"{(receipt.Kind == "PayoutAdvice" ? "Paid to" : refund ? "Refunded to" : "Paid by")}: {customerName}");
-            col.Item().Text($"For: {(receipt.RefType switch { "Booking" => "pitch booking", "Payout" => "withdrawal", _ => receipt.RefType })} {receipt.RefCode}");
+            col.Item().Text($"For: {(receipt.RefType switch { "Booking" => "pitch booking", "Payout" => "withdrawal", "WalletTopUp" => "wallet top-up", _ => receipt.RefType })} {receipt.RefCode}");
             col.Item().Text($"Amount: {receipt.Amount.ToString("N2", CultureInfo.InvariantCulture)} EGP").FontSize(13).Bold();
-            if (refund)
+            if (refund || receipt.Kind == "TopUp")
             {
                 col.Item().Text("The money was added to your Super App wallet.");
             }

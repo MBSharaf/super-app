@@ -39,7 +39,7 @@ public sealed record ActivePassDto(string Plan, DateTime StartsAt, DateTime Ends
 public sealed record PassStatusDto(IReadOnlyList<ActivePassDto> Active, IReadOnlyDictionary<string, DateTime?> CoversUntil, IReadOnlyList<PassPlanDto> Plans, string? PaymentUrl = null);
 
 /// <summary>POST /fantasy/pass — header Idempotency-Key required. Paid straight away until payments arrive (Phase 5).</summary>
-public sealed record BuyPassRequest(string Plan);
+public sealed record BuyPassRequest(string Plan, bool PayFromWallet = false);
 
 /* ---------- Admin: sponsors, groups, winners ---------- */
 

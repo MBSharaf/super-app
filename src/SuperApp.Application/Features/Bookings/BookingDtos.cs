@@ -8,7 +8,8 @@ public sealed record HoldRequest(string PitchSlug, DateOnly Date, int Hour, int 
 
 /// <summary>POST /bookings — confirm. <c>AcceptWaiver</c> must be true (injury waiver).</summary>
 /// <remarks><c>PromoCode</c>: a venue or Super App code; <c>VoucherCode</c>: one of my Super Points vouchers (SP-…).</remarks>
-public sealed record CreateBookingRequest(string PitchSlug, DateOnly Date, int Hour, int Duration, bool PayAtVenue, bool AcceptWaiver, string? PromoCode = null, string? VoucherCode = null);
+public sealed record CreateBookingRequest(string PitchSlug, DateOnly Date, int Hour, int Duration, bool PayAtVenue, bool AcceptWaiver, string? PromoCode = null, string? VoucherCode = null,
+    bool PayFromWallet = false);
 
 /// <summary>Price of each hour and the totals.</summary>
 public sealed record PriceLine(int Hour, DateOnly Date, int CalendarHour, decimal Price);

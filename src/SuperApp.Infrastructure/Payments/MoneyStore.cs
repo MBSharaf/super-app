@@ -84,8 +84,10 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
         var codes = await db.Set<Booking>().Where(b => ids.Contains(b.Id)).ToDictionaryAsync(b => b.Id, b => b.Code, ct);
         var payoutIds = rows.Where(r => r.RefType == "Payout").Select(r => r.RefId).Distinct().ToList();
         var payouts = await db.Set<PayoutRequest>().Where(p => payoutIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Code, ct);
+        var topUpIds = rows.Where(r => r.RefType == Ledger.TopUpRef).Select(r => r.RefId).Distinct().ToList();
+        var topUps = await db.Set<Payment>().Where(p => topUpIds.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Code, ct);
         return rows.Select(r => new ReceiptDto(r.Number, r.Kind.ToString(), r.Amount, r.RefType,
-            (r.RefType == "Payout" ? payouts : codes).GetValueOrDefault(r.RefId), r.CreatedAt)).ToList();
+            (r.RefType switch { "Payout" => payouts, Ledger.TopUpRef => topUps, _ => codes }).GetValueOrDefault(r.RefId), r.CreatedAt)).ToList();
     }
 }
 

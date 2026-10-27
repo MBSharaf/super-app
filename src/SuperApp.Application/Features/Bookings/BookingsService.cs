@@ -64,7 +64,7 @@ public sealed class BookingsService(
         booking.DiscountAmount = discount.Total;
         booking.Total = plan.Total - discount.Total;
         loyalty.Use(discount, booking);
-        var paymentUrl = await PayAsync(booking, plan, me, ct);
+        var paymentUrl = await PayAsync(booking, plan, me, request.PayFromWallet, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);
         if (discount.Voucher is { } voucher && discount.VoucherAmount > 0)
         {
@@ -89,14 +89,14 @@ public sealed class BookingsService(
     /// Online bookings get a payment. The simulated gateway pays at once (booking confirmed); a real gateway returns its page
     /// and the booking waits for the webhook (AwaitingPayment, hours kept for 15 minutes).
     /// </summary>
-    private async Task<string?> PayAsync(Booking booking, BookingPlan plan, Guid me, CancellationToken ct)
+    private async Task<string?> PayAsync(Booking booking, BookingPlan plan, Guid me, bool fromWallet, CancellationToken ct)
     {
         if (booking.PayAtVenue || booking.Total <= 0)
         {
             return null;
         }
         var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Booking, booking.Total, me,
-            $"Booking {booking.Code} at {plan.Pitch.Name}", $"#/booking/{booking.Code}"), ct);
+            $"Booking {booking.Code} at {plan.Pitch.Name}", $"#/booking/{booking.Code}", fromWallet), ct);
         booking.Payment = started.Payment;
         if (started.RedirectUrl is not null)
         {

@@ -185,7 +185,7 @@
     SA.services.legal?.requireWaiver(waiver, 'booking');
     const r = await api.post('/bookings', {
       pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: payment?.method === 'cash', acceptWaiver: !!waiver,
-      promoCode: code || undefined, voucherCode: payment?.voucher || undefined,
+      promoCode: code || undefined, voucherCode: payment?.voucher || undefined, payFromWallet: payment?.method === 'wallet',
     });
     SA.services.liveMoney?.sync();
     [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
@@ -268,10 +268,12 @@
     return { ...seriesTotals(sessions, +q.discountPercent / 100), listPrice: +q.listPrice, discountAmount: +q.discountAmount, serviceFee: +q.serviceFee, total: +q.total, pitchTotal: +q.listPrice - +q.discountAmount };
   };
 
-  const createSeries = async ({ pitchId, date, hour, duration, weeks, waiver = false }) => {
+  const createSeries = async ({ pitchId, date, hour, duration, weeks, payment, waiver = false }) => {
     SA.services.legal?.requireWaiver(waiver, 'weekly package');
     const option = optionFor(pitches.get(pitchId), weeks);
-    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver });
+    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver, payFromWallet: payment?.method === 'wallet' });
+    SA.services.liveMoney?.sync();
+    if (pk.paymentUrl) window.location.assign(pk.paymentUrl);
     packs.set(pk.code, pk);
     [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
     return { seriesId: pk.code, bookings: pk.matches.map((m) => ({ id: m.code })) };

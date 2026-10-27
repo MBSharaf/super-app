@@ -63,7 +63,7 @@ public sealed class FantasyPassService(
             var price = (await PlansAsync(competitions, ct)).Single(p => p.Plan == plan).Price;
             var pass = await NewPassAsync(competitionId, price, ct);
             passes.Add(pass);
-            var url = await PayAsync(pass, plan, ct);
+            var url = await PayAsync(pass, plan, request.PayFromWallet, ct);
             await unitOfWork.SaveChangesAsync(ct);
             if (url is not null)
             {
@@ -85,13 +85,13 @@ public sealed class FantasyPassService(
     /// A paid pass gets a payment. The simulated gateway pays at once; with Paymob the pass waits (no days yet) until
     /// <see cref="FantasyPassPaymentListener"/> starts it.
     /// </summary>
-    private async Task<string?> PayAsync(FantasyPass pass, string plan, CancellationToken ct)
+    private async Task<string?> PayAsync(FantasyPass pass, string plan, bool fromWallet, CancellationToken ct)
     {
         if (pass.Price <= 0)
         {
             return null;
         }
-        var started = await payments.StartAsync(new Payments.PaymentRequest(Domain.Enums.PaymentPurpose.FantasyPass, pass.Price, UserId, $"Fantasy Pass ({plan})", "#/fantasy/leagues"), ct);
+        var started = await payments.StartAsync(new Payments.PaymentRequest(Domain.Enums.PaymentPurpose.FantasyPass, pass.Price, UserId, $"Fantasy Pass ({plan})", "#/fantasy/leagues", fromWallet), ct);
         pass.Payment = started.Payment;
         if (started.RedirectUrl is not null)
         {

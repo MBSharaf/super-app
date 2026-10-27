@@ -25,7 +25,7 @@ public sealed record PostGameRequest(string BookingCode, int PlayersNeeded, stri
 
 public sealed record EditGameRequest(int PlayersNeeded, string Level, string? Positions, string? Title, bool RequestsClosed);
 
-public sealed record JoinGameRequest(string? Position, string? Message);
+public sealed record JoinGameRequest(string? Position, string? Message, bool PayFromWallet = false);
 
 public sealed record RatingInput(Guid PlayerId, int? Stars, bool ShowedUp);
 
@@ -178,7 +178,7 @@ public sealed class GamesService(
         var status = full ? GameRequestStatus.Waitlisted : game.AutoAccept ? GameRequestStatus.Accepted : GameRequestStatus.Waiting;
         var row = new GameRequest { GameId = game.Id, PlayerId = me, Position = request.Position?.Trim(), Message = request.Message?.Trim(), Status = status };
         games.AddRequest(row);
-        var url = await PayShareAsync(row, game, me, code, ct);
+        var url = await PayShareAsync(row, game, me, code, request.PayFromWallet, ct);
         Refill(game, status == GameRequestStatus.Accepted ? 1 : 0);
         await unitOfWork.SaveChangesAsync(ct);
         if (url is null && row.Payment is { } paid)
@@ -191,13 +191,13 @@ public sealed class GamesService(
     }
 
     /// <summary>The player's share is paid when asking to join (simulated: at once; Paymob: its page).</summary>
-    private async Task<string?> PayShareAsync(GameRequest row, Game game, Guid me, string code, CancellationToken ct)
+    private async Task<string?> PayShareAsync(GameRequest row, Game game, Guid me, string code, bool fromWallet, CancellationToken ct)
     {
         if (game.SharePrice <= 0)
         {
             return null;
         }
-        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.GameShare, game.SharePrice, me, $"Game {code} share", $"#/games/{code}"), ct);
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.GameShare, game.SharePrice, me, $"Game {code} share", $"#/games/{code}", fromWallet), ct);
         row.Payment = started.Payment;
         return started.RedirectUrl;
     }

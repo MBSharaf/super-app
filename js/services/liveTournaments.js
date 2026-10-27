@@ -72,7 +72,7 @@
   T.register = async (id, d) => {
     if (!isLiveId(id)) return demo.register(id, d);
     SA.services.legal?.requireWaiver(d.waiver, 'tournament entry');
-    const r = await api.post(`/tournaments/${apiId(id)}/teams`, { teamName: (d.team || '').trim(), phone: (d.phone || '').trim(), acceptWaiver: !!d.waiver });
+    const r = await api.post(`/tournaments/${apiId(id)}/teams`, { teamName: (d.team || '').trim(), phone: (d.phone || '').trim(), acceptWaiver: !!d.waiver, payFromWallet: d.payment?.method === 'wallet' });
     keep(r);
     SA.services.liveMoney?.sync();
     if (r.paymentUrl) window.location.assign(r.paymentUrl);

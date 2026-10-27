@@ -270,8 +270,10 @@
     passCovers(lg = key()) { return !live() || !pass ? demo.fantasy.passCovers(lg) : !!pass.coversUntil[lg]; },
     async buyPass(planId, payment) {
       if (!live()) return demo.fantasy.buyPass(planId, payment);
-      const res = await fetchWithKey('/fantasy/pass', { plan: planId });
+      const res = await fetchWithKey('/fantasy/pass', { plan: planId, payFromWallet: payment?.method === 'wallet' });
       pass = res;
+      SA.services.liveMoney?.sync();
+      if (res.paymentUrl) window.location.assign(res.paymentUrl);
       SA.services.user?.notify?.({ kind: 'fantasy', title: 'Fantasy Pass active', body: 'Prize leagues are open.', link: '/fantasy/leagues' });
       return { pass: fantasyLive.pass(), paid: null };
     },
