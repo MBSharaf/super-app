@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SuperApp.Api.Filters;
 using SuperApp.Api.Security;
 using SuperApp.Application.Features.Shop.Catalog;
 
@@ -21,10 +22,12 @@ public sealed class ShopController(IShopService shop) : ApiControllerBase
     [HttpGet("products/{slug}")]
     public async Task<ActionResult<object>> Product(string slug, CancellationToken ct) => Ok(await shop.ProductAsync(slug, ct));
 
+    [PrintOnDemand]
     [HttpGet("designs/{id:long}")]
     public async Task<ActionResult<object>> Design(long id, CancellationToken ct) => Ok(await shop.DesignAsync(id, ct));
 
     /// <summary>The art of one side as a resized PNG (or the SVG). Not live: only its seller and the reviewers.</summary>
+    [PrintOnDemand]
     [HttpGet("designs/{id:long}/art/{side:regex(^(front|back)$)}")]
     public async Task<IActionResult> Art(long id, string side, CancellationToken ct)
     {
@@ -35,6 +38,7 @@ public sealed class ShopController(IShopService shop) : ApiControllerBase
     }
 
     /// <summary>Copyright, trademark, offensive or other. One open report per person and design (409 already_reported).</summary>
+    [PrintOnDemand]
     [HttpPost("designs/{id:long}/report")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Report(long id, ReportDesignRequest request, CancellationToken ct)

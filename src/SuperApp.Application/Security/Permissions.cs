@@ -17,6 +17,7 @@ public static class Permissions
         new("approvals.pitches", "Approvals", "Approve new pitches", "الموافقة على الملاعب الجديدة"),
         new("approvals.packages", "Approvals", "Approve package discounts", "الموافقة على خصومات الباقات"),
         new("approvals.catalogue", "Approvals", "Approve catalogue changes", "الموافقة على تغييرات الكتالوج"),
+        new("approvals.products", "Approvals", "Approve store products", "الموافقة على منتجات المتجر"),
 
         new("customers.read", "People", "See customers", "عرض العملاء"),
         new("customers.manage", "People", "Manage customers", "إدارة العملاء", true),

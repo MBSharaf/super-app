@@ -23,6 +23,7 @@ public static class ApiServiceExtensions
         services.AddControllers(o =>
         {
             o.Filters.Add<StorePausedFilter>();
+            o.Filters.Add<PrintOnDemandFilter>();
             o.Filters.Add<AntiforgeryFilter>();
             o.Filters.Add<ValidationFilter>();
             o.Filters.Add<PublicCacheEvictionFilter>();

@@ -24,6 +24,7 @@ public sealed class ReturnsTests(DemoApiFactory api) : IClassFixture<DemoApiFact
         var product = (await partner.PostAsync("/api/v1/partner/store/products", new { name = "Training Top", categoryKey = "kits", price = 400m, lowStockAt = 1, status = "Published", specs = Array.Empty<object>(), variants })).Body.Data();
         var id = product.GetProperty("id").GetInt64();
         product = (await partner.SendFormAsync(HttpMethod.Post, $"/api/v1/partner/store/products/{id}/images", new { }, ("photos", "t.png", ShopKit.Png()))).Body.Data();
+        await kit.ApproveAsync(id);
         var (customer, _) = await kit.PersonAsync();
         await customer.PostAsync("/api/v1/cart/items", new { productVariantId = product.GetProperty("variants")[0].GetProperty("id").GetInt64(), qty = 1 });
         foreach (var v in extraVariants) { await customer.PostAsync("/api/v1/cart/items", new { productVariantId = v, qty = 1 }); }

@@ -49,7 +49,7 @@ public sealed class DemoShopSeeder(AppDbContext db) : ISeeder
             StoreId = await db.Set<Store>().Where(s => s.Handle == row.Store).Select(s => s.Id).SingleAsync(ct),
             CategoryId = await db.Set<ProductCategory>().Where(c => c.Key == row.Category).Select(c => c.Id).SingleAsync(ct),
             Slug = row.Slug, Name = row.Name, Brand = row.Brand, Description = row.Description, Price = row.Price, CompareAtPrice = row.CompareAt,
-            LowStockAt = row.LowStockAt, Rating = row.Rating, Status = ProductStatus.Published,
+            LowStockAt = row.LowStockAt, Rating = row.Rating, Status = ProductStatus.Published, ApprovedAt = DateTime.UtcNow,
         };
         db.Set<Product>().Add(product);
         await db.SaveChangesAsync(ct);

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -124,10 +124,11 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
     public async Task Winners_get_shop_vouchers_once()
     {
         var ceo = await api.CeoAsync();
+        var (player, userId) = await ManagerAsync();   // first: a manager's team needs the EPL season, which the group needs too
         var created = await ceo.PostAsync("/api/v1/admin/fantasy/groups", new { competition = "EPL", name = "Gameweek Sprint", type = "Official", sponsorId = (long?)null,
             prizeText = "1,000 EGP shop voucher", prizeValue = 1000m, monthlyPrice = (decimal?)null });
+        created.Status.ShouldBe(HttpStatusCode.Created, created.Body.ToString());
         var id = created.Body.Data().GetProperty("id").GetInt64();
-        var (player, userId) = await ManagerAsync();
         var team = await api.DbAsync(db => db.Set<FantasyTeam>().SingleAsync(t => t.UserId == userId));
         await api.DbAsync(db =>
         {

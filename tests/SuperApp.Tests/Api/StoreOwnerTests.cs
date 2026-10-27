@@ -33,7 +33,9 @@ public sealed class StoreOwnerTests(DemoApiFactory api) : IClassFixture<DemoApiF
         var id = added.Body.Data().GetProperty("id").GetInt64();
         var photo = await partner.SendFormAsync(HttpMethod.Post, $"/api/v1/partner/store/products/{id}/images", new { }, ("photos", "socks.png", ShopKit.Png()));
         photo.Status.ShouldBe(HttpStatusCode.Created, photo.Body.ToString());
-        return (partner, store.GetProperty("handle").GetString()!, photo.Body.Data());
+        photo.Body.Data().GetProperty("status").GetString().ShouldBe("WaitingForReview");
+        await kit.ApproveAsync(id);
+        return (partner, store.GetProperty("handle").GetString()!, (await partner.GetAsync($"/api/v1/partner/store/products/{id}")).Body.Data());
     }
 
     [Fact]
@@ -113,7 +115,7 @@ public sealed class StoreOwnerTests(DemoApiFactory api) : IClassFixture<DemoApiF
         (await seller.SendAsync(HttpMethod.Put, "/api/v1/seller/store", profile)).Body.Code().ShouldBe("bad_featured");
         var saved = (await seller.SendAsync(HttpMethod.Put, "/api/v1/seller/store", profile with { featuredDesignId = null })).Body.Data();
         saved.GetProperty("mode").GetString().ShouldBe("both");
-        (await seller.PostAsync("/api/v1/seller/store/products", Product("Tote Bag"))).Status.ShouldBe(HttpStatusCode.Created);
+        (await seller.PostAsync("/api/v1/seller/store/products", Product("Tote Bag"))).Body.Data().GetProperty("status").GetString().ShouldBe("WaitingForReview");
         (await seller.GetAsync("/api/v1/seller/store/orders")).Body.Data().GetArrayLength().ShouldBe(0);
 
         var breakUntil = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(5)).ToString("yyyy-MM-dd");
@@ -123,11 +125,40 @@ public sealed class StoreOwnerTests(DemoApiFactory api) : IClassFixture<DemoApiF
     }
 
     [Fact]
+    public async Task A_sellers_product_goes_on_sale_after_review_and_a_new_name_sends_it_back()
+    {
+        var (seller, _, _, handle) = await kit.SellerAsync(mode: SellerMode.OwnProducts);
+        var ceo = await api.CeoAsync();
+        var guest = await api.ClientAsync();
+        var id = (await seller.PostAsync("/api/v1/seller/store/products", Product("Shin Guards"))).Body.Data().GetProperty("id").GetInt64();
+        await seller.SendFormAsync(HttpMethod.Post, $"/api/v1/seller/store/products/{id}/images", new { }, ("photos", "g.png", ShopKit.Png()));
+        (await guest.GetAsync($"/api/v1/shop/products?store={handle}")).Body.Data().GetArrayLength().ShouldBe(0);
+        (await ceo.GetAsync("/api/v1/admin/products/queue")).Body.Data().EnumerateArray().ShouldContain(p => p.GetProperty("id").GetInt64() == id);
+
+        (await ceo.PostAsync($"/api/v1/admin/products/{id}/reject", new { reason = "Add a photo of the back" })).Status.ShouldBe(HttpStatusCode.OK);
+        var rejected = (await seller.GetAsync($"/api/v1/seller/store/products/{id}")).Body.Data();
+        (rejected.GetProperty("status").GetString(), rejected.GetProperty("reviewNote").GetString()).ShouldBe(("Rejected", "Add a photo of the back"));
+        (await ceo.PostAsync($"/api/v1/admin/products/{id}/approve")).Body.Code().ShouldBe("not_waiting");
+        (await seller.SendAsync(HttpMethod.Put, $"/api/v1/seller/store/products/{id}", Product("Shin Guards"))).Body.Data().GetProperty("status").GetString().ShouldBe("WaitingForReview");
+
+        await kit.ApproveAsync(id);
+        (await guest.GetAsync($"/api/v1/shop/products?store={handle}")).Body.Data().GetArrayLength().ShouldBe(1);
+        var cheaper = (await seller.GetAsync($"/api/v1/seller/store/products/{id}")).Body.Data();
+        var variants = cheaper.GetProperty("variants").EnumerateArray().Select(v => new { id = (long?)v.GetProperty("id").GetInt64(), size = v.GetProperty("size").GetString(),
+            colorName = v.GetProperty("colorName").GetString(), colorHex = "#000000", sku = (string?)null, stock = 3, priceOverride = (decimal?)null }).ToArray<object>();
+        (await seller.SendAsync(HttpMethod.Put, $"/api/v1/seller/store/products/{id}", Product("Shin Guards", variants: variants))).Body.Data().GetProperty("status").GetString().ShouldBe("Published");
+        (await seller.SendAsync(HttpMethod.Put, $"/api/v1/seller/store/products/{id}", Product("Shin Guards Pro", variants: variants))).Body.Data().GetProperty("status").GetString().ShouldBe("WaitingForReview");
+        (await guest.GetAsync($"/api/v1/shop/products?store={handle}")).Body.Data().GetArrayLength().ShouldBe(0);
+        (await seller.GetAsync("/api/v1/admin/products/queue")).Status.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task Staff_run_the_official_store_and_hide_products()
     {
         var ceo = await api.CeoAsync();
         var products = (await ceo.GetAsync("/api/v1/admin/store/products")).Body.Data();
         products.GetArrayLength().ShouldBeGreaterThanOrEqualTo(30);
+        (await ceo.PostAsync("/api/v1/admin/store/products", Product("Official Cap"))).Body.Data().GetProperty("status").GetString().ShouldBe("Published");
         var (partner, handle, product) = await PartnerProductAsync();
         var id = product.GetProperty("id").GetInt64();
         (await ceo.PostAsync($"/api/v1/admin/products/{id}/hide", new { reason = "x" })).Status.ShouldBe(HttpStatusCode.BadRequest);

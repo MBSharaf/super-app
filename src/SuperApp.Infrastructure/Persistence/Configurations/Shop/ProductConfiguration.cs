@@ -16,7 +16,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             t.HasCheckConstraint("CK_Products_HiddenReason", "[HiddenByAdmin] = 0 OR [HiddenReason] IS NOT NULL");
             t.HasCheckConstraint("CK_Products_Price", "[Price] > 0");
             t.HasCheckConstraint("CK_Products_LowStockAt", "[LowStockAt] >= 0");
-            t.HasCheckConstraint("CK_Products_Status", "[Status] BETWEEN 0 AND 2");
+            t.HasCheckConstraint("CK_Products_Status", "[Status] BETWEEN 0 AND 4");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Slug).HasMaxLength(120).IsUnicode(false);
@@ -29,6 +29,7 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(ProductStatus.Draft).ValueGeneratedNever();
         builder.Property(x => x.HiddenByAdmin).HasDefaultValue(false).ValueGeneratedNever();
         builder.Property(x => x.HiddenReason).HasMaxLength(400);
+        builder.Property(x => x.ReviewNote).HasMaxLength(300);
         builder.Property(x => x.Rating).HasPrecision(3, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.HasIndex(x => x.Slug).IsUnique().HasFilter("[IsDeleted] = 0").HasDatabaseName("UQ_Products_Slug");
         builder.HasIndex(x => new { x.StoreId, x.Status }).HasDatabaseName("IX_Products_StoreId_Status");

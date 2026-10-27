@@ -58,7 +58,7 @@ public sealed partial class StoreRepository(AppDbContext db) : IStoreRepository
     {
         var stock = p.Variants.Sum(v => v.Stock - v.Reserved);
         return new OwnProductDto(p.Id, p.Slug, p.Name, p.Category.Key, p.Brand, p.Description, p.Price, p.CompareAtPrice, p.LowStockAt, p.Status.ToString(),
-            p.HiddenByAdmin, p.HiddenReason, stock, stock <= p.LowStockAt,
+            p.HiddenByAdmin, p.HiddenReason, p.ReviewNote, stock, stock <= p.LowStockAt,
             p.Images.OrderBy(i => i.SortOrder).Select(i => new OwnImageDto(i.Id, ShopQueries.Photo(i.File.Container, i.File.StorageKey, i.FileId)!, i.SortOrder)).ToList(),
             p.Variants.OrderBy(v => v.Id).Select(v => new OwnVariantDto(v.Id, v.Size, v.ColorName, v.ColorHex, v.Sku, v.Stock, v.Reserved, v.PriceOverride)).ToList(),
             p.Specs.OrderBy(s => s.SortOrder).Select(s => new SpecRequest(s.Label, s.Value)).ToList(), p.CreatedAt);
@@ -113,6 +113,18 @@ public sealed partial class StoreRepository(AppDbContext db) : IStoreRepository
     {
         var product = await db.Set<Product>().Include(p => p.Store).FirstOrDefaultAsync(p => p.Id == productId, ct);
         return product is null ? null : (product, product.Store.OwnerUserId);
+    }
+
+    public async Task<IReadOnlyList<ReviewProductDto>> ReviewQueueAsync(CancellationToken ct)
+    {
+        var rows = await db.Set<Product>().AsNoTracking().Where(p => p.Status == ProductStatus.WaitingForReview).OrderBy(p => p.UpdatedAt)
+            .Include(p => p.Store).Include(p => p.Category).Include(p => p.Images).ThenInclude(i => i.File).Include(p => p.Variants).Include(p => p.Specs)
+            .AsSplitQuery().Take(100).ToListAsync(ct);
+        return rows.Select(p => new ReviewProductDto(p.Id, p.Slug, p.Name, p.Brand, p.Description, p.Category.Key, p.Price, p.CompareAtPrice,
+            p.Store.Name, p.Store.Type.ToString(), p.Store.Handle,
+            p.Images.OrderBy(i => i.SortOrder).Select(i => ShopQueries.Photo(i.File.Container, i.File.StorageKey, i.FileId)!).ToList(),
+            p.Specs.OrderBy(s => s.SortOrder).Select(s => new SpecRequest(s.Label, s.Value)).ToList(),
+            p.Variants.Count, p.Variants.Sum(v => v.Stock - v.Reserved), p.CreatedAt)).ToList();
     }
 
     /// <summary>Lowercase ASCII letters, digits and dashes (Arabic names fall back to <paramref name="fallback"/>).</summary>

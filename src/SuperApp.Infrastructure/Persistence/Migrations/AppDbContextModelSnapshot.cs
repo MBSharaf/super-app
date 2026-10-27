@@ -9212,6 +9212,9 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2(0)");
+
                     b.Property<string>("Brand")
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
@@ -9267,6 +9270,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("decimal(3,2)")
                         .HasDefaultValue(0m);
 
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -9308,7 +9315,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("CK_Products_Price", "[Price] > 0");
 
-                            t.HasCheckConstraint("CK_Products_Status", "[Status] BETWEEN 0 AND 2");
+                            t.HasCheckConstraint("CK_Products_Status", "[Status] BETWEEN 0 AND 4");
                         });
                 });
 

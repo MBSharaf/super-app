@@ -137,12 +137,38 @@ public sealed class AdminStoreController(IStoreScopes scopes, IStoreProfileServi
     protected override Task<StoreScope> ScopeAsync(bool products, CancellationToken ct) => scopes.OfficialAsync(ct);
 }
 
-/// <summary>Hide one product of any store with a reason, or show it again (FR-SHOP-10): partners.manage + 2FA.</summary>
+/// <summary>
+/// Hide one product of any store with a reason, or show it again (FR-SHOP-10): partners.manage + 2FA. Review the products
+/// sellers and partners ask to sell: approvals.products.
+/// </summary>
 [Route("api/v1/admin/products")]
-[RequirePermission("partners.manage")]
 public sealed class AdminProductsController(IAdminProductsService products) : ApiControllerBase
 {
+    [HttpGet("queue")]
+    [RequirePermission("approvals.products")]
+    public async Task<ActionResult<object>> Queue(CancellationToken ct) => Ok(await products.QueueAsync(ct));
+
+    [HttpPost("{id:long}/approve")]
+    [RequirePermission("approvals.products")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Approve(long id, CancellationToken ct)
+    {
+        await products.ApproveAsync(id, ct);
+        return Ok<object?>(null, "Approved — it is on sale.");
+    }
+
+    /// <summary>{ reason } (5–400 characters) — the store sees it.</summary>
+    [HttpPost("{id:long}/reject")]
+    [RequirePermission("approvals.products")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Reject(long id, HideProductRequest request, CancellationToken ct)
+    {
+        await products.RejectAsync(id, request, ct);
+        return Ok<object?>(null, "Sent back to the store.");
+    }
+
     [HttpPost("{id:long}/hide")]
+    [RequirePermission("partners.manage")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Hide(long id, HideProductRequest request, CancellationToken ct)
     {
@@ -151,6 +177,7 @@ public sealed class AdminProductsController(IAdminProductsService products) : Ap
     }
 
     [HttpPost("{id:long}/unhide")]
+    [RequirePermission("partners.manage")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Unhide(long id, CancellationToken ct)
     {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using SuperApp.Api.Filters;
 using SuperApp.Api.Security;
 using SuperApp.Application.Features.Shop.Factory;
 
@@ -11,6 +12,7 @@ namespace SuperApp.Api.Controllers.Shop;
 /// and send <c>X-Factory-Device</c> and <c>X-Factory-Session</c> with every call. Roles decide each step (403 role).
 /// </summary>
 [Route("api/v1/factory")]
+[PrintOnDemand]
 public sealed class FactoryController(IFactoryAuthService auth, IFactoryJobsService jobs, IFactoryOpsService ops, ICatalogueChangesService changes) : ApiControllerBase
 {
     /// <summary>The owner (signed in) registers a device once; the token is shown once.</summary>
@@ -134,6 +136,7 @@ public sealed class FactoryController(IFactoryAuthService auth, IFactoryJobsServ
 
 /// <summary>Admins over the factories (API §7.2 "Factories", approvals.catalogue for change requests).</summary>
 [Route("api/v1/admin")]
+[PrintOnDemand]
 public sealed class AdminFactoryController(IAdminFactoryService factories, ICatalogueChangesService changes) : ApiControllerBase
 {
     [HttpGet("factories")]

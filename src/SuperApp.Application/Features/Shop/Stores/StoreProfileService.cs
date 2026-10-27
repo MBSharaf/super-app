@@ -24,6 +24,7 @@ public sealed class StoreProfileService(
     IUnitOfWork unitOfWork,
     IAuditLogger audit,
     IClock clock,
+    IFeatureFlags flags,
     IValidator<StoreProfileRequest> rules) : IStoreProfileService
 {
     public Task<StoreProfileDto> GetAsync(StoreScope scope, CancellationToken ct) => stores.ProfileAsync(scope.StoreId, ct);
@@ -65,6 +66,10 @@ public sealed class StoreProfileService(
     private async Task ApplySellerAsync(StoreScope scope, StoreProfileRequest request, CancellationToken ct)
     {
         var seller = await stores.SellerOfStoreAsync(scope.StoreId, ct) ?? throw new NotFoundException();
+        if (request.Mode is "pod" or "both" && !await flags.IsOnAsync(KillSwitches.Pod, ct))
+        {
+            throw new FeatureDisabledException("Print on demand is paused for now. Sellers can sell their own products.", "pod_paused");
+        }
         seller.Mode = request.Mode switch { "store" => SellerMode.OwnProducts, "both" => SellerMode.Both, "pod" => SellerMode.PrintOnDemand, _ => seller.Mode };
         if (request.FeaturedDesignId is { } featured && !await stores.IsLiveDesignOfAsync(seller.Id, featured, ct))
         {

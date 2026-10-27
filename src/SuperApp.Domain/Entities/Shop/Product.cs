@@ -18,6 +18,12 @@ public class Product : BaseEntity, ISoftDelete, IHasAuthor
     public ProductStatus Status { get; set; }
     public bool HiddenByAdmin { get; set; }
     public string? HiddenReason { get; set; }
+
+    /// <summary>When Super App approved it; cleared when the name, brand, description, category or photos change.</summary>
+    public DateTime? ApprovedAt { get; set; }
+
+    /// <summary>Why the last review said no.</summary>
+    public string? ReviewNote { get; set; }
     public decimal Rating { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }

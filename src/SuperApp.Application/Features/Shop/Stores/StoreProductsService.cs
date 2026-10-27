@@ -1,4 +1,5 @@
 using FluentValidation;
+using SuperApp.Application.Abstractions.Notifications;
 using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Abstractions.Storage;
@@ -11,6 +12,9 @@ namespace SuperApp.Application.Features.Shop.Stores;
 /// <summary>
 /// A store's own products (API §4.5, §4.4 "own products"): add, edit (variants with stock, specs), delete, restock and photos.
 /// The same service serves the partner's shop, a seller's store and the official store — the scope says which.
+/// A seller's or partner's product goes on sale after Super App approves it (owner's decision, 2026-10-27): asking for
+/// Published puts it in the review queue, unless it was approved and its name, brand, description, category and photos
+/// are unchanged since. The official store publishes at once.
 /// </summary>
 public interface IStoreProductsService
 {
@@ -39,6 +43,8 @@ public sealed class StoreProductsService(
     IUnitOfWork unitOfWork,
     IAuditLogger audit,
     ICurrentUser currentUser,
+    INotifier notifier,
+    IClock clock,
     IValidator<ProductRequest> rules) : IStoreProductsService
 {
     public const int MaxImages = 8;
@@ -52,10 +58,11 @@ public sealed class StoreProductsService(
     {
         await rules.ValidateAndThrowAsync(request, ct);
         var product = new Product { StoreId = scope.StoreId, Slug = await stores.FreeSlugAsync(request.Name, ct) };
-        await ApplyAsync(product, request, ct);
+        await ApplyAsync(scope, product, request, ct);
         stores.AddProduct(product);
         await unitOfWork.SaveChangesAsync(ct);
         await audit.LogAsync(scope.System, "product.created", $"{scope.Who} added “{product.Name}”", "Product", product.Id.ToString(System.Globalization.CultureInfo.InvariantCulture), ct: ct);
+        await AskReviewAsync(scope, product, ct);
         return await GetAsync(scope, product.Id, ct);
     }
 
@@ -63,9 +70,14 @@ public sealed class StoreProductsService(
     {
         await rules.ValidateAndThrowAsync(request, ct);
         var product = await stores.ProductAsync(scope.StoreId, id, ct) ?? throw new NotFoundException("Product not found.");
-        await ApplyAsync(product, request, ct);
+        var waiting = product.Status == ProductStatus.WaitingForReview;
+        await ApplyAsync(scope, product, request, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await audit.LogAsync(scope.System, "product.updated", $"{scope.Who} edited “{product.Name}”", "Product", id.ToString(System.Globalization.CultureInfo.InvariantCulture), ct: ct);
+        if (!waiting)
+        {
+            await AskReviewAsync(scope, product, ct);
+        }
         return await GetAsync(scope, id, ct);
     }
 
@@ -103,7 +115,17 @@ public sealed class StoreProductsService(
         {
             product.Images.Add(new ProductImage { FileId = await files.SaveAsync(file, UploadKind.Photo, currentUser.UserId ?? Guid.Empty, "photos", ct), SortOrder = next++ });
         }
+        var backToReview = scope.Type != StoreType.Official && product.ApprovedAt is not null;
+        if (backToReview)
+        {
+            product.ApprovedAt = null;
+            product.Status = product.Status == ProductStatus.Published ? ProductStatus.WaitingForReview : product.Status;
+        }
         await unitOfWork.SaveChangesAsync(ct);
+        if (backToReview)
+        {
+            await AskReviewAsync(scope, product, ct);
+        }
         return await GetAsync(scope, id, ct);
     }
 
@@ -135,22 +157,57 @@ public sealed class StoreProductsService(
         return await GetAsync(scope, id, ct);
     }
 
-    private async Task ApplyAsync(Product product, ProductRequest r, CancellationToken ct)
+    private async Task ApplyAsync(StoreScope scope, Product product, ProductRequest r, CancellationToken ct)
     {
-        product.CategoryId = await stores.CategoryIdAsync(r.CategoryKey, ct) ?? throw new BadRequestException("Choose a category from the list.", "unknown_category");
-        product.Name = r.Name.Trim();
-        product.Brand = string.IsNullOrWhiteSpace(r.Brand) ? null : r.Brand.Trim();
-        product.Description = string.IsNullOrWhiteSpace(r.Description) ? null : r.Description.Trim();
+        var category = await stores.CategoryIdAsync(r.CategoryKey, ct) ?? throw new BadRequestException("Choose a category from the list.", "unknown_category");
+        var brand = string.IsNullOrWhiteSpace(r.Brand) ? null : r.Brand.Trim();
+        var description = string.IsNullOrWhiteSpace(r.Description) ? null : r.Description.Trim();
+        if (product.CategoryId != category || product.Name != r.Name.Trim() || product.Brand != brand || product.Description != description)
+        {
+            product.ApprovedAt = null;
+        }
+        (product.CategoryId, product.Name, product.Brand, product.Description) = (category, r.Name.Trim(), brand, description);
         product.Price = r.Price;
         product.CompareAtPrice = r.CompareAtPrice;
         product.LowStockAt = r.LowStockAt;
-        product.Status = Enum.Parse<ProductStatus>(r.Status, true);
+        product.Status = StatusFor(scope, product, Enum.Parse<ProductStatus>(r.Status, true));
         product.Specs.Clear();
         foreach (var (spec, i) in r.Specs.Select((s, i) => (s, i)))
         {
             product.Specs.Add(new ProductSpec { Label = spec.Label.Trim(), Value = spec.Value.Trim(), SortOrder = i + 1 });
         }
         await ApplyVariantsAsync(product, r.Variants, ct);
+    }
+
+    /// <summary>
+    /// What the store asked for, through review: Published stays Published only for the official store or an approved,
+    /// unchanged product; otherwise it waits (a product already waiting keeps waiting).
+    /// </summary>
+    private ProductStatus StatusFor(StoreScope scope, Product product, ProductStatus asked)
+    {
+        if (asked != ProductStatus.Published)
+        {
+            return asked;
+        }
+        if (scope.Type == StoreType.Official)
+        {
+            product.ApprovedAt ??= clock.UtcNow;
+            return ProductStatus.Published;
+        }
+        return product.ApprovedAt is not null ? ProductStatus.Published : ProductStatus.WaitingForReview;
+    }
+
+    /// <summary>A product that just went into the queue: the reviewers are told.</summary>
+    private async Task AskReviewAsync(StoreScope scope, Product product, CancellationToken ct)
+    {
+        if (product.Status != ProductStatus.WaitingForReview)
+        {
+            return;
+        }
+        product.ReviewNote = null;
+        await unitOfWork.SaveChangesAsync(ct);
+        await notifier.NotifyStaffAsync("approvals.products", new NotificationMessage(NotificationCategory.Store, "Product to review",
+            $"{scope.Name}: {product.Name}", "#/admin/approvals?tab=products", NotificationTone.Info), ct);
     }
 
     /// <summary>Variants with an id are changed, new ones added, missing ones removed (kept with no stock when an order refers to them).</summary>
@@ -187,7 +244,8 @@ public sealed class ProductRequestValidator : AbstractValidator<ProductRequest>
         RuleFor(x => x.Price).GreaterThan(0).LessThanOrEqualTo(1_000_000);
         RuleFor(x => x.CompareAtPrice).GreaterThan(x => x.Price).When(x => x.CompareAtPrice is not null).WithMessage("The old price must be above the price.");
         RuleFor(x => x.LowStockAt).InclusiveBetween(0, 1000);
-        RuleFor(x => x.Status).IsEnumName(typeof(ProductStatus), caseSensitive: false).WithMessage("Status is Draft, Published or Unpublished.");
+        RuleFor(x => x.Status).Must(s => s is not null && (s.Equals("Draft", StringComparison.OrdinalIgnoreCase) || s.Equals("Published", StringComparison.OrdinalIgnoreCase)
+            || s.Equals("Unpublished", StringComparison.OrdinalIgnoreCase))).WithMessage("Status is Draft, Published or Unpublished.");
         RuleFor(x => x.Specs).NotNull().Must(s => s.Count <= 20).WithMessage("Up to 20 details.");
         RuleForEach(x => x.Specs).ChildRules(s =>
         {

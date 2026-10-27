@@ -75,6 +75,7 @@ public sealed record OwnProductDto(
     string Status,
     bool HiddenByAdmin,
     string? HiddenReason,
+    string? ReviewNote,
     int Stock,
     bool LowStock,
     IReadOnlyList<OwnImageDto> Images,
@@ -83,6 +84,11 @@ public sealed record OwnProductDto(
     DateTime CreatedAt);
 
 public sealed record RestockRequest(long VariantId, int Add);
+
+/// <summary>GET /admin/products/queue — a product waiting for review, with its store and photos.</summary>
+public sealed record ReviewProductDto(long Id, string Slug, string Name, string? Brand, string? Description, string Category, decimal Price,
+    decimal? CompareAtPrice, string Store, string StoreType, string StoreHandle, IReadOnlyList<Pitches.PhotoDto> Photos, IReadOnlyList<SpecRequest> Specs,
+    int Variants, int Stock, DateTime CreatedAt);
 
 public sealed record ImageOrderRequest(IReadOnlyList<long> ImageIds);
 

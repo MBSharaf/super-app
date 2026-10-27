@@ -30,6 +30,7 @@ public sealed class ShippingTests(DemoApiFactory api) : IClassFixture<DemoApiFac
             variants = new[] { new { id = (long?)null, size = "One size", colorName = "Orange", colorHex = (string?)null, sku = (string?)null, stock = 20, priceOverride = (decimal?)null } },
         })).Body.Data();
         await partner.SendFormAsync(HttpMethod.Post, $"/api/v1/partner/store/products/{product.GetProperty("id").GetInt64()}/images", new { }, ("photos", "b.png", ShopKit.Png()));
+        await kit.ApproveAsync(product.GetProperty("id").GetInt64());
         var (customer, _) = await kit.PersonAsync();
         await customer.PostAsync("/api/v1/cart/items", new { productVariantId = product.GetProperty("variants")[0].GetProperty("id").GetInt64(), qty = 1 });
         var order = (await ShopKit.CheckoutAsync(customer, payment: "cod")).Body.Data().GetProperty("code").GetString()!;

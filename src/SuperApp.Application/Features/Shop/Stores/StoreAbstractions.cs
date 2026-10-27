@@ -58,4 +58,7 @@ public interface IStoreRepository
 
     /// <summary>Admin: any product by id (tracked), with its store's owner.</summary>
     Task<(Product Product, Guid? OwnerUserId)?> AnyProductAsync(long productId, CancellationToken ct);
+
+    /// <summary>Products waiting for review, oldest first.</summary>
+    Task<IReadOnlyList<ReviewProductDto>> ReviewQueueAsync(CancellationToken ct);
 }

@@ -18,4 +18,19 @@ public sealed class StorePausedTests(AccountsApiFactory api) : IClassFixture<Acc
         (await shop.Content.ReadAsStringAsync()).ShouldContain("store_paused");
         (await http.GetAsync("/api/v1/pitches")).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
+
+    /// <summary>The store sells own products while print on demand stays off (Features:PodEnabled false).</summary>
+    [Fact]
+    public async Task Print_on_demand_answers_paused_while_own_products_sell()
+    {
+        using var noPod = api.WithWebHostBuilder(b => b.UseSetting("Features:PodEnabled", "false"));
+        var http = noPod.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
+
+        var design = await http.GetAsync("/api/v1/shop/designs/1");
+        design.StatusCode.ShouldBe(HttpStatusCode.Locked);
+        (await design.Content.ReadAsStringAsync()).ShouldContain("pod_paused");
+        var products = await http.GetAsync("/api/v1/shop/products?kind=design");
+        products.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await products.Content.ReadAsStringAsync()).ShouldNotContain("\"kind\":\"design\"");
+    }
 }

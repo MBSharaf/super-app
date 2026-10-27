@@ -55,12 +55,17 @@ public sealed class ApplicationsService(
         {
             throw Field("handle", "That store link is taken — try another.");
         }
+        if (answers.Mode != "store" && !await flags.IsOnAsync(KillSwitches.Pod, ct))
+        {
+            throw Field("mode", "Print on demand is paused for now — apply to sell your own products.");
+        }
         return await SubmitAsync(ApplicationType.Seller, answers.NationalId, answers with { NationalId = ApplicationJson.Mask(answers.NationalId) }, upload, ct);
     }
 
     public async Task<ApplicationResponse> ApplyFactoryAsync(FactoryAnswers answers, ApplicationFiles upload, CancellationToken ct)
     {
         await factoryRules.ValidateAndThrowAsync(answers, ct);
+        await flags.EnsureOnAsync(KillSwitches.Pod, ct);
         await EnsureAreaAsync(answers.AreaId, ct);
         if (await applications.FactoryNameTakenAsync(answers.FactoryName.Trim(), ct))
         {

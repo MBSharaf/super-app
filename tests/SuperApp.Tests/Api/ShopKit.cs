@@ -3,6 +3,7 @@ using SuperApp.Domain.Entities.Factories;
 using SuperApp.Domain.Entities.Pod;
 using SuperApp.Domain.Entities.Shop;
 using SuperApp.Domain.Enums;
+using Shouldly;
 using SuperApp.Infrastructure.Shop;
 
 namespace SuperApp.Tests.Api;
@@ -103,6 +104,13 @@ public sealed class ShopKit(AccountsApiFactory api)
     public Task<List<(long Id, int Stock)>> VariantsAsync(string slug) => api.DbAsync(async db =>
         (await db.Set<ProductVariant>().Where(v => v.Product.Slug == slug).OrderBy(v => v.Id).Select(v => new { v.Id, v.Stock }).ToListAsync())
             .Select(v => (v.Id, v.Stock)).ToList());
+
+    /// <summary>Super App approves a product a store asked to sell (it goes on sale).</summary>
+    public async Task ApproveAsync(long productId)
+    {
+        var approved = await (await api.CeoAsync()).PostAsync($"/api/v1/admin/products/{productId}/approve");
+        approved.Status.ShouldBe(System.Net.HttpStatusCode.OK, approved.Body.ToString());
+    }
 
     public Task<long> DesignIdAsync(string title) => api.DbAsync(db => db.Set<Design>().Where(d => d.Title == title).Select(d => d.Id).SingleAsync());
 }
