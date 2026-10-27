@@ -173,10 +173,10 @@
       // Leaders
       const byOwner = {};
       cur.summary.ledger.forEach((b) => { const o = (byOwner[b.ownerId] ||= { gross: 0, comm: 0, n: 0 }); o.gross += b.money.gross; o.comm += b.money.commission; if (b.status !== 'cancelled') o.n++; });
-      const owners = Object.entries(byOwner).map(([id, v]) => ({ a: db().find('accounts', id), ...v })).filter((x) => x.a).sort((a, b) => b.comm - a.comm).slice(0, 6);
+      const owners = cur.owners || Object.entries(byOwner).map(([id, v]) => ({ a: db().find('accounts', id), ...v })).filter((x) => x.a).sort((a, b) => b.comm - a.comm).slice(0, 6);
       const bySeller = {};
       (db().all('podOrders') || []).forEach((o) => { if (o.sample || !(isoDate(new Date(o.placedAt)) >= r.from && isoDate(new Date(o.placedAt)) <= r.to) || ['refused', 'cancelled'].includes(o.status)) return; const s = (bySeller[o.sellerId] ||= { items: 0, margin: 0, sales: 0 }); s.items += o.qty || 1; s.margin += (o.base - o.partnerCost) * (o.qty || 1); s.sales += o.price * (o.qty || 1); });
-      const sellers = Object.entries(bySeller).map(([id, v]) => ({ s: db().find('sellers', id), ...v })).filter((x) => x.s).sort((a, b) => b.margin - a.margin).slice(0, 6);
+      const sellers = cur.sellers || Object.entries(bySeller).map(([id, v]) => ({ s: db().find('sellers', id), ...v })).filter((x) => x.s).sort((a, b) => b.margin - a.margin).slice(0, 6);
       const plans = { egy: 0, epl: 0, both: 0 }; cur.passes.forEach((x) => { plans[x.plan] = (plans[x.plan] || 0) + 1; });
       const body = `${C.rangePicker(r, '/admin/revenue')}
         <div class="kpi-grid">

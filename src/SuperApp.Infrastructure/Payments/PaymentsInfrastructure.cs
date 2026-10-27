@@ -136,6 +136,7 @@ public static class PaymentsInfrastructure
         services.AddScoped<SuperApp.Application.Features.Money.IMoneyStore, MoneyStore>();
         services.AddSingleton<SuperApp.Application.Features.Money.IMoneyDocuments, MoneyDocuments>();
         services.AddScoped<SuperApp.Application.Features.Money.IPayoutStore, PayoutStore>();
+        services.AddScoped<SuperApp.Application.Features.Money.IRevenueReader, RevenueReader>();
         services.AddScoped<SuperApp.Application.Features.Money.ILoyaltyStore, LoyaltyStore>();
         services.AddScoped<SuperApp.Application.Features.Money.IPartnerCodeStore, LoyaltyStore>();
         services.AddSingleton<MoneyReleaseJob>();

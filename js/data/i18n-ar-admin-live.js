@@ -86,6 +86,8 @@
     'Fixtures and results from TheSportsDB (free). The league number is in its page address on thesportsdb.com.': 'المواعيد والنتايج من TheSportsDB (مجاني). رقم البطولة موجود في عنوان صفحتها على thesportsdb.com.',
     'Competitions are managed on the server (API mode). Demo mode shows the sample schedule.': 'البطولات بتتدار من السيرفر. وضع العرض بيوري جدول تجريبي.',
     'Free sources: the English league from the Fantasy Premier League site, the others from TheSportsDB (results, no live minutes). Egyptian fantasy is paused.': 'مصادر مجانية: الدوري الإنجليزي من موقع فانتازي البريميرليج، والباقي من TheSportsDB (نتايج من غير دقايق لايف). فانتازي الدوري المصري متوقف.',
+    'Write the reason — whoever asked sees it.': 'اكتب السبب — اللي طلب هيشوفه.', 'This request was already handled.': 'الطلب ده اتعمل فيه قرار خلاص.',
+    'You asked for this — someone else must approve it.': 'إنت اللي طلبت ده — لازم حد تاني يوافق عليه.', 'Above the withdrawal approval limit — a second person approves before it can be sent': 'فوق حد الموافقة على السحب — لازم شخص تاني يوافق قبل ما يتبعت',
     'Paid from wallet': 'اتدفع من المحفظة', 'Wallet top-up — {0}': 'شحن المحفظة — {0}',
     'Send an Idempotency-Key header with the top-up.': 'حصلت مشكلة في الطلب. جرّب تاني.', 'Top up between 50 and 20,000 EGP.': 'اشحن من 50 لـ 20,000 جنيه.', 'Whole pounds only.': 'جنيهات صحيحة بس، من غير قروش.',
   });

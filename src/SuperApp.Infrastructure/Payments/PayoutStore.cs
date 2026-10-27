@@ -60,13 +60,16 @@ public sealed class PayoutStore(AppDbContext db) : IPayoutStore
     public Task<Approval?> ApprovalAsync(long id, CancellationToken ct) =>
         db.Set<Approval>().Include(a => a.Decisions).FirstOrDefaultAsync(a => a.Id == id, ct);
 
-    public async Task<IReadOnlyList<ApprovalDto>> WaitingApprovalsAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<ApprovalDto>> ApprovalsAsync(ApprovalStatus? status, Guid me, CancellationToken ct)
     {
-        var waiting = await db.Set<Approval>().Where(a => a.Status == ApprovalStatus.Waiting).OrderBy(a => a.CreatedAt).Take(200).ToListAsync(ct);
-        var ids = waiting.Where(a => a.RefType == "Payout").Select(a => a.RefId).ToList();
+        var query = db.Set<Approval>().AsNoTracking().Include(a => a.RequestedBy).Include(a => a.Decisions).ThenInclude(d => d.Decider)
+            .Where(a => status == null || a.Status == status);
+        var rows = await (status == ApprovalStatus.Waiting ? query.OrderBy(a => a.CreatedAt) : query.OrderByDescending(a => a.CreatedAt)).Take(200).ToListAsync(ct);
+        var ids = rows.Where(a => a.RefType == "Payout").Select(a => a.RefId).ToList();
         var codes = await db.Set<PayoutRequest>().Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Code, ct);
-        return waiting.Select(a => new ApprovalDto(a.Id, a.Kind.ToString(), a.RefType, a.RefType == "Payout" ? codes.GetValueOrDefault(a.RefId) : null,
-            a.Amount, a.Summary, a.Status.ToString(), a.CreatedAt)).ToList();
+        return rows.Select(a => new ApprovalDto(a.Id, a.Kind.ToString(), a.RefType, a.RefType == "Payout" ? codes.GetValueOrDefault(a.RefId) : null,
+            a.Amount, a.Summary, a.Status.ToString(), a.CreatedAt, a.RequestedBy.FullName, a.RequestedById == me, a.DecidedAt,
+            a.Decisions.OrderBy(d => d.CreatedAt).Select(d => new ApprovalDecisionDto(d.Decider.FullName, d.Decision.ToString(), d.Note, d.CreatedAt)).ToList())).ToList();
     }
 
     public Task<decimal?> AgentMoneyLimitAsync(long agentId, CancellationToken ct) =>

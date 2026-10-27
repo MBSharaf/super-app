@@ -9,8 +9,8 @@
  *
  * Wallet top-ups go through the server (the simulated gateway pays at once; Paymob opens its page and the money arrives
  * with its callback), and "Pay from wallet" is sent with bookings, packages, tournament entries and the Fantasy Pass.
- * Not wired yet (their screens stay demo): the CEO finance-approvals queue (server: /admin/money-approvals — exposed
- * below) and the admin revenue charts.
+ * Withdrawals over the approval limit (/admin/money-approvals) join the CEO approvals inbox and the admin's finance
+ * approvals (ids SV-…); deciding one calls the server. Not wired yet: the admin revenue charts.
  */
 (function (SA) {
   const api = SA.services.api;
@@ -21,7 +21,8 @@
 
   const session = () => S.session;
   const live = () => api.isLive() && !!session()?.me();
-  const cache = { wallets: [], ledger: [], receipts: [], points: null, vouchers: [], payouts: [], adminPayouts: [], at: 0 };
+  const cache = { wallets: [], ledger: [], receipts: [], points: null, vouchers: [], payouts: [], adminPayouts: [], approvals: [], at: 0 };
+  const MONEY_PAGES = /#\/(wallet|profile|dash\/wallet|admin\/payouts|admin\/finance-approvals|ceo\/approvals|ceo$|ceo\?)/;
   const at = (iso) => (iso ? new Date(iso.endsWith('Z') ? iso : `${iso}Z`).getTime() : Date.now());
   const wallet = (type) => cache.wallets.find((w) => w.type === type) || { pending: 0, available: 0, settled: 0 };
 
@@ -48,8 +49,9 @@
       wallets: wallets || [], ledger: ledger?.items || ledger || [], receipts: receipts || [], points, vouchers: vouchers || [], payouts: payouts || [], at: Date.now(),
     });
     if (S.admin && session().can('payouts.read')) cache.adminPayouts = (await get('/admin/payouts?pageSize=100'))?.items || [];
+    await S.liveMoney_loadApprovals?.();
     const route = location.hash;
-    if (/#\/(wallet|profile|dash\/wallet|admin\/payouts)/.test(route)) SA.app?.rerender?.();
+    if (MONEY_PAGES.test(route)) SA.app?.rerender?.();
   };
 
   // ---- Customer wallet and receipts
@@ -156,6 +158,40 @@
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason — the partner sees it.', 'invalid');
       api.post(`/admin/payouts/${id}/reject`, { reason: reason.trim() }).then(sync, (err) => SA.ui.overlay.toast(err.message, { type: 'error' }));
     };
+    /**
+     * Revenue (GET /admin/revenue): the page reads synchronously, so the first call starts the load and answers with
+     * an empty period; the page re-renders when the server's numbers arrive. Store and print streams stay 0 (paused).
+     */
+    const revenueCache = new Map();
+    const fromRevenue = (d) => {
+      const daily = d.daily.map((x) => {
+        const r = { date: x.date, bookings: +x.bookings, fees: +x.fees, store: 0, official: 0, pod: 0, passes: +x.passes, refusals: 0, refunds: +x.refunds, promos: +x.promos, gmv: +x.gmv };
+        r.income = r.bookings + r.fees + r.passes; r.cost = r.refunds + r.promos; r.net = r.income - r.cost;
+        return r;
+      });
+      const total = daily.reduce((t, r) => { Object.keys(t).forEach((k) => (t[k] += r[k] || 0)); return t; },
+        { bookings: 0, fees: 0, store: 0, official: 0, pod: 0, passes: 0, refusals: 0, refunds: 0, promos: 0, gmv: 0, income: 0, cost: 0, net: 0 });
+      Object.keys(total).forEach((k) => (total[k] = Math.round(total[k])));
+      return {
+        from: d.from, to: d.to, daily, total, summary: { ledger: [] }, live: true,
+        passes: d.passes.map((p, i) => ({ id: `FP-${i}`, plan: p.plan, amount: p.amount, at: at(p.at) })),
+        owners: d.owners.map((o) => ({ a: { company: o.name }, n: o.bookings, gross: o.gross, comm: o.commission })), sellers: [],
+      };
+    };
+    const emptyRevenue = ({ from, to }) => fromRevenue({ from, to, daily: [], owners: [], passes: [] });
+    S.admin.revenue = (r) => {
+      if (!live() || !session().can('revenue.read')) return demo.admin.revenue(r);
+      const key = `${r.from}|${r.to}`;
+      const hit = revenueCache.get(key);
+      if (hit?.data && Date.now() - hit.at < 60000) return hit.data;
+      if (!hit?.loading) {
+        revenueCache.set(key, { ...hit, loading: true });
+        api.get(`/admin/revenue?from=${r.from}&to=${r.to}`).then((d) => { revenueCache.set(key, { data: fromRevenue(d), at: Date.now() }); SA.app?.rerender?.(); },
+          (err) => { revenueCache.set(key, { data: emptyRevenue(r), at: Date.now() }); SA.ui.overlay.toast(err.message, { type: 'error' }); });
+      }
+      return hit?.data || emptyRevenue(r);
+    };
+
     S.admin.payoutDetail = (id) => {
       if (!serverRow(id)) return demo.admin.payoutDetail(id);
       const p = fromServer(serverRow(id));
@@ -163,16 +199,71 @@
     };
   }
 
+  // ---- Money approvals (CEO approvals inbox and the admin's finance approvals): server rows join the demo ones
+  const CE = S.ceo;
+  if (CE) {
+    const demoCe = { approvals: CE.approvals, approve: CE.approve, reject: CE.reject, financeQueue: CE.financeQueue, financeApprove: CE.financeApprove, financeReject: CE.financeReject };
+    const STATUS = { Waiting: 'pending', Approved: 'approved', Rejected: 'rejected', Cancelled: 'rejected' };
+    const isServer = (id) => String(id).startsWith('SV-');
+    const fromApproval = (a) => {
+      const no = (a.decisions || []).find((d) => d.decision === 'Reject');
+      return {
+        id: `SV-${a.id}`, apiId: a.id, live: true, kind: 'payout', amount: a.amount, title: `${a.summary}${a.refCode && !a.summary.includes(a.refCode) ? ` (${a.refCode})` : ''}`,
+        status: STATUS[a.status] || 'pending', need: 1, mine: a.mine, at: at(a.createdAt), doneAt: a.decidedAt ? at(a.decidedAt) : null,
+        requestedBy: { name: a.requestedBy || 'Finance team', title: 'Finance' }, reason: no?.note || '', rejectedBy: no?.name,
+        approvals: (a.decisions || []).filter((d) => d.decision === 'Approve').map((d) => ({ name: d.name, at: at(d.at), role: '' })),
+        why: ['Above the withdrawal approval limit — a second person approves before it can be sent'],
+      };
+    };
+    const canDecide = () => live() && session().can('finance.approve');
+    const loadApprovals = async () => {
+      if (!canDecide()) { cache.approvals = []; return; }
+      cache.approvals = ((await get('/admin/money-approvals?status=all')) || []).map(fromApproval);
+    };
+    const serverRow = (id) => {
+      const x = (cache.approvals || []).find((a) => a.id === id);
+      if (!x) throw new ApiError('Request not found.', 'not_found');
+      if (x.status !== 'pending') throw new ApiError('This request was already handled.', 'invalid');
+      if (x.mine) throw new ApiError('You asked for this — someone else must approve it.', 'forbidden');
+      return x;
+    };
+    const decide = async (id, decision, note) => {
+      const x = serverRow(id);
+      await api.post(`/admin/money-approvals/${x.apiId}/decide`, { decision, note });
+      await sync();
+      return { done: true };
+    };
+    const rejectLive = (id, reason) => {
+      if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
+      serverRow(id);
+      decide(id, 'reject', reason.trim()).catch((err) => SA.ui.overlay.toast(err.message, { type: 'error' }));
+    };
+    CE.approvals = (opts = {}) => {
+      const local = demoCe.approvals(opts);
+      if (!canDecide()) return local;
+      const rows = (cache.approvals || []).filter((x) => !opts.status || x.status === opts.status);
+      return [...rows, ...local].sort((a, b) => (a.status === 'pending') === (b.status === 'pending') ? b.at - a.at : a.status === 'pending' ? -1 : 1);
+    };
+    CE.findApproval = (id) => CE.approvals().find((x) => x.id === id) || null;
+    CE.approve = (id, opts) => (isServer(id) ? decide(id, 'approve', opts?.note) : demoCe.approve(id, opts));
+    CE.reject = (id, reason) => (isServer(id) ? rejectLive(id, reason) : demoCe.reject(id, reason));
+    CE.financeQueue = () => {
+      const local = (() => { try { return demoCe.financeQueue(); } catch { return []; } })();
+      if (!canDecide()) return local;
+      return [...(cache.approvals || []).filter((x) => x.status === 'pending').map((x) => ({ ...x, state: x.mine ? 'own' : 'send' })), ...local];
+    };
+    CE.financeApprove = (id) => (isServer(id) ? decide(id, 'approve') : demoCe.financeApprove(id));
+    CE.financeReject = (id, reason) => (isServer(id) ? rejectLive(id, reason) : demoCe.financeReject(id, reason));
+    S.liveMoney_loadApprovals = loadApprovals;
+  }
+
   S.liveMoney = {
     sync, cache,
-    /** For the CEO finance-approvals screen (end-of-backend pass) */
-    approvals: () => api.get('/admin/money-approvals'),
-    decide: (id, decision, note) => api.post(`/admin/money-approvals/${id}/decide`, { decision, note }).then((r) => { sync(); return r; }),
     statementUrl: (type = 'PartnerBookings') => `/api/v1/wallet/statement.xlsx?type=${type}`,
   };
 
   // Fill the cache when the app starts, after sign-in, and when a money page opens
   api.ready.then(sync);
   session()?.subscribe(() => sync());
-  window.addEventListener('hashchange', () => { if (/#\/(wallet|profile|dash\/wallet|admin\/payouts)/.test(location.hash) && Date.now() - cache.at > 5000) sync(); });
+  window.addEventListener('hashchange', () => { if (MONEY_PAGES.test(location.hash) && Date.now() - cache.at > 5000) sync(); });
 })(window.SA);

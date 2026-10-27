@@ -126,7 +126,7 @@
     mount(el) {
       el.querySelectorAll('[data-approve]').forEach((b) => b.addEventListener('click', async () => {
         const id = b.dataset.approve;
-        const x = SA.services.db.find('ceoApprovals', id);
+        const x = (CE().findApproval?.(id) || SA.services.db.find('ceoApprovals', id));
         const ok = await SA.ui.overlay.confirm({ title: `Approve ${C.egp(x.amount)}?`, text: `${esc(x.title)}. The money moves as soon as ${x.need === 2 ? 'the CFO confirms too' : 'you approve'}.`, confirmLabel: 'Approve', cancelLabel: 'Not yet' });
         if (!ok) return;
         try {

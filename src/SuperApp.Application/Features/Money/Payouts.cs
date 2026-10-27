@@ -23,7 +23,11 @@ public sealed record ApprovalDecisionBody(string Decision, string? Note);
 public sealed record PayoutDto(string Code, string WalletType, decimal Amount, string Method, string Destination, string Status,
     string? TransferRef, string? RejectReason, DateTime CreatedAt, DateTime? SentAt, string? OwnerName = null, long? ApprovalId = null);
 
-public sealed record ApprovalDto(long Id, string Kind, string RefType, string? RefCode, decimal Amount, string Summary, string Status, DateTime CreatedAt);
+public sealed record ApprovalDto(long Id, string Kind, string RefType, string? RefCode, decimal Amount, string Summary, string Status, DateTime CreatedAt,
+    string? RequestedBy = null, bool Mine = false, DateTime? DecidedAt = null, IReadOnlyList<ApprovalDecisionDto>? Decisions = null);
+
+/// <summary>Who decided, what and when (the note is the reason of a rejection).</summary>
+public sealed record ApprovalDecisionDto(string Name, string Decision, string? Note, DateTime At);
 
 /// <summary>Who gets paid and where: the partner's payout method and whether the account may withdraw.</summary>
 public sealed record PayeeInfo(Guid UserId, string Name, PayoutMethod Method, string Destination, bool Active);
@@ -51,7 +55,8 @@ public interface IPayoutStore
 
     Task<Approval?> ApprovalAsync(long id, CancellationToken ct);
 
-    Task<IReadOnlyList<ApprovalDto>> WaitingApprovalsAsync(CancellationToken ct);
+    /// <summary>Newest first (waiting: oldest first); null status = all. <c>Mine</c> marks the ones <paramref name="me"/> asked for.</summary>
+    Task<IReadOnlyList<ApprovalDto>> ApprovalsAsync(ApprovalStatus? status, Guid me, CancellationToken ct);
 
     Task<decimal?> AgentMoneyLimitAsync(long agentId, CancellationToken ct);
 
@@ -132,7 +137,7 @@ public sealed class PayoutsService(
             approval.RefId = payout.Id;
             await unitOfWork.SaveChangesAsync(ct);
             await notifier.NotifyStaffAsync("finance.approve", new NotificationMessage(NotificationCategory.Money, "Approval needed",
-                approval.Summary, "#/admin/money-approvals", NotificationTone.Warning), ct);
+                approval.Summary, "#/ceo/approvals", NotificationTone.Warning), ct);
         }
         await audit.LogAsync(AuditSystem.Admin, "payout.prepared", $"Withdrawal {payout.Code} prepared", "Payout", payout.Code, ct: ct);
         return ToDto(payout, payout.Wallet.Type);
@@ -175,7 +180,19 @@ public sealed class PayoutsService(
         return ToDto(payout, payout.Wallet.Type);
     }
 
-    public Task<IReadOnlyList<ApprovalDto>> ApprovalsAsync(CancellationToken ct) => payouts.WaitingApprovalsAsync(ct);
+    /// <summary>?status=waiting (default) | approved | rejected | all.</summary>
+    public Task<IReadOnlyList<ApprovalDto>> ApprovalsAsync(string? status, CancellationToken ct)
+    {
+        ApprovalStatus? s = status?.ToLowerInvariant() switch
+        {
+            null or "" or "waiting" => ApprovalStatus.Waiting,
+            "approved" => ApprovalStatus.Approved,
+            "rejected" => ApprovalStatus.Rejected,
+            "all" => null,
+            _ => throw new BadRequestException("Status: waiting, approved, rejected or all.", "status"),
+        };
+        return payouts.ApprovalsAsync(s, Me(), ct);
+    }
 
     /// <summary>Approve → the withdrawal can be sent; reject → it closes and the money goes back. Never your own request.</summary>
     public async Task<ApprovalDto> DecideAsync(long id, ApprovalDecisionBody body, CancellationToken ct)
@@ -189,6 +206,7 @@ public sealed class PayoutsService(
         }
         var approve = string.Equals(body.Decision, "approve", StringComparison.OrdinalIgnoreCase);
         Check(approve || string.Equals(body.Decision, "reject", StringComparison.OrdinalIgnoreCase), "Decision: approve or reject.", "decision");
+        Check(approve || body.Note?.Trim().Length >= 3, "Write the reason — whoever asked sees it.", "note");
         approval.Decisions.Add(new ApprovalDecision { DeciderId = me, Decision = approve ? Decision.Approve : Decision.Reject, Note = body.Note?.Trim() });
         approval.Status = approve ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
         approval.DecidedAt = clock.UtcNow;
@@ -206,6 +224,8 @@ public sealed class PayoutsService(
         }
         await unitOfWork.SaveChangesAsync(ct);
         await audit.LogAsync(AuditSystem.Admin, approve ? "approval.approved" : "approval.rejected", approval.Summary, "Approval", approval.Id.ToString(), ct: ct);
+        await notifier.NotifyUserAsync(approval.RequestedById, new NotificationMessage(NotificationCategory.Money, $"{(approve ? "Approved" : "Not approved")}: {approval.Amount:0} EGP",
+            approve ? approval.Summary : $"{approval.Summary} — {body.Note!.Trim()}", "#/admin/payouts", approve ? NotificationTone.Success : NotificationTone.Danger), ct);
         return new ApprovalDto(approval.Id, approval.Kind.ToString(), approval.RefType, payout?.Code, approval.Amount, approval.Summary, approval.Status.ToString(), approval.CreatedAt);
     }
 

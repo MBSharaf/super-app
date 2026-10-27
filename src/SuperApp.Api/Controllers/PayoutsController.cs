@@ -48,9 +48,15 @@ public sealed class AdminPayoutsController(PayoutsService payouts) : ApiControll
     [RequirePermission("payouts.prepare")]
     public async Task<ActionResult<object>> Reject(string code, PayoutRejectBody body, CancellationToken ct) => Ok(await payouts.RejectAsync(code, body, ct), "Rejected.");
 
+    /// <summary>?from&amp;to (Cairo dates; default the last 30 days, at most 366) — daily income and costs, top owners, passes.</summary>
+    [HttpGet("revenue")]
+    [RequirePermission("revenue.read")]
+    public async Task<ActionResult<object>> Revenue([FromServices] RevenueService revenue, [FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken ct) =>
+        Ok(await revenue.GetAsync(from, to, ct));
+
     [HttpGet("money-approvals")]
     [RequirePermission("finance.approve")]
-    public async Task<ActionResult<object>> Approvals(CancellationToken ct) => Ok(await payouts.ApprovalsAsync(ct));
+    public async Task<ActionResult<object>> Approvals([FromQuery] string? status, CancellationToken ct) => Ok(await payouts.ApprovalsAsync(status, ct));
 
     /// <summary>{ decision: approve|reject, note } — 409 two_people for your own request.</summary>
     [HttpPost("money-approvals/{id:long}/decide")]

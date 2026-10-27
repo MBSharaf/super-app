@@ -64,7 +64,14 @@ public sealed class PayoutsTests(AccountsApiFactory api) : IClassFixture<Account
         var approval = list.Body.Data().EnumerateArray().Single(a => a.GetProperty("refCode").GetString() == code);
         var id = approval.GetProperty("id").GetInt64();
         (await finance.PostAsync($"/api/v1/admin/money-approvals/{id}/decide", new { decision = "approve" })).Body.Code().ShouldBe("two_people");
+        approval.GetProperty("mine").GetBoolean().ShouldBeTrue();
+        (await ceo.PostAsync($"/api/v1/admin/money-approvals/{id}/decide", new { decision = "reject" })).Body.Code().ShouldBe("note");
         (await ceo.PostAsync($"/api/v1/admin/money-approvals/{id}/decide", new { decision = "approve" })).Status.ShouldBe(HttpStatusCode.OK);
+        (await ceo.GetAsync("/api/v1/admin/money-approvals")).Body.Data().EnumerateArray().ShouldNotContain(a => a.GetProperty("id").GetInt64() == id);
+        var done = (await ceo.GetAsync("/api/v1/admin/money-approvals?status=approved")).Body.Data().EnumerateArray().Single(a => a.GetProperty("id").GetInt64() == id);
+        (done.GetProperty("mine").GetBoolean(), done.GetProperty("decisions").GetArrayLength(), done.GetProperty("decisions")[0].GetProperty("decision").GetString()).ShouldBe((false, 1, "Approve"));
+        done.GetProperty("requestedBy").GetString().ShouldNotBeNullOrEmpty();
+        (await ceo.GetAsync("/api/v1/admin/money-approvals?status=nope")).Status.ShouldBe(HttpStatusCode.BadRequest);
 
         (await finance.PostAsync($"/api/v1/admin/payouts/{code}/send", new { transferRef = "TRX-1" })).Body.Code().ShouldBe("two_people");
         var sent = await ceo.PostAsync($"/api/v1/admin/payouts/{code}/send", new { transferRef = "TRX-1" });

@@ -44,7 +44,7 @@
     },
     mount(el) {
       el.querySelectorAll('[data-fa-ok]').forEach((b) => b.addEventListener('click', async () => {
-        const x = SA.services.db.find('ceoApprovals', b.dataset.faOk);
+        const x = (CE().findApproval?.(b.dataset.faOk) || SA.services.db.find('ceoApprovals', b.dataset.faOk));
         if (!(await SA.ui.overlay.confirm({ title: `Approve ${money(x.amount)}?`, text: esc(x.title), confirmLabel: 'Approve' }))) return;
         try { const r = await CE().financeApprove(x.id); toast(r.waiting ? 'Approved — waiting for the CEO' : 'Approved — done'); }
         catch (e) { toast(e.message, 'error'); }
