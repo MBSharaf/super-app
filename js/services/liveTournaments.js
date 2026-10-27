@@ -137,5 +137,5 @@
 
   SA.services.liveTournaments = { reloadMine };
   api.ready.then(() => { if (live()) SA.services.session?.subscribe(() => { if (isLivePartner()) reloadMine(); }); });
-  window.addEventListener('hashchange', () => { if (/#\/(dash|admin)\/tournaments/.test(location.hash) && isLivePartner()) reloadMine(); });
+  SA.core.router.onChange(() => { if (/^\/(dash|admin)\/tournaments/.test(SA.core.router.location()) && isLivePartner()) reloadMine(); });
 })(window.SA);

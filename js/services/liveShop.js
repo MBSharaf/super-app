@@ -141,7 +141,7 @@
 
   const signedIn = () => !!SA.services.session?.me();
   const needSignIn = () => {
-    SA.core.router.go(`/auth/sign-in?next=${encodeURIComponent(location.hash.slice(1) || '/shop')}`);
+    SA.core.router.go(`/auth/sign-in?next=${encodeURIComponent(SA.core.router.location() || '/shop')}`);
     return new ApiError('Sign in to use your cart.', 'sign_in');
   };
   const lineProductId = (l) => (l.kind === 'design' ? POD + l.itemId : l.itemId);

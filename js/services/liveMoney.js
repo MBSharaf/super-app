@@ -22,7 +22,7 @@
   const session = () => S.session;
   const live = () => api.isLive() && !!session()?.me();
   const cache = { wallets: [], ledger: [], receipts: [], points: null, vouchers: [], payouts: [], adminPayouts: [], approvals: [], at: 0 };
-  const MONEY_PAGES = /#\/(wallet|profile|dash\/wallet|admin\/payouts|admin\/finance-approvals|ceo\/approvals|ceo$|ceo\?)/;
+  const MONEY_PAGES = /^\/(wallet|profile|dash\/wallet|admin\/payouts|admin\/finance-approvals|ceo\/approvals|ceo$|ceo\?)/;
   const at = (iso) => (iso ? new Date(iso.endsWith('Z') ? iso : `${iso}Z`).getTime() : Date.now());
   const wallet = (type) => cache.wallets.find((w) => w.type === type) || { pending: 0, available: 0, settled: 0 };
 
@@ -50,8 +50,7 @@
     });
     if (S.admin && session().can('payouts.read')) cache.adminPayouts = (await get('/admin/payouts?pageSize=100'))?.items || [];
     await S.liveMoney_loadApprovals?.();
-    const route = location.hash;
-    if (MONEY_PAGES.test(route)) SA.app?.rerender?.();
+    if (MONEY_PAGES.test(SA.core.router.location())) SA.app?.rerender?.();
   };
 
   // ---- Customer wallet and receipts
@@ -265,5 +264,5 @@
   // Fill the cache when the app starts, after sign-in, and when a money page opens
   api.ready.then(sync);
   session()?.subscribe(() => sync());
-  window.addEventListener('hashchange', () => { if (MONEY_PAGES.test(location.hash) && Date.now() - cache.at > 5000) sync(); });
+  SA.core.router.onChange(() => { if (MONEY_PAGES.test(SA.core.router.location()) && Date.now() - cache.at > 5000) sync(); });
 })(window.SA);

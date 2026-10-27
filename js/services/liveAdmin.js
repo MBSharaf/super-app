@@ -101,5 +101,5 @@
     reportUrl: (kind, from, to) => `${api.BASE}/ceo/reports/${kind}${q({ from, to })}`,
   };
 
-  api.ready.then(() => { if (live()) { load(); window.addEventListener('hashchange', () => load()); } });
+  api.ready.then(() => { if (live()) { load(); SA.core.router.onChange(() => load()); } });
 })(window.SA);

@@ -18,11 +18,25 @@
     ${r.status === 'paused' ? icon('ban', 14) : r.holder === 'ai' ? icon('bolt', 14) : icon('user', 14)}</a>`;
   /** The org chart: the CEO, then each department head with their people under them */
   const tree = (roles) => {
-    const kids = (id) => roles.filter((r) => r.reportsTo === id);
+    const kids = (id) => roles.filter((r) => r.reportsTo === id || (id === 'ceo' && !r.reportsTo && r.id !== 'ceo'));
     const branch = (r) => { const k = kids(r.id); return `<li>${node(r)}${k.length ? `<ul>${k.map(branch).join('')}</ul>` : ''}</li>`; };
     const ceo = roles.find((r) => r.id === 'ceo');
     return `<div class="ceo-tree" role="tree" aria-label="Org chart"><ul><li>${node(ceo)}<ul>${kids('ceo').map(branch).join('')}</ul></li></ul></div>`;
   };
+  /** Server only: add or edit a position (title, department, who it reports to, duties). Not the CEO's own box. */
+  const below = (roles, id) => { const out = new Set([id]); let grew = true; while (grew) { grew = false; roles.forEach((r) => { if (r.reportsTo && out.has(r.reportsTo) && !out.has(r.id)) { out.add(r.id); grew = true; } }); } return out; };
+  const posForm = (r) => {
+    const roles = CE().roles();
+    const skip = r ? below(roles, r.id) : new Set();
+    return `<div class="dash-grid g-1-1" style="margin-top:10px">
+      <div class="field"><label for="pf-title">Title</label><input class="input" id="pf-title" name="title" maxlength="120" required value="${esc(r?.title || '')}" /></div>
+      <div class="field"><label for="pf-title-ar">Title in Arabic</label><input class="input" id="pf-title-ar" name="titleAr" dir="rtl" maxlength="120" required value="${esc(r?.titleAr || '')}" /></div>
+      <div class="field"><label for="pf-dept">Department</label><select class="input" id="pf-dept" name="dept"><option value="">The board (no department)</option>${SA.data.org.DEPTS.map((d) => `<option value="${d.key}" ${r?.dept === d.key ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="pf-up">Reports to</label><select class="input" id="pf-up" name="reportsTo">${roles.filter((x) => !skip.has(x.id)).map((x) => `<option value="${x.id}" ${(r ? r.reportsTo : 'ceo') === x.id ? 'selected' : ''}>${esc(x.title)} — ${esc(x.name)}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label for="pf-duties">Duties (one a line)</label><textarea class="input" id="pf-duties" name="duties" rows="4" maxlength="4000">${esc((r?.duties || []).join('\n'))}</textarea></div>`;
+  };
+  const posValues = (f) => Object.fromEntries(['title', 'titleAr', 'dept', 'reportsTo', 'duties'].map((k) => [k, f.querySelector(`[name="${k}"]`).value]));
 
   /* ---------- Departments ---------- */
   SA.pages.ceoDepartments = C.guard({
@@ -35,14 +49,24 @@
       const body = `
         ${A().tabs('/ceo/departments', [['cards', 'Departments'], ['chart', 'Org chart']], view === 'chart' ? 'chart' : 'cards')}
         ${view === 'chart' ? `<section class="dash-card"><div class="row-between"><h2 class="h4">Who reports to whom</h2><span class="xs muted">${roles.filter((r) => r.holder === 'ai').length} AI agents · ${roles.filter((r) => r.holder === 'human').length} humans</span></div>
-          <p class="xs muted">${icon('info', 12)} Tap anyone to see their duties, permissions, limit and work. Humans approve; AI agents do the work and prepare.</p>${tree(roles)}</section>`
+          <p class="xs muted">${icon('info', 12)} Tap anyone to see their duties, permissions, limit and work. Humans approve; AI agents do the work and prepare.</p>${tree(roles)}</section>
+          ${CE().orgLive?.() ? `<details class="dash-card"><summary class="h4">${icon('plus', 16)} Add a position</summary><form data-pos-add>${posForm(null)}
+            <p class="xs muted">${icon('info', 12)} The new box is empty. A person is placed in it from the team screens; an AI agent from the AI panel.</p>
+            <button class="btn btn-primary btn-sm" type="submit" style="margin-top:10px">Add the position</button></form></details>` : ''}`
         : `<div class="ceo-depts">${H.map((d, i) => { const b = B.find((x) => x.dept === d.key); return `<a class="dash-card ceo-dcard" href="#/ceo/department/${d.key}" style="--i:${i};--t:${C.TONES[d.tone]}">
             <div class="row-between">${C.ring(d.score, d.tone, 58)}<span class="ceo-dicon" style="--c:${C.TONES[SA.data.org.DEPTS.find((x) => x.key === d.key).tone] || 'var(--turf)'}">${icon(d.icon, 20)}</span></div>
             <h2 class="h4" style="margin-top:10px">${esc(d.name)}</h2><p class="xs muted">${esc(d.text)}</p>
             <p class="xs" style="margin-top:8px"><b>${esc(d.headRole?.name || '')}</b> · ${esc(d.headRole?.title || '')}</p>
             <div class="ceo-dfoot xs"><span>${icon('users', 12)} ${d.people.length} role${d.people.length === 1 ? '' : 's'}</span><span>${icon('wallet', 12)} ${b.pct}% of budget</span></div>
             ${d.issues.length ? `<p class="xs t-danger" style="margin-top:6px">${esc(d.issues.map((x) => x.text).join(' · '))}</p>` : ''}</a>`; }).join('')}</div>`}`;
-      return C.layout('departments', { title: 'Departments', subtitle: '8 departments — health, people and budget', body });
+      return C.layout('departments', { title: 'Departments', subtitle: `${H.length} departments — health, people and budget`, body });
+    },
+    mount(el) {
+      el.querySelector('[data-pos-add]')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = await C.run(() => CE().addPosition(posValues(e.currentTarget)), 'Position added');
+        if (id) SA.core.router.go(`/ceo/agent/${id}`);
+      });
     },
   });
 
@@ -151,6 +175,10 @@
               <button class="btn btn-outline btn-sm" data-open-as>${icon('arrowUpRight', 14)} Open the admin console as ${esc(r.name)}</button></div>` : ''}
           </section>
         </div>
+        ${editable && CE().orgLive?.() ? `<form class="dash-card" data-pos-form>
+          <div class="row-between"><h2 class="h4">Position</h2><span class="row" style="--gap:8px"><button class="btn btn-ghost btn-sm" type="button" data-pos-remove>${icon('trash', 14)} Remove</button><button class="btn btn-primary btn-sm" type="submit">Save</button></span></div>
+          <p class="xs muted">${icon('info', 12)} ${r.vacant ? 'Nobody holds this position yet.' : `<span>Held by</span> <b data-i18n-skip>${esc(r.name)}</b>.`} <span>The title, department, who it reports to and the duties are saved on the server.</span></p>
+          ${posForm(r)}</form>` : ''}
         ${editable ? `<form class="dash-card" data-perm-form>
           <div class="row-between"><h2 class="h4">Permissions & limit</h2><button class="btn btn-primary btn-sm" type="submit">Save changes</button></div>
           <p class="xs muted">${icon('info', 12)} Separation of duties: whoever prepares a withdrawal doesn’t send it; whoever adjusts balances doesn’t approve them. Money above the limit always comes to you.</p>
@@ -170,6 +198,11 @@
       });
       el.querySelector('[data-resume]')?.addEventListener('click', () => C.run(() => CE().setAgent(id, { status: 'active' }), 'Working again'));
       el.querySelector('[data-open-as]')?.addEventListener('click', () => C.run(() => CE().openAs('admin', CE().getRole(id).accountId)));
+      el.querySelector('[data-pos-form]')?.addEventListener('submit', (e) => { e.preventDefault(); C.run(() => CE().savePosition(id, posValues(e.currentTarget)), 'Position saved'); });
+      el.querySelector('[data-pos-remove]')?.addEventListener('click', async () => {
+        if (!(await SA.ui.overlay.confirm({ title: 'Remove this position?', text: 'An AI agent sitting in it loses the position. Positions that report to it must be moved first.', confirmLabel: 'Remove', danger: true }))) return;
+        if (await C.run(() => CE().removePosition(id), 'Position removed')) SA.core.router.go('/ceo/departments', { replace: true });
+      });
       el.querySelector('[data-perm-form]')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const f = e.currentTarget;
