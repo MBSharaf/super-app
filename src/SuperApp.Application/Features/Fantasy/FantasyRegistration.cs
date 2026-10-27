@@ -17,6 +17,7 @@ public static class FantasyRegistration
         services.AddScoped<IFantasyService, FantasyService>();
         services.AddScoped<IFantasyTeamService, FantasyTeamService>();
         services.AddScoped<IFantasyAdminService, FantasyAdminService>();
+        services.AddScoped<Football.ICompetitionsAdminService, Football.CompetitionsAdminService>();
         services.AddScoped<IFantasyGroupsService, FantasyGroupsService>();
         services.AddScoped<IFantasyPassService, FantasyPassService>();
         services.AddScoped<IFantasyLeaguesAdminService, FantasyLeaguesAdminService>();

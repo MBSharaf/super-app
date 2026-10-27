@@ -41,6 +41,63 @@
     onMount(m, close) { m.querySelector('[data-sponsor]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveSponsor(SA.core.utils.formData(e.target), s?.id); close(); toast('Sponsor saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } }); },
   });
 
+  /* ---------- Competitions on the matches page (API mode: /admin/football/competitions) ---------- */
+  const REGIONS = ['Egypt', 'Africa', 'Europe', 'National teams'];
+  let comps = null;
+  let compsLoading = false;
+  const loadComps = () => {
+    if (compsLoading) return;
+    compsLoading = true;
+    SA.services.api.get('/admin/football/competitions').then((list) => { comps = list; }, (err) => toast(err.message, 'error'))
+      .finally(() => { compsLoading = false; SA.app.rerender(); });
+  };
+  const compSource = (c) => (c.provider === 'fpl' ? 'Fantasy Premier League' : c.provider === 'thesportsdb' ? `TheSportsDB ${c.externalLeagueId}` : esc(c.provider));
+  const compFields = (c) => `
+      <div class="field"><label for="cp-e">Name (English)</label><input class="input" id="cp-e" name="nameEn" value="${esc(c?.nameEn || '')}" /><p class="field-error" data-err="nameEn"></p></div>
+      <div class="field"><label for="cp-a">Name (Arabic)</label><input class="input" id="cp-a" name="nameAr" dir="rtl" value="${esc(c?.nameAr || '')}" /><p class="field-error" data-err="nameAr"></p></div>
+      <div class="field"><label for="cp-s">Short name</label><input class="input" id="cp-s" name="shortName" maxlength="30" value="${esc(c?.shortName || '')}" /><p class="field-error" data-err="shortName"></p></div>
+      <div class="field"><label for="cp-r">Region</label><select class="select" id="cp-r" name="region">${REGIONS.map((r) => `<option ${c?.region === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+      <div class="field"><label for="cp-c">Colour</label><input class="input" id="cp-c" name="color" type="color" value="${esc(c?.color || '#0B6E4F')}" /></div>`;
+  const compDialog = (c = null) => SA.ui.overlay.open({
+    title: c ? `Edit ${esc(c.nameEn)}` : 'Add a competition',
+    subtitle: c ? compSource(c) : 'Fixtures and results from TheSportsDB (free). The league number is in its page address on thesportsdb.com.',
+    body: `<form class="form-grid" data-comp novalidate>
+      ${c ? '' : `<div class="field"><label for="cp-k">Key</label><input class="input mono" id="cp-k" name="key" maxlength="10" placeholder="saudi" /><p class="field-error" data-err="key"></p></div>
+      <div class="field"><label for="cp-i">TheSportsDB league number</label><input class="input num" id="cp-i" name="theSportsDbId" type="number" min="1" placeholder="4668" /><p class="field-error" data-err="theSportsDbId"></p></div>`}
+      ${compFields(c)}
+      ${c ? `<div class="field"><label for="cp-o">Order on the matches page</label><input class="input num" id="cp-o" name="sortOrder" type="number" min="0" value="${c.sortOrder}" /></div>
+      <label class="choice span-2"><input type="checkbox" name="isActive" ${c.isActive ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Show on the site</b></span></label>` : ''}
+      <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${c ? 'Save' : 'Add competition'}</button></div></form>`,
+    onMount(m, close) {
+      m.querySelector('[data-comp]').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const d = SA.core.utils.formData(e.target);
+        const body = { nameEn: d.nameEn, nameAr: d.nameAr, shortName: d.shortName, region: d.region, color: d.color };
+        try {
+          if (c) await SA.services.api.put(`/admin/football/competitions/${c.key}`, { ...body, isActive: !!d.isActive, sortOrder: +d.sortOrder || 0 });
+          else await SA.services.api.post('/admin/football/competitions', { ...body, key: d.key, theSportsDbId: +d.theSportsDbId || 0 });
+          close(); toast(c ? 'Competition saved' : 'Added — its matches arrive with the next sync'); comps = null; loadComps();
+        } catch (err) { toast(err.message, 'error'); }
+      });
+    },
+  });
+  const compRow = (c) => `<tr class="${c.isActive ? '' : 'is-dim'}"><td class="small"><i class="adm-dot" style="background:${esc(c.color)}"></i><b>${esc(c.nameEn)}</b><span class="xs muted" style="display:block">${esc(c.region)} · ${esc(c.shortName)}</span></td>
+        <td class="small">${compSource(c)}</td>
+        <td>${c.fantasyEnabled ? '<span class="badge badge-turf">On</span>' : '<span class="badge">Off</span>'}</td>
+        <td class="r num small">${c.fixtures}</td><td class="small">${c.lastSyncedAt ? timeAgo(new Date(c.lastSyncedAt.endsWith('Z') ? c.lastSyncedAt : `${c.lastSyncedAt}Z`).getTime()) : '<span class="muted">Waiting</span>'}</td>
+        <td>${c.isActive ? '<span class="badge badge-turf">Shown</span>' : '<span class="badge badge-danger">Hidden</span>'}</td>
+        <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-edit-comp="${esc(c.key)}">Edit</button><button class="btn btn-outline btn-sm" data-sync-comp="${esc(c.key)}">Sync now</button></div></td></tr>`;
+  const compsSection = () => {
+    if (!SA.services.api.isLive()) {
+      return `<section class="dash-card"><p class="small muted">${icon('info', 14)} Competitions are managed on the server (API mode). Demo mode shows the sample schedule.</p></section>`;
+    }
+    if (!comps) { loadComps(); return `<section class="dash-card"><p class="small muted">Loading competitions…</p></section>`; }
+    return `<section class="dash-card table-card"><div class="row" style="padding:18px 18px 0;justify-content:space-between"><h2 class="h4">Competitions on the matches page</h2><button class="btn btn-primary btn-sm" data-new-comp>${icon('plus', 14)} Add competition</button></div>
+      <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Competition</th><th>Source</th><th>Fantasy</th><th class="r">Matches</th><th>Last sync</th><th>Status</th><th></th></tr></thead><tbody>
+      ${comps.map(compRow).join('')}
+      </tbody></table></div><p class="xs muted" style="padding:0 18px 16px">${icon('shield', 12)} Free sources: the English league from the Fantasy Premier League site, the others from TheSportsDB (results, no live minutes). Egyptian fantasy is paused.</p></section>`;
+  };
+
   SA.pages.adminFantasy = A.guard({
     title: 'Fantasy — Super App Admin',
     render(ctx) {
@@ -89,8 +146,8 @@
           ${C.kpi({ label: 'Passes (30 days)', value: passes.length.toLocaleString(), ic: 'crown', tone: 'k-turf', sub: money(passes.reduce((t, x) => t + x.amount, 0)) })}
           ${C.kpi({ label: 'Prizes to deliver', value: winners.reduce((t, w) => t + w.rows.filter((r) => !r.delivered).length, 0), ic: 'gift', tone: winners.some((w) => w.rows.some((r) => !r.delivered)) ? 'k-blaze' : '' })}
         </div>
-        ${A.tabs('/admin/fantasy', [['', 'Prize leagues'], ['sponsors', 'Sponsors', sponsors.length], ['winners', 'Winners', winners.length], ['pass', 'Fantasy Pass']], tab)}${section}`;
-      return C.layout('fantasy', { title: 'Fantasy', subtitle: 'Prize leagues, sponsors, winners and Fantasy Pass subscribers — Egyptian league and Premier League', body });
+        ${A.tabs('/admin/fantasy', [['', 'Prize leagues'], ['sponsors', 'Sponsors', sponsors.length], ['winners', 'Winners', winners.length], ['pass', 'Fantasy Pass'], ['competitions', 'Competitions']], tab)}${tab === 'competitions' ? compsSection() : section}`;
+      return C.layout('fantasy', { title: 'Fantasy', subtitle: 'Prize leagues, sponsors, winners, Fantasy Pass subscribers and the competitions on the matches page', body });
     },
     mount(el) {
       el.addEventListener('click', async (e) => {
@@ -100,6 +157,13 @@
           const b = t('[data-winners]'); const l = F().allOfficial(b.dataset.lg).find((x) => x.id === b.dataset.winners);
           if (!(await SA.ui.overlay.confirm({ title: `Announce winners of ${esc(l.name)}?`, text: 'The top of the table gets the prizes. Vouchers become single-use codes; other prizes are listed for delivery. Winners on this device are notified.', confirmLabel: 'Announce winners' }))) return;
           try { AD().announceWinners(l.id, b.dataset.lg); toast('Winners announced'); SA.core.router.go('/admin/fantasy?tab=winners'); } catch (err) { toast(err.message, 'error'); }
+          return;
+        }
+        if (t('[data-new-comp]')) return compDialog();
+        if (t('[data-edit-comp]')) return compDialog(comps.find((c) => c.key === t('[data-edit-comp]').dataset.editComp));
+        if (t('[data-sync-comp]')) {
+          const b = t('[data-sync-comp]'); b.disabled = true; toast('Syncing — this can take a minute');
+          try { await SA.services.api.post(`/admin/fantasy/sync?competition=${b.dataset.syncComp}`); toast('Synced'); comps = null; loadComps(); } catch (err) { toast(err.message, 'error'); b.disabled = false; }
           return;
         }
         if (t('[data-new-sponsor]')) return sponsorDialog();

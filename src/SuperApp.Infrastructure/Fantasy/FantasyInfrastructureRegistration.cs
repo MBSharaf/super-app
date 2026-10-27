@@ -20,6 +20,7 @@ public static class FantasyInfrastructureRegistration
         AddFootballProviders(services, configuration);
         services.AddScoped<IFootballQuota, FootballQuota>();
         services.AddScoped<IFantasySyncRepository, FantasySyncRepository>();
+        services.AddScoped<ICompetitionAdminRepository, CompetitionAdminRepository>();
         services.AddScoped<IFantasyScoringRepository, FantasyScoringRepository>();
         services.AddScoped<IFantasyReader, FantasyReader>();
         services.AddScoped<IFantasyTeamRepository, FantasyTeamRepository>();
