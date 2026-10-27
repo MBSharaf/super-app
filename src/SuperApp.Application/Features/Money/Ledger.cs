@@ -1,3 +1,4 @@
+using SuperApp.Application.Common.Exceptions;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Common.Responses;
 using SuperApp.Application.Features.Pitches;
@@ -40,8 +41,8 @@ public interface IMoneyStore
 
     Task<IReadOnlyList<ReceiptDto>> ReceiptsOfAsync(Guid userId, CancellationToken ct);
 
-    /// <summary>The refund limit the CEO set for this staff member (0 when none is set).</summary>
-    Task<decimal> RefundLimitAsync(Guid userId, CancellationToken ct);
+    /// <summary>The refund, credit or payout limit the CEO set for this staff member (0 when none is set).</summary>
+    Task<decimal> StaffLimitAsync(Guid userId, StaffLimitKind kind, CancellationToken ct);
 
     /// <summary>The money limit of the agent calling with an API key (0 when unknown).</summary>
     Task<decimal> AgentMoneyLimitAsync(long agentId, CancellationToken ct);
@@ -71,6 +72,12 @@ public interface ILedger
     /// (its available balance, else its held money) or to Super App, with a refund receipt.
     /// </summary>
     Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct);
+
+    /// <summary>
+    /// A correction by the team: + or − on the wallet's available money, with Super App's revenue wallet on the other side.
+    /// Taking more than is available → 422 <c>not_enough_balance</c>. Saved by the caller.
+    /// </summary>
+    Task AdjustAsync(Guid ownerUserId, WalletType type, decimal amount, string refType, long refId, CancellationToken ct);
 
     /// <summary>An entry fee the venue earns (tournaments): its share held until <c>release</c>, commission to revenue, a receipt.</summary>
     Task EntryFeeAsync(Payment payment, Guid venueOwnerId, decimal commissionRate, string refType, long refId, DateTime release, CancellationToken ct);
@@ -240,6 +247,18 @@ public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock cloc
             PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), -amount, LedgerBucket.Available, LedgerKind.Refund, refType, refId, null, group);
         }
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = customerId, Kind = ReceiptKind.Refund, Amount = amount, RefType = refType, RefId = refId });
+    }
+
+    public async Task AdjustAsync(Guid ownerUserId, WalletType type, decimal amount, string refType, long refId, CancellationToken ct)
+    {
+        var wallet = await store.WalletAsync(ownerUserId, type, ct);
+        if (amount < 0 && wallet.AvailableBalance < -amount)
+        {
+            throw new BusinessRuleException($"Only {wallet.AvailableBalance:0.##} EGP is available to take back.", "not_enough_balance");
+        }
+        var group = Guid.NewGuid();
+        PostRaw(wallet, amount, LedgerBucket.Available, LedgerKind.Adjustment, refType, refId, null, group);
+        PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), -amount, LedgerBucket.Available, LedgerKind.Adjustment, refType, refId, null, group);
     }
 
     /// <summary>

@@ -53,7 +53,8 @@
   const customerDrawer = (id) => {
     const c = AD().customer(id);
     return `${head(esc(c.name), `${esc(c.city || '—')}${c.phone ? ` · ${esc(c.phone)}` : ''}${c.email ? ` · ${esc(c.email)}` : ''}`, custBadges(c))}
-      <div class="adm-stats">${stat(c.bookings, 'Bookings')}${stat(c.orders, 'Shop orders')}${stat(c.items, 'Printed items')}${stat(money(Math.round(c.spent)), 'Spent')}</div>
+      <div class="adm-stats">${c.live ? `${stat(c.bookings, 'Bookings')}${stat(money(Math.round(c.spent)), 'Spent')}${stat(c.wallet == null ? '…' : money(c.wallet), 'Wallet balance')}${stat(c.points == null ? '…' : c.points.toLocaleString(), 'Super Points')}`
+        : `${stat(c.bookings, 'Bookings')}${stat(c.orders, 'Shop orders')}${stat(c.items, 'Printed items')}${stat(money(Math.round(c.spent)), 'Spent')}`}</div>
       ${c.device ? (() => { const L = SA.services.loyalty.summary(); return `<p class="small" style="margin-top:10px">${icon('sparkle', 14)} <b class="num">${L.balance.toLocaleString()}</b> Super Points · ${esc(L.tier.name)} tier</p>`; })() : ''}
       ${c.blocked ? `<div class="adm-alert danger">${icon('ban', 16)}<span><b>Blocked</b> ${esc(c.blockedReason)}</span></div>` : ''}
       <section class="adm-ds"><h3 class="h4">Actions</h3>
@@ -82,7 +83,7 @@
       if (act === 'reset') { await AD().resetRefusals(id); toast('Refusals reset'); return true; }
       if (act === 'points') {
         const r = await A.reason({ title: 'Adjust Super Points', text: 'Use a minus sign to remove points. They see the reason in their points history.', label: 'Reason they’ll see', confirmLabel: 'Save', extra: '<div class="field"><label for="pt-a">Points (+ or −)</label><input class="input num" id="pt-a" name="points" type="number" step="10" value="100" /></div>' });
-        if (!r) return; AD().adjustPoints(id, r.points, r.reason); toast('Points updated'); return true;
+        if (!r) return; await AD().adjustPoints(id, r.points, r.reason); toast('Points updated'); return true;
       }
       if (act === 'note') { const r = await A.reason({ title: 'Add a note', text: 'Only the Super App team sees notes.', label: 'Note', confirmLabel: 'Save note' }); if (!r) return; await AD().noteCustomer(id, r.reason); toast('Note saved'); return true; }
       if (act === 'credit') {
@@ -155,7 +156,8 @@
           <div class="field"><label for="dl-s">Store %</label><input class="input num" id="dl-s" name="store" type="number" min="0" max="50" step="0.5" value="${d?.store != null ? +(d.store * 100).toFixed(1) : ''}" placeholder="${+(g.store * 100).toFixed(1)}" /></div>
           <div class="field span-2"><label for="dl-n">Note (internal)</label><input class="input" id="dl-n" name="note" maxlength="120" value="${esc(d?.note || '')}" placeholder="e.g. 12-month deal, 3 venues" /></div>
           <div class="span-2 row" style="--gap:8px;justify-content:flex-end">${d ? '<button type="button" class="btn btn-ghost btn-sm" data-act="deal-clear">Use platform rate</button>' : ''}<button class="btn btn-primary btn-sm" type="submit">Save deal</button></div></form></section>`; })()}
-      ${p.live ? `<section class="adm-ds"><h3 class="h4">Venues</h3><ul class="adm-list"><li><span class="grow"><b class="small">Venues: ${p.venues} · Pitches: ${p.pitches}</b><span class="xs muted" style="display:block">Bookings (30 days): ${p.bookings30}</span></span></li></ul></section>` : `<section class="adm-ds"><h3 class="h4">Pitches</h3><ul class="adm-list">${pitches.map((x) => `<li><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.area)} · ${esc(x.format)} · ${money(x.price)}/h</span></span>${x.status === 'active' ? '<span class="badge badge-turf">Open</span>' : `<span class="badge badge-danger" title="${esc(x.closedReason || '')}">Closed</span>`}
+      ${p.live ? `<section class="adm-ds"><h3 class="h4">Pitches</h3><p class="xs muted" style="margin-top:-4px">${p.venues} venue${p.venues === 1 ? '' : 's'} · ${p.bookings30} bookings in 30 days</p><ul class="adm-list">${(AD().partnerPitches?.(id) || []).map((x) => `<li><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.venue)} · ${x.format}-a-side · ${money(x.pricePerHour)}/h</span></span>${x.status === 'Live' ? '<span class="badge badge-turf">Open</span>' : x.status === 'WaitingForReview' ? '<span class="badge badge-gold">In review</span>' : '<span class="badge badge-danger">Closed</span>'}
+        <a class="btn btn-ghost btn-sm" href="#/pitches/${esc(x.slug)}" target="_blank" rel="noopener">View</a>${x.status === 'Live' ? `<button class="btn btn-ghost btn-sm" data-pitch="lp:${x.id}" data-to="closed">Close</button>` : x.status === 'ClosedByAdmin' ? `<button class="btn btn-ghost btn-sm" data-pitch="lp:${x.id}" data-to="active">Reopen</button>` : ''}</li>`).join('') || '<li class="small muted">No pitches yet.</li>'}</ul></section>` : `<section class="adm-ds"><h3 class="h4">Pitches</h3><ul class="adm-list">${pitches.map((x) => `<li><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.area)} · ${esc(x.format)} · ${money(x.price)}/h</span></span>${x.status === 'active' ? '<span class="badge badge-turf">Open</span>' : `<span class="badge badge-danger" title="${esc(x.closedReason || '')}">Closed</span>`}
         <a class="btn btn-ghost btn-sm" href="#/pitches/${x.id}" target="_blank" rel="noopener">View</a><button class="btn btn-ghost btn-sm" data-pitch="${x.id}" data-to="${x.status === 'active' ? 'closed' : 'active'}">${x.status === 'active' ? 'Close' : 'Reopen'}</button></li>`).join('') || '<li class="small muted">No pitches yet.</li>'}</ul></section>`}
       ${store ? `<section class="adm-ds"><h3 class="h4">Products</h3><ul class="adm-list">${db().all('products').filter((x) => x.storeId === store.id && !x.deleted).map((x) => `<li class="${x.hiddenByAdmin ? 'is-dim' : ''}"><span class="grow"><b class="small">${esc(x.name)}</b><span class="xs muted" style="display:block">${money(x.price)} · ${x.stock} in stock${x.hiddenByAdmin ? ` · hidden: ${esc(x.hiddenReason)}` : x.status !== 'active' ? ' · draft' : ''}</span></span><a class="btn btn-ghost btn-sm" href="#/shop/${x.id}" target="_blank" rel="noopener">View</a><button class="btn btn-ghost btn-sm" data-hide-product="${x.id}" data-on="${x.hiddenByAdmin ? '' : '1'}">${x.hiddenByAdmin ? 'Show' : 'Hide'}</button></li>`).join('') || '<li class="small muted">No products.</li>'}</ul></section>` : ''}
       ${store ? `<section class="adm-ds"><h3 class="h4">Store</h3><ul class="adm-list"><li><span class="grow"><b class="small">${esc(store.name)}</b><span class="xs muted" style="display:block">${db().all('products').filter((x) => x.storeId === store.id && !x.deleted).length} products</span></span><span class="badge ${store.status === 'active' ? 'badge-turf' : 'badge-danger'}">${store.status === 'active' ? 'Live' : 'Suspended'}</span><a class="btn btn-ghost btn-sm" href="#/shop?store=${store.id}" target="_blank" rel="noopener">View</a></li></ul></section>` : ''}`;
@@ -164,10 +166,16 @@
     const act = e.target.closest('[data-act]')?.dataset.act;
     try {
       if (act === 'open') { AD().openDashboard(id); window.open(SA.core.router.url('/dash'), '_blank', 'noopener'); return false; }
-      if (act === 'adjust') { if (String(id).startsWith('p:')) { toast('This isn’t on the server yet — it works in the demo only.', 'error'); return false; } A.adjustDialog(id); return false; }
+      if (act === 'adjust') {
+        if (!String(id).startsWith('p:')) { A.adjustDialog(id); return false; }
+        const r = await A.reason({ title: 'Adjust their balance', text: 'Credit (+) or debit (−) their bookings wallet. They see the reason.', label: 'Reason they’ll see', confirmLabel: 'Save adjustment',
+          extra: '<div class="field"><span class="field-label">Type</span><div class="seg" role="radiogroup"><label class="seg-opt"><input type="radio" name="sign" value="1" checked /><span>Credit (+)</span></label><label class="seg-opt"><input type="radio" name="sign" value="-1" /><span>Debit (−)</span></label></div></div><div class="field"><label for="aj-m">Amount (EGP)</label><input class="input num" id="aj-m" name="amount" type="number" min="1" max="100000" /></div>' });
+        if (!r) return false;
+        await AD().adjustPartnerBalance(id, (+r.sign || 1) * Math.abs(+r.amount || 0), r.reason); toast('Balance adjusted'); return true;
+      }
       if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super App. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; await AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
       if (act === 'activate') { await AD().setPartnerStatus(id, 'active'); toast('Partner reactivated'); return true; }
-      if (act === 'deal-clear') { AD().setCommissionDeal(id, {}); toast('Platform rates apply again', 'info'); return true; }
+      if (act === 'deal-clear') { await AD().setCommissionDeal(id, {}); toast('Platform rates apply again', 'info'); return true; }
       const hp = e.target.closest('[data-hide-product]');
       if (hp) {
         if (hp.dataset.on) { const r = await A.reason({ title: 'Hide this product?', text: 'It disappears from the shop; the rest of the store stays live. The owner sees the reason.', label: 'Reason the owner sees', placeholder: 'e.g. Looks like a counterfeit of a branded boot.', confirmLabel: 'Hide product', danger: true }); if (!r) return; AD().setProductHidden(hp.dataset.hideProduct, true, r.reason); toast('Product hidden', 'info'); }
@@ -176,8 +184,8 @@
       }
       const pt = e.target.closest('[data-pitch]');
       if (pt) {
-        if (pt.dataset.to === 'closed') { const r = await A.reason({ title: 'Close this pitch?', text: 'Players can’t book it until it’s reopened. The owner is notified.', label: 'Reason the owner sees', confirmLabel: 'Close pitch', danger: true }); if (!r) return; AD().setPitchStatus(pt.dataset.pitch, 'closed', r.reason); }
-        else AD().setPitchStatus(pt.dataset.pitch, 'active');
+        if (pt.dataset.to === 'closed') { const r = await A.reason({ title: 'Close this pitch?', text: 'Players can’t book it until it’s reopened. The owner is notified.', label: 'Reason the owner sees', confirmLabel: 'Close pitch', danger: true }); if (!r) return; await AD().setPitchStatus(pt.dataset.pitch, 'closed', r.reason); }
+        else await AD().setPitchStatus(pt.dataset.pitch, 'active');
         toast(pt.dataset.to === 'closed' ? 'Pitch closed' : 'Pitch reopened'); return true;
       }
     } catch (err) { toast(err.message, 'error'); }
@@ -221,7 +229,7 @@
         AD().log('export', `Exported ${all.length} pitch partners`);
       });
       bindSearch(el, '/admin/partners', ctx.query);
-      const open = (id) => drawer({ title: 'Partner', id, render: partnerDrawer, onClick: partnerClick, onSubmit: (e, pid) => { if (!e.target.matches('[data-deal]')) return false; try { AD().setCommissionDeal(pid, SA.core.utils.formData(e.target)); toast('Commission deal saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
+      const open = (id) => drawer({ title: 'Partner', id, render: partnerDrawer, onClick: partnerClick, onSubmit: async (e, pid) => { if (!e.target.matches('[data-deal]')) return false; try { await AD().setCommissionDeal(pid, SA.core.utils.formData(e.target)); toast('Commission deal saved'); return true; } catch (err) { toast(err.message, 'error'); return false; } } });
       el.addEventListener('click', async (e) => {
         const r = e.target.closest('[data-open]'); if (r) { open(r.dataset.open); return; }
         const st = e.target.closest('[data-store-status]');

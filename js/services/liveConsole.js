@@ -2,11 +2,11 @@
  * The admin console's people, bookings and audit on the real API (backend 8.6d). Loaded after liveMoney.
  *
  * In API mode, for a team member with the permission, these admin methods answer from the server instead of the
- * demo data: customers (block, unblock, pay-upfront rule, notes), pitch partners (suspend, reactivate), the pitch
- * bookings list and the audit log. The pages read synchronously, so each list is loaded once (and again after a
- * minute or an action) and the page re-renders when it lands; a drawer repaints on the `adm:refresh` event.
- * What the server doesn't do yet answers with a clear message: wallet credit and Super Points from the drawer,
- * refusal resets, commission deals and closing a pitch from the partner drawer.
+ * demo data: customers (block, unblock, pay-upfront rule, notes, wallet credit, Super Points, refusal reset), pitch
+ * partners (suspend, reactivate, commission deal, balance adjustment, close / reopen a pitch), the pitch bookings list
+ * and the audit log. The pages read synchronously, so each list is loaded once (and again after a minute or an action)
+ * and the page re-renders when it lands; a drawer repaints on the `adm:refresh` event. Opening a partner's dashboard
+ * as them is not on the server and says so.
  */
 (function (SA) {
   const api = SA.services.api;
@@ -38,6 +38,8 @@
         return hit?.data ?? empty;
       },
       clear: () => map.clear(),
+      /** Reload on the next read but keep answering with what it has (an open drawer keeps its row) */
+      stale: () => map.forEach((v) => { v.at = 0; }),
     };
   };
 
@@ -72,10 +74,11 @@
   });
   const fromCustomer = (c, d = null) => ({
     id: `u:${c.id}`, apiId: c.id, live: true, name: c.fullName, email: c.email || '', phone: c.phone || '', city: '',
-    bookings: c.bookings, orders: c.orders, items: 0, spent: 0, last: at(c.lastSeenAt) || at(c.createdAt), first: at(c.createdAt),
+    bookings: c.bookings, orders: c.orders, items: 0, spent: c.spent || 0, last: at(c.lastSeenAt) || at(c.createdAt), first: at(c.createdAt),
     refused: c.codRefusals, blocked: c.status !== 'Active', blockedReason: d?.blockedReason || '', prepay: PREPAY[c.mustPrepay] || 'auto',
     needsPrepay: c.mustPrepay === 'Always' || (c.mustPrepay === 'Automatic' && c.codRefusals >= REFUSE_LIMIT), limit: REFUSE_LIMIT,
-    notes: notesOf(d?.adminNote), note: d?.adminNote || '', credits: [], podList: [], orderList: [],
+    notes: notesOf(d?.adminNote), note: d?.adminNote || '', podList: [], orderList: [], wallet: d?.walletBalance ?? null, points: d?.points ?? null,
+    credits: (d?.credits || []).map((x) => ({ amount: x.amount, reason: x.reason || '', at: at(x.at) })),
     bookingList: (d?.recentBookings || []).map((b) => ({ id: b.code, pitchName: `${b.pitch} · ${b.venue}`, date: b.date, hour: b.startHour, status: STATUS(b), amount: b.total })),
   });
   const people = cached();
@@ -98,7 +101,7 @@
     const apiId = String(id).slice(2);
     const d = await api.post(`/admin/customers/${apiId}/${path}`, body);
     details.set(apiId, fromCustomer(d.customer, d));
-    people.clear();
+    people.stale();
     repaint();
   };
   const notOnServer = () => { throw new ApiError('This isn’t on the server yet — it works in the demo only.', 'not_available'); };
@@ -119,27 +122,74 @@
     const line = `${new Date().toISOString().slice(0, 16)}Z · ${session().me().fullName}: ${t.slice(0, 300)}`;
     return act(id, 'note', { note: [line, liveCustomer(id).note].filter(Boolean).join('\n').slice(0, 1000) });
   };
-  AD.creditCustomer = (id, ...rest) => (isLiveId(id) ? notOnServer() : demo.creditCustomer(id, ...rest));
-  AD.adjustPoints = (id, ...rest) => (isLiveId(id) ? notOnServer() : demo.adjustPoints(id, ...rest));
-  AD.resetRefusals = (id) => (isLiveId(id) ? notOnServer() : demo.resetRefusals(id));
+  const needReason = (reason) => { if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid'); return reason.trim(); };
+  AD.creditCustomer = (id, amount, reason) => {
+    if (!isLiveId(id)) return demo.creditCustomer(id, amount, reason);
+    const amt = Math.round(+amount);
+    if (!(amt >= 5 && amt <= 5000)) throw new ApiError('Credit between 5 and 5,000 EGP.', 'invalid');
+    return act(id, 'credit', { amount: amt, reason: needReason(reason) });
+  };
+  AD.adjustPoints = (id, points, reason) => {
+    if (!isLiveId(id)) return demo.adjustPoints(id, points, reason);
+    const p = Math.round(+points);
+    if (!p || Math.abs(p) > 100000) throw new ApiError('Enter the points (between −100,000 and 100,000, not 0).', 'invalid');
+    return act(id, 'points', { points: p, reason: needReason(reason) });
+  };
+  AD.resetRefusals = (id) => (isLiveId(id) ? act(id, 'refusals/reset') : demo.resetRefusals(id));
 
   /* ---------------- Pitch partners ---------------- */
-  const fromPartner = (p) => ({
+  /** Commission is a percent on the server and a fraction on the site (null = the platform rate) */
+  const fromPartner = (p, d = null) => ({
     id: `p:${p.id}`, apiId: p.id, live: true, company: p.businessName, name: p.owner, email: p.email || '', phone: p.phone || '',
-    status: p.status === 'Suspended' ? 'suspended' : 'active', suspendedReason: '', pitches: p.pitches, closed: 0, venues: p.venues,
-    bookings30: p.bookings30d, occupancy: 0, gross30: 0, commission30: 0, balance: 0, taxId: '',
+    status: p.status === 'Suspended' ? 'suspended' : 'active', suspendedReason: d?.suspendedReason || '', pitches: p.pitches, closed: p.closedPitches || 0, venues: p.venues,
+    bookings30: p.bookings30d, occupancy: p.occupancy30d || 0, gross30: p.gross30d || 0, commission30: p.commission30d || 0, balance: p.balance || 0, taxId: '',
+    commission: p.bookingCommission == null && p.storeCommission == null ? null
+      : { bookings: p.bookingCommission == null ? null : p.bookingCommission / 100, store: p.storeCommission == null ? null : p.storeCommission / 100, note: '' },
+    pitchList: d?.pitchList || null,
   });
-  const partnerList = () => people.read('partners', '/admin/partners?pageSize=100', (d) => (d.items || d).map(fromPartner), []);
+  const partnerDetails = new Map();
+  const partnerList = () => people.read('partners', '/admin/partners?pageSize=100', (d) => (d.items || d).map((p) => ({ ...fromPartner(p), pitchList: partnerDetails.get(p.id)?.pitchList || null })), []);
   const isLivePartner = (id) => String(id).startsWith('p:');
+  const loadPartner = (apiId) => api.get(`/admin/partners/${apiId}`).then((d) => { partnerDetails.set(+apiId, fromPartner(d.partner, d)); repaint(); });
+  /** Runs a partner action on the server; the answer is the partner drawer */
+  const partnerAct = (apiId, call) => call.then((d) => { partnerDetails.set(+apiId, fromPartner(d.partner, d)); people.stale(); repaint(); });
   AD.partners = () => (live('partners.read') ? partnerList() : demo.partners());
+  /** The partner's pitches for the drawer (loaded once when the drawer opens) */
+  AD.partnerPitches = (id) => {
+    const apiId = +String(id).slice(2);
+    const hit = partnerDetails.get(apiId);
+    if (!hit?.pitchList) { if (!hit?.loading) { partnerDetails.set(apiId, { ...(hit || {}), loading: true }); loadPartner(apiId).catch(toast); } return []; }
+    return hit.pitchList;
+  };
+  AD.setCommissionDeal = (id, { bookings, store, note = '' } = {}) => {
+    if (!isLivePartner(id)) return demo.setCommissionDeal(id, { bookings, store, note });
+    const val = (v) => (v === '' || v == null ? null : +v);
+    const b = val(bookings), s = val(store);
+    if ([b, s].some((x) => x != null && !(x >= 0 && x <= 50))) throw new ApiError('Commission must be between 0% and 50%.', 'invalid');
+    const apiId = String(id).slice(2);
+    return partnerAct(apiId, api.put(`/admin/partners/${apiId}/commission`, { bookings: b, store: s, note: String(note || '').trim() || null }));
+  };
+  AD.adjustPartnerBalance = (id, amount, reason) => {
+    const amt = Math.round(+amount * 100) / 100;
+    if (!amt || Math.abs(amt) > 100000) throw new ApiError('Enter the amount (up to 100,000 EGP).', 'invalid');
+    const apiId = String(id).slice(2);
+    return partnerAct(apiId, api.post(`/admin/partners/${apiId}/adjust`, { amount: amt, reason: needReason(reason) }));
+  };
+  /** Pitches of a live partner come as `lp:<id>` */
+  AD.setPitchStatus = (pitchId, status, reason = '') => {
+    if (!String(pitchId).startsWith('lp:')) return demo.setPitchStatus(pitchId, status, reason);
+    const id = String(pitchId).slice(3);
+    const call = status === 'closed' ? api.post(`/admin/pitches/${id}/close`, { reason: needReason(reason) }) : api.post(`/admin/pitches/${id}/reopen`);
+    return call.then((d) => { partnerDetails.set(d.partner.id, fromPartner(d.partner, d)); people.stale(); repaint(); });
+  };
   AD.setPartnerStatus = (id, status, reason = '') => {
     if (!isLivePartner(id)) return demo.setPartnerStatus(id, status, reason);
     if (status === 'suspended' && reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
     const apiId = String(id).slice(2);
     const call = status === 'suspended' ? api.post(`/admin/partners/${apiId}/suspend`, { reason: reason.trim() }) : api.post(`/admin/partners/${apiId}/reactivate`);
-    return call.then(() => { people.clear(); repaint(); });
+    return partnerAct(apiId, call);
   };
-  ['setCommissionDeal', 'openDashboard'].forEach((name) => {
+  ['openDashboard'].forEach((name) => {
     if (!demo[name]) return;
     AD[name] = (id, ...rest) => (isLivePartner(id) ? notOnServer() : demo[name](id, ...rest));
   });

@@ -68,8 +68,9 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
 
     public Task<IReadOnlyList<ReceiptDto>> ReceiptsOfAsync(Guid userId, CancellationToken ct) => ReceiptsAsync(userId, null, ct);
 
-    public async Task<decimal> RefundLimitAsync(Guid userId, CancellationToken ct) =>
-        await db.Set<StaffLimit>().Where(l => l.UserId == userId).Select(l => (decimal?)l.RefundLimit).FirstOrDefaultAsync(ct) ?? 0;
+    public async Task<decimal> StaffLimitAsync(Guid userId, StaffLimitKind kind, CancellationToken ct) =>
+        await db.Set<StaffLimit>().Where(l => l.UserId == userId)
+            .Select(l => (decimal?)(kind == StaffLimitKind.Credit ? l.CreditLimit : kind == StaffLimitKind.Payout ? l.PayoutLimit : l.RefundLimit)).FirstOrDefaultAsync(ct) ?? 0;
 
     public async Task<decimal> AgentMoneyLimitAsync(long agentId, CancellationToken ct) =>
         await db.Set<Agent>().Where(a => a.Id == agentId).Select(a => (decimal?)a.MoneyLimit).FirstOrDefaultAsync(ct) ?? 0;

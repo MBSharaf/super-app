@@ -86,7 +86,7 @@
 
   const limitsCard = (l) => `<form class="dash-card" data-limits>
     <div class="row-between"><h2 class="h4">Money limits</h2><button class="btn btn-primary btn-sm" type="submit">Save</button></div>
-    <p class="xs muted">${icon('info', 12)} The most they may move alone (EGP). Above it, the action becomes a request for approval.</p>
+    <p class="xs muted">${icon('info', 12)} The most they may move alone (EGP). Above it, someone with a higher limit or the CEO does it.</p>
     <div class="dash-grid g-1-1" style="margin-top:10px">
       <div class="field"><label for="lm-r">Refunds</label><input class="input num" id="lm-r" name="refund" type="number" min="0" max="1000000" step="50" value="${l.refund}" /></div>
       <div class="field"><label for="lm-c">Credits</label><input class="input num" id="lm-c" name="credit" type="number" min="0" max="1000000" step="50" value="${l.credit}" /></div>

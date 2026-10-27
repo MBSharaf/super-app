@@ -46,6 +46,22 @@ public sealed class AdminPeopleController(IAdminPeopleService people, IAdminOpsS
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Note(Guid id, NoteRequest request, CancellationToken ct) => Ok(await people.NoteAsync(id, request, ct), "Note saved.");
 
+    /// <summary>{ amount 5–5,000, reason } to their wallet, paid by Super App; checks the caller's credit limit (403 over_credit_limit).</summary>
+    [HttpPost("customers/{id:guid}/credit")]
+    [RequirePermission("credits.issue")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Credit(Guid id, CreditRequest request, CancellationToken ct) => Ok(await people.CreditAsync(id, request, ct), "Credit sent.");
+
+    [HttpPost("customers/{id:guid}/points")]
+    [RequirePermission("customers.manage")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Points(Guid id, PointsRequest request, CancellationToken ct) => Ok(await people.PointsAsync(id, request, ct), "Points updated.");
+
+    [HttpPost("customers/{id:guid}/refusals/reset")]
+    [RequirePermission("customers.manage")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> ResetRefusals(Guid id, CancellationToken ct) => Ok(await people.ResetRefusalsAsync(id, ct), "Refusals reset.");
+
     [HttpGet("partners")]
     [RequirePermission("partners.read")]
     public async Task<ActionResult<object>> Partners([FromQuery] PeopleQuery query, CancellationToken ct) => OkPage(await people.PartnersAsync(query, ct));
@@ -64,6 +80,32 @@ public sealed class AdminPeopleController(IAdminPeopleService people, IAdminOpsS
     [RequirePermission("partners.manage")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> ReactivatePartner(long id, CancellationToken ct) => Ok(await people.SetPartnerStatusAsync(id, false, null, ct), "Partner active again.");
+
+    /// <summary>{ bookings, store } percent 0–50, empty = the platform rate; new bookings use it.</summary>
+    [HttpPut("partners/{id:long}/commission")]
+    [RequirePermission("partners.manage")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Commission(long id, CommissionDealRequest request, CancellationToken ct) =>
+        Ok(await people.CommissionAsync(id, request, ct), "Commission saved.");
+
+    /// <summary>{ amount (+ or −), reason } on the bookings wallet; checks the caller's payout limit (403 over_adjust_limit).</summary>
+    [HttpPost("partners/{id:long}/adjust")]
+    [RequirePermission("payouts.prepare")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> AdjustBalance(long id, BalanceAdjustRequest request, CancellationToken ct) =>
+        Ok(await people.AdjustBalanceAsync(id, request, ct), "Balance adjusted.");
+
+    /// <summary>Closes a live pitch for new bookings (the owner sees the reason); answers with the partner drawer.</summary>
+    [HttpPost("pitches/{id:long}/close")]
+    [RequirePermission("partners.manage")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> ClosePitch(long id, ReasonInput request, CancellationToken ct) =>
+        Ok(await people.SetPitchClosedAsync(id, true, request.Reason, ct), "Pitch closed.");
+
+    [HttpPost("pitches/{id:long}/reopen")]
+    [RequirePermission("partners.manage")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> ReopenPitch(long id, CancellationToken ct) => Ok(await people.SetPitchClosedAsync(id, false, null, ct), "Pitch open again.");
 
     [HttpGet("sellers")]
     [RequirePermission("sellers.read")]

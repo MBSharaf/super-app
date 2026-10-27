@@ -41,6 +41,9 @@ public interface IAdminPeopleRepository
     Task<Partner?> PartnerAsync(long id, CancellationToken ct);
 
     Task<Seller?> SellerAsync(long id, CancellationToken ct);
+
+    /// <summary>A pitch with its venue and the venue's partner, or null.</summary>
+    Task<Pitch?> PitchAsync(long id, CancellationToken ct);
 }
 
 /// <summary>ops.Settings rows.</summary>

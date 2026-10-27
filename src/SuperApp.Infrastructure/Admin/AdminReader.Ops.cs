@@ -132,4 +132,6 @@ public sealed class AdminPeopleRepository(AppDbContext db, AdminReader reader) :
     public Task<Partner?> PartnerAsync(long id, CancellationToken ct) => db.Set<Partner>().FirstOrDefaultAsync(p => p.Id == id, ct);
 
     public Task<Seller?> SellerAsync(long id, CancellationToken ct) => db.Set<Seller>().FirstOrDefaultAsync(s => s.Id == id, ct);
+
+    public Task<Pitch?> PitchAsync(long id, CancellationToken ct) => db.Set<Pitch>().Include(p => p.Venue).ThenInclude(v => v.Partner).FirstOrDefaultAsync(p => p.Id == id, ct);
 }

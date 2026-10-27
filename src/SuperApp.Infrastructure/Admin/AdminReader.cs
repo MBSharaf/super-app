@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SuperApp.Application.Common.Responses;
 using SuperApp.Application.Features.AdminConsole;
@@ -6,6 +7,7 @@ using SuperApp.Domain.Entities.Ai;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Domain.Entities.Bookings;
 using SuperApp.Domain.Entities.Communities;
+using SuperApp.Domain.Entities.Money;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Domain.Entities.Pitches;
 using SuperApp.Domain.Entities.Pod;
@@ -49,8 +51,22 @@ public sealed partial class AdminReader(AppDbContext db) : IAdminReader
         var bookings = await BookingRows(db.Set<Booking>().IgnoreQueryFilters().Where(b => b.CustomerId == id).OrderByDescending(b => b.CreatedAt)).Take(10).ToListAsync(ct);
         var orders = await OrderRows(db.Set<Order>().Where(o => o.CustomerId == id).OrderByDescending(o => o.CreatedAt)).Take(10).ToListAsync(ct);
         var tickets = await db.Set<Ticket>().CountAsync(t => t.OpenedById == id && t.Status != TicketStatus.Resolved && t.Status != TicketStatus.Closed, ct);
-        return new CustomerDetailDto(row, extra.AdminNote, extra.SuspendedReason, extra.Language, bookings, orders, tickets);
+        var wallet = await db.Set<Wallet>().Where(w => w.OwnerUserId == id && w.Type == WalletType.Customer).Select(w => (decimal?)w.AvailableBalance).FirstOrDefaultAsync(ct) ?? 0;
+        var points = await db.Set<PointEntry>().Where(p => p.UserId == id).SumAsync(p => (int?)p.Points, ct) ?? 0;
+        return new CustomerDetailDto(row, extra.AdminNote, extra.SuspendedReason, extra.Language, bookings, orders, tickets, wallet, points, await CreditsAsync(id, ct));
     }
+
+    /// <summary>Wallet credits from the team, read back from the audit log (it keeps the request: amount and reason).</summary>
+    private async Task<IReadOnlyList<CreditRowDto>> CreditsAsync(Guid id, CancellationToken ct)
+    {
+        var key = id.ToString();
+        var rows = await db.Set<AuditLog>().AsNoTracking().Where(a => a.Action == "customer.credit" && a.EntityType == "User" && a.EntityId == key)
+            .OrderByDescending(a => a.At).Take(20).Select(a => new { a.At, a.DataJson }).ToListAsync(ct);
+        return rows.Select(r => r.DataJson is null ? null : JsonSerializer.Deserialize<CreditRequest>(r.DataJson, Json))
+            .Zip(rows, (c, r) => new CreditRowDto(c?.Amount ?? 0, c?.Reason, r.At)).ToList();
+    }
+
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public async Task<PagedResult<PartnerRowDto>> PartnersAsync(PeopleQuery query, DateTime now, CancellationToken ct)
     {
@@ -77,7 +93,9 @@ public sealed partial class AdminReader(AppDbContext db) : IAdminReader
         var extra = await db.Set<Partner>().Where(p => p.Id == id).Select(p => new { p.SuspendedReason, p.SlotPostingBlocked }).FirstAsync(ct);
         var venues = await db.Set<Venue>().Where(v => v.PartnerId == id).OrderBy(v => v.Name)
             .Select(v => new VenueBriefDto(v.Id, v.Name, db.Set<Pitch>().Count(p => p.VenueId == v.Id))).ToListAsync(ct);
-        return new PartnerDetailDto(row, extra.SuspendedReason, extra.SlotPostingBlocked, venues);
+        var pitches = await db.Set<Pitch>().AsNoTracking().Where(p => p.Venue.PartnerId == id).OrderBy(p => p.Venue.Name).ThenBy(p => p.Name)
+            .Select(p => new PitchBriefDto(p.Id, p.Slug, p.Name, p.Venue.Name, p.PricePerHour, p.Format, p.Status.ToString())).ToListAsync(ct);
+        return new PartnerDetailDto(row, extra.SuspendedReason, extra.SlotPostingBlocked, venues, pitches);
     }
 
     public async Task<PagedResult<SellerRowDto>> SellersAsync(PeopleQuery query, CancellationToken ct)
@@ -112,16 +130,32 @@ public sealed partial class AdminReader(AppDbContext db) : IAdminReader
         return new SellerDetailDto(row, strikes, followers);
     }
 
+    private static readonly BookingStatus[] Counted = [BookingStatus.Confirmed, BookingStatus.CheckedIn, BookingStatus.Played, BookingStatus.NoShow];
+
     internal IQueryable<CustomerRowDto> CustomerRows(IQueryable<User> users) => users.AsNoTracking().Select(u => new CustomerRowDto(
         u.Id, u.FullName, u.Email, u.PhoneNumber, u.Status.ToString(), u.MustPrepay.ToString(), u.CodRefusals, u.CreatedAt, u.LastSeenAt,
-        db.Set<Booking>().Count(b => b.CustomerId == u.Id), db.Set<Order>().Count(o => o.CustomerId == u.Id)));
+        db.Set<Booking>().Count(b => b.CustomerId == u.Id), db.Set<Order>().Count(o => o.CustomerId == u.Id),
+        (db.Set<Booking>().Where(b => b.CustomerId == u.Id && Counted.Contains(b.Status)).Sum(b => (decimal?)b.Total) ?? 0)
+        + (db.Set<Order>().Where(o => o.CustomerId == u.Id && o.Status != OrderStatus.Cancelled && o.Status != OrderStatus.Refunded).Sum(o => (decimal?)o.Total) ?? 0)));
 
+    /// <summary>Opening hours of a day: close after open, or past midnight (close + 24); a closed day counts 0.</summary>
     private IQueryable<PartnerRowDto> PartnerRows(IQueryable<Partner> partners, DateTime now)
     {
         var since = DateOnly.FromDateTime(now.AddDays(-30));
+        var today = DateOnly.FromDateTime(now);
+        var closed = new[] { PitchStatus.ClosedByOwner, PitchStatus.ClosedByAdmin };
         return partners.AsNoTracking().Select(p => new PartnerRowDto(p.Id, p.UserId, p.BusinessName, p.User.FullName, p.User.Email, p.User.PhoneNumber,
             p.Status.ToString(), db.Set<Venue>().Count(v => v.PartnerId == p.Id), db.Set<Pitch>().Count(x => x.Venue.PartnerId == p.Id),
-            db.Set<Booking>().Count(b => b.Pitch.Venue.PartnerId == p.Id && b.Date >= since), p.CreatedAt));
+            db.Set<Booking>().Count(b => b.Pitch.Venue.PartnerId == p.Id && b.Date >= since), p.CreatedAt,
+            db.Set<Pitch>().Count(x => x.Venue.PartnerId == p.Id && closed.Contains(x.Status)),
+            db.Set<Booking>().Where(b => b.Pitch.Venue.PartnerId == p.Id && b.Date >= since && b.Date <= today && Counted.Contains(b.Status)).Sum(b => (decimal?)b.Total) ?? 0,
+            db.Set<Booking>().Where(b => b.Pitch.Venue.PartnerId == p.Id && b.Date >= since && b.Date <= today && Counted.Contains(b.Status))
+                .Sum(b => (decimal?)((b.PitchAmount - b.DiscountAmount) * b.CommissionRate / 100)) ?? 0,
+            db.Set<Booking>().Where(b => b.Pitch.Venue.PartnerId == p.Id && b.Date >= since && b.Date <= today && Counted.Contains(b.Status)).Sum(b => (int?)b.Duration) ?? 0,
+            db.Set<OpeningHour>().Where(o => o.Pitch.Venue.PartnerId == p.Id && o.Pitch.Status == PitchStatus.Live && !o.IsClosed)
+                .Sum(o => (int?)(o.CloseHour > o.OpenHour ? o.CloseHour - o.OpenHour : o.CloseHour + 24 - o.OpenHour)) ?? 0,
+            db.Set<Wallet>().Where(w => w.OwnerUserId == p.UserId && w.Type == WalletType.PartnerBookings).Select(w => (decimal?)w.AvailableBalance).FirstOrDefault() ?? 0,
+            p.BookingCommission, p.StoreCommission));
     }
 
     internal IQueryable<SellerRowDto> SellerRows(IQueryable<Seller> sellers) => sellers.AsNoTracking().Select(s => new SellerRowDto(

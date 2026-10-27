@@ -11,8 +11,8 @@ namespace SuperApp.Application.Features.AdminConsole;
 
 /// <summary>
 /// Customers, partners and sellers in the admin console (API §7.2 "Customers", "Partners", "Sellers"): search, drawer and
-/// the non-money actions. The person concerned is always told; every action is audited. Points, credit and commission
-/// deals are money actions and come with Phase 5.
+/// actions. The person concerned is always told; every action is audited. Money actions (wallet credit, partner balance
+/// adjustment) check the caller's money limits; over the limit → 403 for someone with a higher limit or the CEO.
 /// </summary>
 public interface IAdminPeopleService
 {
@@ -41,6 +41,23 @@ public interface IAdminPeopleService
     Task<SellerDetailDto> SetSellerStatusAsync(long id, bool suspend, string? reason, CancellationToken ct);
 
     Task<SellerDetailDto> FeatureSellerAsync(long id, FeatureRequest request, CancellationToken ct);
+
+    /// <summary>Goodwill money to the customer's Super App wallet, paid by Super App, with a receipt.</summary>
+    Task<CustomerDetailDto> CreditAsync(Guid id, CreditRequest request, CancellationToken ct);
+
+    /// <summary>Super Points + or −; the balance never goes below 0 (422 <c>not_enough_points</c>).</summary>
+    Task<CustomerDetailDto> PointsAsync(Guid id, PointsRequest request, CancellationToken ct);
+
+    /// <summary>Clears refused cash-on-delivery parcels (409 <c>no_refusals</c> when there are none).</summary>
+    Task<CustomerDetailDto> ResetRefusalsAsync(Guid id, CancellationToken ct);
+
+    /// <summary>The partner's own commission (percent); empty = the platform rate. New bookings use it.</summary>
+    Task<PartnerDetailDto> CommissionAsync(long id, CommissionDealRequest request, CancellationToken ct);
+
+    Task<PartnerDetailDto> AdjustBalanceAsync(long id, BalanceAdjustRequest request, CancellationToken ct);
+
+    /// <summary>Closes a live pitch (no new bookings) or reopens one Super App closed; the owner is told.</summary>
+    Task<PartnerDetailDto> SetPitchClosedAsync(long pitchId, bool close, string? reason, CancellationToken ct);
 }
 
 public sealed partial class AdminPeopleService(
@@ -49,7 +66,10 @@ public sealed partial class AdminPeopleService(
     IUnitOfWork unitOfWork,
     INotifier notifier,
     IAuditLogger audit,
-    IClock clock) : IAdminPeopleService
+    IClock clock,
+    Money.ILedger ledger,
+    Money.ILoyaltyStore loyalty,
+    Money.MoneyLimits limits) : IAdminPeopleService
 {
     public Task<PagedResult<CustomerRowDto>> CustomersAsync(PeopleQuery query, CancellationToken ct) => reader.CustomersAsync(query, ct);
 
