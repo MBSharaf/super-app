@@ -31,7 +31,22 @@ public sealed class GameRepository(AppDbContext db) : IGameRepository
 
     public async Task<IReadOnlyList<GameRequestDto>> RequestsAsync(long gameId, CancellationToken ct) =>
         await db.Set<GameRequest>().Where(r => r.GameId == gameId).OrderBy(r => r.CreatedAt)
-            .Select(r => new GameRequestDto(r.Id, r.PlayerId, r.Player.FullName, r.Position, r.Message, r.Status.ToString(), r.CreatedAt)).ToListAsync(ct);
+            .Select(r => new GameRequestDto(r.Id, r.PlayerId, r.Player.FullName, r.Position, r.Message, r.Status.ToString(), r.CreatedAt,
+                db.Set<PlayerRating>().Count(x => x.PlayerId == r.PlayerId), db.Set<PlayerRating>().Count(x => x.PlayerId == r.PlayerId && x.ShowedUp),
+                db.Set<PlayerRating>().Where(x => x.PlayerId == r.PlayerId && x.Stars != null).Average(x => (decimal?)x.Stars))).ToListAsync(ct);
+
+    public async Task<MyGamesDto> MineAsync(Guid me, DateOnly from, CancellationToken ct)
+    {
+        var hosting = await Cards(db.Set<Game>().Where(g => g.HostId == me && g.Status != GameStatus.Cancelled && g.Booking.Date >= from)
+            .OrderBy(g => g.Booking.Date).ThenBy(g => g.Booking.StartHour)).ToListAsync(ct);
+        var mine = await db.Set<GameRequest>().Where(r => r.PlayerId == me && r.Game.Booking.Date >= from
+                && (r.Status == GameRequestStatus.Waiting || r.Status == GameRequestStatus.Accepted || r.Status == GameRequestStatus.Waitlisted))
+            .Select(r => new { r.Game.Code, r.Status }).ToListAsync(ct);
+        var codes = mine.Select(m => m.Code).ToList();
+        var cards = await Cards(db.Set<Game>().Where(g => codes.Contains(g.Code))).ToListAsync(ct);
+        var joined = cards.Select(c => new MyGameDto(c, mine.First(m => m.Code == c.Code).Status.ToString())).OrderBy(x => x.Game.Date).ThenBy(x => x.Game.StartHour).ToList();
+        return new MyGamesDto(hosting, joined);
+    }
 
     public Task<Booking?> BookingAsync(string code, CancellationToken ct) => db.Set<Booking>().FirstOrDefaultAsync(b => b.Code == code, ct);
 

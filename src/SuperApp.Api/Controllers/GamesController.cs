@@ -16,6 +16,10 @@ public sealed class GamesController(IGamesService games) : ApiControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<object>> Open([FromQuery] GamesQuery query, CancellationToken ct) => Ok(await games.OpenAsync(query, ct));
 
+    /// <summary>The games I post and the ones I asked to join (from yesterday on).</summary>
+    [HttpGet("games/mine")]
+    public async Task<ActionResult<object>> Mine(CancellationToken ct) => Ok(await games.MineAsync(ct));
+
     [HttpGet("games/{code}")]
     [AllowAnonymous]
     public async Task<ActionResult<object>> Get(string code, CancellationToken ct) => Ok(await games.GetAsync(code, ct));
@@ -38,6 +42,11 @@ public sealed class GamesController(IGamesService games) : ApiControllerBase
     [HttpPost("games/{code}/requests/{id:long}/{decision:regex(^(accept|decline|remove)$)}")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Decide(string code, long id, string decision, CancellationToken ct) => Ok(await games.DecideAsync(code, id, decision, ct));
+
+    /// <summary>The host cancels before kick-off; every player gets their share back. Started or closed → 422 closed.</summary>
+    [HttpPost("games/{code}/cancel")]
+    [EnableRateLimiting(RateLimitPolicies.Write)]
+    public async Task<ActionResult<object>> Cancel(string code, CancellationToken ct) => Ok(await games.CancelAsync(code, ct), "Game cancelled.");
 
     [HttpDelete("games/{code}/requests/mine")]
     [EnableRateLimiting(RateLimitPolicies.Write)]

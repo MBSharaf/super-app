@@ -71,4 +71,30 @@ public sealed class GamesTests(AccountsApiFactory api) : IClassFixture<AccountsA
         record.GetProperty("showedUp").GetInt32().ShouldBe(1);
         record.GetProperty("averageStars").GetDecimal().ShouldBe(5);
     }
+    [Fact]
+    public async Task My_games_list_auto_accept_and_cancelling_refunds_every_player()
+    {
+        var (host, booking) = await HostAsync();
+        var code = (await host.PostAsync("/api/v1/games", Game(booking, needed: 3))).Body.Data().GetProperty("game").GetProperty("code").GetString()!;
+        var (player, _) = await kit.PersonAsync(partner: false);
+        (await player.PostAsync($"/api/v1/games/{code}/requests", new { position = "GK" })).Body.Data().GetProperty("myStatus").GetString().ShouldBe("Waiting");
+
+        var detail = (await host.GetAsync($"/api/v1/games/{code}")).Body.Data();
+        (detail.GetProperty("autoAccept").GetBoolean(), detail.GetProperty("bookingCode").GetString()).ShouldBe((false, booking));
+        detail.GetProperty("requests")[0].GetProperty("games").GetInt32().ShouldBe(0);
+        (await player.GetAsync($"/api/v1/games/{code}")).Body.Data().GetProperty("bookingCode").ValueKind.ShouldBe(System.Text.Json.JsonValueKind.Null);
+        var edit = new { playersNeeded = 3, level = "Casual", positions = "GK", title = "Friday five", requestsClosed = false, autoAccept = true };
+        (await host.SendAsync(HttpMethod.Put, $"/api/v1/games/{code}", edit)).Body.Data().GetProperty("autoAccept").GetBoolean().ShouldBeTrue();
+
+        (await host.GetAsync("/api/v1/games/mine")).Body.Data().GetProperty("hosting").EnumerateArray().ShouldContain(g => g.GetProperty("code").GetString() == code);
+        var joined = (await player.GetAsync("/api/v1/games/mine")).Body.Data().GetProperty("joined").EnumerateArray().Single(g => g.GetProperty("game").GetProperty("code").GetString() == code);
+        joined.GetProperty("myStatus").GetString().ShouldBe("Waiting");
+
+        (await player.PostAsync($"/api/v1/games/{code}/cancel")).Status.ShouldBe(HttpStatusCode.NotFound);
+        (await host.PostAsync($"/api/v1/games/{code}/cancel")).Body.Data().GetProperty("game").GetProperty("status").GetString().ShouldBe("Cancelled");
+        (await host.PostAsync($"/api/v1/games/{code}/cancel")).Body.Code().ShouldBe("closed");
+        (await player.GetAsync("/api/v1/wallet")).Body.Data().EnumerateArray().Single(w => w.GetProperty("type").GetString() == "Customer").GetProperty("available").GetDecimal().ShouldBe(70);
+        (await player.GetAsync("/api/v1/games/mine")).Body.Data().GetProperty("joined").GetArrayLength().ShouldBe(0);
+        (await host.GetAsync("/api/v1/games/mine")).Body.Data().GetProperty("hosting").GetArrayLength().ShouldBe(0);
+    }
 }

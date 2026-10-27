@@ -16,14 +16,22 @@ public sealed record GameDto(string Code, string? Title, string PitchSlug, strin
     string Level, string? Positions, int PlayersNeeded, int Joined, decimal SharePrice, string Status, bool RequestsClosed, string HostName, Guid HostId);
 
 /// <summary>A request to join. Status: Waiting, Accepted, Declined, Withdrawn, Removed, Waitlisted.</summary>
-public sealed record GameRequestDto(long Id, Guid PlayerId, string PlayerName, string? Position, string? Message, string Status, DateTime CreatedAt);
+public sealed record GameRequestDto(long Id, Guid PlayerId, string PlayerName, string? Position, string? Message, string Status, DateTime CreatedAt,
+    int Games = 0, int ShowedUp = 0, decimal? AverageStars = null);
 
 /// <summary>The game page: the host also sees every request; players see who is in.</summary>
-public sealed record GameDetailDto(GameDto Game, IReadOnlyList<GameRequestDto> Players, IReadOnlyList<GameRequestDto>? Requests, string? MyStatus, string? PaymentUrl = null);
+/// <summary>The game page. The host also gets every request, the auto-accept setting and the booking code.</summary>
+public sealed record GameDetailDto(GameDto Game, IReadOnlyList<GameRequestDto> Players, IReadOnlyList<GameRequestDto>? Requests, string? MyStatus, string? PaymentUrl = null,
+    bool? AutoAccept = null, string? BookingCode = null);
+
+/// <summary>GET /games/mine — the games I post (not cancelled) and the ones I asked to join, from yesterday on.</summary>
+public sealed record MyGamesDto(IReadOnlyList<GameDto> Hosting, IReadOnlyList<MyGameDto> Joined);
+
+public sealed record MyGameDto(GameDto Game, string MyStatus);
 
 public sealed record PostGameRequest(string BookingCode, int PlayersNeeded, string Level, string? Positions, string? Title, decimal SharePrice, bool AutoAccept);
 
-public sealed record EditGameRequest(int PlayersNeeded, string Level, string? Positions, string? Title, bool RequestsClosed);
+public sealed record EditGameRequest(int PlayersNeeded, string Level, string? Positions, string? Title, bool RequestsClosed, bool? AutoAccept = null);
 
 public sealed record JoinGameRequest(string? Position, string? Message, bool PayFromWallet = false);
 
@@ -63,6 +71,8 @@ public interface IGameRepository
     void AddRating(PlayerRating rating);
 
     Task<PlayerRecordDto?> RecordAsync(Guid playerId, CancellationToken ct);
+
+    Task<MyGamesDto> MineAsync(Guid me, DateOnly from, CancellationToken ct);
 }
 
 /// <summary>
@@ -89,6 +99,11 @@ public interface IGamesService
     Task RateAsync(string code, RatingsRequest request, CancellationToken ct);
 
     Task<PlayerRecordDto> RecordAsync(Guid playerId, CancellationToken ct);
+
+    Task<MyGamesDto> MineAsync(CancellationToken ct);
+
+    /// <summary>The host cancels before kick-off: every player still in or waiting gets their share back and is told.</summary>
+    Task<GameDetailDto> CancelAsync(string code, CancellationToken ct);
 }
 
 public sealed class GamesService(
@@ -114,7 +129,7 @@ public sealed class GamesService(
         var me = currentUser.UserId;
         var host = me == game.HostId;
         return new GameDetailDto(card, all.Where(r => r.Status == nameof(GameRequestStatus.Accepted)).ToList(), host ? all : null,
-            all.FirstOrDefault(r => r.PlayerId == me)?.Status);
+            all.FirstOrDefault(r => r.PlayerId == me)?.Status, null, host ? game.AutoAccept : null, host ? game.Booking.Code : null);
     }
 
     public async Task<GameDetailDto> PostAsync(PostGameRequest request, CancellationToken ct)
@@ -156,6 +171,7 @@ public sealed class GamesService(
         }
         (game.PlayersNeeded, game.Level, game.Positions, game.Title, game.RequestsClosed) =
             ((byte)request.PlayersNeeded, Enum.Parse<GameLevel>(request.Level), request.Positions?.Trim(), request.Title?.Trim(), request.RequestsClosed);
+        game.AutoAccept = request.AutoAccept ?? game.AutoAccept;
         game.Status = accepted >= game.PlayersNeeded ? GameStatus.Full : GameStatus.Open;
         await unitOfWork.SaveChangesAsync(ct);
         return await GetAsync(code, ct);
@@ -197,7 +213,7 @@ public sealed class GamesService(
         {
             return null;
         }
-        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.GameShare, game.SharePrice, me, $"Game {code} share", $"#/games/{code}", fromWallet), ct);
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.GameShare, game.SharePrice, me, $"Game {code} share", $"#/players/{code}", fromWallet), ct);
         row.Payment = started.Payment;
         return started.RedirectUrl;
     }
@@ -266,6 +282,30 @@ public sealed class GamesService(
         await unitOfWork.SaveChangesAsync(ct);
     }
 
+    public Task<MyGamesDto> MineAsync(CancellationToken ct) => games.MineAsync(Me(), Today().AddDays(-1), ct);
+
+    public async Task<GameDetailDto> CancelAsync(string code, CancellationToken ct)
+    {
+        var game = await HostGameAsync(code, ct);
+        if (game.Status is GameStatus.Cancelled or GameStatus.Played || Start(game.Booking) <= CairoTime.Now(clock))
+        {
+            throw new BusinessRuleException("This game has started or is already closed.", "closed");
+        }
+        var players = game.Requests.Where(r => r.Status is GameRequestStatus.Waiting or GameRequestStatus.Accepted or GameRequestStatus.Waitlisted).ToList();
+        foreach (var r in players)
+        {
+            r.Status = GameRequestStatus.Removed;
+            await RefundShareAsync(r, game.HostId, "The host cancelled the game", ct);
+        }
+        game.Status = GameStatus.Cancelled;
+        await unitOfWork.SaveChangesAsync(ct);
+        foreach (var r in players)
+        {
+            await Tell(r.PlayerId, "The host cancelled the game — your share is refunded", game, ct);
+        }
+        return await GetAsync(code, ct);
+    }
+
     public async Task<PlayerRecordDto> RecordAsync(Guid playerId, CancellationToken ct) =>
         await games.RecordAsync(playerId, ct) ?? throw new NotFoundException("Player not found.");
 
@@ -287,7 +327,7 @@ public sealed class GamesService(
     }
 
     private Task Tell(Guid user, string title, Game game, CancellationToken ct) =>
-        notifier.NotifyUserAsync(user, new NotificationMessage(NotificationCategory.Bookings, title, game.Title ?? game.Code, $"#/matches/{game.Code}"), ct);
+        notifier.NotifyUserAsync(user, new NotificationMessage(NotificationCategory.Bookings, title, game.Title ?? game.Code, $"#/players/{game.Code}"), ct);
 
     private static DateTime Start(Booking b) => b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
 
