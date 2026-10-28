@@ -32,7 +32,7 @@ public sealed record OrderItemDto(long Id, string Kind, string ItemId, string Ti
 /// <summary>A parcel of the order: one per store, and one for printed items (made and shipped by the factory).</summary>
 public sealed record OrderGroupDto(string Key, StoreRefDto? Store, bool Printed, string Status, string? Courier, string? TrackingNumber, IReadOnlyList<OrderItemDto> Items);
 
-/// <summary>GET /orders/{code}.</summary>
+/// <summary>GET /orders/{code}. Status Placed = waiting for the payment (called off after 15 minutes); Paid = the payment went through.</summary>
 public sealed record OrderDetailsDto(
     string Code,
     DateTime PlacedAt,
@@ -48,7 +48,8 @@ public sealed record OrderDetailsDto(
     decimal VatAmount,
     string? PromoCode,
     bool CanCancel,
-    IReadOnlyList<OrderGroupDto> Groups);
+    IReadOnlyList<OrderGroupDto> Groups,
+    bool Paid = false);
 
 /// <summary>GET /orders/mine filters: status = open | completed | cancelled | all.</summary>
 public sealed record MyOrdersQuery(string? Status = null, int Page = 1, int PageSize = 20);

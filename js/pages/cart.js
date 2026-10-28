@@ -105,7 +105,7 @@
                 <label class="choice"><input type="radio" name="delivery" value="express" /><span class="radio-dot"></span><span class="grow"><b>Express</b><span class="xs muted" style="display:block">Next day in Cairo & Giza</span></span><b class="small">${money(t.shipping ? P.shipping.express : P.shipping.express - P.shipping.standard)}</b></label>
               </div>
             </section>
-            <section class="panel panel-pad" data-paybox>${SA.ui.payment.render({ amount: t.total, allowCOD: true, name: 'copay' })}</section>
+            <section class="panel panel-pad" data-paybox>${SA.ui.payment.render({ amount: t.total, name: 'copay' })}</section>
           </form>
           <aside class="panel panel-pad order-summary">
             <h2 class="h4">Your order</h2>
@@ -175,7 +175,8 @@
         <article class="ticket">
           <div class="ticket-body">
             <div class="row-between wrap"><div><span class="xs muted">Order number</span><b class="ticket-id num">${o.id}</b></div><div style="text-align:right"><span class="xs muted">Estimated delivery</span><b style="display:block">${fmtDate(o.eta, 'long')}</b></div></div>
-            ${o.status === 'cancelled' ? `<div class="notice blaze" style="margin-top:16px">${icon('x', 18)}<span><b>This order was cancelled by the seller.</b> ${o.payment.method !== 'cod' ? `${money(o.cancelledValue)} went back to your wallet.` : 'Nothing was charged.'}</span></div>`
+            ${o.awaitingPayment ? `<div class="notice" style="margin-top:16px">${icon('clock', 18)}<span><b>Waiting for your payment.</b> Pay within 15 minutes to keep the items — after that the order is called off.</span></div>`
+              : o.status === 'cancelled' ? `<div class="notice blaze" style="margin-top:16px">${icon('x', 18)}<span><b>${o.live ? 'This order was cancelled.' : 'This order was cancelled by the seller.'}</b> ${o.payment.method !== 'cod' && (!o.live || o.paid) ? `${money(o.live ? o.total : o.cancelledValue)} went back to your wallet.` : 'Nothing was charged.'}</span></div>`
               : `<ol class="track">${STAGES.map(([k, l, ic], i) => `<li class="${i <= stage ? 'is-done' : ''} ${i === stage ? 'is-current' : ''}"><span>${icon(ic, 16, 2.2)}</span><b class="xs">${l}</b></li>`).join('')}</ol>`}
           </div>
           ${multi ? `<div class="ticket-body seller-track">${o.sellers.map((g) => `<div class="st-row">

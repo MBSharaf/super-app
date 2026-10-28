@@ -246,12 +246,14 @@
       address: { label: address.label || '', line1: address.line1 || '', line2: address.line2 || '', city: address.city || '', phone: o.phone }, delivery: o.deliverySpeed === 'Express' ? 'express' : 'standard',
       eta: new Date(placed + (o.deliverySpeed === 'Express' ? 1 : 3) * 864e5).toISOString().slice(0, 10), payment: { method, label, ref: o.code }, sellers,
       cancelledValue: sellers.filter((g) => g.status === 'cancelled').reduce((t, g) => t + g.lines.reduce((a, l) => a + l.price * l.qty, 0), 0), canCancel: o.canCancel,
+      // Online payment only: Placed = waiting for the payment (called off after 15 minutes); a cancelled order that was never paid charged nothing
+      awaitingPayment: o.status === 'Placed', paid: !!o.paid,
     };
   };
 
   const placeOrder = async ({ address, delivery, payment }) => {
     if (!signedIn()) throw needSignIn();
-    const method = payment?.method === 'cod' ? 'cod' : payment?.method === 'wallet' ? 'wallet' : 'online';
+    const method = payment?.method === 'wallet' ? 'wallet' : 'online';   // card or wallet only (no cash on delivery)
     const key = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
     const r = await api.post('/orders/checkout', {
       address: { label: address?.label, line1: address?.line1 || '', line2: address?.line2 || null, city: address?.city || '' }, phone: address?.phone || SA.services.session.me()?.phone || '',
@@ -259,6 +261,9 @@
     }, { headers: { 'Idempotency-Key': key } });
     store.set({ coupon: null }, 'cart');
     await loadCart();
+    SA.services.liveMoney?.sync();
+    // A live gateway (Paymob) returns its payment page; the order is Paid when the gateway confirms
+    if (r.paymentUrl) window.location.assign(r.paymentUrl);
     return toOrder(r.order);
   };
 

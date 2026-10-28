@@ -24,5 +24,9 @@
     'Customers pay online and our courier collects and delivers.': 'العملاء بيدفعوا أونلاين والمندوب بتاعنا بيستلم ويوصّل.',
     'Get paid': 'استلم فلوسك',
     'Your money is available 24 hours after delivery. Withdraw to InstaPay or your bank.': 'فلوسك بتبقى متاحة بعد 24 ساعة من التسليم. اسحبها على InstaPay أو البنك.',
+    /* ---------- Checkout and orders (online payment only) ---------- */
+    'Waiting for your payment.': 'مستنيين الدفع.',
+    'Pay within 15 minutes to keep the items — after that the order is called off.': 'ادفع خلال 15 دقيقة عشان تحجز المنتجات — بعد كده الطلب بيتلغي.',
+    'This order was cancelled.': 'الطلب ده اتلغى.',
   });
 })(window.SA);

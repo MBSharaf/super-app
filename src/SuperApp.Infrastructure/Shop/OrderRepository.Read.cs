@@ -57,6 +57,7 @@ public sealed partial class OrderRepository
         {
             x.Code, x.CreatedAt, x.Status, x.PaymentMethod, x.DeliverySpeed, x.AddressJson, x.Phone, x.Subtotal, x.DiscountAmount, x.DeliveryFee, x.Total, x.VatAmount,
             Promo = x.PromoCode != null ? x.PromoCode.Code : null,
+            Paid = x.Payment != null && (x.Payment.Status == PaymentStatus.Paid || x.Payment.Status == PaymentStatus.Refunded),
         }).SingleAsync(ct);
         var items = await ItemRows(db.Set<OrderItem>().Where(i => i.OrderId == orderId)).ToListAsync(ct);
         var fulfilments = await db.Set<Fulfilment>().AsNoTracking().Where(f => f.OrderId == orderId).Select(f => new { f.Id, f.StoreId, f.Status }).ToListAsync(ct);
@@ -77,7 +78,7 @@ public sealed partial class OrderRepository
         }
         var canCancel = MyOrdersService.CanCancel(o.Status, items.Select(i => i.Status), stages);
         return new OrderDetailsDto(o.Code, o.CreatedAt, o.Status.ToString(), o.PaymentMethod.ToString(), o.DeliverySpeed.ToString(), o.AddressJson, o.Phone,
-            o.Subtotal, o.DiscountAmount, o.DeliveryFee, o.Total, o.VatAmount, o.Promo, canCancel, groups);
+            o.Subtotal, o.DiscountAmount, o.DeliveryFee, o.Total, o.VatAmount, o.Promo, canCancel, groups, o.Paid);
     }
 
     internal static IQueryable<ItemRow> ItemRows(IQueryable<OrderItem> q) => q.AsNoTracking().IgnoreQueryFilters().OrderBy(i => i.Id).Select(i => new ItemRow(
