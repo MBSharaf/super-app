@@ -1,4 +1,4 @@
-/** Admin console: approvals — new pitches (before they go live) and new sellers (when approval is switched on). */
+/** Admin console: approvals — new pitches (before they go live), new sellers (when approval is switched on) and, in API mode, every product a seller or partner asks to sell. */
 (function (SA) {
   const { esc, money, timeAgo } = SA.core.utils;
   const { icon } = SA.ui;
@@ -35,17 +35,30 @@
   /** Both live lists at once (the tab counts need them); null when this account may not see a type */
   const loadLive = async () => {
     const get = (type) => API().get(`/admin/approvals?type=${type}&pageSize=100`).then((r) => r.items).catch(() => null);
-    const [partners, sellers, areas] = await Promise.all([get('PitchOwner'), get('Seller'), API().get('/lookups/areas')]);
+    // All at once (one wait instead of six). Owner's decision (2026-10-27): Super App approves each product a seller or
+    // partner adds; null without approvals.products
+    const [partners, sellers, areas, pitchCount, packages, products] = await Promise.all([get('PitchOwner'), get('Seller'), API().get('/lookups/areas'),
+      API().get('/admin/pitches?status=WaitingForReview&pageSize=1').then((r) => r.meta.total).catch(() => null),
+      API().get('/admin/package-options?pageSize=100').then((r) => r.items).catch(() => null), API().get('/admin/products/queue').catch(() => null)]);
     const names = Object.fromEntries(areas.map((x) => [x.id, SA.i18n?.isAr ? x.nameAr : x.nameEn]));
-    const pitchCount = await API().get('/admin/pitches?status=WaitingForReview&pageSize=1').then((r) => r.meta.total).catch(() => null);
-    const packages = await API().get('/admin/package-options?pageSize=100').then((r) => r.items).catch(() => null);
-    return { partners, sellers, pitchCount, packages, areaName: (id) => names[id] || '' };
+    return { partners, sellers, pitchCount, packages, products, areaName: (id) => names[id] || '' };
   };
   const liveSection = (list, areaName, emptyIcon, emptyTitle) => (list == null
     ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Not part of your permissions', text: 'Ask the CEO for the approvals permission for this type.' })}</div>`
     : list.length ? `<div class="adm-approve-grid">${list.map((a) => liveCard(a, areaName)).join('')}</div>`
       : `<div class="dash-card">${SA.ui.c.empty({ icon: emptyIcon, title: emptyTitle, text: 'New applications wait here.' })}</div>`);
   const pendingCount = (list) => (list || []).filter((a) => a.status === 'Pending').length;
+
+  /** A product waiting for review (GET /admin/products/queue) */
+  const productCard = (p) => `<article class="dash-card adm-approve">
+    <div class="adm-approve-img">${p.photos.slice(0, 3).map((ph) => `<img src="${esc(ph.url ? `${location.origin}${ph.url}` : media.u(ph.key, 360, 240))}" alt="" loading="lazy" />`).join('')}</div>
+    <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(p.name)}</h2><span class="badge badge-gold">Waiting</span></div>
+    <p class="small soft">${esc(SA.data.products.categories.find((c) => c.id === p.category)?.name || p.category)}${p.brand ? ` · ${esc(p.brand)}` : ''} · ${money(p.price)}${p.compareAtPrice ? ` <s class="muted">${money(p.compareAtPrice)}</s>` : ''} · ${p.stock} in stock (${p.variants} size${p.variants === 1 ? '' : 's'} / colour${p.variants === 1 ? '' : 's'})</p>
+    <dl class="kv"><div><dt>Store</dt><dd><a class="link" href="#/s/${esc(p.storeHandle)}" target="_blank" rel="noopener">${esc(p.store)}</a></dd></div><div><dt>Sent</dt><dd>${timeAgo(Date.parse(p.createdAt))}</dd></div>
+      ${p.specs.map((x) => `<div><dt>${esc(x.label)}</dt><dd>${esc(x.value)}</dd></div>`).join('')}</dl>
+    ${p.description ? `<p class="small">${esc(p.description)}</p>` : ''}
+    <div class="row wrap" style="--gap:8px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-reject-product="${p.id}">Don’t approve</button><button class="btn btn-primary btn-sm" data-approve-product="${p.id}">${icon('check', 14)} Approve</button></div>
+  </article>`;
 
   /** A pitch waiting for review (a demo record, or one built from GET /admin/pitches/{id} in API mode) */
   const pitchCard = (p, owner, liveTag = '') => `<article class="dash-card adm-approve">
@@ -93,6 +106,10 @@
             <div class="row wrap" style="--gap:8px;justify-content:flex-end"><button class="btn btn-outline btn-sm" data-reject-option="${o.id}">Don’t approve</button><button class="btn btn-primary btn-sm" data-approve-option="${o.id}">${icon('check', 14, 2.6)} Approve</button></div>
           </article>`).join('')}</div>`
             : `<div class="dash-card">${SA.ui.c.empty({ icon: 'tag', title: 'No package discounts waiting', text: 'Weekly package discounts partners ask for wait here.' })}</div>`;
+      } else if (L && tab === 'products') {
+        section = L.products == null ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Not part of your permissions', text: 'Ask the CEO for the approvals permission for this type.' })}</div>`
+          : L.products.length ? `<div class="adm-approve-grid">${L.products.map(productCard).join('')}</div>`
+            : `<div class="dash-card">${SA.ui.c.empty({ icon: 'bag', title: 'No products waiting', text: 'Products sellers and partners add wait here until you approve them.' })}</div>`;
       } else if (L && tab === 'sellers') {
         section = liveSection(L.sellers, L.areaName, 'users', 'No sellers waiting');
       } else if (!tab) {
@@ -121,8 +138,8 @@
             || `<tr><td colspan="6">${SA.ui.c.empty({ icon: 'users', title: 'No sellers waiting', text: on ? 'New sellers wait here until you approve them.' : 'Approval is off — new sellers go live straight away.' })}</td></tr>`}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', L ? (L.pitchCount ?? 0) : pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length], ...(L ? [['packages', 'Package discounts', (L.packages || []).length]] : [])], tab)}${section}`;
-      return C.layout('approvals', { title: 'Approvals', subtitle: 'Check new pitches and sellers before they go live on Super App', body });
+      const body = `${A.tabs('/admin/approvals', [['', 'New pitches', L ? (L.pitchCount ?? 0) : pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length], ...(L ? [['products', 'New products', (L.products || []).length], ['packages', 'Package discounts', (L.packages || []).length]] : [])], tab)}${section}`;
+      return C.layout('approvals', { title: 'Approvals', subtitle: live() ? 'Check new pitches, sellers and products before they go live on Super App' : 'Check new pitches and sellers before they go live on Super App', body });
     },
     mount(el) {
       el.querySelector('[data-seller-approval]')?.addEventListener('change', (e) => { AD().setSellerApproval(e.target.checked); toast(e.target.checked ? 'New sellers now need approval' : 'New sellers go live straight away', 'info'); });
@@ -135,6 +152,8 @@
           if (t('[data-reject-option]')) { const id = t('[data-reject-option]').dataset.rejectOption; const r = await A.reason({ title: 'Don’t approve this discount?', text: 'The partner sees the reason and can change the discount.', label: 'Reason the partner sees', placeholder: 'e.g. Keep weekly discounts at 15% or less.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/package-options/${id}/reject`, { reason: r.reason }); toast('Partner told', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-pitch-live]')) { await API().post(`/admin/pitches/${t('[data-approve-pitch-live]').dataset.approvePitchLive}/approve`); toast('Pitch approved — it’s live'); SA.app.rerender(); return; }
           if (t('[data-reject-pitch-live]')) { const id = t('[data-reject-pitch-live]').dataset.rejectPitchLive; const r = await A.reason({ title: 'Don’t approve this pitch?', text: 'The owner sees the reason and can fix the pitch and send it again.', label: 'Reason the owner sees', placeholder: 'e.g. The photos don’t show the pitch itself.', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/pitches/${id}/reject`, { reason: r.reason }); toast('Pitch not approved', 'info'); SA.app.rerender(); return; }
+          if (t('[data-approve-product]')) { await API().post(`/admin/products/${t('[data-approve-product]').dataset.approveProduct}/approve`); toast('Approved — it is on sale'); SA.app.rerender(); return; }
+          if (t('[data-reject-product]')) { const id = t('[data-reject-product]').dataset.rejectProduct; const r = await A.reason({ title: 'Don’t approve this product?', text: 'The store sees the reason, fixes the product and sends it again.', label: 'Reason the store sees', placeholder: 'e.g. The photos don’t show the product clearly', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/products/${id}/reject`, { reason: r.reason }); toast('Sent back to the store'); SA.app.rerender(); return; }
           if (t('[data-approve-live]')) { await API().post(`/admin/approvals/applications/${t('[data-approve-live]').dataset.approveLive}/approve`); toast('Approved — the applicant was notified'); SA.app.rerender(); return; }
           if (t('[data-reject-live]')) { const r = await A.reason({ title: 'Don’t approve this application?', text: 'The applicant sees the reason and can fix it and send it again.', label: 'Reason the applicant sees', placeholder: 'e.g. The ID photo isn’t clear', confirmLabel: 'Don’t approve', danger: true }); if (!r) return; await API().post(`/admin/approvals/applications/${t('[data-reject-live]').dataset.rejectLive}/reject`, { reason: r.reason }); toast('Applicant told', 'info'); SA.app.rerender(); return; }
           if (t('[data-approve-app]')) { SA.services.partners.approve(t('[data-approve-app]').dataset.approveApp); toast('Approved — the pitch partner account and the pitch are live'); SA.app.rerender(); return; }

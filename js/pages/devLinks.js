@@ -64,7 +64,7 @@
     ] },
     { title: 'Admin console', icon: 'shield', as: [['acc-admin', 'Super App HQ']], links: [
       ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['Finance approvals', '#/admin/finance-approvals'], ['Returns', '#/admin/returns'], ['Revenue', '#/admin/revenue'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
-      ['Approvals', '#/admin/approvals'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super App Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
+      ['Approvals', '#/admin/approvals'], ['Product review', '#/admin/approvals?tab=products'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super App Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
       ['Design review', '#/admin/designs'], ['Level review', '#/admin/levels'], ['Samples', '#/admin/samples'], ['Print orders', '#/admin/print'], ['Print catalogue', '#/admin/catalog'], ['Broadcasts', '#/admin/broadcast'],
       ['Promo codes', '#/admin/promos'], ['Site content', '#/admin/content'], ['Pop-up ads', '#/admin/content?tab=popups'], ['Fantasy', '#/admin/fantasy'], ['Analytics', '#/admin/analytics'], ['Audit log', '#/admin/audit'], ['Platform settings', '#/admin/settings'],
     ] },

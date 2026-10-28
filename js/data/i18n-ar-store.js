@@ -52,5 +52,17 @@
     'The Excel statement lists every sale, refund and withdrawal.': 'كشف الحساب Excel فيه كل بيع واسترجاع وسحب.',
     'Statement (Excel)': 'كشف الحساب (Excel)',
     'Minimum withdrawal {0} EGP · money released 24 hours after delivery': 'أقل سحب {0} جنيه · الفلوس بتتفك بعد 24 ساعة من التسليم',
+    /* ---------- Admin: product review ---------- */
+    'New products': 'منتجات جديدة',
+    'Product review': 'مراجعة المنتجات',
+    'No products waiting': 'مفيش منتجات مستنية',
+    'Products sellers and partners add wait here until you approve them.': 'المنتجات اللي البايعين والشركا بيضيفوها بتستنى هنا لحد ما توافق عليها.',
+    'Don’t approve this product?': 'مش هتوافق على المنتج ده؟',
+    'The store sees the reason, fixes the product and sends it again.': 'المتجر هيشوف السبب، ويعدّل المنتج ويبعته تاني.',
+    'Reason the store sees': 'السبب اللي المتجر هيشوفه',
+    'e.g. The photos don’t show the product clearly': 'مثلًا: الصور مش موضحة المنتج كويس',
+    'Approved — it is on sale': 'اتوافق عليه — معروض للبيع دلوقتي',
+    'Sent back to the store': 'رجع للمتجر',
+    'Check new pitches, sellers and products before they go live on Super App': 'راجع الملاعب والبايعين والمنتجات الجديدة قبل ما تظهر على سوبر آب',
   });
 })(window.SA);
