@@ -18,7 +18,7 @@
   const db = SA.services.db;
   const { ApiError } = SA.services.http;
   const demo = { ...D };
-  const demoRt = { list: RT.list, get: RT.get, decide: RT.decide, receive: RT.receive };
+  const demoRt = { list: RT.list, get: RT.get, decide: RT.decide, receive: RT.receive };   // after liveReturns
 
   const STORE = 'st-live';
   const AREA = '/seller';
@@ -59,7 +59,8 @@
       logo: st.logo ? photo(st.logo) : null, cover: st.cover ? photo(st.cover) : 'photo-1579952363873-27f3bade9f55', phone: '', status: st.status === 'Suspended' ? 'suspended' : 'active', official: false,
     };
     put('stores', [rec], (x) => x.id !== STORE && x.live);
-    await Promise.all([loadProducts(), loadOrders(), loadReturns()]);
+    await Promise.all([loadProducts(), loadOrders()]);
+    await loadReturns();   // after the orders: the lines take their prices from them
     return rec;
   };
 
@@ -188,13 +189,81 @@
     return out;
   };
 
-  /* ---------------- Store orders (filled in R6.7d3) ---------------- */
-  let orders = [];
-  const loadOrders = async () => { orders = []; };
+  /* ---------------- Store orders ---------------- */
 
-  /* ---------------- Returns (filled in R6.7d3) ---------------- */
+  const OSTATUS = { New: 'confirmed', Packed: 'packed', Shipped: 'shipped', Delivered: 'delivered', Cancelled: 'cancelled' };
+  const PAY = { Online: 'Card', Wallet: 'Super App wallet', CashOnDelivery: 'Cash on delivery' };
+  let orders = [];
+
+  /** The store's part of an order → the dashboard's order shape. Shipping is through Super App: the courier moves it on */
+  const toOrder = (o) => {
+    const a = JSON.parse(o.addressJson || '{}');
+    const gross = o.items.reduce((t, i) => t + i.unitPrice * i.qty, 0);
+    const status = OSTATUS[o.status] || 'confirmed';
+    return {
+      key: `${o.orderCode}|${STORE}`, live: true, orderId: o.orderCode, storeId: STORE, storeName: db.find('stores', STORE)?.name || '', createdAt: Date.parse(o.placedAt), status, at: {},
+      auto: status === 'shipped' || status === 'delivered', courier: o.trackingNumber ? 'Super App courier' : '', tracking: o.trackingNumber || '', payment: PAY[o.paymentMethod] || o.paymentMethod,
+      customer: { name: o.customerName, city: a.city || '', phone: o.phone }, address: { line1: a.line1 || '', line2: a.line2 || '', city: a.city || '', phone: o.phone },
+      delivery: o.deliverySpeed === 'Express' ? 'express' : 'standard', lines: o.items.map((i) => ({ id: i.id, name: i.title, qty: i.qty, price: +i.unitPrice, total: i.unitPrice * i.qty,
+        image: photo(i.image) || 'photo-1579952363873-27f3bade9f55', variant: { size: i.size, color: i.color } })),
+      gross, commission: o.items.reduce((t, i) => t + +i.commission, 0), net: +o.earnings, units: o.items.reduce((t, i) => t + i.qty, 0),
+    };
+  };
+  const loadOrders = async () => {
+    const r = await api.get(`${AREA}/store/orders?status=all&pageSize=100`);
+    orders = (r.items || r).map(toOrder);
+  };
+  const liveOrder = (key) => api.isLive() && String(key).endsWith(`|${STORE}`);
+
+  Object.assign(D, {
+    orders(opts = {}) {
+      if (!isLive()) return demo.orders(opts);
+      const from = opts.from ? Date.parse(`${opts.from}T00:00`) : 0, to = opts.to ? Date.parse(`${opts.to}T23:59:59`) : Infinity;
+      return [...orders.filter((o) => o.createdAt >= from && o.createdAt <= to), ...demo.orders(opts).filter((o) => o.storeId !== STORE)];
+    },
+    order(key) {
+      if (!liveOrder(key)) return demo.order(key);
+      return orders.find((o) => o.key === key) || (() => { throw new ApiError('Order not found.', 'not_found'); })();
+    },
+    async orderAction(key, action, { reason = '' } = {}) {
+      if (!liveOrder(key)) return demo.orderAction(key, action, { reason });
+      const o = D.order(key);
+      if (action === 'deliver') throw new ApiError('Super App’s courier marks the order delivered when it reaches the customer.', 'courier_delivers');
+      await api.post(`${AREA}/store/orders/${encodeURIComponent(o.orderId)}/${action}`, action === 'cancel' ? { reason: reason || 'Cancelled by the store' } : {});
+      await Promise.all([loadOrders(), loadProducts()]);
+      return D.order(key);
+    },
+  });
+
+  /* ---------------- Returns (the store decides its products' returns) ---------------- */
+
   let returns = [];
-  const loadReturns = async () => { returns = []; };
+  const loadReturns = async () => {
+    const list = await api.get(`${AREA}/returns`);
+    returns = (list.items || list).map((r) => ({ ...SA.services.liveReturns.toReturn(r, db.find('stores', STORE)?.name), ownerId: ACCOUNT(), storeId: STORE,
+      customer: { name: r.customerName || '—', city: r.city || '' }, items: r.lines.map((l) => ({ index: l.orderItemId, name: l.title, qty: l.qty, action: l.action.toLowerCase(), size: l.newSize || '',
+        variant: { size: l.size, color: l.color }, image: photo(l.image), price: orders.flatMap((o) => o.lines).find((x) => x.id === l.orderItemId)?.price || 0 })),
+      history: [{ status: 'requested', at: Date.parse(r.createdAt), by: r.customerName || 'Customer', note: '' }] }));
+  };
+  const liveReturn = (id) => api.isLive() && returns.some((r) => r.id === id);
+
+  Object.assign(RT, {
+    list(opts = {}) {
+      if (!isLive() || opts.ownerId !== ACCOUNT()) return demoRt.list(opts);
+      return returns.filter((r) => !opts.status || (opts.status === 'open' ? RT.OPEN.includes(r.status) : r.status === opts.status));
+    },
+    get: (id) => (liveReturn(id) ? returns.find((r) => r.id === id) : demoRt.get(id)),
+    async decide(id, approve, note = '') {
+      if (!liveReturn(id)) return demoRt.decide(id, approve, note);
+      await api.post(`${AREA}/returns/${encodeURIComponent(id)}/${approve ? 'approve' : 'reject'}`, approve ? {} : { reason: String(note).trim() });
+      await loadReturns();
+    },
+    async receive(id) {
+      if (!liveReturn(id)) return demoRt.receive(id);
+      await api.post(`${AREA}/returns/${encodeURIComponent(id)}/received`);
+      await Promise.all([loadReturns(), loadProducts()]);
+    },
+  });
 
   // The seller dashboard opens the seller from the server: the store comes with it
   const sellerReady = SA.services.liveShop.sellerReady;

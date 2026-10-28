@@ -41,5 +41,12 @@
     'Super App checks every product before it goes on sale': 'سوبر آب بيراجع كل منتج قبل ما يتعرض للبيع',
     'Super App checks each product before it goes on sale — usually within one working day.': 'سوبر آب بيراجع كل منتج قبل ما يتعرض للبيع — غالبًا خلال يوم عمل واحد.',
     'Sent to Super App — it goes on sale once approved': 'اتبعت لسوبر آب — هيتعرض للبيع أول ما يتوافق عليه',
+    /* ---------- Store orders and returns (Super App courier) ---------- */
+    'Hand to Super App courier': 'سلّمه لمندوب سوبر آب',
+    'Handed to Super App’s courier — the customer has the tracking number': 'اتسلّم لمندوب سوبر آب — العميل معاه رقم التتبع',
+    'Available in your wallet 24 hours after delivery (the return window).': 'هتبقى متاحة في محفظتك بعد 24 ساعة من التسليم (مدة المرتجعات).',
+    'Super App’s courier marks the order delivered when it reaches the customer.': 'مندوب سوبر آب هو اللي بيعلّم إن الطلب اتسلّم لما يوصل للعميل.',
+    'Customers can return a product with a problem within 24 hours of delivery. You pay the refund and the return delivery.': 'العملاء يقدروا يرجّعوا المنتج اللي فيه مشكلة خلال 24 ساعة من التسليم. الاسترجاع وشحن الرجوع عليك.',
+    'Answer within 2 working days · {0}-hour return window': 'رد خلال يومين عمل · مدة المرتجعات {0} ساعة',
   });
 })(window.SA);

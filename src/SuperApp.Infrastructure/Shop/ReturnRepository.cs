@@ -77,6 +77,7 @@ public sealed class ReturnRepository(AppDbContext db) : IReturnRepository
         var rows = await q.AsNoTracking().IgnoreQueryFilters().OrderByDescending(r => r.Id).Select(r => new
         {
             r.Id, r.Code, Order = r.Order.Code, r.OrderId, r.Reason, r.Detail, r.Status, r.RejectReason, r.RefundAmount, r.CustomerPaysDelivery, r.CreatedAt,
+            Customer = r.Customer.FullName, r.Order.AddressJson,
             Lines = r.Items.Select(i => new { i.OrderItemId, i.Qty, i.Action, i.NewSize, i.NewColor }).ToList(),
             Decider = r.Items.Any(i => i.OrderItem.Kind == OrderItemKind.PrintedDesign || i.OrderItem.Store.Type == StoreType.Official) ? "Super App" : r.Items.Select(i => i.OrderItem.Store.Name).FirstOrDefault(),
             Pickup = db.Set<Shipment>().Where(s => s.OrderId == r.OrderId && s.IsReturn).OrderByDescending(s => s.Id).Select(s => s.TrackingNumber).FirstOrDefault(),
@@ -88,7 +89,21 @@ public sealed class ReturnRepository(AppDbContext db) : IReturnRepository
             {
                 var i = items[l.OrderItemId];
                 return new ReturnLineDto(l.OrderItemId, i.Title, i.Size, i.Color, l.Qty, l.Action.ToString(), l.NewSize, l.NewColor, OrderRepository.Image(i));
-            }).ToList())).ToList();
+            }).ToList(), r.Customer, CityOf(r.AddressJson))).ToList();
+    }
+
+    /// <summary>The city of the order's delivery address (for the store's returns list).</summary>
+    private static string? CityOf(string json)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            return doc.RootElement.TryGetProperty("city", out var city) ? city.GetString() : null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return null;
+        }
     }
 
     public async Task<IReadOnlyList<Job>> JobsAsync(IReadOnlyList<long> orderItemIds, CancellationToken ct) =>

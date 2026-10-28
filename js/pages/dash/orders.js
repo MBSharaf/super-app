@@ -17,7 +17,8 @@
     let o;
     try { o = D().order(key); } catch (err) { return SA.ui.overlay.toast(err.message, { type: 'error' }); }
     const idx = STEPS.findIndex(([k]) => k === o.status);
-    const next = NEXT[o.status];
+    // Live orders ship with Super App's courier (booked by the server) and the courier marks them delivered
+    const next = o.live ? (o.status === 'shipped' ? null : o.status === 'packed' ? ['ship', 'Hand to Super App courier', 'truck'] : NEXT[o.status]) : NEXT[o.status];
     SA.ui.overlay.open({
       drawer: true, title: `Order ${esc(o.orderId)}`, subtitle: `${esc(o.storeName)} · ${timeAgo(o.createdAt)}`,
       body: `<div class="bk-detail">
@@ -36,7 +37,7 @@
         </dl>
         <h3 class="small strong" style="margin-top:14px">Money</h3>
         <dl class="kv"><div><dt>Order value</dt><dd class="num">${money(o.gross)}</dd></div><div><dt>Super App commission</dt><dd class="num">−${money(o.commission)}</dd></div><div class="total"><dt>Your net</dt><dd class="num">${money(o.net)}</dd></div></dl>
-        <p class="xs muted">${o.status === 'delivered' ? 'In your store wallet.' : o.status === 'cancelled' ? '' : 'Reaches your store wallet when it’s delivered.'}</p>
+        <p class="xs muted">${o.live ? (o.status === 'cancelled' ? '' : 'Available in your wallet 24 hours after delivery (the return window).') : o.status === 'delivered' ? 'In your store wallet.' : o.status === 'cancelled' ? '' : 'Reaches your store wallet when it’s delivered.'}</p>
         <form class="ship-form" data-ship hidden novalidate>
           <h3 class="small strong">Shipping details</h3>
           <div class="field"><label for="sh-c">Courier</label><select class="select" id="sh-c" name="courier"><option value="">Choose…</option>${COURIERS.map((x) => `<option>${x}</option>`).join('')}</select><span class="field-error" data-err="courier"></span></div>
@@ -53,6 +54,7 @@
         m.querySelector('[data-doc]').addEventListener('click', async (e) => { e.currentTarget.disabled = true; await SA.ui.docs.storeOrderDoc(o); e.currentTarget.disabled = false; });
         m.querySelector('[data-next]')?.addEventListener('click', async (e) => {
           const act = e.currentTarget.dataset.next;
+          if (act === 'ship' && o.live) { try { await D().orderAction(key, 'ship'); done('Handed to Super App’s courier — the customer has the tracking number'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
           if (act === 'ship') { const f = m.querySelector('[data-ship]'); f.hidden = false; f.courier.focus(); f.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
           try { await D().orderAction(key, act); done(act === 'pack' ? 'Marked as packed' : 'Marked as delivered — money moved to your store wallet'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
         });

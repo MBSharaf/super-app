@@ -16,7 +16,7 @@ public sealed record ReturnLineDto(long OrderItemId, string Title, string Size, 
 
 /// <summary>A return. Status: Requested, Approved, Received, Refunded, Exchanged, Reprinting, Rejected. DecidedBy: the store or "Super App".</summary>
 public sealed record ReturnDto(string Code, string OrderCode, string Reason, string? Detail, string Status, string DecidedBy, string? RejectReason, decimal RefundAmount,
-    bool CustomerPaysDelivery, string? PickupTracking, DateTime CreatedAt, IReadOnlyList<ReturnLineDto> Lines);
+    bool CustomerPaysDelivery, string? PickupTracking, DateTime CreatedAt, IReadOnlyList<ReturnLineDto> Lines, string? CustomerName = null, string? City = null);
 
 public sealed record RejectReturnRequest(string Reason);
 
