@@ -96,7 +96,7 @@
   };
 
   const shopService = {
-    categories: () => [...P.categories.filter((c) => !c.hidden), DESIGNS_CAT].map((c) => ({ ...c, count: catalogue().filter((p) => p.cat === c.id).length })).filter((c) => c.id !== 'designs' || c.count),
+    categories: () => [...P.categories.filter((c) => !c.hidden), DESIGNS_CAT].map((c) => ({ ...c, count: catalogue().filter((p) => p.cat === c.id).length })).filter((c) => c.id !== 'designs' || (c.count && SA.config.podEnabled)),   // printed designs only while print on demand is on
     /** Design sections (sellers' print-on-demand categories) with live counts */
     designCategories: () => (SA.services.pod ? SA.services.pod.categories().map((c) => ({ ...c, count: podLive().filter((p) => p.designCat === c.id).length })) : []),
     podProduct, unitPrice, POD_PREFIX,

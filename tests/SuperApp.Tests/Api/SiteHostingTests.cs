@@ -1,9 +1,10 @@
 using System.Net;
+using Microsoft.Extensions.Configuration;
 using Shouldly;
 
 namespace SuperApp.Tests.Api;
 
-/// <summary>The site at /super-app/: the app-install files (8.7) are served with the right types; the rest of the repository is not.</summary>
+/// <summary>The site at /super-app/: the app-install files (8.7) are served with the right types; the rest of the repository is not; the page carries the store / print-on-demand switches.</summary>
 [Trait("Category", "Database")]
 public sealed class SiteHostingTests(AccountsApiFactory api) : IClassFixture<AccountsApiFactory>
 {
@@ -29,5 +30,14 @@ public sealed class SiteHostingTests(AccountsApiFactory api) : IClassFixture<Acc
     {
         var client = await api.ClientAsync();
         (await client.Http.GetAsync(path)).StatusCode.ShouldBe(HttpStatusCode.NotFound, path);
+    }
+
+    [Fact]
+    public void The_page_tells_the_site_which_parts_are_open()
+    {
+        var settings = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["Features:StoreEnabled"] = "true" }).Build();
+        SuperApp.Api.Site.SiteHosting.WithFeatures("<!doctype html>\n<html lang=\"en\">\n<head>", settings)
+            .ShouldContain("<html lang=\"en\" data-store=\"on\" data-pod=\"off\">");
     }
 }

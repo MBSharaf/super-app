@@ -8,6 +8,8 @@ namespace SuperApp.Api.Site;
 /// <c>/super-app/</c> — the same address as GitHub Pages and tools/serve.ps1. Only the site's own folders and
 /// files are reachable; nothing else in the repository (source code, .env, docs) can be downloaded.
 /// Page addresses without a file extension (e.g. /super-app/factory/jobs) return index.html (clean URLs).
+/// The page tells the site which parts are open: <c>&lt;html data-store="on|off" data-pod="on|off"&gt;</c> from the settings
+/// <c>Features:StoreEnabled</c> and <c>Features:PodEnabled</c> (no script needed; GitHub Pages keeps both off).
 /// </summary>
 public static class SiteHosting
 {
@@ -69,7 +71,16 @@ public static class SiteHosting
             http.RequestServices.GetRequiredService<ILogger<SeoPages>>().LogWarning(ex, "SEO content skipped for {Path}", name);
         }
         var html = page is null ? index : SeoPages.Render(index, page, $"{http.Request.Scheme}://{http.Request.Host}");
-        return Results.Content(html, "text/html; charset=utf-8");
+        return Results.Content(WithFeatures(html, http.RequestServices.GetRequiredService<IConfiguration>()), "text/html; charset=utf-8");
+    }
+
+    /// <summary>Marks the &lt;html&gt; tag with the store and print-on-demand switches.</summary>
+    public static string WithFeatures(string html, IConfiguration configuration)
+    {
+        static string OnOff(bool on) => on ? "on" : "off";
+        var store = OnOff(configuration.GetValue("Features:StoreEnabled", false));
+        var pod = OnOff(configuration.GetValue("Features:PodEnabled", false));
+        return html.Replace("<html lang=\"en\">", $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\">", StringComparison.Ordinal);
     }
 
     private static string ContentType(string name) => Path.GetExtension(name).ToLowerInvariant() switch

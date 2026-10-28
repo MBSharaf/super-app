@@ -41,7 +41,7 @@
       const all = await S.shop.list({ seller: s.id, sort: ctx.query.sort || 'featured' });
       // The pinned design goes first
       const designs = all.filter((p) => p.pod).sort((a, b) => (b.designId === s.featured) - (a.designId === s.featured)), products = all.filter((p) => !p.pod);
-      const shown = s.mode === 'store' || (tab === 'products' && products.length) ? products : designs;
+      const shown = s.mode === 'store' || !designs.length || (tab === 'products' && products.length) ? products : designs;   // no designs (print on demand off): the products
       const lvl = S.sellers.levelOf(s);
       const following = S.sellers.isFollowing(s.id);
       const mine = S.sellers.current()?.id === s.id || S.sellers.mine()?.id === s.id;

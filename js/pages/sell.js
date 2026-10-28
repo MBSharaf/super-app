@@ -7,10 +7,25 @@
 
   const MODES = [
     { id: 'pod', icon: 'shirt', title: 'Print on demand', text: 'Upload designs on our hoodies, tees and caps. Our print partner makes and ships every order — no stock, no upfront cost.' },
-    { id: 'store', icon: 'bag', title: 'My own store', text: 'Sell products you already have. You keep the stock and ship the orders; we take a small commission on each sale.' },
+    { id: 'store', icon: 'bag', title: 'My own store', text: 'Sell products you already have. You keep the stock, our courier delivers every order, and we take 5% of each sale.' },
     { id: 'both', icon: 'sparkle', title: 'Both', text: 'Run your designs and your own products from one store page and one wallet.' },
   ];
   const PAYOUTS = ['InstaPay', 'Vodafone Cash', 'Bank transfer'];
+  /** Print on demand off (the store sells sellers' own products only): one way to sell, store rules, no design tools */
+  const POD = () => SA.config.podEnabled;
+  const modes = () => (POD() ? MODES : MODES.filter((m) => m.id === 'store'));
+  const STORE_RULES = [
+    'Only sell genuine products you own and can hand to our courier.',
+    'No fakes or copies of other brands. Every product is reviewed before it goes on sale.',
+    'Customers pay online. Our courier collects from you and delivers. Super App takes 5% of each sale.',
+    'A product with a problem can be returned within 24 hours of delivery — the refund and the return delivery are on you.',
+  ];
+  const STORE_STEPS = [
+    ['user', 'Apply', 'We review your store within one working day.'],
+    ['bag', 'Add your products', 'Each product is checked before it goes on sale.'],
+    ['truck', 'We deliver', 'Customers pay online and our courier collects and delivers.'],
+    ['wallet', 'Get paid', 'Your money is available 24 hours after delivery. Withdraw to InstaPay or your bank.'],
+  ];
   const RULES = [
     'Only upload artwork you made or have the rights to use.',
     'No club crests, brand logos, players’ photos or other people’s characters without written permission.',
@@ -127,11 +142,15 @@
         <div class="container sell-hero-in">
           <div>
             <p class="eyebrow">${icon('sparkle', 14)} New on Super App</p>
-            <h1 class="display">Sell your designs<br />to Egypt’s players and fans</h1>
+            ${POD() ? `<h1 class="display">Sell your designs<br />to Egypt’s players and fans</h1>
             <p class="lead">Put your art on hoodies and tees with no stock and no upfront cost, or open a store for products you already have. One account, one wallet.</p>
             <div class="sell-points">
               <span>${icon('shirt', 18)} We print &amp; ship</span><span>${icon('wallet', 18)} Profit in your wallet</span><span>${icon('trend', 18)} Levels with real perks</span>
-            </div>
+            </div>` : `<h1 class="display">Sell your products<br />to Egypt’s players and fans</h1>
+            <p class="lead">Open a store for the sports gear you already have. Customers pay online, our courier delivers, and your money lands in your wallet.</p>
+            <div class="sell-points">
+              <span>${icon('truck', 18)} We deliver</span><span>${icon('wallet', 18)} Paid to your wallet</span><span>${icon('tag', 18)} 5% per sale</span>
+            </div>`}
           </div>
           <div class="sell-hero-art" aria-hidden="true">${['nights', 'yalla', 'press'].map((k, i) => `<span class="sell-tile" style="--i:${i}"><img src="${SA.data.pod.art[k]}" alt="" /></span>`).join('')}</div>
         </div>
@@ -141,7 +160,7 @@
         <form id="sell-form" class="stack" style="--gap:20px" ${rejected ? `data-code="${esc(rejected.code)}"` : ''} novalidate>
           <section class="panel panel-pad">
             <h2 class="h4">1. How do you want to sell?</h2>
-            <div class="sell-modes" role="radiogroup" aria-label="How you sell">${MODES.map((m, i) => `<label class="sell-mode"><input type="radio" name="mode" value="${m.id}" ${i === 0 ? 'checked' : ''} />
+            <div class="sell-modes" role="radiogroup" aria-label="How you sell">${modes().map((m, i) => `<label class="sell-mode"><input type="radio" name="mode" value="${m.id}" ${i === 0 ? 'checked' : ''} />
               <span class="sell-mode-ic">${icon(m.icon, 22)}</span><b>${m.title}</b><span class="small soft">${m.text}</span><span class="radio-dot"></span></label>`).join('')}</div>
           </section>
           <section class="panel panel-pad">
@@ -158,22 +177,25 @@
               <div class="field"><label for="sl-pm">Method</label><select class="select" id="sl-pm" name="payoutMethod">${PAYOUTS.filter((p) => !L().live() || L().PAYOUT[p]).map((p) => `<option>${p}</option>`).join('')}</select></div>
               <div class="field"><label for="sl-pd">Account</label><input class="input" id="sl-pd" name="payoutDetail" maxlength="60" placeholder="Phone, email or IBAN" dir="ltr" /><p class="field-error" data-err="payoutDetail"></p></div>
             </div>
-            <p class="small soft sell-note">${icon('info', 14)} Profit becomes available ${S.pod.cfg().holdDays} days after delivery. You can withdraw from <b>${money(S.pod.cfg().minWithdraw)}</b>.</p>
+            <p class="small soft sell-note">${icon('info', 14)} ${POD() ? `Profit becomes available ${S.pod.cfg().holdDays} days after delivery.` : 'Your money becomes available 24 hours after delivery (the return window).'} You can withdraw from <b>${money(S.pod.cfg().minWithdraw)}</b>.</p>
           </section>
           <section class="panel panel-pad">
             <h2 class="h4">4. Seller rules</h2>
-            <ul class="sell-rules">${RULES.map((r) => `<li>${icon('shield', 16)}<span>${r}</span></li>`).join('')}</ul>
+            <ul class="sell-rules">${(POD() ? RULES : STORE_RULES).map((r) => `<li>${icon('shield', 16)}<span>${r}</span></li>`).join('')}</ul>
             <label class="choice" style="margin-top:14px"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the <a class="link" href="#/legal/seller" target="_blank" rel="noopener">seller agreement</a></b></span></label><p class="field-error" data-err="agree"></p>
           </section>
           <button class="btn btn-blaze btn-lg sell-submit" type="submit">${icon('sparkle', 18)} Send my application</button>
         </form>
         <aside class="stack sell-aside" style="--gap:16px">
-          ${calc()}
+          ${POD() ? `${calc()}
           <div class="panel panel-pad">
             <h2 class="h4">Seller levels</h2>
             <p class="small soft">Every delivered item counts. Level up for bigger margins, more designs and more visibility.</p>
             <div style="margin-top:12px">${ladder(-1)}</div>
-          </div>
+          </div>` : `<div class="panel panel-pad">
+            <h2 class="h4">How it works</h2>
+            <div class="stack" style="--gap:12px;margin-top:12px">${STORE_STEPS.map(([ic, t, x]) => `<div class="sell-next-item">${icon(ic, 20)}<div><b>${t}</b><p class="small soft">${x}</p></div></div>`).join('')}</div>
+          </div>`}
         </aside>
       </div>`;
     },
@@ -224,9 +246,11 @@
         out.innerHTML = `<div class="sell-split"><span style="flex:${x.base}"><b class="num">${money(x.base)}</b><small>Base price</small></span><span class="is-you" style="flex:${Math.max(1, p - x.base)}"><b class="num">${money(Math.max(0, p - x.base))}</b><small>You earn</small></span></div>
           <p class="xs ${ok ? 'muted' : 'text-danger'}">${ok ? `Per item, before any level discount. Price range ${money(x.base)} – ${money(x.maxPrice)}.` : `Set a price between ${money(x.base)} and ${money(x.maxPrice)}.`}</p>`;
       };
-      item.addEventListener('change', () => { price.value = S.pod.catalogItem(item.value).base + 200; calcUpdate(); });
-      price.addEventListener('input', calcUpdate);
-      calcUpdate();
+      if (out) {   // the calculator is shown only while print on demand is on
+        item.addEventListener('change', () => { price.value = S.pod.catalogItem(item.value).base + 200; calcUpdate(); });
+        price.addEventListener('input', calcUpdate);
+        calcUpdate();
+      }
 
       const idData = { idPhoto: '', idPhotoBack: '' };
       SA.ui.bindSellerId(el, idData);
