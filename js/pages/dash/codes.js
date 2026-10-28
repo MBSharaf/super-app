@@ -8,8 +8,8 @@
 
   const form = (c, { pitches, store }) => `<form id="code-form" class="stack" style="--gap:14px" novalidate>
     <fieldset class="field"><legend class="field-label">Where it works</legend><div class="seg">
-      <label class="seg-opt"><input type="radio" name="kind" value="pitch" ${c.kind !== 'store' ? 'checked' : ''} ${pitches.length ? '' : 'disabled'} /><span>${icon('pitch', 14)} Pitch bookings</span></label>
-      <label class="seg-opt"><input type="radio" name="kind" value="store" ${c.kind === 'store' ? 'checked' : ''} ${store ? '' : 'disabled'} /><span>${icon('bag', 14)} My store${store ? '' : ' (open it first)'}</span></label></div><span class="field-error" data-err="kind"></span></fieldset>
+      <label class="seg-opt"><input type="radio" name="kind" value="pitch" ${c.kind !== 'store' && pitches.length ? 'checked' : ''} ${pitches.length ? '' : 'disabled'} /><span>${icon('pitch', 14)} Pitch bookings</span></label>
+      <label class="seg-opt"><input type="radio" name="kind" value="store" ${c.kind === 'store' || !pitches.length ? 'checked' : ''} ${store ? '' : 'disabled'} /><span>${icon('bag', 14)} My store${store ? '' : ' (open it first)'}</span></label></div><span class="field-error" data-err="kind"></span></fieldset>
     <div class="form-grid">
       <div class="field"><label for="cd-code">Code</label><div class="row" style="--gap:6px"><input class="input num code-input" id="cd-code" name="code" maxlength="16" value="${esc(c.code || '')}" placeholder="e.g. SUMMER20" autocomplete="off" /><button type="button" class="btn btn-outline btn-sm" data-gen>${icon('sparkle', 14)} Generate</button></div><span class="field-error" data-err="code"></span></div>
       <div class="field"><label for="cd-note">Internal note <span class="muted">(optional)</span></label><input class="input" id="cd-note" name="note" maxlength="60" value="${esc(c.note || '')}" placeholder="e.g. Instagram campaign" /></div>
@@ -20,7 +20,7 @@
       <div class="field"><label for="cd-from">Starts</label><input class="input" id="cd-from" name="from" type="date" value="${c.from || isoDate(today())}" /></div>
       <div class="field"><label for="cd-to">Ends <span class="muted">(optional)</span></label><input class="input" id="cd-to" name="to" type="date" value="${c.to || isoDate(addDays(today(), 30))}" /><span class="field-error" data-err="to"></span></div>
     </div>
-    <div class="field" data-pitch-pick ${c.kind === 'store' ? 'hidden' : ''}><span class="field-label">Pitches</span><div class="chips" style="margin-top:6px">${pitches.map((p) => `<label class="chip-check"><input type="checkbox" name="pitchIds" value="${p.id}" ${(c.pitchIds || []).includes(p.id) ? 'checked' : ''} /><span>${esc(p.name)}</span></label>`).join('')}</div><span class="field-hint">Leave all unticked to use it on every pitch you own.</span></div>
+    <div class="field" data-pitch-pick ${c.kind === 'store' || !pitches.length ? 'hidden' : ''}><span class="field-label">Pitches</span><div class="chips" style="margin-top:6px">${pitches.map((p) => `<label class="chip-check"><input type="checkbox" name="pitchIds" value="${p.id}" ${(c.pitchIds || []).includes(p.id) ? 'checked' : ''} /><span>${esc(p.name)}</span></label>`).join('')}</div><span class="field-hint">Leave all unticked to use it on every pitch you own.</span></div>
     <label class="choice"><input type="checkbox" name="perCustomer" ${c.perCustomer !== 0 ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Once per player</b><span class="xs soft" style="display:block">Each player can use it one time.</span></span></label>
     <div class="code-preview" data-preview></div>
   </form>`;

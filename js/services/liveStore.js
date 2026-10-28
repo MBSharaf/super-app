@@ -59,7 +59,7 @@
       logo: st.logo ? photo(st.logo) : null, cover: st.cover ? photo(st.cover) : 'photo-1579952363873-27f3bade9f55', phone: '', status: st.status === 'Suspended' ? 'suspended' : 'active', official: false,
     };
     put('stores', [rec], (x) => x.id !== STORE && x.live);
-    await Promise.all([loadProducts(), loadOrders()]);
+    await Promise.all([loadProducts(), loadOrders(), loadWallet(), loadCodes()]);
     await loadReturns();   // after the orders: the lines take their prices from them
     return rec;
   };
@@ -235,6 +235,17 @@
     },
   });
 
+  /** The store page's numbers (units sold, net) from the server's orders: one line per item, cancelled ones left out */
+  D.salesFor = (storeIds, from, to) => {
+    const rest = demo.salesFor(storeIds.filter((id) => id !== STORE), from, to);
+    if (!isLive() || !storeIds.includes(STORE)) return rest;
+    const f = Date.parse(`${from}T00:00`), t = Date.parse(`${to}T23:59:59`);
+    const byName = new Map(D.products(STORE).map((p) => [p.name, p.id]));
+    return [...rest, ...orders.filter((o) => o.status !== 'cancelled' && o.createdAt >= f && o.createdAt <= t).flatMap((o) => o.lines.map((l) => ({
+      orderId: o.orderId, storeId: STORE, productId: byName.get(l.name) || '', qty: l.qty, total: l.total, createdAt: o.createdAt,
+      money: { net: o.gross ? (o.net * l.total) / o.gross : 0, commission: o.gross ? (o.commission * l.total) / o.gross : 0 } })))];
+  };
+
   /* ---------------- Returns (the store decides its products' returns) ---------------- */
 
   let returns = [];
@@ -262,6 +273,83 @@
       if (!liveReturn(id)) return demoRt.receive(id);
       await api.post(`${AREA}/returns/${encodeURIComponent(id)}/received`);
       await Promise.all([loadReturns(), loadProducts()]);
+    },
+  });
+
+  /* ---------------- Seller wallet and withdrawals ---------------- */
+
+  const P = SA.services.pod;
+  const demoPod = { earnings: P.earnings, withdraw: P.withdraw };
+  const SELLER = () => SA.services.liveShop.SELLER;
+  const PSTATUS = { Paid: 'paid', Sent: 'paid', Rejected: 'rejected' };
+  let wallet = null;
+  const loadWallet = async () => {
+    const [wallets, payouts, kyc] = await Promise.all([api.get('/wallet'), api.get('/wallet/payouts').catch(() => []), api.get('/seller/kyc').catch(() => null)]);
+    wallet = wallets.find((w) => w.type === 'Seller') || { pending: 0, available: 0, settled: 0 };
+    put('sellerPayouts', (payouts.items || payouts).filter((x) => x.walletType === 'Seller').map((x) => ({ id: x.code, live: true, sellerId: SELLER(), amount: +x.amount, method: x.method, detail: x.destination,
+      status: PSTATUS[x.status] || 'processing', createdAt: Date.parse(x.createdAt) })));
+    if (kyc) db.update('sellers', SELLER(), { kyc: { Verified: 'verified', Pending: 'pending', Rejected: 'rejected' }[kyc.status] || 'none' });
+  };
+  const liveSeller = (id) => api.isLive() && id === SELLER() && wallet;
+  const MIN_WITHDRAW = 500;   // setting money.payoutMin
+
+  Object.assign(P, {
+    earnings(sellerId) {
+      if (!liveSeller(sellerId)) return demoPod.earnings(sellerId);
+      return { pending: +wallet.pending, available: Math.max(0, +wallet.available), paidOut: +wallet.settled, lifetime: +wallet.pending + +wallet.available + +wallet.settled,
+        adjustments: [], adjusted: 0, nextClear: [], minWithdraw: MIN_WITHDRAW };
+    },
+    withdraw(sellerId, amount) {
+      if (!liveSeller(sellerId)) return demoPod.withdraw(sellerId, amount);
+      const e = P.earnings(sellerId);
+      const n = Math.round(Number(amount));
+      if (!(n >= e.minWithdraw)) throw new ApiError(`The minimum withdrawal is ${e.minWithdraw} EGP.`, 'min_not_met');
+      if (n > e.available) throw new ApiError(`You can withdraw up to ${e.available} EGP now.`, 'insufficient');
+      wallet = { ...wallet, available: wallet.available - n };
+      api.post('/wallet/payouts', { walletType: 'Seller', amount: n }).then(() => loadWallet().then(() => SA.app?.rerender?.()), (err) => { fail(err); loadWallet(); });
+      return { amount: n };
+    },
+  });
+
+  /* ---------------- Discount codes (paid by the store, only its items) ---------------- */
+
+  const K = SA.services.codes;
+  const demoCodes = { save: K.save, setStatus: K.setStatus, remove: K.remove };
+  const toCode = (c) => ({
+    id: `lc-${c.id}`, apiId: c.id, live: true, code: c.code, kind: 'store', ownerId: ACCOUNT(), storeId: STORE, pitchIds: [], type: c.discountType === 'Fixed' ? 'fixed' : 'percent',
+    value: +c.value, min: +c.minSpend, maxUses: c.maxUses || 0, perCustomer: c.perCustomer ? 1 : 0, from: c.startsOn, to: c.endsOn || '', note: c.label || '',
+    status: c.status === 'Active' ? 'active' : 'paused', uses: c.usesCount, discountGiven: 0, revenue: 0, usedBy: [], createdAt: Date.parse(`${c.startsOn}T00:00`), deleted: false,
+  });
+  const loadCodes = async () => put('codes', (await api.get(`${AREA}/codes`)).map(toCode), (x) => !String(x.id).startsWith('lc-'));
+  const codeRequest = (d, active) => ({
+    code: String(d.code).trim().toUpperCase(), discountType: d.type === 'fixed' ? 'Fixed' : 'Percent', value: Math.round(+d.value), minSpend: Math.round(+d.min || 0),
+    maxUses: +d.maxUses ? Math.round(+d.maxUses) : null, perCustomer: d.perCustomer ? 1 : null, startsOn: d.from, endsOn: d.to || null, label: (d.note || '').trim() || null, active,
+  });
+  const mine = () => isLive() && D.me()?.id === ACCOUNT();
+  const sync = (req) => req.then(() => loadCodes().then(() => SA.app?.rerender?.()), (err) => { fail(err); loadCodes(); });
+
+  Object.assign(K, {
+    save(d, opts = {}) {
+      if (!mine() || d.kind !== 'store') return demoCodes.save(d, opts);
+      const e = K.validate(d, opts); if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const old = opts.id ? db.find('codes', opts.id) : null;
+      const out = { ...(old || {}), ...toCode({ id: old?.apiId || `new-${Date.now()}`, code: d.code.toUpperCase(), discountType: d.type === 'fixed' ? 'Fixed' : 'Percent', value: d.value, minSpend: d.min || 0,
+        maxUses: +d.maxUses || null, perCustomer: d.perCustomer, usesCount: old?.uses || 0, startsOn: d.from, endsOn: d.to, label: d.note, status: d.status === 'paused' ? 'Paused' : 'Active' }) };
+      if (!old) { db.raw().codes.push(out); db.touch?.('codes'); }
+      sync(old ? api.put(`${AREA}/codes/${old.apiId}`, codeRequest(d, d.status !== 'paused')) : api.post(`${AREA}/codes`, codeRequest(d, d.status !== 'paused')));
+      return out;
+    },
+    setStatus(id, status) {
+      const c = db.find('codes', id);
+      if (!c?.live) return demoCodes.setStatus(id, status);
+      db.update('codes', id, { status });
+      sync(api.put(`${AREA}/codes/${c.apiId}`, codeRequest(c, status === 'active')));
+    },
+    remove(id) {
+      const c = db.find('codes', id);
+      if (!c?.live) return demoCodes.remove(id);
+      db.update('codes', id, { deleted: true });
+      sync(api.del(`${AREA}/codes/${c.apiId}`));
     },
   });
 

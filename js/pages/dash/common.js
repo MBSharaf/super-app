@@ -48,7 +48,8 @@
         { key: 'seller', label: 'Overview', href: '#/dash/seller', icon: 'grid' },
         { key: 'seller-store', label: 'Store settings', href: '#/dash/seller/store', icon: 'settings' },
         { key: 'seller-calendar', label: 'Marketing calendar', href: '#/dash/seller/calendar', icon: 'calendar' },
-        { key: 'seller-analytics', label: 'Analytics', href: '#/dash/seller/analytics', icon: 'chart' },
+        // Analytics are about printed designs: a live seller with own products only sees their numbers on the products page
+        ...(s?.live && s?.mode === 'store' ? [] : [{ key: 'seller-analytics', label: 'Analytics', href: '#/dash/seller/analytics', icon: 'chart' }]),
         { key: 'seller-orders', label: 'Orders', href: '#/dash/seller/orders', icon: 'package', badge: 'orders' },
         ...(s?.storeId ? [{ key: 'seller-returns', label: 'Returns', href: '#/dash/seller/returns', icon: 'refresh', badge: 'returns' }] : []),
         ...(s?.mode !== 'store' ? [{ group: 'Print on demand' }, { key: 'seller-designs', label: 'Designs', href: '#/dash/seller/designs', icon: 'image' }] : []),

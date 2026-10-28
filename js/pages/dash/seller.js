@@ -191,14 +191,14 @@
       const e = P().earnings(s.id);
       const acc = D().me();
       let store = null;
-      if (s.storeId) { try { store = D().wallet({ ownerId: acc.id }); } catch { store = null; } }
+      if (s.storeId && !s.live) { try { store = D().wallet({ ownerId: acc.id }); } catch { store = null; } }   // live: one seller wallet for everything
       const payouts = SA.services.db.all('sellerPayouts').filter((p) => p.sellerId === s.id);
       const kyc = { none: ['badge-gold', 'Not verified'], pending: ['badge-info', 'Under review'], verified: ['badge-turf', 'Verified'], rejected: ['badge-danger', 'Rejected — send again'] }[s.kyc || 'none'];
       const canWithdraw = s.kyc === 'verified' && e.available >= e.minWithdraw;
       const body = `
         <div class="dash-grid g-1-1">
-          <section class="dash-card"><div class="row-between wrap" style="--gap:8px"><h2 class="h4">${icon('wallet', 18)} Earnings from your orders</h2><button class="btn btn-ghost btn-sm" data-statement>${icon('file', 14)} Statement (PDF)</button></div>
-            <p class="xs muted">${s.mode === 'store' ? 'Your own products.' : s.storeId ? 'Printed designs below; your own products are in “Store money”.' : 'Your printed designs.'} The PDF lists every order — printed or your own product — and every withdrawal.</p>
+          <section class="dash-card"><div class="row-between wrap" style="--gap:8px"><h2 class="h4">${icon('wallet', 18)} Earnings from your orders</h2>${s.live ? `<a class="btn btn-ghost btn-sm" href="/api/v1/wallet/statement.xlsx?type=Seller" download>${icon('file', 14)} Statement (Excel)</a>` : `<button class="btn btn-ghost btn-sm" data-statement>${icon('file', 14)} Statement (PDF)</button>`}</div>
+            <p class="xs muted">${s.mode === 'store' ? 'Your own products.' : s.storeId ? 'Printed designs below; your own products are in “Store money”.' : 'Your printed designs.'} ${s.live ? 'The Excel statement lists every sale, refund and withdrawal.' : 'The PDF lists every order — printed or your own product — and every withdrawal.'}</p>
             <div class="wl-big"><span class="xs muted">Available to withdraw</span><b class="num">${money(e.available)}</b></div>
             <dl class="kv"><div><dt>On hold</dt><dd class="num">${money(e.pending)}</dd></div><div><dt>Withdrawn</dt><dd class="num">${money(e.paidOut)}</dd></div><div><dt>Earned so far</dt><dd class="num">${money(e.lifetime)}</dd></div></dl>
             ${e.nextClear.length ? `<p class="xs muted" style="margin-top:10px">${icon('clock', 12)} Next release: ${money(e.nextClear[0].amount)} on ${fmtDate(new Date(e.nextClear[0].at))}</p>` : ''}
@@ -226,7 +226,7 @@
         ${e.adjustments?.length ? `<section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Balance adjustments</h2><p class="xs muted" style="padding:4px 18px 0">Made by the Super App team — refund shares, sample charges and corrections.</p><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Reason</th><th class="r">Amount</th></tr></thead><tbody>
           ${e.adjustments.slice().sort((x, y) => y.at - x.at).map((x) => `<tr><td class="small">${fmtDate(new Date(x.at))}</td><td class="small">${esc(x.reason)}</td><td class="r num strong" style="color:${x.amount > 0 ? 'var(--turf)' : 'var(--danger)'}">${x.amount > 0 ? '+' : '−'}${money(Math.abs(x.amount))}</td></tr>`).join('')}
         </tbody></table></div></section>` : ''}`;
-      return C.layout('seller-wallet', { title: 'Wallet', subtitle: `Minimum withdrawal ${money(e.minWithdraw)} · profit released ${P().cfg().holdDays} days after delivery`, body });
+      return C.layout('seller-wallet', { title: 'Wallet', subtitle: `Minimum withdrawal ${money(e.minWithdraw)} · ${s.live ? 'money released 24 hours after delivery' : `profit released ${P().cfg().holdDays} days after delivery`}`, body });
     },
     _statement() { const s = seller(); return SA.ui.docs.sellerStatement({ seller: s, account: D().me(), pod: P().orders({ sellerId: s.id }).filter((o) => !o.sample), store: storeOrders(s), payouts: SA.services.db.all('sellerPayouts').filter((p) => p.sellerId === s.id), earnings: P().earnings(s.id) }); },
     mount(el) {

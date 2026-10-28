@@ -48,5 +48,9 @@
     'Super App’s courier marks the order delivered when it reaches the customer.': 'مندوب سوبر آب هو اللي بيعلّم إن الطلب اتسلّم لما يوصل للعميل.',
     'Customers can return a product with a problem within 24 hours of delivery. You pay the refund and the return delivery.': 'العملاء يقدروا يرجّعوا المنتج اللي فيه مشكلة خلال 24 ساعة من التسليم. الاسترجاع وشحن الرجوع عليك.',
     'Answer within 2 working days · {0}-hour return window': 'رد خلال يومين عمل · مدة المرتجعات {0} ساعة',
+    /* ---------- Seller wallet ---------- */
+    'The Excel statement lists every sale, refund and withdrawal.': 'كشف الحساب Excel فيه كل بيع واسترجاع وسحب.',
+    'Statement (Excel)': 'كشف الحساب (Excel)',
+    'Minimum withdrawal {0} EGP · money released 24 hours after delivery': 'أقل سحب {0} جنيه · الفلوس بتتفك بعد 24 ساعة من التسليم',
   });
 })(window.SA);
