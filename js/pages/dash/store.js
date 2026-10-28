@@ -86,9 +86,11 @@
               <td class="r num">${money(p.price)}${p.was > p.price ? `<s class="xs muted" style="display:block">${money(p.was)}</s>` : ''}</td>
               <td class="r num ${isLow(p) ? 'low-stock' : ''}">${p.stock}${p.stock === 0 ? '<span class="xs" style="display:block">Sold out</span>' : isLow(p) ? `<span class="xs" style="display:block">Low (alert at ${p.lowStockAt ?? 5})</span>` : ''}<button class="link xs" data-restock="${p.id}" style="display:block;margin-left:auto">+ Restock</button></td>
               <td class="r num">${by.get(p.id) || 0}</td>
-              <td><button class="switch sm ${p.status === 'active' ? 'is-on' : ''}" role="switch" aria-checked="${p.status === 'active'}" data-pub="${p.id}" aria-label="${p.status === 'active' ? 'Unpublish' : 'Publish'} ${esc(p.name)}"><span class="switch-knob"></span><span class="switch-label xs">${p.status === 'active' ? 'Published' : 'Draft'}</span></button></td>
+              <td>${p.status === 'review' ? `<span class="badge badge-gold" title="Super App checks every product before it goes on sale">Waiting for review</span>`
+                : p.status === 'rejected' ? `<span class="badge badge-danger">Not approved</span>${p.reviewNote ? `<span class="xs t-danger" style="display:block;max-width:220px">${esc(p.reviewNote)}</span>` : ''}<a class="link xs" href="#/dash/store/product/${p.id}" style="display:block">Fix and send again</a>`
+                : `<button class="switch sm ${p.status === 'active' ? 'is-on' : ''}" role="switch" aria-checked="${p.status === 'active'}" data-pub="${p.id}" aria-label="${p.status === 'active' ? 'Unpublish' : 'Publish'} ${esc(p.name)}"><span class="switch-knob"></span><span class="switch-label xs">${p.status === 'active' ? 'Published' : 'Draft'}</span></button>`}</td>
               <td class="r"><div class="row" style="--gap:2px;justify-content:flex-end"><a class="icon-btn" href="#/shop/${p.id}" target="_blank" rel="noopener" aria-label="View ${esc(p.name)} on the site">${icon('eye', 16)}</a><a class="icon-btn" href="#/dash/store/product/${p.id}" aria-label="Edit ${esc(p.name)}">${icon('edit', 16)}</a><button class="icon-btn" data-del="${p.id}" aria-label="Delete ${esc(p.name)}" style="color:var(--danger)">${icon('trash', 16)}</button></div></td></tr>`).join('')}
-          </tbody></table></div>` : SA.ui.c.empty({ icon: 'bag', title: 'Add your first product', text: 'Products you publish appear in the Super App shop straight away.', action: `<a class="btn btn-primary" href="#/dash/store/product/new">${icon('plus', 16)} Add product</a>` })}
+          </tbody></table></div>` : SA.ui.c.empty({ icon: 'bag', title: 'Add your first product', text: store.live ? 'Super App checks each product before it goes on sale — usually within one working day.' : 'Products you publish appear in the Super App shop straight away.', action: `<a class="btn btn-primary" href="#/dash/store/product/new">${icon('plus', 16)} Add product</a>` })}
         </section>`;
       return C.layout('store', { title: viewingOther ? `Store · ${esc(store.name)}` : D().isAdmin() ? 'Super App Store' : 'My store', subtitle: `${products.length} product${products.length === 1 ? '' : 's'} · ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super App commission on sales`, actions: `<a class="btn btn-primary btn-sm" href="#/dash/store/product/new">${icon('plus', 15)} Add product</a>`, body });
     },
@@ -120,7 +122,7 @@
       });
       el.addEventListener('click', async (e) => {
         const pub = e.target.closest('[data-pub]');
-        if (pub) { const p = D().product(pub.dataset.pub); D().setProductStatus(p.id, p.status === 'active' ? 'draft' : 'active'); SA.ui.overlay.toast(p.status === 'active' ? 'Unpublished — hidden from the shop' : 'Published to the Super App shop'); SA.app.rerender(); return; }
+        if (pub) { const p = D().product(pub.dataset.pub); D().setProductStatus(p.id, p.status === 'active' ? 'draft' : 'active'); SA.ui.overlay.toast(p.status === 'active' ? 'Unpublished — hidden from the shop' : p.live ? 'Sent to Super App — it goes on sale once approved' : 'Published to the Super App shop'); SA.app.rerender(); return; }
         const rs = e.target.closest('[data-restock]');
         if (rs) {
           const p = D().product(rs.dataset.restock);
@@ -226,7 +228,7 @@
         try {
           const out = ctx.params.id ? D().updateProduct(p.id, read()) : D().createProduct(store.id, read());
           SA.core.motion.confetti({ count: 50, spread: 0.6 });
-          SA.ui.overlay.toast(out.status === 'active' ? `${out.name} is live in the Super App shop` : `${out.name} saved as a draft`, out.status === 'active' ? { action: 'View', onAction: () => window.open(`#/shop/${out.id}`, '_blank') } : {});
+          SA.ui.overlay.toast(out.status === 'review' ? `${out.name} was sent to Super App for review` : out.status === 'active' ? `${out.name} is live in the Super App shop` : `${out.name} saved as a draft`, out.status === 'active' && !out.live ? { action: 'View', onAction: () => window.open(`#/shop/${out.id}`, '_blank') } : {});
           SA.core.router.go(D().adminMode() ? '/admin/store' : '/dash/store');
         } catch (err) {
           if (err.details) C.showErrors(form, err.details);

@@ -35,5 +35,11 @@
     'e.g. The seam came apart on the first day': 'مثلًا: الخياطة فكّت من أول يوم',
     'Super App courier': 'مندوب سوبر آب',
     'The 24-hour window closed or it is already being returned': 'مدة الـ 24 ساعة خلصت أو المنتج بيرجع بالفعل',
+    /* ---------- Seller store products (each one reviewed) ---------- */
+    'Waiting for review': 'مستني المراجعة',
+    'Fix and send again': 'عدّله وابعته تاني',
+    'Super App checks every product before it goes on sale': 'سوبر آب بيراجع كل منتج قبل ما يتعرض للبيع',
+    'Super App checks each product before it goes on sale — usually within one working day.': 'سوبر آب بيراجع كل منتج قبل ما يتعرض للبيع — غالبًا خلال يوم عمل واحد.',
+    'Sent to Super App — it goes on sale once approved': 'اتبعت لسوبر آب — هيتعرض للبيع أول ما يتوافق عليه',
   });
 })(window.SA);

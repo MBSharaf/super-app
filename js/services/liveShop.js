@@ -339,8 +339,10 @@
 
   /** The signed-in seller as a local seller record (same shape as the demo sellers) and its dashboard account */
   const loadSeller = async () => {
-    const [overview, profile, designs] = await Promise.all([api.get('/seller/overview'), api.get('/seller/store'), api.get('/seller/designs')]);
-    catalogue = await api.get('/seller/catalogue');
+    // Print on demand off (own products only): no designs or print catalogue to load
+    const pod = SA.config.podEnabled;
+    const [overview, profile, designs] = await Promise.all([api.get('/seller/overview'), api.get('/seller/store'), pod ? api.get('/seller/designs') : []]);
+    catalogue = pod ? await api.get('/seller/catalogue') : [];
     const raw = SA.services.db.raw();
     const template = raw.sellers.find((s) => !s.live) || {};
     const me = SA.services.session.me() || {};
@@ -349,7 +351,7 @@
       email: me.email || '', phone: me.phone || '', mode: MODE[profile.mode] || 'pod', bio: profile.about || '', tagline: profile.tagline || '', color: profile.accentColor,
       cover: profile.cover ? img(profile.cover) : template.cover, status: 'active', strikes: [], frozenUntil: overview.level.frozenUntil ? Date.parse(overview.level.frozenUntil) : 0,
       history: { sales: overview.level.lifetimeSales, revenue: 0, profit: 0, rating: +overview.level.rating, reviews: 0 }, followers: overview.kpis.followers,
-      featured: profile.featuredDesignId ? String(profile.featuredDesignId) : null, vacation: profile.status === 'OnBreak', vacationUntil: profile.breakUntil || '', storeId: null,
+      featured: profile.featuredDesignId ? String(profile.featuredDesignId) : null, vacation: profile.status === 'OnBreak', vacationUntil: profile.breakUntil || '', storeId: MODE[profile.mode] && profile.mode !== 'pod' ? 'st-live' : null,   // own products: the store mirrored by liveStore
       updatedAt: Date.now(),
     };
     raw.sellers = [rec, ...raw.sellers.filter((s) => s.id !== SELLER)];
@@ -552,5 +554,5 @@
     SA.services.session?.subscribe?.(() => { loadCart().catch(() => null); loadWishes().catch(() => null); });
   };
   start();
-  SA.services.liveShop = { sellerReady, factoryReady, loadCart, SELLER, FACTORY };
+  SA.services.liveShop = { sellerReady, factoryReady, loadCart, SELLER, SELLER_ACCOUNT, FACTORY };
 })(window.SA);
