@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SuperApp.Application.Features.Shop.Orders;
 using SuperApp.Domain.Entities.Money;
 using SuperApp.Domain.Entities.Pitches;
@@ -52,17 +52,18 @@ public sealed partial class CartRepository(AppDbContext db) : ICartRepository
         d.FrontArtFile != null ? d.FrontArtFile.StorageKey : d.BackArtFile != null ? d.BackArtFile.StorageKey : null,
         d.FrontArtFileId ?? d.BackArtFileId));
 
-    /// <summary>Commission rate per store (fraction): a partner's own deal (stored as percent) or the seller's level; null = the default.</summary>
+    /// <summary>
+    /// Commission rate per store (fraction) on its own products: a partner's own deal (stored as percent), else null = the
+    /// store rate (commission.store, 5% — owner's decision 2026-10-27). Sellers' levels price printed designs, not own products.
+    /// </summary>
     private async Task<Dictionary<long, decimal?>> RatesAsync(List<(long StoreId, StoreType Type, Guid? Owner)> stores, CancellationToken ct)
     {
         var owners = stores.Where(s => s.Type == StoreType.PitchPartner && s.Owner is not null).Select(s => s.Owner!.Value).ToList();
-        var ids = stores.Where(s => s.Type == StoreType.Seller).Select(s => s.StoreId).ToList();
         var partners = await db.Set<Partner>().AsNoTracking().Where(p => owners.Contains(p.UserId)).ToDictionaryAsync(p => p.UserId, p => p.StoreCommission, ct);
-        var sellers = await db.Set<Seller>().AsNoTracking().Where(s => ids.Contains(s.StoreId)).ToDictionaryAsync(s => s.StoreId, s => (decimal?)s.Level.StoreCommission, ct);
         return stores.ToDictionary(s => s.StoreId, s => s.Type switch
         {
             StoreType.PitchPartner => s.Owner is { } o && partners.GetValueOrDefault(o) is { } pct ? pct / 100 : null,
-            StoreType.Seller => sellers.GetValueOrDefault(s.StoreId),
+            StoreType.Seller => null,
             _ => (decimal?)0,
         });
     }

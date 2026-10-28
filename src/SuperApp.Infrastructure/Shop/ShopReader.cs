@@ -94,7 +94,7 @@ public sealed partial class ShopReader(AppDbContext db) : IShopReader
     {
         var image = ShopQueries.Art(r.Id, "front", r.FrontContainer, r.FrontKey, r.FrontId) ?? ShopQueries.Art(r.Id, "back", r.BackContainer, r.BackKey, r.BackId);
         return new ShopCardDto(
-            "design", r.Id.ToString(System.Globalization.CultureInfo.InvariantCulture), null, r.Id, $"{r.Title} â€” {r.ProductName}", r.StoreName, r.Price, null,
+            "design", r.Id.ToString(System.Globalization.CultureInfo.InvariantCulture), null, r.Id, $"{r.Title} — {r.ProductName}", r.StoreName, r.Price, null,
             r.SellerRating, image, new StoreRefDto(r.StoreHandle, r.StoreName, nameof(StoreType.Seller)), ShopRules.DesignsCategory, r.CategoryKey,
             r.Tags, r.Sizes, r.Colors, false, ShopQueries.DesignRank(r.Sales, r.Views, r.SellerRating, r.Featured, r.FeaturedByAdmin, r.Boost), r.CreatedAt);
     }

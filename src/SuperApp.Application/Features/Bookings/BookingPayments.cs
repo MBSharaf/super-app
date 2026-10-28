@@ -9,7 +9,7 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Bookings;
 
 /// <summary>A confirmed booking: the customer and the pitch owner are told, and the audit line (→ webhook booking.created).</summary>
-public sealed class BookingNotices(INotifier notifier, IAuditLogger audit)
+public sealed class BookingNotices(INotifier notifier, IAuditLogger audit, ICustomerContacts contacts)
 {
     public async Task ConfirmedAsync(Booking booking, string pitchName, Guid ownerUserId, CancellationToken ct)
     {
@@ -18,8 +18,17 @@ public sealed class BookingNotices(INotifier notifier, IAuditLogger audit)
             $"Booking confirmed: {pitchName}", $"{when} · {booking.Code}", $"#/booking/{booking.Code}", NotificationTone.Success), ct);
         await notifier.NotifyUserAsync(ownerUserId, new NotificationMessage(NotificationCategory.Bookings,
             $"New booking at {pitchName}", $"{when} · {booking.Total:0} EGP", "#/dash/bookings", NotificationTone.Info), ct);
-        await audit.LogAsync(AuditSystem.Site, "booking.created", $"Booking {booking.Code} at {pitchName}", "Booking", booking.Code, ct: ct);
+        await audit.LogAsync(AuditSystem.Site, "booking.created", $"Booking {booking.Code} at {pitchName}", "Booking", booking.Code,
+            Details(booking, pitchName, await contacts.GetAsync(booking.CustomerId.Value, ct)), ct);
     }
+
+    /// <summary>What the activity line (and the booking.created webhook for n8n) carries, with the customer's contact (owner's request).</summary>
+    private static object Details(Booking b, string pitchName, CustomerContact customer) => new
+    {
+        b.Code, Pitch = pitchName, Date = b.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), b.StartHour, b.Duration,
+        b.PitchAmount, b.DiscountAmount, b.ServiceFee, b.Total, b.PayAtVenue, Source = b.Source.ToString(), b.CreatedAt,
+        Customer = new { customer.Name, customer.Email, customer.Phone },
+    };
 }
 
 /// <summary>The gateway confirmed (or refused) a booking's payment.</summary>

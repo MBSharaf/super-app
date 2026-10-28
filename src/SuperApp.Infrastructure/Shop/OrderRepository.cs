@@ -122,7 +122,7 @@ public sealed partial class OrderRepository(AppDbContext db) : IOrderRepository
     }
 
     public Task<Order?> FindAsync(Guid customerId, string code, CancellationToken ct) =>
-        db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).AsSplitQuery().FirstOrDefaultAsync(o => o.CustomerId == customerId && o.Code == code, ct);
+        db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).Include(o => o.Payment).AsSplitQuery().FirstOrDefaultAsync(o => o.CustomerId == customerId && o.Code == code, ct);
 
     public async Task<IReadOnlyList<Job>> JobsAsync(long orderId, CancellationToken ct) =>
         await db.Set<Job>().Where(j => j.OrderItem.OrderId == orderId).ToListAsync(ct);
@@ -145,6 +145,13 @@ public sealed partial class OrderRepository(AppDbContext db) : IOrderRepository
         }
         await db.SaveChangesAsync(ct);
     }
+
+    public async Task<IReadOnlyDictionary<long, (Guid? Owner, StoreType Type)>> StoreOwnersAsync(IReadOnlyList<long> storeIds, CancellationToken ct) =>
+        (await db.Set<Store>().IgnoreQueryFilters().Where(s => storeIds.Contains(s.Id)).Select(s => new { s.Id, s.OwnerUserId, s.Type }).ToListAsync(ct))
+            .ToDictionary(s => s.Id, s => (s.OwnerUserId, s.Type));
+
+    public Task<Order?> ByPaymentAsync(long paymentId, CancellationToken ct) =>
+        db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).Include(o => o.Payment).AsSplitQuery().FirstOrDefaultAsync(o => o.PaymentId == paymentId, ct);
 
     public async Task<IReadOnlyList<Guid>> PeopleToTellAsync(long orderId, CancellationToken ct)
     {

@@ -38,6 +38,7 @@ public sealed class StoreOrdersService(
     INotifier notifier,
     IAuditLogger audit,
     IClock clock,
+    Orders.OrderPayments money,
     IValidator<StoreOrdersQuery> queryRules) : IStoreOrdersService
 {
     public async Task<PagedResult<StoreOrderDto>> ListAsync(StoreScope scope, StoreOrdersQuery query, CancellationToken ct)
@@ -67,8 +68,9 @@ public sealed class StoreOrdersService(
         return await GetAsync(scope, code, ct);
     }
 
+    /// <summary>Shipping is through Super App's courier (owner's decision, 2026-10-27): the courier marks delivery, not the store.</summary>
     public Task<StoreOrderDto> DeliverAsync(StoreScope scope, string code, CancellationToken ct) =>
-        StepAsync(scope, code, FulfilmentStatus.Shipped, FulfilmentStatus.Delivered, OrderItemStatus.Delivered, "delivered", ct);
+        throw new ConflictException("Super App's courier marks the order delivered when it reaches the customer.", "courier_delivers");
 
     public async Task<StoreOrderDto> CancelAsync(StoreScope scope, string code, CancelReasonRequest request, CancellationToken ct)
     {
@@ -82,8 +84,10 @@ public sealed class StoreOrdersService(
             throw new ConflictException("This part of the order is already with the courier and can’t be cancelled.", "wrong_state");
         }
         var items = Mine(order, scope).Where(i => i.Status is OrderItemStatus.Received or OrderItemStatus.Packed).ToList();
+        var wasPaid = Orders.OrderPayments.IsPaid(order.Status);
         Move(order, parcel, items, FulfilmentStatus.Cancelled, OrderItemStatus.Cancelled);
         await unitOfWork.SaveChangesAsync(ct);
+        await money.RefundAsync(order, items, deliveryFee: order.Status == OrderStatus.Cancelled, wasPaid, ct);
         await orders.RestockAsync(items.Where(i => i.ProductVariantId is not null).Select(i => (i.ProductVariantId!.Value, i.Qty)).ToList(), ct);
         await notifier.NotifyUserAsync(order.CustomerId, new NotificationMessage(NotificationCategory.Orders, $"{scope.Name} cancelled part of {order.Code}",
             $"{request.Reason.Trim()} · you won’t pay for these items.", $"#/order/{order.Code}", NotificationTone.Warning), ct);

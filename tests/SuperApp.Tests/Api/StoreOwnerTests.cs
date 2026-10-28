@@ -71,22 +71,28 @@ public sealed class StoreOwnerTests(DemoApiFactory api) : IClassFixture<DemoApiF
         var (customer, _) = await kit.PersonAsync();
         await customer.PostAsync("/api/v1/cart/items", new { productVariantId = product.GetProperty("variants")[0].GetProperty("id").GetInt64(), qty = 2 });
         await customer.PostAsync("/api/v1/cart/items", new { productVariantId = (await kit.VariantsAsync("sh-bottle"))[0].Id, qty = 1 });
-        var code = (await ShopKit.CheckoutAsync(customer, payment: "cod")).Body.Data().GetProperty("code").GetString()!;
+        var code = (await ShopKit.CheckoutAsync(customer)).Body.Data().GetProperty("code").GetString()!;
 
         var list = (await partner.GetAsync("/api/v1/partner/store/orders?status=open")).Body.Data();
         list.GetArrayLength().ShouldBe(1);
         list[0].GetProperty("items").GetArrayLength().ShouldBe(1);
-        list[0].GetProperty("earnings").GetDecimal().ShouldBe(500 - 60);   // 12% commission
+        list[0].GetProperty("earnings").GetDecimal().ShouldBe(500 - 25);   // 5% commission
         (await partner.PostAsync($"/api/v1/partner/store/orders/{code}/ship")).Body.Code().ShouldBe("wrong_state");
         (await partner.PostAsync($"/api/v1/partner/store/orders/{code}/pack")).Body.Data().GetProperty("status").GetString().ShouldBe("Packed");
         var shipped = (await partner.PostAsync($"/api/v1/partner/store/orders/{code}/ship")).Body.Data();
         shipped.GetProperty("trackingNumber").GetString()!.ShouldStartWith("SIM");
         var cod = await api.DbAsync(db => db.Set<SuperApp.Domain.Entities.Shipping.Shipment>().Where(s => s.Order.Code == code).Select(s => s.CodAmount).SingleAsync());
-        cod.ShouldBe(500 + 60);   // the store's items + the delivery fee on the first parcel
+        cod.ShouldBe(0);   // paid online: the courier collects nothing
         var order = (await customer.GetAsync($"/api/v1/orders/{code}")).Body.Data();
         order.GetProperty("canCancel").GetBoolean().ShouldBeFalse();
         order.GetProperty("groups").EnumerateArray().ShouldContain(g => g.GetProperty("trackingNumber").ValueKind == JsonValueKind.String);
-        (await partner.PostAsync($"/api/v1/partner/store/orders/{code}/deliver")).Body.Data().GetProperty("status").GetString().ShouldBe("Delivered");
+        (await partner.PostAsync($"/api/v1/partner/store/orders/{code}/deliver")).Body.Code().ShouldBe("courier_delivers");
+        var parcel = await api.DbAsync(db => db.Set<SuperApp.Domain.Entities.Shipping.Shipment>().Where(s => s.Order.Code == code).Select(s => s.Id).SingleAsync());
+        var ceo = await api.CeoAsync();
+        foreach (var status in new[] { "PickedUp", "OutForDelivery", "Delivered" })
+        {
+            await ceo.PostAsync($"/api/v1/admin/shipments/{parcel}/simulate", new { status });
+        }
         (await customer.GetAsync($"/api/v1/orders/{code}")).Body.Data().GetProperty("status").GetString().ShouldBe("InProgress");
     }
 

@@ -34,6 +34,9 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
             // Products already on sale were checked before review existed: they count as approved
             migrationBuilder.Sql("UPDATE [shop].[Products] SET [ApprovedAt] = COALESCE([UpdatedAt], [CreatedAt]) WHERE [Status] = 1;");
 
+            // Owner's decision (2026-10-27): Super App takes 5% on every store purchase
+            migrationBuilder.Sql("UPDATE [ops].[Settings] SET [Value] = '0.05', [UpdatedAt] = SYSUTCDATETIME() WHERE [Key] = 'commission.store';");
+
             migrationBuilder.AddCheckConstraint(
                 name: "CK_Products_Status",
                 schema: "shop",

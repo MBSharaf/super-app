@@ -29,7 +29,7 @@ public sealed class ReturnsTests(DemoApiFactory api) : IClassFixture<DemoApiFact
         await customer.PostAsync("/api/v1/cart/items", new { productVariantId = product.GetProperty("variants")[0].GetProperty("id").GetInt64(), qty = 1 });
         foreach (var v in extraVariants) { await customer.PostAsync("/api/v1/cart/items", new { productVariantId = v, qty = 1 }); }
         var order = (await ShopKit.CheckoutAsync(customer)).Body.Data().GetProperty("code").GetString()!;
-        foreach (var step in new[] { "pack", "ship", "deliver" }) { await partner.PostAsync($"/api/v1/partner/store/orders/{order}/{step}"); }
+        await kit.DeliverAsync(partner, order);
         return (partner, customer, order, product);
     }
 

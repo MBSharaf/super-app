@@ -17,10 +17,18 @@ public sealed class PayoutStore(AppDbContext db) : IPayoutStore
 
     private static readonly PayoutStatus[] Open = [PayoutStatus.Requested, PayoutStatus.Prepared, PayoutStatus.WaitingForApproval];
 
-    /// <summary>Partners withdraw from their bookings wallet (sellers and factories when the store returns).</summary>
-    public async Task<PayeeInfo?> PayeeAsync(Guid userId, WalletType type, CancellationToken ct) => type != WalletType.PartnerBookings ? null :
-        await db.Set<Partner>().Where(p => p.UserId == userId)
-            .Select(p => new PayeeInfo(p.UserId, p.BusinessName, p.PayoutMethod, p.PayoutDetail, p.Status == PartnerStatus.Active)).FirstOrDefaultAsync(ct);
+    /// <summary>
+    /// Partners withdraw from their bookings and store wallets, sellers from their seller wallet (store reopened, 2026-10-27);
+    /// the payout account is the one on the partner or seller profile.
+    /// </summary>
+    public async Task<PayeeInfo?> PayeeAsync(Guid userId, WalletType type, CancellationToken ct) => type switch
+    {
+        WalletType.PartnerBookings or WalletType.PartnerStore => await db.Set<Partner>().Where(p => p.UserId == userId)
+            .Select(p => new PayeeInfo(p.UserId, p.BusinessName, p.PayoutMethod, p.PayoutDetail, p.Status == PartnerStatus.Active)).FirstOrDefaultAsync(ct),
+        WalletType.Seller => await db.Set<SuperApp.Domain.Entities.Pod.Seller>().Where(s => s.UserId == userId)
+            .Select(s => new PayeeInfo(s.UserId, s.Store.Name, s.PayoutMethod, s.PayoutDetail, s.Status == SellerStatus.Active)).FirstOrDefaultAsync(ct),
+        _ => null,
+    };
 
     public async Task<string> NewCodeAsync(CancellationToken ct)
     {

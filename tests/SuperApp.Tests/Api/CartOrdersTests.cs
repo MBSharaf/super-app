@@ -120,7 +120,7 @@ public sealed class CartOrdersTests(DemoApiFactory api) : IClassFixture<DemoApiF
         (await kit.VariantsAsync("sh-match-ball"))[0].Stock.ShouldBe(ball.Stock - 2);
         var items = await api.DbAsync(db => db.Set<OrderItem>().Where(i => i.Order.Code == code).ToListAsync());
         items.Single(i => i.ProductVariantId == ball.Id).CommissionAmount.ShouldBe(0);                     // official store
-        items.Single(i => i.UnitPrice == 450).CommissionAmount.ShouldBe(54); // partner store, 12%
+        items.Single(i => i.UnitPrice == 450).CommissionAmount.ShouldBe(22.5m); // partner store, 5%
         var printed = items.Single(i => i.Kind == OrderItemKind.PrintedDesign);
         printed.BaseAmount.ShouldBe(265);                 // tee 300 − Elite discount 35
         printed.SellerEarning.ShouldBe(2 * (420 - 265));
@@ -134,12 +134,11 @@ public sealed class CartOrdersTests(DemoApiFactory api) : IClassFixture<DemoApiF
     }
 
     [Fact]
-    public async Task Cash_on_delivery_respects_prepay_rules_switches_and_blocked_accounts()
+    public async Task Cash_on_delivery_is_refused_and_switches_and_blocked_accounts_stop_checkout()
     {
         var (person, userId) = await kit.PersonAsync();
         await person.PostAsync("/api/v1/cart/items", new { designId = await kit.DesignIdAsync("Giza Run Club"), size = "L", color = "White", qty = 1 });
-        await api.DbAsync(db => db.Users.Where(u => u.Id == userId).ExecuteUpdateAsync(u => u.SetProperty(x => x.MustPrepay, PrepayRule.Always)));
-        (await ShopKit.CheckoutAsync(person, payment: "cod")).Body.Code().ShouldBe("prepay_required");
+        (await ShopKit.CheckoutAsync(person, payment: "cod")).Status.ShouldBe(HttpStatusCode.BadRequest);   // online payment only
         (await person.GetAsync("/api/v1/cart")).Body.Data().GetProperty("lines").GetArrayLength().ShouldBe(1);
         await person.SendAsync(HttpMethod.Delete, $"/api/v1/cart/items/{(await person.GetAsync("/api/v1/cart")).Body.Data().GetProperty("lines")[0].GetProperty("id").GetInt64()}");
 
@@ -147,15 +146,15 @@ public sealed class CartOrdersTests(DemoApiFactory api) : IClassFixture<DemoApiF
         await SwitchAsync("kill.shop", false);
         try
         {
-            (await ShopKit.CheckoutAsync(person, payment: "cod")).Status.ShouldBe((HttpStatusCode)423);
+            (await ShopKit.CheckoutAsync(person)).Status.ShouldBe((HttpStatusCode)423);
         }
         finally
         {
             await SwitchAsync("kill.shop", true);
         }
-        var cod = await ShopKit.CheckoutAsync(person, payment: "cod");
-        cod.Body.Data().GetProperty("status").GetString().ShouldBe("Placed");
-        cod.Body.Data().GetProperty("paymentSimulated").GetBoolean().ShouldBeFalse();
+        var wallet = await ShopKit.CheckoutAsync(person, payment: "wallet");
+        wallet.Body.Code().ShouldBe("insufficient_funds");   // an empty wallet: the order is called off and the stock comes back
+        (await person.GetAsync("/api/v1/cart")).Body.Data().GetProperty("lines").GetArrayLength().ShouldBe(0);
 
         await person.PostAsync("/api/v1/cart/items", new { productVariantId = await VariantAsync("sh-cones"), qty = 1 });
         await api.DbAsync(db => db.Users.Where(u => u.Id == userId).ExecuteUpdateAsync(u => u.SetProperty(x => x.Status, UserStatus.BlockedFromBookingAndOrdering)));

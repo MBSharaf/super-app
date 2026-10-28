@@ -19,7 +19,7 @@ public sealed class ShippingTests(DemoApiFactory api) : IClassFixture<DemoApiFac
     private readonly ShopKit kit = new(api);
     private readonly PartnerKit partners = new(api);
 
-    /// <summary>A store order (COD) that the partner packed and shipped; returns the order code and parcel id.</summary>
+    /// <summary>A store order (paid online) that the partner packed and shipped; returns the order code and parcel id.</summary>
     private async Task<(ApiClient Customer, string Order, long Parcel)> ShippedStoreOrderAsync()
     {
         var (partner, _) = await partners.PersonAsync(partner: true);
@@ -33,7 +33,7 @@ public sealed class ShippingTests(DemoApiFactory api) : IClassFixture<DemoApiFac
         await kit.ApproveAsync(product.GetProperty("id").GetInt64());
         var (customer, _) = await kit.PersonAsync();
         await customer.PostAsync("/api/v1/cart/items", new { productVariantId = product.GetProperty("variants")[0].GetProperty("id").GetInt64(), qty = 1 });
-        var order = (await ShopKit.CheckoutAsync(customer, payment: "cod")).Body.Data().GetProperty("code").GetString()!;
+        var order = (await ShopKit.CheckoutAsync(customer)).Body.Data().GetProperty("code").GetString()!;
         await partner.PostAsync($"/api/v1/partner/store/orders/{order}/pack");
         await partner.PostAsync($"/api/v1/partner/store/orders/{order}/ship");
         var parcel = await api.DbAsync(db => db.Set<Shipment>().Where(s => s.Order.Code == order).Select(s => s.Id).SingleAsync());
@@ -103,13 +103,13 @@ public sealed class ShippingTests(DemoApiFactory api) : IClassFixture<DemoApiFac
     }
 
     [Fact]
-    public async Task A_refused_cash_parcel_counts_against_the_customer_and_sellers_level_up_on_delivery()
+    public async Task A_refused_parcel_refunds_the_customer_and_sellers_level_up_on_delivery()
     {
         var design = await kit.DesignIdAsync("Ya Habibi");
-        var (_, order, parcel) = await PrintedParcelAsync(design, "cod");
+        var (_, order, parcel) = await PrintedParcelAsync(design);
         var customer = await api.DbAsync(db => db.Set<Order>().Where(o => o.Code == order).Select(o => o.CustomerId).SingleAsync());
         (await WebhookAsync(parcel.TrackingNumber, "Refused", null)).Applied.ShouldBeTrue();
-        (await api.DbAsync(db => db.Users.Where(u => u.Id == customer).Select(u => u.CodRefusals).SingleAsync())).ShouldBe(1);
+        (await api.DbAsync(db => db.Set<SuperApp.Domain.Entities.Money.LedgerEntry>().AnyAsync(e => e.Wallet.OwnerUserId == customer && e.Kind == LedgerKind.Refund))).ShouldBeTrue();
         (await api.DbAsync(db => db.Set<OrderItem>().Where(i => i.Order.Code == order).Select(i => i.Status).SingleAsync())).ShouldBe(OrderItemStatus.Refused);
 
         var (_, sellerUser, sellerId, _) = await kit.SellerAsync();

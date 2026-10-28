@@ -27,6 +27,7 @@ public sealed class MyOrdersService(
     IUnitOfWork unitOfWork,
     IShopDocuments documents,
     OrderNotices notices,
+    OrderPayments money,
     ICurrentUser currentUser,
     IValidator<MyOrdersQuery> rules) : IMyOrdersService
 {
@@ -45,8 +46,11 @@ public sealed class MyOrdersService(
         var jobs = await orders.JobsAsync(order.Id, ct);
         EnsureCancellable(order, jobs);
         var people = await orders.PeopleToTellAsync(order.Id, ct);
+        var wasPaid = OrderPayments.IsPaid(order.Status);
+        var open = order.Items.Where(i => i.Status == OrderItemStatus.Received).ToList();
         Cancel(order, jobs, "Cancelled by the customer");
         await unitOfWork.SaveChangesAsync(ct);
+        await money.RefundAsync(order, open, deliveryFee: true, wasPaid, ct);
         await orders.RestockAsync(order.Items.Where(i => i.ProductVariantId is not null).Select(i => (i.ProductVariantId!.Value, i.Qty)).ToList(), ct);
         await orders.ReleasePromoAsync(order.Id, ct);
         await notices.CancelledAsync(order, people, "the customer", ct);

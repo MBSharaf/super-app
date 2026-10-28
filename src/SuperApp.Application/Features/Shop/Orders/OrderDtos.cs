@@ -19,7 +19,8 @@ public sealed record CheckoutRequest(
     string? PromoCode = null);
 
 /// <summary>The placed order and how it is paid (Simulated = no real money moved yet).</summary>
-public sealed record CheckoutResultDto(string Code, string Status, string PaymentMethod, bool PaymentSimulated, decimal Total, OrderDetailsDto Order);
+/// <summary>PaymentUrl: the gateway's page to finish paying (null = already paid by the Super App wallet or the simulated gateway).</summary>
+public sealed record CheckoutResultDto(string Code, string Status, string PaymentMethod, bool PaymentSimulated, decimal Total, OrderDetailsDto Order, string? PaymentUrl = null);
 
 /// <summary>An order in "My orders".</summary>
 public sealed record OrderSummaryDto(string Code, DateTime PlacedAt, string Status, int Items, decimal Total, string PaymentMethod, PhotoDto? Image, string FirstTitle);

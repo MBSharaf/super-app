@@ -41,7 +41,7 @@ public sealed partial class StoreRepository
 
     public async Task<(Order Order, Fulfilment Fulfilment)?> FulfilmentAsync(long storeId, string orderCode, CancellationToken ct)
     {
-        var order = await db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).AsSplitQuery()
+        var order = await db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).Include(o => o.Payment).AsSplitQuery()
             .FirstOrDefaultAsync(o => o.Code == orderCode && o.Fulfilments.Any(f => f.StoreId == storeId), ct);
         return order is null ? null : (order, order.Fulfilments.Single(f => f.StoreId == storeId));
     }

@@ -23,6 +23,8 @@ public static class ShopRegistration
         services.AddScoped<CartService>();
         services.AddScoped<ICartService>(sp => sp.GetRequiredService<CartService>());
         services.AddScoped<OrderNotices>();
+        services.AddScoped<OrderPayments>();
+        services.AddScoped<Features.Payments.IPaymentListener, OrderPaymentListener>();
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<IMyOrdersService, MyOrdersService>();
 

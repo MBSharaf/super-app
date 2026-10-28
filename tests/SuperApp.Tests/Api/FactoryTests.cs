@@ -41,7 +41,7 @@ public sealed class FactoryTests(DemoApiFactory api) : IClassFixture<DemoApiFact
     {
         var (customer, _) = await kit.PersonAsync();
         await customer.PostAsync("/api/v1/cart/items", new { designId = await kit.DesignIdAsync(design), size = "L", color = "Black", qty = 1 });
-        var order = (await ShopKit.CheckoutAsync(customer, payment: "cod")).Body.Data().GetProperty("code").GetString()!;
+        var order = (await ShopKit.CheckoutAsync(customer)).Body.Data().GetProperty("code").GetString()!;
         var job = await api.DbAsync(db => db.Set<Job>().Where(j => j.OrderItem.Order.Code == order).Select(j => j.Code).SingleAsync());
         return (order, job);
     }
@@ -99,7 +99,7 @@ public sealed class FactoryTests(DemoApiFactory api) : IClassFixture<DemoApiFact
         var parcels = (await packer.GetAsync("/api/v1/factory/shipping")).Body.Data();
         var parcel = parcels.EnumerateArray().Single(p => p.GetProperty("orderCode").GetString() == order);
         parcel.GetProperty("trackingNumber").GetString()!.ShouldStartWith("SIM");
-        parcel.GetProperty("codAmount").GetDecimal().ShouldBeGreaterThan(0);
+        parcel.GetProperty("codAmount").GetDecimal().ShouldBe(0);   // paid online: the courier collects nothing
         var label = await packer.Http.GetAsync($"/api/v1/factory/shipments/{parcel.GetProperty("id").GetInt64()}/label.pdf");
         (await label.Content.ReadAsByteArrayAsync())[..4].ShouldBe("%PDF"u8.ToArray());
         (await printer.GetAsync("/api/v1/factory/shipping")).Body.Code().ShouldBe("role");

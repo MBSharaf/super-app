@@ -88,6 +88,12 @@ public interface IOrderRepository
     Task<IReadOnlyList<Guid>> PeopleToTellAsync(long orderId, CancellationToken ct);
 
     Task<string> CustomerNameAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>Owner and type of each store (the official store has no owner).</summary>
+    Task<IReadOnlyDictionary<long, (Guid? Owner, StoreType Type)>> StoreOwnersAsync(IReadOnlyList<long> storeIds, CancellationToken ct);
+
+    /// <summary>The order paid by this payment, with items, parcels and payment, tracked; or null.</summary>
+    Task<Order?> ByPaymentAsync(long paymentId, CancellationToken ct);
 }
 
 /// <summary>Shop settings stored as JSON (ops.Settings).</summary>

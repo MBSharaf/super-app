@@ -100,6 +100,25 @@ public sealed class ShopKit(AccountsApiFactory api)
         return (response.StatusCode, string.IsNullOrEmpty(text) ? default : System.Text.Json.JsonDocument.Parse(text).RootElement.Clone());
     }
 
+    /// <summary>
+    /// A store packs and ships its part, then Super App's courier carries the parcel to the customer (shipping is through
+    /// Super App, so the courier — here the admin's simulate tool — marks it delivered, not the store).
+    /// </summary>
+    public async Task DeliverAsync(ApiClient store, string order, string area = "partner")
+    {
+        await store.PostAsync($"/api/v1/{area}/store/orders/{order}/pack");
+        await store.PostAsync($"/api/v1/{area}/store/orders/{order}/ship");
+        var ceo = await api.CeoAsync();
+        var parcels = await api.DbAsync(db => db.Set<SuperApp.Domain.Entities.Shipping.Shipment>().Where(s => s.Order.Code == order && !s.IsReturn).Select(s => s.Id).ToListAsync());
+        foreach (var parcel in parcels)
+        {
+            foreach (var status in new[] { "PickedUp", "OutForDelivery", "Delivered" })
+            {
+                await ceo.PostAsync($"/api/v1/admin/shipments/{parcel}/simulate", new { status });
+            }
+        }
+    }
+
     /// <summary>The variant ids of a demo product, with their stock.</summary>
     public Task<List<(long Id, int Stock)>> VariantsAsync(string slug) => api.DbAsync(async db =>
         (await db.Set<ProductVariant>().Where(v => v.Product.Slug == slug).OrderBy(v => v.Id).Select(v => new { v.Id, v.Stock }).ToListAsync())

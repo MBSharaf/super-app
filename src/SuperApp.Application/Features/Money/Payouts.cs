@@ -88,7 +88,7 @@ public sealed class PayoutsService(
         var me = Me();
         var type = OwnType(body.WalletType);
         var min = await settings.DecimalAsync("money.payoutMin", 500m, ct);
-        var payee = await payouts.PayeeAsync(me, type, ct) ?? throw new BusinessRuleException("Only partners can withdraw for now.", "no_payout_account");
+        var payee = await payouts.PayeeAsync(me, type, ct) ?? throw new BusinessRuleException("Only partners and sellers can withdraw, from their own wallets.", "no_payout_account");
         var wallet = await money.WalletAsync(me, type, ct);
         Check(body.Amount >= min, $"The smallest withdrawal is {min:0} EGP.", "under_minimum");
         Check(body.Amount <= wallet.AvailableBalance, "That is more than your available balance.", "over_available");

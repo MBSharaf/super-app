@@ -25,11 +25,13 @@ public interface IParcelRepository
 }
 
 /// <summary>
-/// Applies a courier status to a parcel (FR-FAC-06, FR-SHIP-02): picked up → items shipped; delivered → items delivered (money
-/// becomes due after the hold days); refused → items refused, store stock back, the customer's refusals counted for COD.
+/// Applies a courier status to a parcel (FR-FAC-06, FR-SHIP-02): picked up → items shipped; delivered → items delivered (the
+/// stores' held earnings become available after the 24-hour return window); refused → items refused, store stock back, the
+/// customer's money for them back to the Super App wallet.
 /// A courier event id seen before is ignored.
 /// </summary>
-public sealed class ShipmentTracker(IShipmentRepository shipments, IParcelRepository parcels, IOrderRepository orders, IUnitOfWork unitOfWork, INotifier notifier, IClock clock)
+public sealed class ShipmentTracker(IShipmentRepository shipments, IParcelRepository parcels, IOrderRepository orders, IUnitOfWork unitOfWork, INotifier notifier, IClock clock,
+    Money.ILedger ledger, OrderPayments money)
 {
     public async Task<bool> ApplyAsync(Shipment shipment, ShipmentStatus status, string? description, string? eventId, string? raw, CancellationToken ct)
     {
@@ -88,17 +90,20 @@ public sealed class ShipmentTracker(IShipmentRepository shipments, IParcelReposi
     {
         Set(items, OrderItemStatus.Delivered);
         if (parcel is not null) { parcel.Status = FulfilmentStatus.Delivered; }
+        await ledger.HoldItemsUntilAsync(items.Select(i => i.Id).ToList(), clock.UtcNow + Money.Ledger.ReturnWindow, ct);
         foreach (var (userId, level) in await parcels.CountSalesAsync(items, ct))
         {
             await notifier.NotifyUserAsync(userId, new NotificationMessage(NotificationCategory.Level, $"You reached {level}!", "Your new level’s benefits are on now.", "#/seller", NotificationTone.Success), ct);
         }
-        await TellAsync(order, "Delivered", $"{order.Code} was delivered. Enjoy! You can return items within 14 days.", ct);
-        await TellSellersAsync(order, $"{order.Code} delivered", "Your earnings become available after the hold days.", ct);
+        await TellAsync(order, "Delivered", $"{order.Code} was delivered. Enjoy! If something has a problem, you can return it within 24 hours.", ct);
+        await TellSellersAsync(order, $"{order.Code} delivered", "Your earnings become available 24 hours after delivery (the return window).", ct);
     }
 
     private async Task RefusedAsync(Order order, Fulfilment? parcel, List<OrderItem> items, CancellationToken ct)
     {
+        var wasPaid = OrderPayments.IsPaid(order.Status);
         Set(items, OrderItemStatus.Refused);
+        await money.RefundAsync(order, items, deliveryFee: false, wasPaid, ct);
         if (parcel is not null) { parcel.Status = FulfilmentStatus.Cancelled; }
         await orders.RestockAsync(items.Where(i => i.ProductVariantId is not null).Select(i => (i.ProductVariantId!.Value, i.Qty)).ToList(), ct);
         if (order.PaymentMethod == OrderPaymentMethod.CashOnDelivery)

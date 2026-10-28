@@ -1,3 +1,6 @@
+using SuperApp.Application.Abstractions.Notifications;
+using SuperApp.Application.Features.Shop.Orders;
+using SuperApp.Domain.Entities.Shop;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -110,7 +113,33 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
             r.Payment!.Status = PaymentStatus.Failed;
         }
         await db.SaveChangesAsync(ct);
-        return late.Count + teams.Count + requests.Count;
+        return late.Count + teams.Count + requests.Count + await ExpireOrdersAsync(scope.ServiceProvider, db, now, ct);
+    }
+
+    /// <summary>Store orders still not paid: called off, the stock and the code use given back, the customer told.</summary>
+    private static async Task<int> ExpireOrdersAsync(IServiceProvider services, AppDbContext db, DateTime now, CancellationToken ct)
+    {
+        var orders = await db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).Include(o => o.Payment)
+            .Where(o => o.Status == OrderStatus.Placed && o.CreatedAt <= now - PayWithin).OrderBy(o => o.Id).Take(100).ToListAsync(ct);
+        foreach (var o in orders)
+        {
+            MyOrdersService.Cancel(o, [], "Not paid in time");
+            if (o.Payment is { Status: PaymentStatus.Pending or PaymentStatus.Created } p)
+            {
+                p.Status = PaymentStatus.Failed;
+            }
+        }
+        await db.SaveChangesAsync(ct);
+        var repository = services.GetRequiredService<IOrderRepository>();
+        var notifier = services.GetRequiredService<INotifier>();
+        foreach (var o in orders)
+        {
+            await repository.RestockAsync(o.Items.Where(i => i.ProductVariantId is not null).Select(i => (i.ProductVariantId!.Value, i.Qty)).ToList(), ct);
+            await repository.ReleasePromoAsync(o.Id, ct);
+            await notifier.NotifyUserAsync(o.CustomerId, new NotificationMessage(NotificationCategory.Orders, $"Order {o.Code} called off",
+                "It was not paid within 15 minutes, so the items went back on sale.", $"#/order/{o.Code}", NotificationTone.Warning), ct);
+        }
+        return orders.Count;
     }
 }
 

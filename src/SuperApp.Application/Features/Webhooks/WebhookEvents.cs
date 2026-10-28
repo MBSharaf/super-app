@@ -13,9 +13,10 @@ public static class WebhookEvents
     public const string ReviewCreated = "review.created";
     public const string TicketCreated = "support.ticket.created";
     public const string CheckInAccepted = "checkin.accepted";
+    public const string OrderCreated = "order.created";
 
     public static readonly IReadOnlyList<string> All =
-        [BookingCreated, BookingCancelled, ApplicationSubmitted, PitchSubmitted, ReviewCreated, TicketCreated, CheckInAccepted];
+        [BookingCreated, BookingCancelled, ApplicationSubmitted, PitchSubmitted, ReviewCreated, TicketCreated, CheckInAccepted, OrderCreated];
 
     /// <summary>Activity-log action → webhook event (and who acted, when it matters).</summary>
     public static (string Type, string? By)? FromAudit(string action) => action switch
@@ -28,6 +29,7 @@ public static class WebhookEvents
         "review.created" => (ReviewCreated, null),
         "ticket.opened" => (TicketCreated, null),
         "checkin.accepted" => (CheckInAccepted, null),
+        "order.created" => (OrderCreated, null),
         _ => null,
     };
 }

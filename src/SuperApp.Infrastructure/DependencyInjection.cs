@@ -81,6 +81,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IEmailTransport, FileEmailTransport>();
         services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<ICustomerContacts, CustomerContacts>();
         services.AddScoped<ILegalRepository, LegalRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();

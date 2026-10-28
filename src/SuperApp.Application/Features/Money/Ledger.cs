@@ -48,6 +48,9 @@ public interface IMoneyStore
     Task<decimal> AgentMoneyLimitAsync(long agentId, CancellationToken ct);
 
     Task<ReceiptDto?> ReceiptAsync(Guid userId, string number, CancellationToken ct);
+
+    /// <summary>Sets the release date of the held (pending) rows of these things, at once.</summary>
+    Task HoldUntilAsync(string refType, IReadOnlyList<long> refIds, DateTime? until, CancellationToken ct);
 }
 
 /// <summary>
@@ -79,6 +82,15 @@ public interface ILedger
     /// </summary>
     Task AdjustAsync(Guid ownerUserId, WalletType type, decimal amount, string refType, long refId, CancellationToken ct);
 
+    /// <summary>A paid store order: each store's earning held, Super App's shares to revenue, a payment receipt. Saved by the caller.</summary>
+    Task OrderPaidAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> shares, CancellationToken ct);
+
+    /// <summary>Money back to the customer's wallet for these items (+ the delivery fee when given), each share taken back, a refund receipt.</summary>
+    Task OrderRefundAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> items, decimal deliveryFee, CancellationToken ct);
+
+    /// <summary>Sets when the items' held earnings become available (null = keep holding). Saved at once.</summary>
+    Task HoldItemsUntilAsync(IReadOnlyList<long> itemIds, DateTime? until, CancellationToken ct);
+
     /// <summary>An entry fee the venue earns (tournaments): its share held until <c>release</c>, commission to revenue, a receipt.</summary>
     Task EntryFeeAsync(Payment payment, Guid venueOwnerId, decimal commissionRate, string refType, long refId, DateTime release, CancellationToken ct);
 
@@ -98,7 +110,7 @@ public interface ILedger
     Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct);
 }
 
-public sealed class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
+public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
 {
     public static readonly TimeSpan HoldAfterKickOff = TimeSpan.FromHours(24);
 

@@ -1,6 +1,6 @@
 [
   { "key": "commission.bookings", "group": "money", "value": 0.10 },
-  { "key": "commission.store", "group": "money", "value": 0.12 },
+  { "key": "commission.store", "group": "money", "value": 0.05 },
   { "key": "fees.service", "group": "money", "value": 0.03 },
   { "key": "vat.rate", "group": "money", "value": 0.14 },
   { "key": "settlement.day", "group": "money", "value": 1 },

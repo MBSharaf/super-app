@@ -15,8 +15,9 @@ namespace SuperApp.Application.Features.Shop.Orders;
 /// <summary>
 /// Checkout (API آ§4.2, FR-SHOP-04..06, FR-POD-10): checks every line again, prices the cart exactly as shown, takes the
 /// stock, creates the order with one parcel per store and one factory job per printed item, and empties the cart.
-/// Payment seam: until Phase 5 online and wallet payments are simulated (the order is Paid at once) and cash on
-/// delivery leaves it Placed; Phase 5 swaps <see cref="PayAsync"/> for the payment gateway session.
+/// Payment (owner's decision, 2026-10-27): online only — card through the gateway or the Super App wallet. The order waits
+/// (Placed) until the gateway confirms; the Super App wallet and the simulated gateway pay at once. A payment that can't
+/// start (not enough in the wallet…) calls the order off and gives the stock back; an unpaid order expires in 15 minutes.
 /// </summary>
 public interface ICheckoutService
 {
@@ -31,7 +32,9 @@ public sealed class CheckoutService(
     ISettingsReader settings,
     IFeatureFlags flags,
     IMyOrdersService myOrders,
-    OrderNotices notices,
+    OrderPayments money,
+    Payments.IPaymentsService payments,
+    Abstractions.Persistence.IUnitOfWork unitOfWork,
     ICurrentUser currentUser,
     IClock clock,
     IValidator<CheckoutRequest> rules) : ICheckoutService
@@ -62,14 +65,40 @@ public sealed class CheckoutService(
         order.IdempotencyKey = idempotencyKey;
         var jobs = await JobsAsync(order, factory, ct);
         await orders.PlaceAsync(order, jobs, StockOf(order), PromoUse(order, promo, me), lines.Select(l => l.Id).ToList(), ct);
-        await notices.PlacedAsync(order, lines, factory?.OwnerUserId, ct);
-        return await ResultAsync(order.Code, ct);
+        var url = await PayAsync(order, me, ct);
+        return await ResultAsync(order.Code, ct) with { PaymentUrl = url };
     }
 
     private async Task<CheckoutResultDto> ResultAsync(string code, CancellationToken ct)
     {
         var details = await myOrders.GetAsync(code, ct);
-        return new CheckoutResultDto(details.Code, details.Status, details.PaymentMethod, details.PaymentMethod != nameof(OrderPaymentMethod.CashOnDelivery), details.Total, details);
+        return new CheckoutResultDto(details.Code, details.Status, details.PaymentMethod, details.Status != nameof(OrderStatus.Placed), details.Total, details);
+    }
+
+    /// <summary>Starts the payment; paid at once → the order is Paid. A payment that fails to start calls the order off (stock back).</summary>
+    private async Task<string?> PayAsync(Order order, Guid me, CancellationToken ct)
+    {
+        Payments.PaymentStarted started;
+        try
+        {
+            started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.ShopOrder, order.Total, me, $"Order {order.Code}", $"#/order/{order.Code}",
+                order.PaymentMethod == OrderPaymentMethod.Wallet, $"order|{order.Code}"), ct);
+        }
+        catch
+        {
+            MyOrdersService.Cancel(order, await orders.JobsAsync(order.Id, ct), "The payment did not start");
+            await unitOfWork.SaveChangesAsync(ct);
+            await orders.RestockAsync(StockOf(order), ct);
+            await orders.ReleasePromoAsync(order.Id, ct);
+            throw;
+        }
+        order.Payment = started.Payment;
+        await unitOfWork.SaveChangesAsync(ct);
+        if (started.RedirectUrl is null)
+        {
+            await money.PaidAsync(order, ct);
+        }
+        return started.RedirectUrl;
     }
 
     private async Task<IReadOnlyList<CartLine>> CheckLinesAsync(Guid me, CancellationToken ct)
@@ -81,7 +110,7 @@ public sealed class CheckoutService(
         }
         if (lines.FirstOrDefault(l => !l.CanBuy) is { } bad)
         {
-            throw new ConflictException($"â€œ{bad.Title}â€‌: {bad.Problem} Update your cart and try again.", "item_unavailable");
+            throw new ConflictException($"“{bad.Title}”: {bad.Problem} Update your cart and try again.", "item_unavailable");
         }
         return lines;
     }
@@ -124,7 +153,7 @@ public sealed class CheckoutService(
         var express = request.DeliverySpeed == "express";
         var totals = CartPricing.Totals(lines, await shopSettings.DeliveryFeesAsync(ct), express, promo);
         var vat = await settings.DecimalAsync("vat.rate", 0.14m, ct);
-        var defaultRate = await settings.DecimalAsync("commission.store", 0.12m, ct);
+        var defaultRate = await settings.DecimalAsync("commission.store", 0.05m, ct);
         var order = new Order
         {
             Code = await orders.NewCodeAsync(ct), CustomerId = me, AddressJson = address, Phone = phone, Subtotal = totals.Subtotal,
@@ -139,15 +168,8 @@ public sealed class CheckoutService(
         {
             order.Fulfilments.Add(new Fulfilment { StoreId = storeId, Status = FulfilmentStatus.New });
         }
-        order.Status = await PayAsync(order, ct);
+        order.Status = OrderStatus.Placed;
         return order;
-    }
-
-    /// <summary>Phase 5 seam: start the gateway session here. Until then online / wallet are simulated as paid, cash waits for delivery.</summary>
-    private static Task<OrderStatus> PayAsync(Order order, CancellationToken ct)
-    {
-        _ = ct;
-        return Task.FromResult(order.PaymentMethod == OrderPaymentMethod.CashOnDelivery ? OrderStatus.Placed : OrderStatus.Paid);
     }
 
     private async Task<IReadOnlyList<Job>> JobsAsync(Order order, (long Id, Guid OwnerUserId, short SlaHours)? factory, CancellationToken ct)
@@ -169,7 +191,6 @@ public sealed class CheckoutService(
 
     private static OrderPaymentMethod PaymentOf(string method) => method switch
     {
-        "cod" => OrderPaymentMethod.CashOnDelivery,
         "wallet" => OrderPaymentMethod.Wallet,
         _ => OrderPaymentMethod.Online,
     };
@@ -187,7 +208,7 @@ public sealed class CheckoutRequestValidator : AbstractValidator<CheckoutRequest
         RuleFor(x => x.Phone).NotEmpty().When(x => x.AddressId is null).WithMessage("Add a phone number for the courier.");
         RuleFor(x => x.Phone).EgyptianMobile().When(x => !string.IsNullOrWhiteSpace(x.Phone));
         RuleFor(x => x.DeliverySpeed).Must(s => s is "standard" or "express").WithMessage("Choose standard or express delivery.");
-        RuleFor(x => x.PaymentMethod).Must(s => s is "online" or "cod" or "wallet").WithMessage("Choose card, wallet or cash on delivery.");
+        RuleFor(x => x.PaymentMethod).Must(s => s is "online" or "wallet").WithMessage("Pay by card or with your Super App wallet (no cash on delivery).");
         RuleFor(x => x.PromoCode).MaximumLength(30);
     }
 }

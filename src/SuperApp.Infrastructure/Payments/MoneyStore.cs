@@ -68,6 +68,10 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
 
     public Task<IReadOnlyList<ReceiptDto>> ReceiptsOfAsync(Guid userId, CancellationToken ct) => ReceiptsAsync(userId, null, ct);
 
+    public Task HoldUntilAsync(string refType, IReadOnlyList<long> refIds, DateTime? until, CancellationToken ct) =>
+        db.Set<LedgerEntry>().Where(e => e.RefType == refType && refIds.Contains(e.RefId) && e.Bucket == LedgerBucket.Pending && e.Kind != LedgerKind.ReleaseFromHold)
+            .ExecuteUpdateAsync(u => u.SetProperty(e => e.AvailableAt, until), ct);
+
     public async Task<decimal> StaffLimitAsync(Guid userId, StaffLimitKind kind, CancellationToken ct) =>
         await db.Set<StaffLimit>().Where(l => l.UserId == userId)
             .Select(l => (decimal?)(kind == StaffLimitKind.Credit ? l.CreditLimit : kind == StaffLimitKind.Payout ? l.PayoutLimit : l.RefundLimit)).FirstOrDefaultAsync(ct) ?? 0;
