@@ -271,6 +271,8 @@
     const act = e.target.closest('[data-act]')?.dataset.act;
     const s = db().find('sellers', id);
     try {
+      // API mode: opening a seller's dashboard and balance changes aren't on the server for sellers yet
+      if (s.live && ['open', 'adjust'].includes(act)) { toast('This isn’t on the server yet — it works in the demo only.', 'info'); return false; }
       if (act === 'open') { AD().openDashboard(s.accountId); window.open(SA.core.router.url('/seller'), '_blank', 'noopener'); return false; }
       if (act === 'adjust') { A.adjustDialog(s.accountId); return false; }
       if (act === 'feature') { AD().featureSeller(id, !s.featuredByAdmin); toast(s.featuredByAdmin ? 'Removed from featured' : 'Featured in the shop'); return true; }

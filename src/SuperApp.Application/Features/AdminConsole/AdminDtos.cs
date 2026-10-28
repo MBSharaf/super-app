@@ -37,7 +37,7 @@ public sealed record PartnerDetailDto(PartnerRowDto Partner, string? SuspendedRe
     IReadOnlyList<PitchBriefDto> PitchList);
 
 public sealed record SellerRowDto(long Id, Guid UserId, string Name, string? Email, string Store, string Level, string Mode, string Status,
-    int LifetimeSales, decimal Rating, bool Featured, DateTime? FrozenUntil, int LiveDesigns, DateTime CreatedAt);
+    int LifetimeSales, decimal Rating, bool Featured, DateTime? FrozenUntil, int LiveDesigns, DateTime CreatedAt, string? Handle = null);
 
 public sealed record SellerDetailDto(SellerRowDto Seller, int Strikes, int Followers);
 

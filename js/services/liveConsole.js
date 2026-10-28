@@ -248,5 +248,43 @@
     };
   }
 
+  /* ---------------- Sellers (the store is back: sellers' own products) ---------------- */
+  const SL = SA.services.sellers;
+  const demoSellers = { list: SL.list };
+  const SMODE = { OwnProducts: 'store', PrintOnDemand: 'pod', Both: 'both' };
+  /** Server sellers → local seller records (the drawer and level badges read them from the local data) */
+  const fromSeller = (x) => {
+    const raw = SA.services.db.raw();
+    const template = raw.sellers.find((s) => !s.live) || {};
+    return {
+      ...template, id: `sa:${x.id}`, apiId: x.id, live: true, accountId: `acc-sa-${x.id}`, name: x.store, handle: x.handle || '', owner: x.name, email: x.email || '',
+      mode: SMODE[x.mode] || 'store', status: x.status === 'Suspended' ? 'suspended' : 'active', featuredByAdmin: x.featured, frozenUntil: x.frozenUntil ? at(x.frozenUntil) : 0,
+      history: { sales: x.lifetimeSales, revenue: 0, profit: 0, rating: +x.rating, reviews: 0 }, strikes: [], kyc: 'verified', bio: '', storeId: null, updatedAt: Date.now(),
+    };
+  };
+  const mirrorSellers = (list) => {
+    const raw = SA.services.db.raw();
+    raw.sellers = [...raw.sellers.filter((s) => !String(s.id).startsWith('sa:')), ...list];
+    raw.accounts = [...raw.accounts.filter((a) => !String(a.id).startsWith('acc-sa-')),
+      ...list.map((s) => ({ id: s.accountId, live: true, role: 'seller', name: s.owner, company: s.name, email: s.email, status: s.status }))];
+    SA.services.db.touch?.('sellers');
+    return list;
+  };
+  const sellerList = () => people.read('sellers', '/admin/sellers?pageSize=100', (d) => mirrorSellers((d.items || d).map(fromSeller)), []);
+  const isLiveSeller = (id) => String(id).startsWith('sa:');
+  SL.list = () => (SA.services.dash?.adminMode?.() && live('sellers.read') ? (sellerList(), SA.services.db.all('sellers').filter((s) => isLiveSeller(s.id))) : demoSellers.list());
+  const sellerAct = (call) => call.then(() => { people.stale(); people.read('sellers', '/admin/sellers?pageSize=100', (d) => mirrorSellers((d.items || d).map(fromSeller)), []); repaint(); }, toast);
+  AD.featureSeller = (id, on) => {
+    if (!isLiveSeller(id)) return demo.featureSeller(id, on);
+    SA.services.db.update('sellers', id, { featuredByAdmin: !!on });
+    return sellerAct(api.post(`/admin/sellers/${id.slice(3)}/feature`, { featured: !!on }));
+  };
+  AD.setSellerStatus = (id, status, reason = '') => {
+    if (!isLiveSeller(id)) return demo.setSellerStatus(id, status, reason);
+    if (status !== 'active' && (!reason || reason.trim().length < 3)) throw new ApiError('Write the reason.', 'invalid');
+    SA.services.db.update('sellers', id, { status: status === 'active' ? 'active' : 'suspended', suspendedReason: reason });
+    return sellerAct(api.post(`/admin/sellers/${id.slice(3)}/${status === 'active' ? 'reactivate' : 'suspend'}`, status === 'active' ? {} : { reason: reason.trim() }));
+  };
+
   api.ready.then(() => session()?.subscribe?.(() => { audits.clear(); people.clear(); bookings.clear(); details.clear(); reports.clear(); ceoAudit.clear(); }));
 })(window.SA);

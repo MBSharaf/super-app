@@ -160,7 +160,7 @@ public sealed partial class AdminReader(AppDbContext db) : IAdminReader
 
     internal IQueryable<SellerRowDto> SellerRows(IQueryable<Seller> sellers) => sellers.AsNoTracking().Select(s => new SellerRowDto(
         s.Id, s.UserId, s.User.FullName, s.User.Email, s.Store.Name, s.Level.NameEn, s.Mode.ToString(), s.Status.ToString(), s.LifetimeSales, s.Rating,
-        s.FeaturedByAdmin, s.FrozenUntil, db.Set<Design>().Count(d => d.SellerId == s.Id && d.Status == DesignStatus.Live), s.CreatedAt));
+        s.FeaturedByAdmin, s.FrozenUntil, db.Set<Design>().Count(d => d.SellerId == s.Id && d.Status == DesignStatus.Live), s.CreatedAt, s.Store.Handle));
 
     internal static IQueryable<OrderRowDto> OrderRows(IQueryable<Order> orders) => orders.AsNoTracking().Select(o => new OrderRowDto(
         o.Code, o.Customer.FullName, o.Status.ToString(), o.PaymentMethod.ToString(), o.Items.Count, o.Total, o.CreatedAt));
