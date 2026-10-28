@@ -19,7 +19,7 @@
     if (!mine.length && !can.length) return '';
     return `<section class="panel panel-pad rt-block">
       <div class="row-between wrap"><h2 class="h4">${icon('refresh', 18)} Returns & exchanges</h2>${can.length ? `<button class="btn btn-outline btn-sm" data-rt-new>${icon('refresh', 14)} Return or exchange</button>` : ''}</div>
-      ${can.length ? `<p class="xs muted" style="margin-top:4px">Within ${RT().WINDOW} days of delivery — ${Math.min(...can.map((x) => x.daysLeft))} day(s) left. <a class="link" href="#/legal/refunds">Refunds policy</a></p>` : ''}
+      ${can.length ? `<p class="xs muted" style="margin-top:4px">Within ${RT().windowText()} of delivery — ${RT().leftText(can)}. <a class="link" href="#/legal/refunds">Refunds policy</a></p>` : ''}
       ${mine.map((r) => `<div class="rt-row"><div class="row-between wrap"><b class="small">${r.id} · ${esc(r.storeName)}</b><span class="badge ${TONE[r.status]}">${RT().STATUS[r.status]}</span></div>
         <span class="xs muted">${r.items.map((i) => `${i.qty}× ${esc(i.name)} — ${ACT[i.action]}${i.size ? ` (${esc(i.size)})` : ''}`).join(' · ')} · ${esc(r.reasonLabel)}${r.amount ? ` · ${money(r.amount)} back` : ''}${r.awb ? ` · ${esc(r.courier)} <b class="num">${esc(r.awb)}</b>` : ''}</span>
         ${r.reason2 ? `<span class="xs t-danger" style="display:block">${esc(r.reason2)}</span>` : ''}</div>`).join('')}
@@ -32,16 +32,16 @@
       label: 'Return or exchange', title: 'Return or exchange', subtitle: `Order ${o.id}`,
       body: `<form class="stack" style="--gap:12px" data-rt-form novalidate>
         <div class="field"><label for="rt-r">Why?</label><select class="select" id="rt-r" name="reason"><option value="">Choose…</option>${Object.entries(R).map(([k, v]) => `<option value="${k}">${v.label}${v.free ? '' : ` (return delivery ${money(SA.data.products.shipping?.standard ?? 60)})`}</option>`).join('')}</select><p class="field-error" data-err="reason"></p></div>
-        <div class="rt-items">${can.map((x) => { const p = SA.services.db.find('products', x.line.productId); return `<div class="rt-item" data-idx="${x.index}">
+        <div class="rt-items">${can.map((x) => { const p = SA.services.db.find('products', x.line.productId) || (() => { try { return SA.services.shop.getSync(x.line.productId); } catch { return null; } })(); return `<div class="rt-item" data-idx="${x.index}">
           <label class="choice"><input type="checkbox" name="pick" value="${x.index}" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow small"><b>${esc(x.line.name)}</b><span class="xs muted" style="display:block">${esc(x.line.variant.size)} · ${esc(x.line.variant.color)} · ${money(x.line.price)}${x.pod ? ' · printed for you' : ''}</span></span></label>
           <div class="rt-opts" hidden>
             ${x.qty > 1 ? `<label class="xs">Quantity <input class="input num" type="number" name="qty-${x.index}" min="1" max="${x.qty}" value="1" style="width:72px" /></label>` : `<input type="hidden" name="qty-${x.index}" value="1" />`}
-            <select class="select" name="act-${x.index}" aria-label="What do you want?">${x.pod ? '<option value="reprint">Reprint it for me</option><option value="refund">Refund me</option>' : `<option value="refund">Refund me</option>${p && (p.sizes || []).length > 1 ? '<option value="exchange">Exchange for another size</option>' : ''}`}</select>
+            <select class="select" name="act-${x.index}" aria-label="What do you want?">${x.pod ? '<option value="reprint">Reprint it for me</option><option value="refund">Refund me</option>' : `<option value="refund">Refund me</option>${x.exchange !== false && p && (p.sizes || []).length > 1 ? '<option value="exchange">Exchange for another size</option>' : ''}`}</select>
             ${!x.pod && p && (p.sizes || []).length > 1 ? `<select class="select" name="size-${x.index}" aria-label="New size" hidden>${p.sizes.map((s) => `<option ${s === x.line.variant.size ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
           </div></div>`; }).join('')}</div>
         <p class="field-error" data-err="items"></p>
-        <div class="field"><label for="rt-n">Details <span class="muted">(optional)</span></label><textarea class="input" id="rt-n" name="note" rows="2" maxlength="400" placeholder="e.g. The print peeled after the first wash"></textarea></div>
-        <p class="xs muted">${icon('info', 12)} Printed designs are made for you: they’re reprinted or refunded only for a fault, damage, a wrong size or a wrong print.</p>
+        <div class="field"><label for="rt-n">Details <span class="muted">(optional)</span></label><textarea class="input" id="rt-n" name="note" rows="2" maxlength="400" placeholder="${SA.config.podEnabled ? 'e.g. The print peeled after the first wash' : 'e.g. The seam came apart on the first day'}"></textarea></div>
+        <p class="xs muted">${icon('info', 12)} ${SA.config.podEnabled || !SA.services.api.isLive() ? 'Printed designs are made for you: they’re reprinted or refunded only for a fault, damage, a wrong size or a wrong print.' : 'Returns are for an item with a problem, within 24 hours of delivery. Our courier collects it and the refund goes to your Super App wallet.'}</p>
         <button class="btn btn-primary" type="submit">Send the request</button></form>`,
       onMount(m, close) {
         const f = m.querySelector('[data-rt-form]');

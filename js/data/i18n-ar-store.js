@@ -28,5 +28,12 @@
     'Waiting for your payment.': 'مستنيين الدفع.',
     'Pay within 15 minutes to keep the items — after that the order is called off.': 'ادفع خلال 15 دقيقة عشان تحجز المنتجات — بعد كده الطلب بيتلغي.',
     'This order was cancelled.': 'الطلب ده اتلغى.',
+    /* ---------- Returns (an item with a problem, 24 hours) ---------- */
+    'Within {0} hours of delivery — {1} hour(s) left.': 'خلال {0} ساعة من التسليم — فاضل {1} ساعة.',
+    'Returns are for an item with a problem, within 24 hours of delivery. Our courier collects it and the refund goes to your Super App wallet.': 'المرتجعات للمنتج اللي فيه مشكلة بس، خلال 24 ساعة من التسليم. المندوب بتاعنا بيستلمه والفلوس بترجع على محفظة سوبر آب بتاعتك.',
+    'Choose what is wrong with the item.': 'اختار إيه المشكلة في المنتج.',
+    'e.g. The seam came apart on the first day': 'مثلًا: الخياطة فكّت من أول يوم',
+    'Super App courier': 'مندوب سوبر آب',
+    'The 24-hour window closed or it is already being returned': 'مدة الـ 24 ساعة خلصت أو المنتج بيرجع بالفعل',
   });
 })(window.SA);
