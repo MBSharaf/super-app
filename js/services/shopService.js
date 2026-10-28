@@ -43,7 +43,7 @@
       status: 'active', createdAt: d.reviewedAt || d.createdAt,
     };
   };
-  const podLive = () => (SA.services.pod ? SA.services.pod.live().map(podProduct) : []);
+  const podLive = () => (SA.services.pod && SA.config.podEnabled ? SA.services.pod.live().map(podProduct) : []);   // printed designs only while print on demand is on
   /** Live catalogue: active, not deleted, and the selling store is open — plus live designs */
   const catalogue = () => [...db.all('products').filter(isLive), ...podLive()];
   const find = (id) => {

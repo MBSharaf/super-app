@@ -16,9 +16,16 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   storageKey: 'superapp.state.v1',
   // The store (sellers' own products, shipping) and print on demand (studio, designs, factory) are switched on the server
   // (settings Features:StoreEnabled / Features:PodEnabled), which marks <html data-store="on" data-pod="on">.
-  // GitHub Pages (no server) keeps both off. Everything stays in the code.
-  storeEnabled: document.documentElement.dataset.store === 'on',
+  // The demo site (GitHub Pages, no server) shows the store (owner's request, 2026-10-28: test orders there) without
+  // print on demand. Everything stays in the code.
+  storeEnabled: (document.documentElement.dataset.store || 'on') === 'on',
   podEnabled: document.documentElement.dataset.pod === 'on',
+  // The owner's automation (n8n): the demo site sends every new store order to `orders`, and every pitch booking, weekly
+  // package, published game and request to join a game to `bookings` (js/services/automation.js). The server sends its own.
+  automation: {
+    orders: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
+    bookings: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/BOOKING-created',
+  },
   // WhatsApp support — paste the chat link here (e.g. https://wa.me/20XXXXXXXXXX). Empty = not live yet.
   whatsapp: { url: '', hours: 'Daily 9 AM – 1 AM' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.
