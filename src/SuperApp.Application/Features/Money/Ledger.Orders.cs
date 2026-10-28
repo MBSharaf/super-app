@@ -10,6 +10,9 @@ namespace SuperApp.Application.Features.Money;
 /// </summary>
 public sealed record OrderShare(long ItemId, Guid? OwnerUserId, WalletType? Wallet, decimal Earning, decimal Commission, decimal CustomerAmount);
 
+/// <summary>A store's wallet (a seller's or a partner's store).</summary>
+public sealed record StoreWallet(Guid OwnerUserId, WalletType Type);
+
 /// <summary>
 /// Store orders in the ledger (owner's decisions, 2026-10-27): a paid order holds each store's earning in its wallet with no
 /// release date; delivery sets the date (24 hours later — the return window) and the release job moves it to Available.
@@ -66,6 +69,40 @@ public sealed partial class Ledger
         PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), -(amount - fromStores), LedgerBucket.Available, LedgerKind.Refund, "Order", order.Id, null, group);
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = order.CustomerId, Kind = ReceiptKind.Refund,
             Amount = amount, RefType = "Order", RefId = order.Id });
+    }
+
+    /// <summary>
+    /// The store pays for a return of a product with a problem (owner's decision, 2026-10-27): it loses its held earning on the
+    /// refunded items and pays the rest of the refund (when the customer paid more than it earned) and the return delivery
+    /// from its available balance; what that can't cover is a debt held in Pending, taken from its next released earnings
+    /// (see MoneyReleaseJob). Super App keeps its commission.
+    /// </summary>
+    public async Task ReturnSettledAsync(Order order, long returnId, IReadOnlyList<OrderShare> refunded, decimal refund, StoreWallet? payer, decimal returnFee, CancellationToken ct)
+    {
+        var group = Guid.NewGuid();
+        var revenue = await store.WalletAsync(null, WalletType.PlatformRevenue, ct);
+        if (refund > 0)
+        {
+            PostRaw(await store.WalletAsync(order.CustomerId, WalletType.Customer, ct), refund, LedgerBucket.Available, LedgerKind.Refund, "Return", returnId, null, group);
+            store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = order.CustomerId, Kind = ReceiptKind.Refund,
+                Amount = refund, RefType = "Return", RefId = returnId });
+        }
+        if (payer is null)
+        {
+            PostRaw(revenue, -refund, LedgerBucket.Available, LedgerKind.Refund, "Return", returnId, null, group);
+            return;
+        }
+        var wallet = await store.WalletAsync(payer.OwnerUserId, payer.Type, ct);
+        foreach (var s in refunded.Where(s => s.Earning > 0))
+        {
+            PostRaw(wallet, -s.Earning, LedgerBucket.Pending, LedgerKind.Deduction, OrderItemRef, s.ItemId, null, group);
+        }
+        var held = refunded.Sum(s => s.Earning);
+        var total = Math.Max(refund, held) + returnFee;
+        var fromAvailable = Math.Min(total - held, Math.Max(0, wallet.AvailableBalance));
+        PostRaw(wallet, -fromAvailable, LedgerBucket.Available, LedgerKind.Deduction, "Return", returnId, null, group);
+        PostRaw(wallet, -(total - held - fromAvailable), LedgerBucket.Pending, LedgerKind.Deduction, "Return", returnId, clock.UtcNow, group);
+        PostRaw(revenue, total - refund, LedgerBucket.Available, LedgerKind.ServiceFee, "Return", returnId, null, group);
     }
 
     /// <summary>Delivered items: their held earning becomes available after the return window (null = keep holding, a return is open).</summary>

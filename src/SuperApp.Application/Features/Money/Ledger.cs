@@ -88,6 +88,12 @@ public interface ILedger
     /// <summary>Money back to the customer's wallet for these items (+ the delivery fee when given), each share taken back, a refund receipt.</summary>
     Task OrderRefundAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> items, decimal deliveryFee, CancellationToken ct);
 
+    /// <summary>
+    /// A return Super App received: the refund to the customer's wallet; the store bears it (its held earning for the
+    /// refunded items, the rest and the return delivery from its available balance), or Super App for its own store. Saved by the caller.
+    /// </summary>
+    Task ReturnSettledAsync(Domain.Entities.Shop.Order order, long returnId, IReadOnlyList<OrderShare> refunded, decimal refund, StoreWallet? payer, decimal returnFee, CancellationToken ct);
+
     /// <summary>Sets when the items' held earnings become available (null = keep holding). Saved at once.</summary>
     Task HoldItemsUntilAsync(IReadOnlyList<long> itemIds, DateTime? until, CancellationToken ct);
 

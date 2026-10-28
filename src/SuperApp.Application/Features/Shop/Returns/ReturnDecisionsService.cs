@@ -13,9 +13,9 @@ namespace SuperApp.Application.Features.Shop.Returns;
 
 /// <summary>
 /// Deciding returns (API §4.3, FR-RET-04/05): the store (or Super App for the official store and printed items) approves —
-/// the courier pickup is booked — or rejects with a reason; when the items are back: refund (amount recorded; the money moves
-/// in Phase 5, with the seller charged its share and the commission returned), exchange (stock back, the new size sent),
-/// or reprint (the factory prints it again).
+/// Super App's courier pickup is booked — or rejects with a reason (the store's held earning is released); when the items
+/// are back: refund (to the customer's wallet, paid by the store with the return delivery), exchange (stock back, the new
+/// size sent, the store pays both trips), or reprint (the factory prints it again).
 /// </summary>
 public interface IReturnDecisionsService
 {
@@ -32,6 +32,7 @@ public sealed class ReturnDecisionsService(
     IReturnRepository returns,
     IOrderRepository orders,
     ShipmentBooker courier,
+    OrderPayments money,
     IUnitOfWork unitOfWork,
     INotifier notifier,
     IAuditLogger audit,
@@ -47,7 +48,7 @@ public sealed class ReturnDecisionsService(
         var name = await orders.CustomerNameAsync(ret.CustomerId, ct);
         var pickup = await courier.BookReturnAsync(ret.Order, name, ret.Items.Sum(i => i.Qty), (scope.Name, "Returns desk"), ct);
         await unitOfWork.SaveChangesAsync(ct);
-        await TellAsync(ret, "Return approved", $"A courier will collect the items · {pickup.TrackingNumber}{(ret.CustomerPaysDelivery ? " · the return delivery is on you" : "")}", ct);
+        await TellAsync(ret, "Return approved", $"Our courier will collect the items · {pickup.TrackingNumber}", ct);
         await audit.LogAsync(scope.System, "return.approved", $"{scope.Name} approved return {ret.Code}", "Return", ret.Code, ct: ct);
         return (await returns.DtoAsync(code, ct))!;
     }
@@ -61,6 +62,7 @@ public sealed class ReturnDecisionsService(
         var ret = await InStatusAsync(scope, code, ReturnStatus.Requested, ct);
         (ret.Status, ret.DecidedById, ret.RejectReason) = (ReturnStatus.Rejected, currentUser.UserId, request.Reason.Trim());
         await unitOfWork.SaveChangesAsync(ct);
+        await money.EndHoldAsync(ret.Order.Items.Where(i => ret.Items.Any(l => l.OrderItemId == i.Id)), ct);
         await TellAsync(ret, "Return not accepted", ret.RejectReason, ct);
         await audit.LogAsync(scope.System, "return.rejected", $"{scope.Name} rejected return {ret.Code}: {ret.RejectReason}", "Return", ret.Code, ct: ct);
         return (await returns.DtoAsync(code, ct))!;
@@ -82,6 +84,7 @@ public sealed class ReturnDecisionsService(
         ret.Status = ret.Items.Any(i => i.Action == ReturnAction.Reprint) ? ReturnStatus.Reprinting : exchanged ? ReturnStatus.Exchanged : ReturnStatus.Refunded;
         OrderProgress.Update(ret.Order);
         await unitOfWork.SaveChangesAsync(ct);
+        await money.ReturnedAsync(ret, ct);
         await orders.RestockAsync(restock, ct);
         await TellAsync(ret, ret.Status switch { ReturnStatus.Refunded => "Refund on its way", ReturnStatus.Exchanged => "Your exchange is on its way", _ => "We’re printing it again" },
             ret.Status == ReturnStatus.Refunded ? $"{ret.RefundAmount:0} EGP goes back to you." : ret.Code, ct);

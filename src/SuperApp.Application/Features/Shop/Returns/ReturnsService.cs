@@ -3,6 +3,8 @@ using SuperApp.Application.Abstractions.Notifications;
 using SuperApp.Application.Abstractions.Persistence;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Common.Exceptions;
+using SuperApp.Application.Features.Money;
+using SuperApp.Application.Features.Shop.Orders;
 using SuperApp.Domain.Entities.Shipping;
 using SuperApp.Domain.Entities.Shop;
 using SuperApp.Domain.Enums;
@@ -10,8 +12,9 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Shop.Returns;
 
 /// <summary>
-/// Returns for customers (API §4.3, FR-RET-01..03): within 14 days of delivery; store products can be refunded or exchanged
-/// ("changed my mind" pays the return delivery); printed items only for a defect or a wrong print (reprint or refund).
+/// Returns for customers (owner's decisions, 2026-10-27): only an item with a problem (damaged, wrong item, not as described),
+/// within 24 hours of delivery; store products can be refunded or exchanged, printed items reprinted or refunded. Super App's
+/// courier collects it and the store bears the cost; the store's earning on the items stays held while the return is open.
 /// One return is decided by one side: a store for its products, Super App for the official store and printed items.
 /// </summary>
 public interface IReturnsService
@@ -30,10 +33,15 @@ public sealed class ReturnsService(
     IUnitOfWork unitOfWork,
     INotifier notifier,
     IAuditLogger audit,
+    OrderPayments money,
     ICurrentUser currentUser,
     IValidator<ReturnRequestDto> rules) : IReturnsService
 {
-    public const int Days = 14;
+    /// <summary>How long after delivery an item can be returned (the store's earning is held until then).</summary>
+    public static readonly TimeSpan Window = Ledger.ReturnWindow;
+
+    /// <summary>The reasons a return is accepted for: something is wrong with the item.</summary>
+    public static readonly ReturnReason[] ProblemReasons = [ReturnReason.FaultyOrDamaged, ReturnReason.WrongItemOrPrint, ReturnReason.NotAsDescribed];
 
     public async Task<IReadOnlyList<ReturnableItemDto>> ReturnableAsync(string orderCode, CancellationToken ct)
     {
@@ -48,6 +56,10 @@ public sealed class ReturnsService(
         var order = await returns.OrderAsync(me, request.OrderCode, ct) ?? throw new NotFoundException("Order not found.");
         var allowed = (await returns.ItemsAsync(order.Id, ct)).ToDictionary(i => i.OrderItemId);
         var reason = Enum.Parse<ReturnReason>(request.Reason, true);
+        if (!ProblemReasons.Contains(reason))
+        {
+            throw new BusinessRuleException("Returns are only for an item with a problem: damaged, the wrong item, or not as described.", "problem_only");
+        }
         var items = request.Items.Select(r => Check(r, order, allowed, reason)).ToList();
         if (items.Select(i => DeciderOf(i.Item)).Distinct().Count() > 1)
         {
@@ -57,12 +69,13 @@ public sealed class ReturnsService(
         var ret = new ReturnRequest
         {
             Code = await returns.NewCodeAsync(ct), OrderId = order.Id, CustomerId = me, Reason = reason, Detail = request.Detail?.Trim(), Status = ReturnStatus.Requested,
-            CustomerPaysDelivery = reason == ReturnReason.ChangedMyMind,
+            CustomerPaysDelivery = false,
             RefundAmount = Math.Round(items.Where(i => i.Line.Action == ReturnAction.Refund).Sum(i => i.Item.UnitPrice * i.Line.Qty) * share, 2),
             Items = items.Select(i => i.Line).ToList(),
         };
         returns.Add(ret);
         await unitOfWork.SaveChangesAsync(ct);
+        await money.HoldForReturnAsync(items.Select(i => i.Item), ct);
         await TellDeciderAsync(ret, items[0].Item, ct);
         await audit.LogAsync(AuditSystem.Site, "return.requested", $"Return {ret.Code} for {order.Code}: {reason}", "Return", ret.Code, ct: ct);
         return await GetAsync(ret.Code, ct);
@@ -82,18 +95,14 @@ public sealed class ReturnsService(
         var item = order.Items.FirstOrDefault(i => i.Id == r.OrderItemId) ?? throw new NotFoundException("This item is not part of the order.");
         if (!allowed.TryGetValue(item.Id, out var ok))
         {
-            throw item.Status == OrderItemStatus.Delivered && item.DeliveredAt >= DateTime.UtcNow.AddDays(-Days)
+            throw item.Status == OrderItemStatus.Delivered && item.DeliveredAt >= DateTime.UtcNow - Window
                 ? new BusinessRuleException("This item is already being returned.", "qty_left")
-                : new BusinessRuleException("Returns are possible within 14 days of delivery.", "outside_window");
+                : new BusinessRuleException("Returns are possible within 24 hours of delivery.", "outside_window");
         }
         var action = Enum.Parse<ReturnAction>(r.Action, true);
         if (r.Qty > ok.QtyLeft)
         {
             throw new BusinessRuleException($"You can return up to {ok.QtyLeft} of this item.", "qty_left");
-        }
-        if (item.Kind == OrderItemKind.PrintedDesign && reason is not (ReturnReason.FaultyOrDamaged or ReturnReason.WrongItemOrPrint))
-        {
-            throw new BusinessRuleException("Printed items are made for you, so they come back only for a print defect or a wrong print.", "printed_defect_only");
         }
         if (!ok.Actions.Contains(action.ToString()))
         {
@@ -131,7 +140,7 @@ public sealed class ReturnRequestDtoValidator : AbstractValidator<ReturnRequestD
     public ReturnRequestDtoValidator()
     {
         RuleFor(x => x.OrderCode).NotEmpty().MaximumLength(12);
-        RuleFor(x => x.Reason).IsEnumName(typeof(ReturnReason), caseSensitive: false).WithMessage("Choose a reason.");
+        RuleFor(x => x.Reason).IsEnumName(typeof(ReturnReason), caseSensitive: false).WithMessage("Choose what is wrong with the item.");
         RuleFor(x => x.Detail).MaximumLength(600);
         RuleFor(x => x.Items).NotEmpty().Must(i => i.Count <= 20 && i.Select(x => x.OrderItemId).Distinct().Count() == i.Count).WithMessage("Each item once.");
         RuleForEach(x => x.Items).ChildRules(i =>

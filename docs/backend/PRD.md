@@ -301,7 +301,7 @@ Level-ups are immediate. A drop below a level's requirements gives a **grace mon
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-RET-01 | Customers request a return within **14 days** of delivery from the order page | Must |
+| FR-RET-01 | Customers request a return within **24 hours** of delivery from the order page, only for an item with a problem (damaged, wrong item, not as described); the store pays the refund and the return delivery (owner's decision, 2026-10-27) | Must |
 | FR-RET-02 | Store products: return or exchange (another size/colour); "changed my mind" pays the return delivery | Must |
 | FR-RET-03 | Printed designs: reprint or refund **only** for a defect or a wrong print (made to order) | Must |
 | FR-RET-04 | The seller / store owner (or Super App for the official store and printed items) accepts or rejects within 2 working days; then a courier pickup is booked | Must |

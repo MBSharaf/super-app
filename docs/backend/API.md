@@ -306,8 +306,8 @@ A rejected scan is a normal outcome, so it answers **200** with `result: "reject
 ## 4.3 Returns — `ReturnsController`
 | Method | Path | Purpose | Access | Notes |
 |---|---|---|---|---|
-| GET | `/orders/{code}/returnable` | Items still inside 14 days and what is allowed (return / exchange / reprint) | Customer (own) | |
-| POST | `/returns` | Request `{ orderCode, items[{ orderItemId, qty, action, newSize? }], reason, detail, photos[] }` | Customer | 422 outside 14 days · 422 "changed my mind" on a printed item |
+| GET | `/orders/{code}/returnable` | Items still inside 24 hours of delivery and what is allowed (return / exchange / reprint) | Customer (own) | |
+| POST | `/returns` | Request `{ orderCode, items[{ orderItemId, qty, action, newSize? }], reason, detail, photos[] }` | Customer | reason: FaultyOrDamaged, WrongItemOrPrint or NotAsDescribed (422 `problem_only` otherwise) · 422 `outside_window` after 24 hours |
 | GET | `/returns/mine` · `/returns/{code}` | Status | Customer (own) | |
 | GET | `/seller/returns` · `/partner/returns` | Returns to decide | Seller · Owner | |
 | POST | `/seller/returns/{code}/approve` · `/reject` | Decide (reject needs a reason) | Seller · Owner | books the courier pickup |

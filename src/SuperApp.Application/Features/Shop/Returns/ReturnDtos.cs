@@ -9,7 +9,7 @@ public sealed record ReturnableItemDto(long OrderItemId, string Kind, string Tit
 
 public sealed record ReturnItemRequest(long OrderItemId, int Qty, string Action, string? NewSize, string? NewColor);
 
-/// <summary>Reason: WrongSize, FaultyOrDamaged, WrongItemOrPrint, NotAsDescribed, ChangedMyMind.</summary>
+/// <summary>Reason: FaultyOrDamaged, WrongItemOrPrint, NotAsDescribed (WrongSize and ChangedMyMind are refused: returns are for an item with a problem).</summary>
 public sealed record ReturnRequestDto(string OrderCode, IReadOnlyList<ReturnItemRequest> Items, string Reason, string? Detail);
 
 public sealed record ReturnLineDto(long OrderItemId, string Title, string Size, string Color, int Qty, string Action, string? NewSize, string? NewColor, PhotoDto? Image);

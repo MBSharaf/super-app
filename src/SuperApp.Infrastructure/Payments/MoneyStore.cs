@@ -130,12 +130,19 @@ public sealed class MoneyReleaseJob(IServiceScopeFactory scopes, IHostEnvironmen
         var entries = db.Set<LedgerEntry>();
         var due = await entries.Where(e => e.Bucket == LedgerBucket.Pending && e.Kind != LedgerKind.ReleaseFromHold)
             .GroupBy(e => new { e.WalletId, e.RefType, e.RefId })
-            .Where(g => g.Max(e => e.AvailableAt) <= now && g.Sum(e => e.Amount) > 0
+            .Where(g => g.Max(e => e.AvailableAt) <= now && g.Sum(e => e.Amount) != 0
                 && !entries.Any(r => r.Kind == LedgerKind.ReleaseFromHold && r.WalletId == g.Key.WalletId && r.RefType == g.Key.RefType && r.RefId == g.Key.RefId))
             .Select(g => new { g.Key.WalletId, g.Key.RefType, g.Key.RefId, Amount = g.Sum(e => e.Amount) }).Take(500).ToListAsync(ct);
-        foreach (var d in due)
+        var released = 0;
+        // Earnings first, then debts (a store's share of a return it couldn't pay at once) once its available balance covers them
+        foreach (var d in due.OrderByDescending(d => d.Amount))
         {
             var wallet = await db.Set<Wallet>().FirstAsync(w => w.Id == d.WalletId, ct);
+            if (d.Amount < 0 && wallet.AvailableBalance < -d.Amount)
+            {
+                continue;
+            }
+            released++;
             var group = Guid.NewGuid();
             entries.Add(new LedgerEntry { WalletId = d.WalletId, Amount = -d.Amount, Bucket = LedgerBucket.Pending, Kind = LedgerKind.ReleaseFromHold, RefType = d.RefType, RefId = d.RefId, GroupId = group, CreatedAt = now });
             entries.Add(new LedgerEntry { WalletId = d.WalletId, Amount = d.Amount, Bucket = LedgerBucket.Available, Kind = LedgerKind.ReleaseFromHold, RefType = d.RefType, RefId = d.RefId, GroupId = group, CreatedAt = now });
@@ -143,6 +150,6 @@ public sealed class MoneyReleaseJob(IServiceScopeFactory scopes, IHostEnvironmen
             wallet.AvailableBalance += d.Amount;
         }
         await db.SaveChangesAsync(ct);
-        return due.Count;
+        return released;
     }
 }

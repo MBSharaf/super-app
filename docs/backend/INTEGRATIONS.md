@@ -143,7 +143,7 @@ Egyptian gateways the owner can compare: **Paymob**, **Fawry (FawryPay)**, **Kas
 | **Status webhooks** (picked up, out for delivery, delivered, refused, returned) | customers and sellers are told automatically | `/webhooks/courier/{provider}` |
 | Tracking API (fallback when a webhook is missed) | reconciliation job | background |
 | **Cash on delivery** + **COD remittance report** | most shop orders in Egypt are COD | Finance |
-| **Reverse pickup** (returns) | 14-day returns and exchanges | Returns |
+| **Reverse pickup** (returns) | Returns and exchanges (an item with a problem, within 24 hours; the store pays) | Returns |
 | Cancel shipment | order cancelled after packing | Admin |
 | Rates / zones by governorate | delivery fee and promises | Checkout |
 | Sandbox | testing | testing |

@@ -23,12 +23,12 @@ public sealed class ReturnRepository(AppDbContext db) : IReturnRepository
 
     public async Task<IReadOnlyList<ReturnableItemDto>> ItemsAsync(long orderId, CancellationToken ct)
     {
-        var since = DateTime.UtcNow.AddDays(-ReturnsService.Days);
+        var since = DateTime.UtcNow - ReturnsService.Window;
         var returned = await ReturnedQtyAsync(orderId, ct);
         var rows = await OrderRepository.ItemRows(db.Set<OrderItem>().Where(i => i.OrderId == orderId && i.Status == OrderItemStatus.Delivered && i.DeliveredAt >= since)).ToListAsync(ct);
         var delivered = await db.Set<OrderItem>().Where(i => i.OrderId == orderId).ToDictionaryAsync(i => i.Id, i => i.DeliveredAt, ct);
         return rows.Select(r => new ReturnableItemDto(r.Id, r.Kind == OrderItemKind.PrintedDesign ? "design" : "product", r.Title, r.Size, r.Color, r.Qty - returned.GetValueOrDefault(r.Id),
-                r.UnitPrice, delivered[r.Id]!.Value.AddDays(ReturnsService.Days),
+                r.UnitPrice, delivered[r.Id]!.Value + ReturnsService.Window,
                 r.Kind == OrderItemKind.PrintedDesign ? ["Reprint", "Refund"] : ["Refund", "Exchange"], OrderRepository.Image(r)))
             .Where(i => i.QtyLeft > 0).ToList();
     }
