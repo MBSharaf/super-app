@@ -1,7 +1,9 @@
 /**
  * The owner's automation (n8n) on the demo site (GitHub Pages, no server): every new store order, pitch booking, weekly
  * package, published game and request to join a game is sent with all its details to the links in
- * `SA.config.automation` (orders → `orders`; bookings, packages and games → `bookings`). In API mode the server sends
+ * `SA.config.automation` (orders → `orders`; bookings, packages and games → `bookings`). Fantasy: a new private league
+ * (`league.created`), someone joining a league (`league.member.joined`) and a finished gameweek (`gameweek.finished`, one
+ * per league with every member's rank and points and the gameweek's top three) → `fantasy` (the orders link). In API mode the server sends
  * these events itself (its webhooks), so nothing is sent from the browser there.
  *
  * Sent as JSON. The links are ngrok tunnels: a POST from a browser goes through (ngrok's warning page is only shown for
@@ -127,9 +129,10 @@
     const m = SA.core.store.get().publishedMatches.find((x) => x.id === out.id) || {};
     const b = S.bookings.getSync(m.bookingId) || {};
     send(cfg().bookings, 'game.published', {
-      game: { id: m.id, date: m.date, startTime: hh(m.hour), duration: m.duration, playersNeeded: m.total, playersAlready: m.filled, spotsLeft: m.total - m.filled,
+      game: { id: m.id, status: m.closed ? 'closed' : 'open', date: m.date, startTime: hh(m.hour), duration: m.duration, endTime: hh(m.hour + m.duration), playersNeeded: m.total, playersAlready: m.filled, spotsLeft: m.total - m.filled,
         level: m.level, gender: m.gender, type: m.type, pricePerPlayer: m.pricePerPlayer, needsGoalkeeper: !!m.needsGK, notes: m.notes, autoAccept: m.autoAccept,
-        postedAt: iso(m.postedAt), link: link(`/players/${m.id}`) },
+        postedAt: iso(m.postedAt), link: link(`/players/${m.id}`),
+        totalCost: b.total || null, currency: 'EGP', players: (m.participants || []).map((x) => ({ name: x.name, role: x.role })) },
       booking: b.id ? bookingOf(b) : null, ...pitchOf(m.pitchId), host: customer(),
     });
     return out;
@@ -147,6 +150,88 @@
         ...(m.pitch?.id || m.pitchId ? pitchOf(m.pitch?.id || m.pitchId) : { pitch: { name: r.pitchName }, partner: null }), player: customer(),
       });
       return r;
+    };
+  }
+
+  /* ---------- Fantasy: a new league, someone joins a league, a gameweek is finished (→ the orders link) ---------- */
+
+  const F = S.fantasy;
+  if (F) {
+    const fantasyUrl = () => cfg().fantasy || cfg().orders;
+    /** Demo rivals have only a name: a stable fictional id and an example.com address (every person in demo data is fictional) */
+    const slug = (name) => String(name || 'player').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '');
+    const personOf = (row) => {
+      if (row.isMe) { const c = customer(); return { userId: c.id, name: c.name, email: c.email }; }
+      return { userId: `demo-${slug(row.name)}`, name: row.name, email: `${slug(row.name)}@example.com` };
+    };
+    const competition = () => { const i = F.leagueInfo(); return { key: i.key, name: i.label }; };
+    const leagueOf = (g) => ({
+      leagueId: g.id, leagueName: g.name, type: g.members ? 'private' : g.kind === 'pass' ? 'prize' : 'official', code: g.code || null,
+      owner: g.owner || null, startGameweek: g.startGW || g.from || 1, membersCount: g.members ? g.members.length : g.participants || null,
+      competition: competition(), link: link(`/fantasy/league/${g.id}`),
+    });
+    /** The leagues this player is in: private groups, the season league (with a team) and the prize leagues entered */
+    const myLeagues = () => {
+      const joined = F.officialLeagues().filter((l) => l.joined);
+      return [...F.privateGroups(), ...joined];
+    };
+
+    const createGroup = F.createGroup;
+    F.createGroup = async (name) => {
+      const g = await createGroup(name);
+      const me = customer();
+      send(fantasyUrl(), 'league.created', { league: leagueOf(g), createdBy: { userId: me.id, name: me.name, email: me.email }, createdAt: new Date().toISOString() });
+      return g;
+    };
+
+    const memberJoined = (g) => {
+      const me = customer();
+      const t = F.totals();
+      const gw = F.meta().gw;
+      send(fantasyUrl(), 'league.member.joined', {
+        league: leagueOf(g),
+        member: { userId: me.id, name: me.name, email: me.email, leagueId: g.id, leagueName: g.name, gameweekId: gw, gameweekPoints: t.gwPts || 0, totalPoints: t.total || 0,
+          teamName: F.team()?.name || null },
+        joinedAt: new Date().toISOString(),
+      });
+    };
+    const joinGroupByCode = F.joinGroupByCode;
+    F.joinGroupByCode = async (code) => {
+      const g = await joinGroupByCode(code);
+      memberJoined(F.group(g.id) || g);
+      return g;
+    };
+    const joinOfficial = F.joinOfficial;
+    F.joinOfficial = async (id) => {
+      const out = await joinOfficial(id);
+      const g = F.officialLeagues().find((l) => l.id === id);
+      if (g) memberJoined(g);
+      return out;
+    };
+
+    /** One event per league the player is in: every member with rank and points, and the gameweek's top three */
+    const gameweekFinished = (gw) => myLeagues().forEach((l) => {
+      const g = F.group(l.id);
+      if (!g) return;
+      const rows = g.standings || [];
+      const byGw = rows.slice().sort((a, b) => b.gw - a.gw);
+      const gwRank = new Map(byGw.map((r, i) => [r, i + 1]));
+      const lg = { ...leagueOf(g), membersCount: g.members ? rows.length : g.participants || rows.length };
+      const participants = rows.map((r) => ({
+        ...personOf(r), leagueId: lg.leagueId, leagueName: lg.leagueName, gameweekId: gw,
+        rank: r.rank, points: r.total, totalPoints: r.total, gameweekRank: gwRank.get(r), gameweekPoints: r.gw, teamName: r.team || null,
+      }));
+      const winners = byGw.slice(0, 3).map((r, i) => ({ place: i + 1, ...personOf(r), gameweekPoints: r.gw, totalPoints: r.total, teamName: r.team || null }));
+      send(fantasyUrl(), 'gameweek.finished', {
+        gameweek: gw, gameweekId: gw, competition: competition(), league: lg, finishedAt: new Date().toISOString(),
+        participantsCount: participants.length, partialTable: !g.members, winners, participants,
+      });
+    });
+    const simulateGameweek = F.simulateGameweek;
+    F.simulateGameweek = async (...args) => {
+      const out = await simulateGameweek(...args);
+      gameweekFinished(out.gw);
+      return out;
     };
   }
 

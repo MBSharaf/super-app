@@ -21,10 +21,13 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   storeEnabled: (document.documentElement.dataset.store || 'on') === 'on',
   podEnabled: document.documentElement.dataset.pod === 'on',
   // The owner's automation (n8n): the demo site sends every new store order to `orders`, and every pitch booking, weekly
-  // package, published game and request to join a game to `bookings` (js/services/automation.js). The server sends its own.
+  // package, published game and request to join a game to `bookings`, and fantasy events to `fantasy` (js/services/automation.js).
+  // The server sends its own.
   automation: {
     orders: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
     bookings: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/BOOKING-created',
+    // Fantasy (league.created, league.member.joined, gameweek.finished) goes to the orders link too (owner's request, 2026-10-31)
+    fantasy: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
   },
   // WhatsApp support — paste the chat link here (e.g. https://wa.me/20XXXXXXXXXX). Empty = not live yet.
   whatsapp: { url: '', hours: 'Daily 9 AM – 1 AM' },

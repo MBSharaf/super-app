@@ -120,6 +120,26 @@ All answers have the same shape: `{ success, message, data, errors, meta }`.
 
 ---
 
+## 3. The demo site (GitHub Pages, no server)
+
+The demo site has no server, so the page itself posts each event to the links in `SA.config.automation`
+(`js/core/namespace.js`, sender `js/services/automation.js`). The body is flat JSON (not the server's envelope above):
+`{ "event": "...", "source": "demo-site", "site": "...", "sentAt": "...", ...details }`. In n8n, switch on
+`{{ $json.body.event }}`. Nothing is sent from the browser in API mode.
+
+| Link | `event` | When | Main fields |
+|---|---|---|---|
+| `orders` | `order.created` | A store order | `order`, `customer`, `address`, `stores[]` (items, commission, earning), `items[]` |
+| `bookings` | `booking.created` | A pitch booking | `booking`, `pitch`, `partner`, `customer` |
+| `bookings` | `package.created` | A weekly package | `package`, `sessions[]`, `pitch`, `partner`, `customer` |
+| `bookings` | `game.published` | A host publishes a game | `game` (times, players needed / already / spots left, level, gender, type, price per player, total cost, notes, `players[]`), `booking`, `pitch`, `partner`, `host` |
+| `bookings` | `game.join_requested` | A player asks to join a game | `request`, `game`, `pitch`, `partner`, `player` |
+| `fantasy` (= orders link) | `league.created` | A player creates a private league | `league` (`leagueId`, `leagueName`, `type`, `code`, `owner`, `startGameweek`, `competition`, `link`), `createdBy` (`userId`, `name`, `email`) |
+| `fantasy` | `league.member.joined` | A player joins a private league by code or enters a prize league | `league`, `member` (`userId`, `name`, `email`, `leagueId`, `leagueName`, `gameweekId`, `gameweekPoints`, `totalPoints`, `teamName`) |
+| `fantasy` | `gameweek.finished` | A gameweek is finished — one event per league the player is in | `gameweek`, `gameweekId`, `competition`, `league`, `winners[]` (top 3 by gameweek points: `place`, `userId`, `name`, `email`, `gameweekPoints`, `totalPoints`), `participants[]` (every member: `userId`, `name`, `email`, `leagueId`, `leagueName`, `gameweekId`, `rank` and `points` = place and points in the league table, `totalPoints`, `gameweekRank`, `gameweekPoints`, `teamName`), `partialTable` (true for the big official leagues: only the top 10 and the player) |
+
+Demo rivals are fictional: their `userId` is `demo-<name>` and their email is `<name>@example.com`.
+
 ## The server address
 
 Right now the Super App server runs on the owner's computer. For n8n to reach it, and for Super App to reach n8n:
