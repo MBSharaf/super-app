@@ -21,6 +21,7 @@
   SA.pages.cart = {
     title: 'Cart — Super App Shop',
     async render() {
+      await S.liveShop?.started;
       const t = S.shop.totals();
       if (!t.lines.length) {
         const rec = await S.shop.recommended(4);
@@ -85,7 +86,8 @@
   /* ---------------- Checkout ---------------- */
   SA.pages.checkout = {
     title: 'Checkout — Super App Shop',
-    render() {
+    async render() {
+      await S.liveShop?.started;
       const t = S.shop.totals();
       if (!t.lines.length) return `<div class="container section">${c.empty({ icon: 'cart', title: 'Nothing to check out', text: 'Your cart is empty.', action: '<a class="btn btn-primary" href="#/shop">Go to shop</a>' })}</div>`;
       const u = S.user.me();

@@ -121,7 +121,7 @@ public sealed class WebhookDispatcher(IServiceScopeFactory scopes, IHostEnvironm
             {
                 await RunOnceAsync(stoppingToken);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
                 logger.LogWarning(ex, "Webhook dispatch failed; trying again shortly.");
             }

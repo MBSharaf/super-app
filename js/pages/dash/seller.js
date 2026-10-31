@@ -50,7 +50,18 @@
       const top = live.slice().sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 5);
       const sos = storeOrders(s).filter((o) => o.createdAt >= since && !['cancelled', 'returned'].includes(o.status));
       const storeUnits = sos.reduce((t, o) => t + o.units, 0), storeNet = Math.round(sos.reduce((t, o) => t + o.net, 0));
-      const body = `
+      // Print on demand off: no levels, designs or "printed" numbers — own products only, held 24 hours after delivery
+      const pod = SA.config.podEnabled;
+      const body = pod ? podBody() : `
+        <div class="dash-grid g-1-1">
+          <section class="dash-card"><h2 class="h4">Wallet</h2>
+            <dl class="kv" style="margin-top:12px"><div><dt>Available to withdraw</dt><dd class="num text-turf">${money(e.available)}</dd></div><div><dt>On hold (until 24 hours after delivery)</dt><dd class="num">${money(e.pending)}</dd></div><div><dt>Earned so far</dt><dd class="num">${money(e.lifetime)}</dd></div></dl>
+            <a class="btn btn-outline btn-sm" href="#/dash/seller/wallet" style="margin-top:14px">${icon('wallet', 14)} Open wallet</a></section>
+          <section class="dash-card"><h2 class="h4">Your store</h2>
+            <dl class="kv" style="margin-top:12px"><div><dt>Items sold (30 days)</dt><dd class="num">${fmtNum(storeUnits)}</dd></div><div><dt>Earned (30 days)</dt><dd class="num">${money(storeNet)}</dd></div><div><dt>Orders (30 days)</dt><dd class="num">${fmtNum(sos.length)}</dd></div></dl>
+            <div class="row" style="--gap:8px;margin-top:14px"><a class="btn btn-primary btn-sm" href="#/dash/seller/products">${icon('plus', 14)} Add product</a><a class="btn btn-outline btn-sm" href="#/dash/seller/orders?kind=store">Orders</a></div></section>
+        </div>`;
+      function podBody() { return `
         <div class="dash-grid g-1-1">
           ${SA.ui.seller.levelCard(s)}
           <section class="dash-card"><h2 class="h4">Wallet</h2>
@@ -72,8 +83,8 @@
             ${sos.length ? `<p class="xs muted" style="margin-top:6px">${icon('bag', 12)} ${sos.length} order${sos.length > 1 ? 's' : ''} for your own products in 30 days · <a class="link" href="#/dash/seller/orders?kind=store">see them</a></p>` : ''}
             ${orders.length ? `<ul class="sl-orders">${orders.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.title)}</b><span class="xs muted" style="display:block">${esc(o.color)} · ${esc(o.size)} · ${timeAgo(o.placedAt)} · ${esc(o.customer.city || '')}</span></span><span class="sl-o-r">${status(o.status)}<b class="num xs">${o.status === 'refused' ? '—' : `+${money(o.profit)}`}</b></span></li>`).join('')}</ul>` : `<p class="small soft" style="margin-top:10px">No orders yet. Share your store link to get the first one.</p>`}</section>
         </div>
-        <section class="dash-card"><h2 class="h4">Seller levels</h2><div style="margin-top:12px">${SA.ui.seller.ladder(l.index)}</div></section>`;
-      const gate = s.status === 'pending' ? `<div class="notice gold">${icon('clock', 18)}<span><b>Waiting for approval.</b> The Super App team checks new sellers within one working day. Your designs and products go live once you’re approved.</span></div>` : s.status === 'rejected' ? `<div class="notice blaze">${icon('alert', 18)}<span><b>Not approved.</b> ${esc(s.reviewReason || '')} Contact Help & support to appeal.</span></div>` : '';
+        <section class="dash-card"><h2 class="h4">Seller levels</h2><div style="margin-top:12px">${SA.ui.seller.ladder(l.index)}</div></section>`; }
+      const gate = s.status === 'pending' ? `<div class="notice gold">${icon('clock', 18)}<span><b>Waiting for approval.</b> The Super App team checks new sellers within one working day. ${pod ? 'Your designs and products go live once you’re approved.' : 'You can add products once you’re approved.'}</span></div>` : s.status === 'rejected' ? `<div class="notice blaze">${icon('alert', 18)}<span><b>Not approved.</b> ${esc(s.reviewReason || '')} Contact Help & support to appeal.</span></div>` : '';
       return C.layout('seller', { title: `Hi, ${esc(D().me().name.split(' ')[0])}`, subtitle: `${esc(s.name)} · superapp.eg/s/${esc(s.handle)}`, actions: `<a class="btn btn-outline" href="#/s/${esc(s.handle)}" target="_blank" rel="noopener">${icon('eye', 15)} View store</a>`, body: gate + body });
     },
     mount(el) {

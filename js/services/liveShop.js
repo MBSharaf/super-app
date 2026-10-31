@@ -553,6 +553,7 @@
     await Promise.all([loadCart().catch(() => null), loadWishes().catch(() => null)]);
     SA.services.session?.subscribe?.(() => { loadCart().catch(() => null); loadWishes().catch(() => null); });
   };
-  start();
-  SA.services.liveShop = { sellerReady, factoryReady, loadCart, SELLER, SELLER_ACCOUNT, FACTORY };
+  // The cart and checkout pages wait for this on a fresh load (otherwise they draw an empty cart)
+  const started = start().catch(() => null);
+  SA.services.liveShop = { sellerReady, factoryReady, loadCart, started, SELLER, SELLER_ACCOUNT, FACTORY };
 })(window.SA);

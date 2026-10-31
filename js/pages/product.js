@@ -24,7 +24,7 @@
           <div class="pdp-info">
             <p class="small muted">${p.pod ? esc(p.productName) : esc(p.brand)}${p.seller && !p.seller.official ? ` · ${p.pod ? 'Designed by' : 'Sold by'} <a class="link" href="${p.seller.href}">${esc(p.seller.name)}</a>` : ''}</p>
             <h1 class="h2" style="margin-top:6px">${esc(p.name)}</h1>
-            <button type="button" data-to-reviews class="row small" style="margin-top:12px;--gap:8px">${c.stars(p.rating, 15)}<b>${p.rating.toFixed(1)}</b><span class="muted">${p.reviews} reviews</span></button>
+            <button type="button" data-to-reviews class="row small" style="margin-top:12px;--gap:8px">${p.reviews ? `${c.stars(p.rating, 15)}<b>${p.rating.toFixed(1)}</b><span class="muted">${p.reviews} reviews</span>` : '<span class="muted">No reviews yet</span>'}</button>
             <div class="pdp-price">${c.price(p.price, p.was)}${p.discount ? `<span class="small" style="color:var(--turf)">You save ${money(p.was - p.price)}</span>` : ''}</div>
             <p class="soft" style="margin-top:14px">${esc(p.desc)}</p>
             ${[...new Set([...(p.tags || []), ...(p.seller?.tags || [])].map((t) => String(t).toLowerCase()))].length ? `<div class="tag-row">${[...new Set([...(p.tags || []), ...(p.seller?.tags || [])].map((t) => String(t).toLowerCase()))].slice(0, 8).map((t) => `<a class="tag-chip" href="#/shop?tag=${encodeURIComponent(t)}" data-tag="${esc(t)}">#${esc(t)}</a>`).join('')}</div>` : ''}
@@ -49,8 +49,8 @@
             </ul>` : `<p class="small" style="margin-top:14px;color:${lowStock ? 'var(--blaze-2)' : 'var(--turf)'}"><b>${p.soldOut ? 'Sold out — check back soon' : lowStock ? `Only ${p.stock} left in stock` : 'In stock'}</b>${p.service ? ' · booked after checkout' : ' · ships from Cairo'}</p>
             <ul class="assurance small pdp-assure">
               <li>${icon('truck', 16)} ${p.service ? 'We’ll call within 24 hours to schedule' : 'Delivery in 1–3 days · free over 1,500 EGP'}</li>
-              <li>${icon('refresh', 16)} 14-day free returns on unworn items</li>
-              <li>${icon('shield', 16)} 100% original — authorised retailer</li>
+              <li>${icon('refresh', 16)} A problem with the item? Return it within 24 hours of delivery</li>
+              <li>${icon('shield', 16)} ${p.seller && !p.seller.official ? 'Checked by Super App before it went on sale' : '100% original — authorised retailer'}</li>
             </ul>`}
             <details class="pdp-details" open><summary>Specifications</summary><dl class="kv">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></details>
             ${p.sizeChart ? `<details class="pdp-details"><summary>Size chart (cm)</summary>${SA.ui.sizeChart(p)}</details>` : ''}
@@ -131,19 +131,19 @@
         el.querySelectorAll('[data-size]').forEach((x) => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-checked', x === b); });
       }));
       el.querySelectorAll('[data-q]').forEach((b) => b.addEventListener('click', () => { sel.qty = Math.max(1, Math.min(10, sel.qty + +b.dataset.q)); el.querySelector('[data-qty]').textContent = sel.qty; }));
-      const add = () => {
+      const add = async () => {
         if (!sel.size) {
           el.querySelector('[data-size-err]').textContent = 'Choose a size to continue.';
           el.querySelector('.size-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
           el.querySelector('.size-grid').classList.add('shake'); setTimeout(() => el.querySelector('.size-grid').classList.remove('shake'), 400);
           return false;
         }
-        try { const r = S.shop.addToCart(p.id, { size: sel.size, color: sel.color }, sel.qty); sel.added = r.added; if (r.limited) SA.ui.overlay.toast(`Only ${p.stock} in stock — we added what’s left.`, { type: 'info' }); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return false; }
+        try { const r = await S.shop.addToCart(p.id, { size: sel.size, color: sel.color }, sel.qty); sel.added = r.added; if (r.limited) SA.ui.overlay.toast(`Only ${p.stock} in stock — we added what’s left.`, { type: 'info' }); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return false; }
         SA.core.motion.flyTo(main);
         return true;
       };
-      el.querySelectorAll('[data-add]').forEach((b) => b.addEventListener('click', () => { if (add()) { const html0 = b.innerHTML; b.classList.add('is-added'); b.innerHTML = 'Added to cart ✓'; setTimeout(() => { b.classList.remove('is-added'); b.innerHTML = html0; }, 1600); } if (sel.size && !sel.limitedShown) SA.ui.overlay.toast(`Added ${sel.added ?? sel.qty} × ${esc(p.name)}`, { action: 'View cart', onAction: () => SA.core.router.go('/cart') }); }));
-      el.querySelector('[data-buynow]').addEventListener('click', () => { if (add()) SA.core.router.go('/checkout'); });
+      el.querySelectorAll('[data-add]').forEach((b) => b.addEventListener('click', async () => { if (await add()) { const html0 = b.innerHTML; b.classList.add('is-added'); b.innerHTML = 'Added to cart ✓'; setTimeout(() => { b.classList.remove('is-added'); b.innerHTML = html0; }, 1600); } if (sel.size && !sel.limitedShown) SA.ui.overlay.toast(`Added ${sel.added ?? sel.qty} × ${esc(p.name)}`, { action: 'View cart', onAction: () => SA.core.router.go('/cart') }); }));
+      el.querySelector('[data-buynow]').addEventListener('click', async () => { if (await add()) SA.core.router.go('/checkout'); });
       el.querySelector('[data-sizeguide]')?.addEventListener('click', () => SA.ui.overlay.open(p.sizeChart ? {
         title: 'Size chart', subtitle: `${p.productName} · in centimetres. Lay a T-shirt you like flat and compare.`, body: SA.ui.sizeChart(p),
       } : {

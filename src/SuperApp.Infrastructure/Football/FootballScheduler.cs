@@ -50,7 +50,7 @@ public sealed class FootballScheduler(IServiceScopeFactory scopes, IHostEnvironm
                 await sync.SyncAsync(competition, ct);
             }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (!ct.IsCancellationRequested)
         {
             logger.LogError(ex, "Scheduled football sync failed");
         }

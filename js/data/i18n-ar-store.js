@@ -2,6 +2,14 @@
 (function (SA) {
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
+    /* ---------- R6.8 browser pass ---------- */
+    'A problem with the item? Return it within 24 hours of delivery': 'فيه مشكلة في المنتج؟ رجّعه خلال 24 ساعة من التوصيل',
+    'Checked by Super App before it went on sale': 'سوبر آب راجعه قبل ما يتعرض للبيع',
+    'No reviews yet': 'مفيش تقييمات لسه',
+    'On hold (until 24 hours after delivery)': 'محجوز (لحد 24 ساعة بعد التوصيل)',
+    'Your store': 'متجرك',
+    'Orders (30 days)': 'الأوردرات (30 يوم)',
+    'You can add products once you’re approved.': 'تقدر تضيف منتجات أول ما تتقبل.',
     /* ---------- Paused parts ---------- */
     'The Super App store is coming soon': 'متجر سوبر آب جاي قريب',
     'We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.': 'بنجهّز المتجر وتصميمات البايعين والتوصيل. لحد ما يجهز، احجز ملعب أو انضم لماتش.',

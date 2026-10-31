@@ -85,7 +85,7 @@ public sealed class BroadcastScheduler(IServiceScopeFactory scopes, IHostEnviron
                 using var scope = scopes.CreateScope();
                 await scope.ServiceProvider.GetRequiredService<IPlatformService>().SendDueAsync(stoppingToken);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
                 logger.LogError(ex, "Sending scheduled broadcasts failed");
             }

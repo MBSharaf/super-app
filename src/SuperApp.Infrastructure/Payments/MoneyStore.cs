@@ -114,7 +114,7 @@ public sealed class MoneyReleaseJob(IServiceScopeFactory scopes, IHostEnvironmen
             {
                 await RunOnceAsync(stoppingToken);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
                 logger.LogWarning(ex, "Releasing held money failed; trying again shortly.");
             }
