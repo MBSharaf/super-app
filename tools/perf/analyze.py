@@ -122,33 +122,39 @@ def analyse(name, folder, monitor):
 
 
 def chart_series(s, out):
-    fig, ax = plt.subplots(figsize=(9, 3.6))
+    """Three stacked panels on one time axis: page load p95, active users, HTTP requests/s."""
     t = [p["t"] for p in s["series"]]
-    ax.plot(t, [p["page_p95"] or 0 for p in s["series"]], color="#FF5B14", label="Full page load p95 (ms)")
-    ax.set_xlabel("seconds"); ax.set_ylabel("ms"); ax.grid(alpha=.3)
-    ax2 = ax.twinx()
-    ax2.plot(t, [p["threads"] for p in s["series"]], color="#0D1411", ls="--", label="Active users")
-    ax2.plot(t, [p["rps"] for p in s["series"]], color="#2E7D5B", alpha=.8, label="HTTP requests/s")
-    ax2.set_ylabel("users  |  req/s")
-    h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=8)
-    ax.set_title(f"{s['name']}: response time, users and throughput over time", fontsize=10)
+    fig, axes = plt.subplots(3, 1, figsize=(9, 6), sharex=True)
+    panels = [("page_p95", "Full page load p95 (ms)", "#FF5B14", "-"),
+              ("threads", "Active users", "#0D1411", "--"),
+              ("rps", "HTTP requests / s", "#2E7D5B", "-")]
+    for ax, (key, label, color, ls) in zip(axes, panels):
+        ax.plot(t, [p[key] or 0 for p in s["series"]], color=color, ls=ls)
+        ax.set_ylabel(label, fontsize=8); ax.grid(alpha=.3); ax.set_ylim(bottom=0)
+    axes[-1].set_xlabel("seconds since start")
+    axes[0].set_title(f"{s['name']}: response time, users and throughput over time", fontsize=10)
     fig.tight_layout(); fig.savefig(out, dpi=110); plt.close(fig)
 
 
 def chart_stress(stress, out):
+    """Capacity curve: latency (top) and throughput + server CPU (bottom) against concurrent users."""
+    stress = sorted(stress, key=lambda s: s["threads_max"])
     c = [s["threads_max"] for s in stress]
-    fig, ax = plt.subplots(figsize=(9, 3.6))
-    ax.plot(c, [s["labels"]["T01 Home page - full load"]["p95"] for s in stress], "o-", color="#FF5B14", label="Full page load p95 (ms)")
-    ax.plot(c, [s["labels"]["T01 Home page - full load"]["p50"] for s in stress], "o--", color="#FF9A6B", label="Full page load median (ms)")
-    ax.set_xlabel("concurrent users (no think time)"); ax.set_ylabel("ms"); ax.grid(alpha=.3)
-    ax2 = ax.twinx()
-    ax2.plot(c, [s["rps"] for s in stress], "s-", color="#2E7D5B", label="HTTP requests/s")
-    ax2.plot(c, [s["server"]["cpu_avg"] or 0 for s in stress], "^-", color="#555", label="Server CPU % (1 core = 100)")
-    ax2.set_ylabel("req/s  |  CPU %")
-    h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=8)
-    ax.set_title("Stress: capacity curve", fontsize=10)
+    t01 = [s["labels"]["T01 Home page - full load"] for s in stress]
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(9, 6), sharex=True)
+    a1.plot(c, [x["p95"] for x in t01], "o-", color="#FF5B14", label="p95")
+    a1.plot(c, [x["p50"] for x in t01], "s--", color="#8A2E00", label="median")
+    a1.axhline(3000, color="#999", ls=":", lw=1); a1.text(c[0], 3100, "SLA 3,000 ms", fontsize=7, color="#555")
+    a1.set_ylabel("Full page load (ms)", fontsize=8); a1.grid(alpha=.3); a1.legend(fontsize=8, loc="upper left")
+    a2.plot(c, [s["rps"] for s in stress], "o-", color="#2E7D5B", label="HTTP requests/s")
+    a2.set_ylabel("HTTP requests / s", fontsize=8); a2.grid(alpha=.3); a2.set_ylim(bottom=0)
+    a3 = a2.twinx()
+    a3.plot(c, [s["server"]["cpu_avg"] or 0 for s in stress], "^:", color="#555", label="Server CPU % (100 = 1 core)")
+    a3.set_ylabel("Server CPU %", fontsize=8); a3.set_ylim(0, 100)
+    h1, l1 = a2.get_legend_handles_labels(); h2, l2 = a3.get_legend_handles_labels()
+    a2.legend(h1 + h2, l1 + l2, fontsize=8, loc="lower left")
+    a2.set_xlabel("concurrent users, no think time"); a2.set_xticks(c)
+    a1.set_title("Stress: capacity curve", fontsize=10)
     fig.tight_layout(); fig.savefig(out, dpi=110); plt.close(fig)
 
 

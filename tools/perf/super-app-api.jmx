@@ -4,7 +4,7 @@
   Run on the machine where the API runs (it needs SQL Server):
     1. Start the API with the read limit raised, or every user after 300 requests/min gets HTTP 429:
          set RateLimits__Read=1000000   (PowerShell: $env:RateLimits__Read=1000000)
-         dotnet run --project src/SuperApp.Api --launch-profile https
+         dotnet run (project src/SuperApp.Api, launch profile https)
     2. jmeter -n -t tools/perf/super-app-api.jmx -Jusers=50 -Jrampup=30 -Jduration=300 -l api.jtl -e -o api-report
   Properties: host (localhost), port (7254), protocol (https), users, rampup, duration, think_min, think_range, sla_api_ms (500).
 -->

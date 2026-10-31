@@ -28,4 +28,4 @@
 - *(empty)*
 
 ## Done
-- *(empty)*
+- 2026-10-31: JMeter performance test suite (`tools/perf/`) and first report (`docs/perf/PERFORMANCE-REPORT.md`). Server side healthy; front end needs bundling and code splitting (report §8).
