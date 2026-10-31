@@ -88,7 +88,7 @@
         </TransactionController>
         <hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET / (index.html + all css/js/fonts)">
-            <stringProp name="HTTPSampler.path">${base}</stringProp>
+            <stringProp name="HTTPSampler.path">${base}${__P(home,)}</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -169,9 +169,9 @@
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="GitHub Pages answers 404 + redirect script">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Expected answer: 404 + redirect script (GitHub Pages) or 200 (our API), property deeplink_code">
               <collectionProp name="Asserion.test_strings">
-                <stringProp name="1">404</stringProp>
+                <stringProp name="1">${__P(deeplink_code,404)}</stringProp>
               </collectionProp>
               <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
               <boolProp name="Assertion.assume_success">true</boolProp>
@@ -275,7 +275,7 @@
         <hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET / reload (If-None-Match on every file)">
             <stringProp name="HTTPSampler.comments">The page itself gets a unique query so JMeter re-parses it (JMeter does not parse a 304); every css/js/font is then revalidated with If-None-Match.</stringProp>
-            <stringProp name="HTTPSampler.path">${base}?r=${__threadNum}-${__counter(FALSE,)}</stringProp>
+            <stringProp name="HTTPSampler.path">${base}${__P(home,)}?r=${__threadNum}-${__counter(FALSE,)}</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
             <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
             <boolProp name="HTTPSampler.image_parser">true</boolProp>

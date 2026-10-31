@@ -6,11 +6,13 @@
 # Usage: tools/perf/run-all.sh [out=/tmp/perf-results] [host=localhost] [port=8080] [protocol=http]
 # Needs: JMETER_HOME (or jmeter on PATH). For a local run start the server first:
 #   node tools/perf/serve-static.js 8080
+# Against our own API instead (it answers deep links with 200; /shop needs no database):
+#   SERVER_PID=<api pid> EXTRA="-Jhome=shop -Jdeeplink_code=200" tools/perf/run-all.sh /tmp/api-results localhost 5216
 set -euo pipefail
 OUT=${1:-/tmp/perf-results}; HOST=${2:-localhost}; PORT=${3:-8080}; PROTO=${4:-http}
 PLAN="$(cd "$(dirname "$0")" && pwd)/super-app-web.jmx"
 JM=${JMETER_HOME:+$JMETER_HOME/bin/}jmeter
-SERVER_PID=$(pgrep -f serve-static.js | head -1 || true)
+SERVER_PID=${SERVER_PID:-$(pgrep -f serve-static.js | head -1 || true)}
 export JVM_ARGS="${JVM_ARGS:--Xms1g -Xmx3g}"
 mkdir -p "$OUT"
 
@@ -44,7 +46,7 @@ for s in "${SCENARIOS[@]}"; do
   date +%s > "$dir/start"
   "$JM" -n -t "$PLAN" -Jhost="$HOST" -Jport="$PORT" -Jprotocol="$PROTO" \
     -Jusers="$users" -Jusers_returning="$ret" -Jrampup="$ramp" -Jduration="$dur" \
-    -Jthink_min="$tmin" -Jthink_range="$trange" -Jloops="$loops" \
+    -Jthink_min="$tmin" -Jthink_range="$trange" -Jloops="$loops" ${EXTRA:-} \
     -Jjmeter.save.saveservice.subresults=true \
     -Jjmeter.reportgenerator.sample_filter='^(?!.*-[0-9]+$).*' \
     -Jjmeter.reportgenerator.overall_granularity=5000 \

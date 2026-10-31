@@ -11,6 +11,7 @@ Load tests for the Super App web front end and its public API. Latest results an
 | `run-all.sh` | Runs every scenario (smoke, baseline, load, stress steps, spike, soak) and builds a JMeter HTML dashboard for each |
 | `analyze.py` | Turns the results into `summary.json`, charts and an Excel workbook (Dashboard sheet first) |
 | `browser-metrics.js` | Real Chromium page loads (FCP, LCP, TBT, load time, bytes) on desktop, 4G and slow 4G |
+| `bundle-check.js` | Opens every page of the "Every page" map in the bundled and the unbundled site (EN/light and AR/dark, staff pages signed in) and compares screenshots pixel by pixel and script errors |
 
 ## Install JMeter
 
@@ -49,6 +50,20 @@ jmeter -n -t tools/perf/super-app-web.jmx -Jusers=50 -Jusers_returning=10 -Jramp
 
 **Testing GitHub Pages directly:** keep it small (for example 10–20 users for 2 minutes). GitHub Pages is a shared service with a soft
 limit of 100 GB/month and may throttle or block heavy traffic; a full load test belongs on our own hosting.
+
+## Testing our own hosting (the API serves the site)
+
+Outside Development the API serves the scripts and styles as one bundle each (`Site:Bundle`, see `src/SuperApp.Api/Site/SiteBundle.cs`)
+and compresses the site files. The home page needs the database for its search-engine content, so test `/shop` when no database is running:
+
+```bash
+ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS=http://localhost:5216 RateLimits__Read=10000000 dotnet run --project src/SuperApp.Api --no-launch-profile
+SERVER_PID=<api pid> EXTRA="-Jhome=shop -Jdeeplink_code=200" tools/perf/run-all.sh /tmp/api-results localhost 5216
+```
+
+Before changing how the bundle is built, check that the site still looks the same: start the API twice (one with `Site__Bundle=false`),
+save each `index.html` (+ the bundle files) into a copy of the site, serve both with `serve-static.js` and run
+`node tools/perf/bundle-check.js http://localhost:8081/super-app/ http://localhost:8082/super-app/`.
 
 ## API test
 

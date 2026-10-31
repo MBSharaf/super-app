@@ -23,7 +23,9 @@ public static class PipelineExtensions
         }
         app.UseHttpsRedirection();
 
-        // Site files first, then routing — so the page fallback route never hides a real css/js file
+        // Site files first, then routing — so the page fallback route never hides a real css/js file.
+        // Compression wraps only the site files (/super-app), never the API.
+        app.UseSiteCompression();
         app.UseSuperAppSite();
         app.UseRouting();
 

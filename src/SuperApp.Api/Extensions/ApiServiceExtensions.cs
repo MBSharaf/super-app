@@ -4,6 +4,7 @@ using SuperApp.Api.Errors;
 using SuperApp.Api.Filters;
 using SuperApp.Api.Security;
 using SuperApp.Api.Services;
+using SuperApp.Api.Site;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Common.Options;
 
@@ -36,6 +37,7 @@ public static class ApiServiceExtensions
 
         services.AddSuperAppAuth();
         services.AddSuperAppRateLimits(configuration);
+        services.AddSiteCompression();
         services.AddReverseProxy(configuration);
         services.AddOutputCache(o =>
         {

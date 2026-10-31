@@ -10,6 +10,8 @@ namespace SuperApp.Api.Site;
 /// Page addresses without a file extension (e.g. /super-app/factory/jobs) return index.html (clean URLs).
 /// The page tells the site which parts are open: <c>&lt;html data-store="on|off" data-pod="on|off"&gt;</c> from the settings
 /// <c>Features:StoreEnabled</c> and <c>Features:PodEnabled</c> (no script needed; GitHub Pages keeps both off).
+/// Outside Development the scripts and style sheets are served as one bundle each (<see cref="SiteBundle"/>,
+/// setting <c>Site:Bundle</c>), cached for a year; in Development every file is served on its own so edits show at once.
 /// </summary>
 public static class SiteHosting
 {
@@ -28,6 +30,7 @@ public static class SiteHosting
         var types = new FileExtensionContentTypeProvider();
         types.Mappings[".glb"] = "model/gltf-binary";
         types.Mappings.Remove(".py");
+        var bundle = app.Configuration.GetValue("Site:Bundle", !app.Environment.IsDevelopment()) ? BuildBundle(app, root) : null;
         foreach (var folder in Folders)
         {
             app.UseStaticFiles(new StaticFileOptions
@@ -41,11 +44,46 @@ public static class SiteHosting
             });
         }
         app.MapGet("/", () => Results.Redirect($"{BasePath}/")).ExcludeFromDescription();
-        app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, path, seo, ct)).ExcludeFromDescription();
+        if (bundle is not null)
+        {
+            app.MapGet($"{BasePath}/{SiteBundle.Folder}/{{name}}", (HttpContext http, string name) => ServeBundleFile(http, bundle, name)).ExcludeFromDescription();
+        }
+        app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, bundle, path, seo, ct)).ExcludeFromDescription();
         return app;
     }
 
-    private static async Task<IResult> ServePageAsync(HttpContext http, string root, string? path, SeoPages seo, CancellationToken ct)
+    private static SiteBundle BuildBundle(WebApplication app, string root)
+    {
+        var bundle = SiteBundle.Build(root, BasePath);
+        if (app.Logger.IsEnabled(LogLevel.Information))
+        {
+            var files = string.Join(", ", bundle.Files.Values.Select(f => $"{f.Name} ({f.Raw.Length / 1024} KB, br {f.Brotli.Length / 1024} KB)"));
+            app.Logger.LogInformation("Site bundle: {Scripts} scripts and {Styles} style sheets → {Files}", bundle.ScriptCount, bundle.StyleCount, files);
+        }
+        return bundle;
+    }
+
+    /// <summary>A bundle file, already compressed (Brotli, else gzip); its name changes with its content, so it is cached for a year.</summary>
+    private static IResult ServeBundleFile(HttpContext http, SiteBundle bundle, string name)
+    {
+        if (!bundle.Files.TryGetValue(name, out var file))
+        {
+            return Results.NotFound();
+        }
+        var accept = http.Request.Headers.AcceptEncoding.ToString();
+        var (body, encoding) = accept.Contains("br", StringComparison.OrdinalIgnoreCase) ? (file.Brotli, "br")
+            : accept.Contains("gzip", StringComparison.OrdinalIgnoreCase) ? (file.Gzip, "gzip") : (file.Raw, null);
+        var headers = http.Response.Headers;
+        headers.CacheControl = "public, max-age=31536000, immutable";
+        headers.Vary = "Accept-Encoding";
+        if (encoding is not null)
+        {
+            headers.ContentEncoding = encoding;
+        }
+        return Results.Bytes(body, file.ContentType);
+    }
+
+    private static async Task<IResult> ServePageAsync(HttpContext http, string root, SiteBundle? bundle, string? path, SeoPages seo, CancellationToken ct)
     {
         http.Response.Headers.CacheControl = "no-cache";
         var name = string.IsNullOrEmpty(path) ? "index.html" : path;
@@ -58,7 +96,7 @@ public static class SiteHosting
         {
             return Results.NotFound();
         }
-        var index = await File.ReadAllTextAsync(Path.Combine(root, "index.html"), ct);
+        var index = bundle?.IndexHtml ?? await File.ReadAllTextAsync(Path.Combine(root, "index.html"), ct);
         // Main public pages carry their own title, tags and readable HTML for search engines (SeoPages)
         SeoPage? page = null;
         try
