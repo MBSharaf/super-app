@@ -25,7 +25,7 @@
 - *(nothing open)* — test data (e.g. `browser.test@superapp.test`, "Browser Test Arena") is deleted at the end of the backend, with the demo data (Phase 9).
 
 ## Inbox (requests from other windows)
-- *(empty)*
+- **2026-10-31, marketing window — Meta Pixel + Conversions API (needed before paid sign-up and booking campaigns, see `marketing/PLAN-30-DAYS.md` §6):** browser Pixel and server-side Conversions API sending the same events with one shared `event_id` for deduplication: `PageView`, `ViewContent` (pitch page), `Search` (pitch search), `CompleteRegistration`, `InitiateCheckout` (booking started), `Purchase` (booking paid through Paymob, with value and currency EGP), `Lead` (pitch-partner application). Pixel id and CAPI token come from the owner's `.env`; nothing fires until they are set. A cookie-consent check before firing. Later, the same events for GA4/GTM and the TikTok Pixel.
 
 ## Done
 - *(empty)*
