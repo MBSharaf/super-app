@@ -7,6 +7,7 @@
 | System under test | Web front end (`index.html` + 216 css/js/font files), served the way GitHub Pages serves it |
 | Test plans | `tools/perf/super-app-web.jmx` (website), `tools/perf/super-app-api.jmx` (public API, ready to run) |
 | Raw material | `docs/perf/2026-10-31/`: `summary.json`, `browser-metrics.json`, `charts/`, `super-app-performance.xlsx` (Dashboard sheet first), JMeter HTML dashboards for the load and spike runs (`dashboards/*/index.html`) |
+| Summary and fix plan | [`SUMMARY-AND-FIX-PLAN.md`](SUMMARY-AND-FIX-PLAN.md) |
 | How to repeat | `tools/perf/README.md` |
 
 ---
