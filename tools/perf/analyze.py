@@ -56,6 +56,11 @@ def load_monitor(path):
 def analyse(name, folder, monitor):
     with open(os.path.join(folder, "results.jtl"), newline="") as f:
         rows = list(csv.DictReader(f))
+    # JMeter stops threads when `duration` ends and closes their connection pools mid-download
+    # ("Connection pool shut down", "Socket closed"): drop samples that end in that last 5 s.
+    t_end = max(int(r["timeStamp"]) + int(r["elapsed"]) for r in rows)
+    shutdown_errors = sum(1 for r in rows if int(r["timeStamp"]) + int(r["elapsed"]) > t_end - 5000 and r["success"] != "true")
+    rows = [r for r in rows if int(r["timeStamp"]) + int(r["elapsed"]) <= t_end - 5000] or rows
     start = int(open(os.path.join(folder, "start")).read()) if os.path.exists(os.path.join(folder, "start")) else None
     end = int(open(os.path.join(folder, "end")).read()) if os.path.exists(os.path.join(folder, "end")) else None
     subs = [r for r in rows if SUB.search(r["label"])]
@@ -94,7 +99,7 @@ def analyse(name, folder, monitor):
     ts = [{"t": b * 5, "rps": s["req"] / 5, "pages_ps": s["pages"] / 5, "threads": s["threads"],
            "page_p95": pct(s["page_el"], 95), "errors": s["err"]} for b, s in sorted(series.items())]
     return {
-        "name": name, "duration_s": round(secs, 1), "threads_max": max(int(r["allThreads"]) for r in rows),
+        "name": name, "duration_s": round(secs, 1), "shutdown_errors_dropped": shutdown_errors, "threads_max": max(int(r["allThreads"]) for r in rows),
         "http_requests": len(requests), "rps": round(len(requests) / secs, 1),
         "page_loads": len(page), "pages_ps": round(len(page) / secs, 2), "sub_requests_per_page": sub_per_page,
         "mb_received": round(sum(int(r["bytes"]) for r in requests) / 1048576, 1),
