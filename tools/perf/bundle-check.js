@@ -25,6 +25,8 @@ async function shot(browser, base, route, v, file) {
   const ctx = await browser.newContext({ viewport: { width: 412, height: 915 }, reducedMotion: 'reduce', serviceWorkers: 'block', timezoneId: 'Africa/Cairo' });
   await ctx.addInitScript(({ lang, theme }) => {
     localStorage.setItem('superapp.lang', lang); localStorage.setItem('superapp.theme', theme);
+    // Cookie choice already made: the banner appears on a timer, so it would land in some screenshots and not others
+    localStorage.setItem('superapp.consent', JSON.stringify({ analytics: false, at: 1793440000000, v: '0.9' }));
     // Same randomness in both copies (time is frozen with page.clock below)
     let seed = 42; Math.random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
   }, v);
