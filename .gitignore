@@ -47,3 +47,5 @@ tools/seed/_front-data.json
 
 # Backup settings (passphrase, SQL password)
 tools/ops/backup.env
+# Performance test workbook (docs/perf) is a deliverable, not a test download
+!docs/perf/**/*.xlsx
