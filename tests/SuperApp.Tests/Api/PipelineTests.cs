@@ -95,6 +95,10 @@ public sealed class PipelineTests(ApiFactory factory) : IClassFixture<ApiFactory
             response.StatusCode.ShouldBe(HttpStatusCode.OK, file);
             response.Content.Headers.ContentEncoding.ShouldBe([encoding]);
             response.Headers.CacheControl!.ToString().ShouldContain("immutable");
+
+            using var again = new HttpRequestMessage(HttpMethod.Get, $"/super-app/{file}");
+            again.Headers.TryAddWithoutValidation("If-None-Match", response.Headers.ETag!.ToString());
+            (await client.SendAsync(again)).StatusCode.ShouldBe(HttpStatusCode.NotModified, file);
         }
     }
 

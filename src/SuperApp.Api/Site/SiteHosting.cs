@@ -70,12 +70,17 @@ public static class SiteHosting
         {
             return Results.NotFound();
         }
-        var accept = http.Request.Headers.AcceptEncoding.ToString();
-        var (body, encoding) = accept.Contains("br", StringComparison.OrdinalIgnoreCase) ? (file.Brotli, "br")
-            : accept.Contains("gzip", StringComparison.OrdinalIgnoreCase) ? (file.Gzip, "gzip") : (file.Raw, null);
         var headers = http.Response.Headers;
         headers.CacheControl = "public, max-age=31536000, immutable";
         headers.Vary = "Accept-Encoding";
+        headers.ETag = $"\"{name}\"";   // the name already carries the content hash
+        if (http.Request.Headers.IfNoneMatch.ToString().Contains(name, StringComparison.Ordinal))
+        {
+            return Results.StatusCode(StatusCodes.Status304NotModified);
+        }
+        var accept = http.Request.Headers.AcceptEncoding.ToString();
+        var (body, encoding) = accept.Contains("br", StringComparison.OrdinalIgnoreCase) ? (file.Brotli, "br")
+            : accept.Contains("gzip", StringComparison.OrdinalIgnoreCase) ? (file.Gzip, "gzip") : (file.Raw, null);
         if (encoding is not null)
         {
             headers.ContentEncoding = encoding;
