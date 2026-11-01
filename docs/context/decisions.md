@@ -44,6 +44,10 @@ decisions here (with the date) from any window.
 - **Payment company: Paymob** (owner, 2026-10-26). Keys go only into `.env` (owner enters them); until then the simulated gateway pays at once. Online bookings wait for Paymob's signed callback (15 minutes, then the hours are freed).
 - **API-FOOTBALL key:** not received yet (2026-10-26). The owner puts it in `.env` (`FOOTBALL__APIFOOTBALL__KEY`); simulated football data until then.
 
+- **Pitch deposits (2026-11-01):** no full online payment for pitch bookings. The app takes only a deposit, 20% of the total with a minimum of 100 EGP (never more than the total; weekly packages: per game). The rest is paid in cash to the venue at the pitch and collected when the owner scans the QR. Cancellation refunds apply to the deposit. Settings: `db.settings().deposit`. Plan: `docs/PLAN-deposit-checkin.md`.
+- **QR check-in time (2026-11-01):** the owner scans the player's QR on the phone (Partner dashboard → Check-in). The time starts at the scan, but the booked end never moves: a late player is told how many minutes are left (e.g. "15 min late — 45 min left, ends 6 PM").
+- **Super Points (2026-11-01):** 1 point for every 1 EGP paid, the moment it is paid (any payment in the app, the rest paid at the pitch, cash-on-delivery orders when delivered), with a "Congratulations" pop-up. Top-ups and voucher money earn nothing; refunds take their points back. Tiers no longer multiply points.
+
 ## Print on demand
 - **Partner:** a contracted factory prints and ships, DTF only for now. One factory to start, with the code ready for several.
 - **Courier:** Super App holds the courier contract (Bosta as a trial), behind a switchable adapter.

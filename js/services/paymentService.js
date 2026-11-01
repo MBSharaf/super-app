@@ -32,6 +32,9 @@
   /** Every money movement gets a receipt (PDF from Profile → Payments & receipts, and from the toast right after paying) */
   const record = (r) => { const rec = { id: r.id || uid('RC'), at: Date.now(), ...r }; store.set((s) => ({ payments: [rec, ...(s.payments || [])].slice(0, 500) }), 'payment:new'); return rec; };
 
+  /** 1 Super Point per EGP actually paid (voucher money excluded) */
+  const earn = (out, p, voucherPart = 0) => { SA.services.loyalty?.earn(out.amount - voucherPart, p.label, out.id); return out; };
+
   const paymentService = {
     validateCard, record,
     receipts: () => store.get().payments || [],
@@ -64,7 +67,7 @@
         addTx({ type: 'debit', label: p.label, amount });
         const out = { id: uid('PAY'), method: 'wallet', label: via('Super App Wallet'), amount: total, status: 'paid' };
         record({ id: out.id, kind: 'payment', label: p.label, amount: total, method: out.label });
-        return out;
+        return earn(out, p, fromVoucher);
       }
       let last4, brand = 'Visa';
       if (p.savedCardId) {
@@ -83,13 +86,15 @@
       }
       const out = { id: uid('PAY'), method: 'card', label: via(`${brand} •••• ${last4}`), amount: total, status: 'paid' };
       record({ id: out.id, kind: 'payment', label: p.label, amount: total, method: out.label });
-      return out;
+      return earn(out, p, fromVoucher);
     }, { latency: 1400 }),
 
-    refund: (amount, label) => request(() => {
+    /** Money back to the wallet. A refund takes back its Super Points; a goodwill credit ({ points: false }) doesn't. */
+    refund: (amount, label, { points = true } = {}) => request(() => {
       store.set((s) => ({ wallet: { ...s.wallet, balance: s.wallet.balance + amount } }));
       addTx({ type: 'credit', label, amount });
-      record({ kind: 'refund', label, amount, method: 'Super App Wallet' });
+      const rec = record({ kind: 'refund', label, amount, method: 'Super App Wallet' });
+      if (points) SA.services.loyalty?.reverse(amount, label, rec.id);
       return { ok: true };
     }),
 

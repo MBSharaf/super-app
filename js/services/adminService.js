@@ -249,7 +249,7 @@
       if (!(amt >= 5 && amt <= 5000)) throw new ApiError('Credit between 5 and 5,000 EGP.', 'invalid');
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
       SA.services.ceo?.gate({ kind: 'credit', amount: amt, fn: 'creditCustomer', args: [id, amt, reason], title: `${c.name} — ${reason.trim()}`, ref: id });
-      if (c.device) await SA.services.payment.refund(amt, `Credit from Super App — ${reason.trim()}`);
+      if (c.device) await SA.services.payment.refund(amt, `Credit from Super App — ${reason.trim()}`, { points: false });
       saveRec(id, { credits: [{ amount: amt, reason: reason.trim(), at: Date.now() }, ...(rec(id).credits || [])] });
       db().insert('refunds', { customerId: id, amount: amt, bearer: 'platform', kind: 'credit', reason: reason.trim(), at: Date.now() }, 'rf');
       log('customer.credit', `Credited ${amt.toLocaleString()} EGP to ${c.name}’s wallet: ${reason.trim()}`, id);

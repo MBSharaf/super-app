@@ -89,7 +89,10 @@
     const yt = totalsBox(p, y, [
       ['Subtotal (excl. VAT)', m2(total / (1 + rate))],
       [`VAT ${Math.round(rate * 100)}%`, m2(vatIn(total))],
-      ['Total paid', m2(total), true],
+      ...(b.deposit != null ? (() => {
+        const paidAtPitch = !!SA.services.db.find('bookings', b.id)?.balancePaidAt;
+        return [['Total', m2(total), true], ['Deposit paid in the app', m2(b.deposit)], [paidAtPitch ? 'Paid at the pitch' : 'To pay at the pitch', m2(b.payAtPitch || 0)]];
+      })() : [['Total paid', m2(total), true]]),
       ...(b.status === 'cancelled' && b.refund ? [['Refunded', `−${m2(b.refund)}`]] : []),
     ]);
     // Check-in QR for games that haven't happened yet

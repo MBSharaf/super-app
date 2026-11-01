@@ -285,6 +285,7 @@
   }
   SA.ui.whatsapp.init();
   SA.ui.promoPop?.init();
+  SA.ui.pointsPop?.init();
   router.onChange((m) => render(m));
   router.start();
 })(window.SA);

@@ -29,6 +29,17 @@
   const TONE = { checked: 'ok', ok: 'ok', early: 'warn', already: 'info', 'wrong-day': 'warn', ended: 'warn', cancelled: 'bad', 'no-show': 'bad', 'wrong-venue': 'bad', 'not-found': 'bad', invalid: 'bad', expired: 'bad' };
   const TITLE = { checked: 'Checked in', expired: 'Package used up', ok: 'Ready to check in', early: 'Early arrival', already: 'Already checked in', 'wrong-day': 'Not today', ended: 'Game finished', cancelled: 'Cancelled booking', 'no-show': 'Marked no-show', 'wrong-venue': 'Different venue', 'not-found': 'Booking not found', invalid: 'Code not valid' };
 
+  /** Deposit bookings: what was paid in the app and what the venue collects at the pitch */
+  const payLine = (b) => {
+    if (b.money.deposit != null) return `<span>Deposit paid in the app:</span> <b class="num">${money(b.money.deposit)}</b> · ${b.money.collected ? `<span>Collected at the pitch:</span> <b class="num">${money(b.money.due)}</b>` : b.money.due ? `<b style="color:var(--blaze)"><span>To collect at the pitch:</span> <span class="num">${money(b.money.due)}</span></b>` : '<span>Nothing left to pay</span>'}`;
+    return `${esc(b.payment)}${b.money.online ? ' · paid' : ` · <b style="color:var(--blaze)">collect ${money(b.amount)}</b>`}`;
+  };
+  /** Live countdown to the booked end (late arrivals keep the same end time) */
+  const clock = (b, t) => `<span data-clock="${t.end}" data-start="${t.start}"><b class="num" data-left>${t.left}</b> <span>min left</span> · <span>ends ${esc(t.endsAt)}</span>${t.late && !b.checkedInAt ? ` <span class="badge badge-gold">${t.late} min late</span>` : ''}</span>`;
+  const tick = (root) => root.querySelectorAll('[data-clock]').forEach((n) => {
+    const end = +n.dataset.clock, start = +n.dataset.start, now = Date.now();
+    const v = n.querySelector('[data-left]'); if (v) v.textContent = Math.max(0, Math.round((end - Math.max(now, start)) / 6e4));
+  });
   const resultCard = (res) => {
     const b = res.booking;
     const tone = TONE[res.state] || 'bad';
@@ -41,10 +52,12 @@
         <div><dt>Booking</dt><dd class="num">${esc(b.id)}${res.manual ? ' <span class="badge">Typed in</span>' : ''}</dd></div>
         <div><dt>Pitch</dt><dd>${esc(b.pitchName)}</dd></div>
         <div><dt>When</dt><dd class="num">${fmtDate(b.date)} · ${fmtRange(b.hour, b.duration)}</dd></div>
-        <div><dt>Payment</dt><dd>${esc(b.payment)}${b.money.online ? ' · paid' : ` · <b style="color:var(--blaze)">collect ${money(b.amount)}</b>`}</dd></div>
+        <div><dt>Payment</dt><dd>${payLine(b)}</dd></div>
+        ${res.timing ? `<div><dt>Time left</dt><dd>${clock(b, res.timing)}</dd></div>` : ''}
       </dl>` : ''}
+      ${b && b.money.due && !b.money.collected && ['ok', 'early'].includes(res.state) ? `<div class="notice gold ci-collect">${icon('wallet', 18)}<span><span>Collect from the customer now:</span> <b class="num">${money(b.money.due)}</b>. <span>Deposit paid in the app:</span> <b class="num">${money(b.money.deposit)}</b>.</span></div>` : ''}
       <div class="row wrap" style="--gap:8px;margin-top:14px">
-        ${b && !res.live && ['ok', 'early'].includes(res.state) ? `<button class="btn btn-turf" data-do-checkin="${b.id}">${icon('check', 16)} Check in${res.state === 'early' ? ' anyway' : ''}</button>` : ''}
+        ${b && !res.live && ['ok', 'early'].includes(res.state) ? `<button class="btn btn-turf" data-do-checkin="${b.id}">${icon('check', 16)} ${b.money.due && !b.money.collected ? `${res.state === 'early' ? 'Check in anyway' : 'Check in'} &amp; collect ${money(b.money.due)}` : `Check in${res.state === 'early' ? ' anyway' : ''}`}</button>` : ''}
         ${b && res.state !== 'wrong-venue' ? `<button class="btn btn-outline" data-open="${b.id}">Booking details</button>` : ''}
         <button class="btn btn-ghost" data-next>${icon('scan', 16)} Scan next</button>
       </div>
@@ -90,7 +103,7 @@
               const inn = b.checkedInAt || b.status === 'checked-in' || (b.status === 'completed' && b.checkedIn);
               return `<li style="--i:${i}" class="${inn ? 'is-in' : ''}"><span class="nl-time"><b class="num">${fmtHour(b.hour)}</b><span class="xs">${b.duration * 60} min</span></span>
                 <button class="grow arr-who" data-open="${b.id}"><b class="small">${esc(b.customer.name)}</b><span class="xs muted" style="display:block">${esc(b.pitchName)} · ${esc(b.sourceLabel)}</span></button>
-                ${inn ? `<span class="badge badge-turf">${icon('check', 12, 2.6)} ${b.checkedInAt ? new Date(b.checkedInAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'In'}</span>`
+                ${inn ? `<span class="badge badge-turf">${icon('check', 12, 2.6)} ${b.checkedInAt ? new Date(b.checkedInAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'In'}</span>${b.status === 'checked-in' ? (() => { const t = D().timing(b); return ` <span class="xs muted" data-clock="${t.end}" data-start="${t.start}"><b class="num" data-left>${t.left}</b> <span>min left</span></span>`; })() : ''}`
                   : ['upcoming', 'in-progress'].includes(b.status) ? `<button class="btn btn-outline btn-sm" data-do-checkin="${b.id}">Check in</button>` : C.statusBadge(b.status)}</li>`;
             }).join('') || `<li class="small muted">No games booked today.</li>`}</ul>
           </section>
@@ -103,6 +116,7 @@
       const stage = el.querySelector('[data-stage]');
       let stream = null, raf = 0, busy = false, last = 0, paused = false;
       const cv = document.createElement('canvas');
+      const ticker = setInterval(() => tick(el), 15000);
       nativeDetector().then((d) => { el.querySelector('[data-engine]').textContent = d ? 'Built-in scanner' : 'Scanner ready'; });
 
       const show = (res) => {
@@ -173,7 +187,8 @@
         if (go) {
           try {
             const b = await D().bookingAction(go.dataset.doCheckin, 'check-in');
-            SA.ui.overlay.toast(`${b.customer.name} checked in`, { type: 'success' });
+            const t = D().timing(b);
+            SA.ui.overlay.toast(`${esc(b.customer.name)} checked in · ${t.left} min left, ends ${t.endsAt}${b.money?.collected && b.money.due ? ` · ${money(b.money.due)} collected` : ''}`, { type: 'success', duration: 6000 });
             stop(); SA.app.rerender();
           } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
           return;
@@ -181,7 +196,7 @@
         const open = e.target.closest('[data-open]'); if (open) { SA.pages.dashBookings.openBooking(open.dataset.open); return; }
         if (e.target.closest('[data-next]')) { out.innerHTML = ''; paused = false; const f = el.querySelector('#ci-code'); f.value = ''; if (!stream) f.focus(); }
       });
-      return stop;
+      return () => { clearInterval(ticker); stop(); };
     },
   });
 })(window.SA);

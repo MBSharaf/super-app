@@ -82,3 +82,14 @@ body.is-loading::before { content: ""; position: fixed; top: 0; inset-inline-sta
 .auth-codes { columns: 2; margin: 0; padding: var(--s-4); background: var(--surface-2); border-radius: var(--r-md); font-size: var(--fs-md); line-height: 1.9; }
 .acc-real { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
 .acc-real .grow { min-width: 220px; }
+
+/* ---------- Super Points pop-up (1 point per 1 EGP paid) ---------- */
+.pts-pop { text-align: center; display: grid; gap: 8px; justify-items: center; padding: 6px 4px; }
+.pts-pop-ico { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--gold, #C9920F), var(--blaze, #FF5A1F)); box-shadow: 0 10px 30px -10px var(--blaze, #FF5A1F); animation: popIn 520ms var(--ease-spring, ease-out) backwards; }
+.pts-pop .lead b { color: var(--turf); font-size: 1.3em; }
+.pts-pop-list { list-style: none; margin: 6px 0 0; padding: 0; width: 100%; max-width: 360px; display: grid; gap: 6px; }
+.pts-pop-list li { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; background: var(--surface-2, rgba(0,0,0,.04)); font-size: 13px; text-align: start; }
+.pts-pop-list b { color: var(--turf); }
+/* Booking deposit */
+.kv .deposit-row { border-top: 1px dashed var(--line, rgba(0,0,0,.12)); padding-top: 10px; margin-top: 4px; }
+.ci-collect { margin-top: 12px; }

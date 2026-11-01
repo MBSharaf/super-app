@@ -8,7 +8,7 @@
  */
 (function (SA) {
   const { ApiError } = SA.services.http;
-  const { isoDate, parseISO, addDays, today, seeded, fmtHour } = SA.core.utils;
+  const { isoDate, parseISO, addDays, today, seeded, fmtHour, fmtRange } = SA.core.utils;
   const db = SA.services.db;
   const PS = SA.services.pitches;
   const DAY = 864e5;
@@ -117,17 +117,21 @@
   const bookingRate = (ownerId) => (dealOf(ownerId)?.bookings ?? commissionRate());
   const SOURCES = { app: 'Super App', 'walk-in': 'Walk-in', team: 'Team booking' };
   const sourceLabel = (b) => (b.source === 'app' && b.seriesId ? 'Super App · weekly' : SOURCES[b.source] || 'Super App');
+  /** The part of an app deposit that pays for the pitch (the service fee is Super App's) */
+  const depositPart = (b) => Math.min(b.amount, Math.max(0, (b.deposit || 0) - (b.fee || 0)));
   /** Money for one booking, from the partner's point of view */
   const bookingMoney = (b, status = statusOf(b)) => {
     const rate = b.source === 'app' || !b.source ? bookingRate(b.ownerId) : 0;
     if (status === 'cancelled') {
       // Late customer cancellation: the venue keeps what the policy didn't refund
-      const kept = b.cancelledBy === 'customer' && b.refundShare != null ? Math.round(b.amount * (1 - b.refundShare)) : 0;
+      const kept = b.cancelledBy === 'customer' && b.refundShare != null ? Math.round((b.deposit != null ? depositPart(b) : b.amount) * (1 - b.refundShare)) : 0;
       if (!kept) return { gross: 0, commission: 0, net: 0, online: 0, cash: 0, refund: b.refund ?? b.amount, wallet: 0 };
       const commission = Math.round(kept * rate);
       return { gross: kept, commission, net: kept - commission, online: kept, cash: 0, refund: b.refund || 0, wallet: kept - commission, retained: true };
     }
     const gross = b.amount, commission = Math.round(gross * rate), net = gross - commission;
+    // Deposit booking: the app took the deposit (its pitch part goes to the venue, less the commission); the rest is cash at the pitch
+    if (b.deposit != null) { const on = depositPart(b); return { gross, commission, net, online: on, cash: gross - on, refund: 0, wallet: on - commission, deposit: b.deposit, due: b.payAtPitch || 0, collected: !!b.balancePaidAt }; }
     const online = b.payment === 'Card' || b.payment === 'Wallet';
     return { gross, commission, net, online: online ? gross : 0, cash: online ? 0 : gross, refund: 0, wallet: online ? net : -commission };
   };
@@ -356,13 +360,16 @@
     if (b.status === 'cancelled') return b;
     if (b.synthetic) db.override(id, { status: 'cancelled', reason, by: me().id });
     else {
-      db.update('bookings', id, { status: 'cancelled', refund: b.amount + (b.fee || 0), cancelledBy: 'venue', reason });
+      // Everything the customer paid in the app comes back (a deposit booking: the deposit)
+      const back = b.deposit != null ? b.deposit : b.amount + (b.fee || 0);
+      db.update('bookings', id, { status: 'cancelled', refund: back, cancelledBy: 'venue', reason });
       // If the booking belongs to the shopper on this device, refund them in full and tell them
       const mine = SA.core.store.get().bookings.find((x) => x.id === id);
       if (mine && refundShopper && mine.status !== 'cancelled') {
-        await SA.services.payment.refund(mine.total, `Refund — ${mine.pitchName} (cancelled by venue)`);
-        SA.core.store.set((s) => ({ bookings: s.bookings.map((x) => (x.id === id ? { ...x, status: 'cancelled', refund: mine.total } : x)) }));
-        SA.services.user.notify({ kind: 'booking', title: 'Your booking was cancelled by the venue', body: `${mine.pitchName} on ${mine.date}. ${mine.total} EGP is back in your wallet.`, link: `/booking/${id}` });
+        const paid = SA.services.bookings.paidOnline(mine);
+        await SA.services.payment.refund(paid, `Refund — ${mine.pitchName} (cancelled by venue)`);
+        SA.core.store.set((s) => ({ bookings: s.bookings.map((x) => (x.id === id ? { ...x, status: 'cancelled', refund: paid } : x)) }));
+        SA.services.user.notify({ kind: 'booking', title: 'Your booking was cancelled by the venue', body: `${mine.pitchName} on ${mine.date}. ${paid} EGP is back in your wallet.`, link: `/booking/${id}` });
       }
     }
     db.log(me().id, 'booking.cancelled', `Cancelled booking ${id} at ${b.pitchName}`, id);
@@ -629,11 +636,18 @@
       assert(b && canPitch(db.find('pitches', b.pitchId)), 'You can only manage bookings at your own pitches.');
       if (action === 'cancel') return cancelBooking(id);
       if (action === 'check-in' && ['cancelled', 'completed', 'no-show'].includes(b.status)) throw new ApiError(`This booking is ${b.status === 'no-show' ? 'marked as a no-show' : b.status}.`, 'invalid');
-      const patch = action === 'check-in' ? { status: 'checked-in', checkedIn: true, checkedInAt: Date.now(), checkedInBy: me().id } : action === 'no-show' ? { status: 'no-show' } : null;
+      // An app booking paid by deposit: the rest is collected at check-in
+      const collect = action === 'check-in' && b.deposit != null && b.payAtPitch > 0 && !b.balancePaidAt ? { balancePaidAt: Date.now(), balancePaid: b.payAtPitch } : {};
+      const patch = action === 'check-in' ? { status: 'checked-in', checkedIn: true, checkedInAt: Date.now(), checkedInBy: me().id, ...collect } : action === 'no-show' ? { status: 'no-show' } : null;
       if (!patch) return b;
       if (b.synthetic) db.override(id, patch); else db.update('bookings', id, patch);
       if (action === 'check-in' && b.seriesId) { const sr = db.find('series', b.seriesId); if (sr) db.update('series', sr.id, { scans: [...(sr.scans || []), { at: Date.now(), bookingId: id, by: me().id }] }); }
-      db.log(me().id, `booking.${action}`, `${action === 'check-in' ? 'Checked in' : 'Marked no-show'} ${id}`, id);
+      db.log(me().id, `booking.${action}`, `${action === 'check-in' ? 'Checked in' : 'Marked no-show'} ${id}${collect.balancePaid ? ` — collected ${collect.balancePaid.toLocaleString()} EGP at the pitch` : ''}`, id);
+      if (action === 'check-in' && b.source === 'app') {
+        const t = dash.timing({ ...b, checkedInAt: patch.checkedInAt });
+        // The player is told (on this device: the shopper's own booking)
+        if (SA.core.store.get().bookings.some((x) => x.id === id)) SA.services.user.notify({ kind: 'booking', title: `You’re checked in at ${b.pitchName}`, body: `${t.left} min left — your booking ends at ${t.endsAt}.${collect.balancePaid ? ` You paid ${collect.balancePaid.toLocaleString()} EGP at the pitch.` : ''}`, link: `/booking/${id}` });
+      }
       return findBooking(id);
     },
 
@@ -895,8 +909,25 @@
       if (b.checkedIn || b.checkedInAt || b.status === 'checked-in') return { ...out, state: 'already', message: `Already checked in${b.checkedInAt ? ` at ${new Date(b.checkedInAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}` : ''}.` };
       if (b.date !== isoDate(today()) && start - now > 6 * 36e5) return { ...out, state: 'wrong-day', message: `This booking is for ${SA.core.utils.fmtDate(b.date, 'long')} at ${fmtHour(b.hour)}.` };
       if (now > end) return { ...out, state: 'ended', message: 'This game has already finished.' };
+      out.timing = dash.timing(b, now);
       if (start - now > 60 * 6e4) return { ...out, state: 'early', message: `Kick-off is at ${fmtHour(b.hour)} — more than an hour from now.` };
-      return { ...out, state: 'ok', message: start > now ? `Kick-off in ${Math.max(1, Math.round((start - now) / 6e4))} min.` : 'The game has started.' };
+      return { ...out, state: 'ok', message: out.timing.message };
+    },
+    /**
+     * The booked time is fixed: arriving late doesn't move the end. The clock starts when the QR is scanned
+     * (or at kick-off if they arrive early) and runs to the booked end.
+     */
+    timing(b, now = Date.now()) {
+      const start = b.startsAt ?? startOf(b), end = start + b.duration * 36e5;
+      const scan = b.checkedInAt || now;
+      const from = Math.max(scan, start);
+      const late = Math.max(0, Math.round((scan - start) / 6e4));
+      const left = Math.max(0, Math.round((end - Math.max(now, start)) / 6e4));
+      const endsAt = fmtHour(b.hour + b.duration);
+      const message = now < start ? `Kick-off in ${Math.max(1, Math.round((start - now) / 6e4))} min. The booking runs ${fmtRange(b.hour, b.duration)}, ${b.duration * 60} min.`
+        : late > 0 && !b.checkedInAt ? `${late} min late — ${left} min left of the booking. It still ends at ${endsAt}.`
+        : `${left} min left — the booking ends at ${endsAt}.`;
+      return { start, end, from, late, left, endsAt, message, started: now >= start };
     },
     /** Weekly package QR: finds today's game in the package; once every game is played or missed, the code has expired */
     checkPackage(parsed) {

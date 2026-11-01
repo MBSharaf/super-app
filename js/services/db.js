@@ -179,6 +179,10 @@
     if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.05, minRedeem: 2000 }; changed = true; }
     // Rule (2026-10): 20 points = 1 EGP, the smallest voucher is 100 EGP (2,000 points), and points never become cash
     if (!data.settings.loyaltyV2) { data.settings.loyalty = { ...data.settings.loyalty, pointValue: 0.05, minRedeem: 2000 }; data.settings.loyaltyV2 = 1; changed = true; }
+    // Rule (2026-11-01, owner): every 1 EGP paid earns 1 Super Point
+    if (!data.settings.loyaltyV3) { data.settings.loyalty = { ...data.settings.loyalty, earnPer: 1 }; data.settings.loyaltyV3 = 1; data.settings.loyaltyV3At = Date.now(); changed = true; }
+    // Rule (2026-11-01, owner): pitch bookings pay only a deposit online (20%, at least 100 EGP); the rest is paid to the venue at the pitch
+    if (!data.settings.deposit) { data.settings.deposit = { pct: 0.2, min: 100 }; changed = true; }
     if (data.settings.vat == null) { data.settings.vat = 0.14; changed = true; }
     // Pitch partners and sellers have separate dashboards: a partner's own shop is run from the seller dashboard
     if (!data.settings.sellerSplit && Array.isArray(data.sellers)) {
@@ -276,7 +280,8 @@
       return { id: b.id, pitchId: b.pitchId, ownerId: p?.ownerId || 'acc-admin', date: b.date, hour: b.hour, duration: b.duration, amount: b.pitchTotal, fee: b.serviceFee,
         customer: { id: u.id || 'u-001', name: u.name || 'Customer', phone: u.phone || '' }, source: 'app', payment: b.payment?.method === 'wallet' ? 'Wallet' : 'Card',
         status: b.status === 'cancelled' ? 'cancelled' : 'confirmed', refund: b.refund || 0, createdAt: b.createdAt || Date.now(),
-        policy: b.policy || p?.cancelPolicy || 'standard', seriesId: b.seriesId || null, sessionNo: b.sessionNo || null, discount: b.discount || 0, promo: b.promo || null };
+        policy: b.policy || p?.cancelPolicy || 'standard', seriesId: b.seriesId || null, sessionNo: b.sessionNo || null, discount: b.discount || 0, promo: b.promo || null,
+        ...(b.deposit != null ? { deposit: b.deposit, payAtPitch: b.payAtPitch || 0, total: b.total } : {}) };
     },
     subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
     raw: () => data,
