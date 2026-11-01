@@ -3,12 +3,12 @@
  * Production-like static server for performance tests (Node, no packages).
  * It copies how GitHub Pages serves the site, so JMeter results are close to the real demo site:
  *   - the site lives in /super-app/
- *   - text files are gzip-compressed, every file has an ETag and Last-Modified, and
+ *   - text files are compressed (gzip; Brotli too with --br, like our API), every file has an ETag and Last-Modified, and
  *     "Cache-Control: max-age=600" (GitHub Pages' default); conditional requests answer 304
  *   - a path with no file gets 404.html with HTTP 404 (GitHub Pages behaviour for clean URLs)
  * Files and their gzip copies are kept in memory, as a CDN edge would.
  *
- * Usage: node tools/perf/serve-static.js [port=8080] [root=repo folder]
+ * Usage: node tools/perf/serve-static.js [port=8080] [root=repo folder] [--br]
  */
 'use strict';
 const http = require('http');
@@ -17,8 +17,10 @@ const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
 
-const PORT = Number(process.argv[2] || 8080);
-const ROOT = path.resolve(process.argv[3] || path.join(__dirname, '..', '..'));
+const args = process.argv.slice(2).filter((a) => a !== '--br');
+const BROTLI = process.argv.includes('--br');
+const PORT = Number(args[0] || 8080);
+const ROOT = path.resolve(args[1] || path.join(__dirname, '..', '..'));
 const BASE = '/super-app/';
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8',
@@ -41,6 +43,7 @@ function load(file) {
       entry = {
         body, ext, type: MIME[ext] || 'application/octet-stream',
         gz: COMPRESSIBLE.has(ext) ? zlib.gzipSync(body, { level: 6 }) : null,
+        br: BROTLI && COMPRESSIBLE.has(ext) ? zlib.brotliCompressSync(body) : null,
         etag: `"${crypto.createHash('sha1').update(body).digest('hex').slice(0, 16)}"`,
         modified: stat.mtime.toUTCString(),
       };
@@ -67,9 +70,10 @@ function send(req, res, status, entry) {
     res.writeHead(304, headers);
     return res.end();
   }
-  const gzip = entry.gz && /\bgzip\b/.test(req.headers['accept-encoding'] || '');
-  const body = gzip ? entry.gz : entry.body;
-  if (gzip) headers['Content-Encoding'] = 'gzip';
+  const accept = req.headers['accept-encoding'] || '';
+  const enc = entry.br && /\bbr\b/.test(accept) ? 'br' : entry.gz && /\bgzip\b/.test(accept) ? 'gzip' : null;
+  const body = enc === 'br' ? entry.br : enc === 'gzip' ? entry.gz : entry.body;
+  if (enc) headers['Content-Encoding'] = enc;
   headers['Content-Length'] = body.length;
   res.writeHead(status, headers);
   res.end(req.method === 'HEAD' ? undefined : body);

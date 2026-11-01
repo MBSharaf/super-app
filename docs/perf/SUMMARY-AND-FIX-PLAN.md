@@ -87,12 +87,12 @@ GitHub Pages' soft limit (100 GB/month) is only about 75,000 first visits at tod
 
 ## 3. Checklist and targets
 
-- [ ] Fix 1: compression on the API's site files (+ test that `/api/**` is not compressed)
-- [ ] Fix 2: bundler + Pages workflow; site looks identical (compare screenshots of every page in `devLinks` GROUPS, EN + AR, light + dark)
+- [x] Fix 1: compression on the API's site files (+ test that `/api/**` is not compressed): done 2026-11-01, see [`AFTER-FIXES-2026-11-01.md`](AFTER-FIXES-2026-11-01.md)
+- [x] Fix 2: bundling, done 2026-11-01 inside the API (`SiteBundle`, no Node build step); GitHub Pages workflow not done (demo only); site looks identical (compare screenshots of every page in `devLinks` GROUPS, EN + AR, light + dark)
 - [ ] Fix 3: staff code split; every staff route still opens directly (deep link) and from the menu
 - [ ] Fix 4: Arabic texts on demand; language switch still works without reload problems
 - [ ] Fix 5: app shell
-- [ ] Fix 6: long cache for hashed files
+- [x] Fix 6: long cache for hashed files (+ ETag/304), done 2026-11-01
 - [ ] Fix 7: smaller 3D model and font
 - [ ] Re-run `tools/perf/run-all.sh` + `tools/perf/browser-metrics.js`, update the report
 

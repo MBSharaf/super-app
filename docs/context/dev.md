@@ -29,3 +29,4 @@
 
 ## Done
 - 2026-10-31: JMeter performance test suite (`tools/perf/`) and first report (`docs/perf/PERFORMANCE-REPORT.md`). Server side healthy; front end needs bundling and code splitting (report §8).
+- 2026-11-01: perf fixes 1, 2, 6 in the API: site compression, `SiteBundle` (one script + one style sheet, Brotli, 1-year cache, `Site:Bundle`, off in Development). 4G LCP 4.9 → 2.7 s; spike of 300 users 0 % over 3 s. Next: fix 3 staff code split (`docs/perf/AFTER-FIXES-2026-11-01.md`).
