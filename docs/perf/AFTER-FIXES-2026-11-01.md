@@ -83,3 +83,23 @@ The API itself serves the site (`ASPNETCORE_ENVIRONMENT=Production`), same plan 
 * Nothing to run: no migration, no new setting. In Production the bundle is on by default. To switch it off: `Site__Bundle=false`.
 * In Development the files are served one by one as before, so changes show at once.
 * After a release the server builds the new bundle when it starts (about 2 s), and the new names make every browser fetch it.
+
+## Crowd test: 1,000 / 2,000 / 10,000 visitors arriving within 10 seconds
+
+Same setup (API with the bundle, `/super-app/shop`, 80 % new and 20 % returning visitors, 2–5 s pauses, 3 minutes).
+JMeter and the API share the same 4-core test machine.
+
+| Visitors | Real failures | First page, median | First page, p95 | First pages over 3 s | Last visitor got the page after | Server CPU | Valid? |
+|---|---|---|---|---|---|---|---|
+| **1,000** | **0** | 0.9 s | 15.6 s | 29 % | 50 s | 151 % avg | ✅ |
+| **2,000** | **0** | 1.0 s | 12.8 s | 26 % | 58 s | 154 % avg | ✅ |
+| **10,000** | 0.75 %, all inside JMeter | 5.7 s | 17.8 s | 69 % | 300 s | **43 % avg** | ❌ the test machine could not generate it |
+
+* **1,000 and 2,000:** nothing failed. Half the crowd had the page in about 1 s; the rest queued, because on this machine the server peaks at **about 190 full page loads per second** (each first visit = 0.84–1.1 MB). After the first wave, 2,000 visitors who keep browsing need more than that, so about a quarter of their pages stay over 3 s.
+* **10,000:** JMeter ran out of memory (8 GB heap, 443 `OutOfMemoryError`) and needed 300 s instead of 10 s to start the users; at most 6,691 were active at once. The API sat at 43 % CPU, waiting for traffic. **This run measures JMeter, not the site.** A real 10,000 test needs several load machines (JMeter distributed mode or a cloud load service) against a server like the production one.
+
+### What 10,000 at once means for production (estimate, not measured)
+
+* **Bandwidth is the first wall:** 10,000 first visits × 0.84 MB = **8.4 GB**. A VPS with a 1 Gbit/s port needs at least **about 67 s** to send that, whatever the CPU. With 190 page loads/s per 4 cores the CPU alone needs about 53 s.
+* **With a CDN in front (fix 8, Cloudflare):** the bundle files are cached at the edge for a year (`immutable`), so the server only sends the 3 KB page and the API answers. The static part of a 10,000-visitor burst then costs the server almost nothing.
+* **Not covered yet:** the API and the database under a crowd (sign-in, pitch search, booking). Run `tools/perf/super-app-api.jmx` on a machine with SQL Server and the demo data.
