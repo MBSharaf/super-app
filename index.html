@@ -102,6 +102,7 @@
   <script src="js/core/theme.js" defer></script>
   <script src="js/core/qr.js" defer></script>
   <script src="js/core/pdf.js" defer></script>
+  <script src="js/core/native.js" defer></script>
 
   <!-- Data: seed/mock datasets (replace with API responses later) -->
   <script src="js/data/media.js" defer></script>
@@ -294,8 +295,8 @@
 
   <script src="js/app.js" defer></script>
   <script>
-    /* PWA: the service worker (https or localhost only; a failure never stops the site) */
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    /* PWA: the service worker (https or localhost only, never inside the Android app; a failure never stops the site) */
+    if ('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) && (location.protocol === 'https:' || location.hostname === 'localhost')) {
       window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function (e) { console.warn('[sw]', e); }); });
     }
   </script>

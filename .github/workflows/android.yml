@@ -1,0 +1,79 @@
+# Builds the Android test app (APK) in the cloud from the same site files.
+# Every push to main that touches the site or the app builds a new APK and puts it on the
+# "android-latest" release, so it can be downloaded straight to a phone.
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'offline.html'
+      - 'manifest.json'
+      - 'css/**'
+      - 'js/**'
+      - 'vendor/**'
+      - 'models/**'
+      - 'icons/**'
+      - 'mobile/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Install
+        run: npm ci
+
+      - name: Copy the site into the app
+        run: npm run sync
+
+      - name: Build APK
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/SuperApp.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SuperApp-apk
+          path: SuperApp.apk
+
+      - name: Publish to the android-latest release
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NOTES="Test build from ${GITHUB_SHA::7} ($(date -u '+%Y-%m-%d %H:%M UTC')). Download SuperApp.apk on an Android phone and open it to install."
+          if gh release view android-latest >/dev/null 2>&1; then
+            gh release edit android-latest --notes "$NOTES" --prerelease
+            gh release upload android-latest SuperApp.apk --clobber
+          else
+            gh release create android-latest SuperApp.apk --title "Super App — Android test build" --notes "$NOTES" --prerelease
+          fi
