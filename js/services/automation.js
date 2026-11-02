@@ -209,10 +209,8 @@
       return out;
     };
 
-    /** One event per league the player is in: every member with rank and points, and the gameweek's top three */
-    const gameweekFinished = (gw) => myLeagues().forEach((l) => {
-      const g = F.group(l.id);
-      if (!g) return;
+    /** A league's table after the gameweek: every member with rank and points, and the gameweek's top three */
+    const leagueTable = (g, gw) => {
       const rows = g.standings || [];
       const byGw = rows.slice().sort((a, b) => b.gw - a.gw);
       const gwRank = new Map(byGw.map((r, i) => [r, i + 1]));
@@ -222,11 +220,39 @@
         rank: r.rank, points: r.total, totalPoints: r.total, gameweekRank: gwRank.get(r), gameweekPoints: r.gw, teamName: r.team || null,
       }));
       const winners = byGw.slice(0, 3).map((r, i) => ({ place: i + 1, ...personOf(r), gameweekPoints: r.gw, totalPoints: r.total, teamName: r.team || null }));
+      return { league: lg, participantsCount: participants.length, partialTable: !g.members, winners, participants };
+    };
+    /**
+     * ONE event for the whole gameweek with every league the player is in (`leagues[]`). An n8n test link takes a single
+     * request per "Listen" click, so one event per league lost all but the first. `league` / `winners` / `participants`
+     * at the top level are the first league's, as before.
+     */
+    const gameweekFinished = (gw) => {
+      const leagues = myLeagues().map((l) => F.group(l.id)).filter(Boolean).map((g) => leagueTable(g, gw));
+      const me = customer(), t = F.totals();
       send(fantasyUrl(), 'gameweek.finished', {
-        gameweek: gw, gameweekId: gw, competition: competition(), league: lg, finishedAt: new Date().toISOString(),
-        participantsCount: participants.length, partialTable: !g.members, winners, participants,
+        gameweek: gw, gameweekId: gw, competition: competition(), finishedAt: new Date().toISOString(),
+        player: { userId: me.id, name: me.name, email: me.email, teamName: F.team()?.name || null, gameweekPoints: F.lastResult()?.pts ?? null, totalPoints: t.total || 0 },
+        leaguesCount: leagues.length, ...(leagues[0] || {}), leagues,
       });
-    });
+    };
+
+    /** A new fantasy team (the player is entered into the Grand League with it) */
+    const saveSquad = F.saveSquad;
+    F.saveSquad = async (ids, opts) => {
+      const had = !!F.team();
+      const out = await saveSquad(ids, opts);
+      const team = F.team();
+      if (!had && team) {
+        const me = customer();
+        send(fantasyUrl(), 'team.created', {
+          team: { teamId: team.id, teamName: team.name, captain: F.byId?.[team.captain]?.name || null, startGameweek: team.createdGW || F.meta().gw, players: (team.squad || []).length },
+          player: { userId: me.id, name: me.name, email: me.email },
+          competition: competition(), leagues: myLeagues().map((l) => leagueOf(l)), createdAt: new Date().toISOString(),
+        });
+      }
+      return out;
+    };
     const simulateGameweek = F.simulateGameweek;
     F.simulateGameweek = async (...args) => {
       const out = await simulateGameweek(...args);
