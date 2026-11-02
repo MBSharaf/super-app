@@ -41,7 +41,8 @@ public sealed class BookingsService(
         await flags.EnsureOnAsync(KillSwitches.Bookings, ct);
         var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
         var expires = await bookings.HoldAsync(plan.Pitch.Id, plan.Slots, Me(), ct);
-        return new HoldResponse(expires, plan.Lines, plan.PitchAmount, plan.ServiceFee, plan.Total);
+        var split = await Deposits.SplitAsync(settings, plan.Total, ct);
+        return new HoldResponse(expires, plan.Lines, plan.PitchAmount, plan.ServiceFee, plan.Total, split.Deposit, split.BalanceDue);
     }
 
     public async Task<BookingResponse> CreateAsync(CreateBookingRequest request, CancellationToken ct)
@@ -54,15 +55,16 @@ public sealed class BookingsService(
         {
             return repeated;
         }
-        var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
-        if (request.PayAtVenue && !plan.Pitch.AllowCash)
+        if (request.PayAtVenue)
         {
-            throw new BusinessRuleException("This pitch takes online payment only.", "cash_not_allowed");
+            throw new BusinessRuleException("Pitch bookings pay a deposit in the app; the rest is paid at the pitch.", "deposit_required");
         }
+        var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
         var discount = await loyalty.ForBookingAsync(me, request.PromoCode, request.VoucherCode, plan.Pitch.Id, plan.Pitch.OwnerUserId, plan.PitchAmount, plan.Total, ct);
         var booking = await NewBookingAsync(plan, request, me, ct);
         booking.DiscountAmount = discount.Total;
         booking.Total = plan.Total - discount.Total;
+        await Deposits.ApplyAsync(settings, booking, ct);
         loyalty.Use(discount, booking);
         var paymentUrl = await PayAsync(booking, plan, me, request.PayFromWallet, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);
@@ -86,17 +88,17 @@ public sealed class BookingsService(
     }
 
     /// <summary>
-    /// Online bookings get a payment. The simulated gateway pays at once (booking confirmed); a real gateway returns its page
-    /// and the booking waits for the webhook (AwaitingPayment, hours kept for 15 minutes).
+    /// The deposit is paid online (the rest at the pitch). The simulated gateway pays at once (booking confirmed); a real
+    /// gateway returns its page and the booking waits for the webhook (AwaitingPayment, hours kept for 15 minutes).
     /// </summary>
     private async Task<string?> PayAsync(Booking booking, BookingPlan plan, Guid me, bool fromWallet, CancellationToken ct)
     {
-        if (booking.PayAtVenue || booking.Total <= 0)
+        if (booking.Deposit <= 0)
         {
             return null;
         }
-        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Booking, booking.Total, me,
-            $"Booking {booking.Code} at {plan.Pitch.Name}", $"#/booking/{booking.Code}", fromWallet), ct);
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Booking, booking.Deposit, me,
+            $"Deposit for booking {booking.Code} at {plan.Pitch.Name}", $"#/booking/{booking.Code}", fromWallet), ct);
         booking.Payment = started.Payment;
         if (started.RedirectUrl is not null)
         {
@@ -161,5 +163,6 @@ public static class BookingMapper
 {
     public static BookingResponse ToResponse(Booking b, string slug, string name, string address, string? qrToken, string? packageCode = null) => new(
         b.Code, slug, name, address, b.Date, b.StartHour, b.Duration, b.PitchAmount, b.ServiceFee, b.Total, b.PayAtVenue,
-        b.Status.ToString(), b.PolicyKey, b.RefundAmount, b.CreatedAt, b.CancelledAt, qrToken, packageCode);
+        b.Status.ToString(), b.PolicyKey, b.RefundAmount, b.CreatedAt, b.CancelledAt, qrToken, packageCode,
+        Deposit: b.Deposit, BalanceDue: b.BalanceDue, BalancePaidAt: b.BalancePaidAt, CheckedInAt: b.CheckedInAt);
 }

@@ -69,5 +69,5 @@ public sealed class PartnerBookingsRepository(AppDbContext db) : IPartnerBooking
         b.Customer != null ? b.Customer.FullName : b.WalkInName ?? "Walk-in",
         b.Customer != null ? b.Customer.PhoneNumber : b.WalkInPhone,
         b.Source.ToString(), b.PitchAmount, b.ServiceFee, b.Total, b.CommissionRate, b.PayAtVenue, b.Status.ToString(),
-        b.CheckedInAt, b.CancelledAt, b.RefundAmount, b.CreatedAt);
+        b.CheckedInAt, b.CancelledAt, b.RefundAmount, b.CreatedAt, b.Deposit, b.BalanceDue, b.BalancePaidAt);
 }

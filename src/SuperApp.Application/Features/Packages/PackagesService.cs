@@ -87,11 +87,14 @@ public sealed class PackagesService(
         return await GetAsync(package.Code, ct);
     }
 
-    /// <summary>One payment for the whole package, shared by its matches; with Paymob the matches wait for it (AwaitingPayment).</summary>
+    /// <summary>
+    /// One payment for the whole package: every match's deposit (the rest of each match is paid at the pitch that week); with
+    /// Paymob the matches wait for it (AwaitingPayment).
+    /// </summary>
     private async Task<string?> PayAsync(Package package, IReadOnlyList<Booking> matches, BookingPlan first, Guid me, bool fromWallet, CancellationToken ct)
     {
-        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Package, package.TotalPrice, me,
-            $"Package {package.Code} at {first.Pitch.Name}", $"#/package/{package.Code}", fromWallet), ct);
+        var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Package, matches.Sum(m => m.Deposit), me,
+            $"Deposits for package {package.Code} at {first.Pitch.Name}", $"#/package/{package.Code}", fromWallet), ct);
         package.Payment = started.Payment;
         foreach (var m in matches)
         {
@@ -142,7 +145,10 @@ public sealed class PackagesService(
         var list = plans.Sum(p => p.PitchAmount);
         var price = plans.Sum(p => Discounted(p.PitchAmount, discount));
         var fee = plans.Sum(p => Fee(Discounted(p.PitchAmount, discount), feeRate));
-        var quote = new PackageQuoteDto(option.Id, option.MatchCount, discount, weeks, weeks.Count(w => !w.Available), list, list - price, fee, price + fee);
+        var (percent, minimum) = (await settings.DecimalAsync("deposit.percent", Deposits.DefaultPercent, ct), await settings.DecimalAsync("deposit.min", Deposits.DefaultMinimum, ct));
+        var deposit = plans.Sum(p => Deposits.Split(MatchTotal(p.PitchAmount, discount, feeRate), percent, minimum).Deposit);
+        var quote = new PackageQuoteDto(option.Id, option.MatchCount, discount, weeks, weeks.Count(w => !w.Available), list, list - price, fee, price + fee,
+            deposit, price + fee - deposit);
         return new PackagePlan(quote, plans, feeRate);
     }
 
@@ -158,17 +164,24 @@ public sealed class PackagesService(
         };
     }
 
+    private static decimal MatchTotal(decimal pitchAmount, decimal discount, decimal feeRate)
+    {
+        var amount = Discounted(pitchAmount, discount);
+        return amount + Fee(amount, feeRate);
+    }
+
     private async Task<Booking> MatchAsync(BookingPlan p, Package package, PackagePlan plan, int duration, long? waiver, Guid me, CancellationToken ct)
     {
         var amount = Discounted(p.PitchAmount, plan.Quote.DiscountPercent);
         var fee = Fee(amount, plan.FeeRate);
         var commission = p.Pitch.PartnerCommission ?? (await settings.DecimalAsync("commission.bookings", 0.10m, ct) * 100);
+        var split = await Deposits.SplitAsync(settings, amount + fee, ct);
         return new Booking
         {
             Code = await bookings.NewCodeAsync(ct), PitchId = p.Pitch.Id, CustomerId = me, Source = BookingSource.Package, Package = package,
             Date = p.Lines[0].Date, StartHour = (byte)p.Lines[0].CalendarHour, Duration = (byte)duration, PitchAmount = amount,
-            DiscountAmount = p.PitchAmount - amount, ServiceFee = fee, Total = amount + fee, CommissionRate = commission,
-            PolicyKey = p.Pitch.PolicyKey, WaiverVersionId = waiver, Status = BookingStatus.Confirmed,
+            DiscountAmount = p.PitchAmount - amount, ServiceFee = fee, Total = amount + fee, Deposit = split.Deposit, BalanceDue = split.BalanceDue,
+            CommissionRate = commission, PolicyKey = p.Pitch.PolicyKey, WaiverVersionId = waiver, Status = BookingStatus.Confirmed,
         };
     }
 

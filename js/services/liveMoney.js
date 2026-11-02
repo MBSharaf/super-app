@@ -51,6 +51,7 @@
     if (S.admin && session().can('payouts.read')) cache.adminPayouts = (await get('/admin/payouts?pageSize=100'))?.items || [];
     await S.liveMoney_loadApprovals?.();
     if (MONEY_PAGES.test(SA.core.router.location())) SA.app?.rerender?.();
+    SA.ui.pointsPop?.check();   // new points from the server → the "you earned" pop-up
   };
 
   // ---- Customer wallet and receipts
@@ -88,7 +89,9 @@
     const p = cache.points;
     if (!live() || !p) return base;
     const cfg = { ...base.cfg, earnPer: p.earnPer, pointValue: p.pointValue, minRedeem: p.minRedeem };
-    const history = p.history.map((h, i) => ({ id: `ph${i}`, points: h.points, label: h.reason || h.kind, kind: h.points < 0 ? 'redeem' : h.kind === 'Booking' ? 'earn' : 'bonus', at: at(h.createdAt) }));
+    // Payments and the rest paid at the pitch earn points (1 per EGP) and show the "you earned" pop-up; refunds take them back
+    const KINDS = { Payment: 'earn', Booking: 'earn', Order: 'earn', Tournament: 'earn', Refund: 'adjust', VoucherRedemption: 'redeem' };
+    const history = p.history.map((h, i) => ({ id: h.id ? `pt-${h.id}` : `ph${i}`, points: h.points, label: h.reason || h.kind, kind: KINDS[h.kind] || (h.points < 0 ? 'redeem' : 'bonus'), at: at(h.createdAt) }));
     return { ...base, balance: p.balance, value: p.balance * p.pointValue, history, cfg };
   };
   const liveVouchers = () => cache.vouchers.map((v) => ({ code: v.code, amount: v.amount, balance: v.status === 'Active' ? v.amount : 0, at: at(v.createdAt), uses: [] }));

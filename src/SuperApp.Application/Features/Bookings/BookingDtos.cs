@@ -14,7 +14,8 @@ public sealed record CreateBookingRequest(string PitchSlug, DateOnly Date, int H
 /// <summary>Price of each hour and the totals.</summary>
 public sealed record PriceLine(int Hour, DateOnly Date, int CalendarHour, decimal Price);
 
-public sealed record HoldResponse(DateTime ExpiresAt, IReadOnlyList<PriceLine> Hours, decimal PitchAmount, decimal ServiceFee, decimal Total);
+/// <summary><c>Deposit</c> is paid in the app now; <c>BalanceDue</c> is paid at the pitch.</summary>
+public sealed record HoldResponse(DateTime ExpiresAt, IReadOnlyList<PriceLine> Hours, decimal PitchAmount, decimal ServiceFee, decimal Total, decimal Deposit, decimal BalanceDue);
 
 /// <summary>A booking as its customer sees it. <c>QrToken</c> only on the booking's own page.</summary>
 public sealed record BookingResponse(
@@ -36,7 +37,11 @@ public sealed record BookingResponse(
     DateTime? CancelledAt,
     string? QrToken,
     string? PackageCode = null,
-    string? PaymentUrl = null);
+    string? PaymentUrl = null,
+    decimal Deposit = 0,
+    decimal BalanceDue = 0,
+    DateTime? BalancePaidAt = null,
+    DateTime? CheckedInAt = null);
 
 /// <summary>What a cancellation now refunds (the pitch's policy and the time left before kick-off).</summary>
 public sealed record RefundPreview(string Code, double HoursLeft, int RefundPercent, decimal RefundAmount, bool CanCancel);

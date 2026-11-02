@@ -88,7 +88,7 @@ public sealed class PaymentsTests(PaymobApiFactory api) : IClassFixture<PaymobAp
         booking.GetProperty("status").GetString().ShouldBe("AwaitingPayment");
         booking.GetProperty("paymentUrl").GetString()!.ShouldStartWith("https://accept.paymob.com/unifiedcheckout/?publicKey=test-public&clientSecret=egy_csk_test");
         var code = booking.GetProperty("code").GetString()!;
-        var cents = (long)(booking.GetProperty("total").GetDecimal() * 100);
+        var cents = (long)(booking.GetProperty("deposit").GetDecimal() * 100);
         var reference = api.References.Last();
 
         (await PostCallbackAsync(Callback(reference, cents, success: true, secret: "wrong"))).ShouldBe(HttpStatusCode.BadRequest);

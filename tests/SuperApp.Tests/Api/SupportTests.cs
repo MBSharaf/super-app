@@ -19,7 +19,7 @@ public sealed class SupportTests(AccountsApiFactory api) : IClassFixture<Account
     {
         var (_, ownerId, _, pitch) = await kit.PartnerWithPitchAsync(live: true);
         var (customer, userId) = await kit.PersonAsync(partner: false);
-        var booked = await customer.PostAsync("/api/v1/bookings", new { pitchSlug = pitch.GetProperty("slug").GetString(), date = PartnerKit.Day(3), hour = 12, duration = 1, payAtVenue = true, acceptWaiver = true });
+        var booked = await customer.PostAsync("/api/v1/bookings", new { pitchSlug = pitch.GetProperty("slug").GetString(), date = PartnerKit.Day(3), hour = 12, duration = 1, payAtVenue = false, acceptWaiver = true });
         booked.Status.ShouldBe(HttpStatusCode.Created, booked.Body.ToString());
         return (customer, userId, booked.Body.Data().GetProperty("code").GetString()!, ownerId);
     }

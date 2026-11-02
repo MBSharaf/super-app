@@ -14,6 +14,9 @@ namespace SuperApp.Tests.Seed;
 /// </summary>
 public sealed class SeedDatabaseFixture : IAsyncLifetime
 {
+    // LocalDB on Windows; elsewhere set SUPERAPP_TEST_SQL (e.g. a Docker SQL Server), as in AccountsApiFactory
+    private static string Server => Environment.GetEnvironmentVariable("SUPERAPP_TEST_SQL") ?? "Server=(localdb)\\MSSQLLocalDB;Trusted_Connection=True";
+
     public const string CeoEmail = "ceo@superapp.test";
     private readonly string name = $"SuperApp_SeedTest_{Guid.NewGuid():N}";
 
@@ -23,7 +26,7 @@ public sealed class SeedDatabaseFixture : IAsyncLifetime
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["ConnectionStrings:Default"] = $"Server=(localdb)\\MSSQLLocalDB;Database={name};Trusted_Connection=True;TrustServerCertificate=True",
+            ["ConnectionStrings:Default"] = $"{Server};Database={name};TrustServerCertificate=True",
             ["Seed:Ceo_Email"] = CeoEmail,
             ["Seed:Ceo_Password"] = "Test-only-1234",
             ["Seed:Ceo_Name"] = "Test CEO",

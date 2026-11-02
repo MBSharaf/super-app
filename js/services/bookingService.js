@@ -12,6 +12,15 @@
   const bookingId = () => 'SA-' + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(1000 + Math.random() * 9000);
   const startsAt = (b) => { const d = parseISO(b.date); d.setHours(0, 0, 0, 0); return d.getTime() + b.hour * 36e5; };
   const WEEK_OPTIONS = [4, 8, 12];
+  /**
+   * Owner's rule (2026-11-01): a pitch booking pays only a deposit in the app, 20% of the total with a minimum of 100 EGP
+   * (never more than the total). The rest is paid to the venue at the pitch and collected at check-in.
+   */
+  const depositFor = (total) => {
+    const cfg = SA.services.db.settings().deposit || { pct: 0.2, min: 100 };
+    const deposit = Math.min(Math.max(0, Math.round(total)), Math.max(Math.round(total * cfg.pct), cfg.min));
+    return { deposit, payAtPitch: Math.max(0, Math.round(total) - deposit) };
+  };
 
   /** Check-in code: booking id + a short signature so a typed-up or edited code is rejected */
   const sign = (id) => Math.floor(seeded(`${id}|superapp-checkin|v1`) * 1e5).toString(36).toUpperCase().padStart(4, '0');
@@ -43,7 +52,9 @@
   };
 
   const bookingService = {
-    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode,
+    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode, depositFor,
+    /** What was paid in the app for a booking (the deposit; older bookings were paid in full) */
+    paidOnline: (b) => (b.deposit != null ? b.deposit : b.total),
     /**
      * A weekly package and each game in it. A game is played (checked in), missed (it ended without a check-in — it
      * still counts as used), excused (the admin's one exception: not counted, a make-up game was added), cancelled or
@@ -78,7 +89,7 @@
       const pitchTotal = list - off - (promo && !promo.platform ? promo.amount : 0);
       const serviceFee = Math.round(pitchTotal * SA.services.db.settings().serviceFee);
       const total = pitchTotal + serviceFee - (sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0);
-      return { listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players) };
+      return { listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...depositFor(total) };
     },
 
     /** Weekly booking: every session's availability and price, using the pitch's weekly discount */
@@ -89,7 +100,7 @@
       const sessions = sessionsFor(p, date, hour, duration, weeks).map((s) => ({ ...s, ...(s.available ? bookingService.quote({ pitchId, date: s.date, hour, duration, discount }) : {}) }));
       const ok = sessions.filter((s) => s.available);
       const sum = (k) => ok.reduce((t, s) => t + s[k], 0);
-      return { sessions, booked: ok.length, skipped: sessions.length - ok.length, discount, listPrice: sum('listPrice'), discountAmount: sum('discountAmount'), pitchTotal: sum('pitchTotal'), serviceFee: sum('serviceFee'), total: sum('total') };
+      return { sessions, booked: ok.length, skipped: sessions.length - ok.length, discount, listPrice: sum('listPrice'), discountAmount: sum('discountAmount'), pitchTotal: sum('pitchTotal'), serviceFee: sum('serviceFee'), total: sum('total'), deposit: sum('deposit'), payAtPitch: sum('payAtPitch') };
     },
 
     /** Checks the slot is still free, takes payment, creates the booking. */
@@ -105,7 +116,7 @@
         if (!s || s.status !== 'available') throw new ApiError('Someone just booked part of this time. Pick another slot.', 'slot_taken');
       }
       const q = bookingService.quote({ pitchId, date, hour, duration, code });
-      const paid = await SA.services.payment.charge({ ...payment, amount: q.total, label: `Booking — ${p.name}` });
+      const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `Booking deposit — ${p.name}` });
       return request(() => {
         const booking = bookingService._record(p, { date, hour, duration, players, q, paid });
         if (q.promo) SA.services.codes.use(q.promo.id, { discount: q.promo.amount, revenue: q.pitchTotal });
@@ -113,9 +124,9 @@
         store.set((s) => ({ bookings: [booking, ...s.bookings] }), 'booking:new');
         bookingService._toLedger(booking);
         db().log('customer', 'booking.created', `New app booking ${booking.id} at ${p.name}`, booking.id);
-        SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}.`, link: `/booking/${booking.id}` });
+        SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}. Deposit ${booking.deposit.toLocaleString()} EGP paid; pay ${booking.payAtPitch.toLocaleString()} EGP at the pitch.`, link: `/booking/${booking.id}` });
         // The pitch partner is told too
-        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · paid in the app`, link: '#/dash/bookings' });
+        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · deposit ${booking.deposit.toLocaleString()} EGP paid in the app · collect ${booking.payAtPitch.toLocaleString()} EGP at the pitch`, link: '#/dash/bookings' });
         return booking;
       });
     },
@@ -131,7 +142,7 @@
       const q = bookingService.quoteSeries({ pitchId, date, hour, duration, weeks: +weeks });
       if (!q.sessions[0].available) throw new ApiError('Someone just booked the first session. Pick another slot.', 'slot_taken');
       if (q.booked < 2) throw new ApiError('Fewer than two of those weeks are free. Pick another time.', 'slot_taken');
-      const paid = await SA.services.payment.charge({ ...payment, amount: q.total, label: `Weekly booking × ${q.booked} — ${p.name}` });
+      const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `Weekly booking deposit × ${q.booked} — ${p.name}` });
       return request(() => {
         const u = store.get().user || {};
         const seriesId = 'WK-' + Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -143,7 +154,7 @@
           weekday: parseISO(date).getDay(), hour, duration, startDate: date, weeks: +weeks, discount: q.discount, payment: paid.method === 'wallet' ? 'Wallet' : 'Card', source: 'app', status: 'active', bookingIds: list.map((b) => b.id), skipped: q.skipped }, 'WK');
         db().log('customer', 'series.created', `New weekly booking ${seriesId} at ${p.name}: ${list.length} sessions`, seriesId);
         SA.services.user.notify({ kind: 'booking', title: 'Weekly booking confirmed', body: `${list.length} games at ${p.name}, every ${SA.core.utils.DAY[parseISO(date).getDay()]} at ${SA.core.utils.fmtHour(hour)}.`, link: `/booking/${list[0].id}` });
-        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New weekly package at ${p.name}`, body: `${u.name || 'A customer'} · ${list.length} games, every ${SA.core.utils.DAY[parseISO(date).getDay()]} at ${SA.core.utils.fmtHour(hour)} · one QR for the whole package`, link: '#/dash/bookings' });
+        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New weekly package at ${p.name}`, body: `${u.name || 'A customer'} · ${list.length} games, every ${SA.core.utils.DAY[parseISO(date).getDay()]} at ${SA.core.utils.fmtHour(hour)} · deposits ${q.deposit.toLocaleString()} EGP paid in the app, the rest at the pitch each week · one QR for the whole package`, link: '#/dash/bookings' });
         return { seriesId, bookings: list };
       });
     },
@@ -151,7 +162,7 @@
     _record(p, { date, hour, duration, players, q, paid, extra = {} }) {
       return {
         id: bookingId(), pitchId: p.id, pitchName: p.name, area: p.area, city: p.city, image: p.images[0], format: p.format,
-        date, hour, duration, players: players || p.players, listPrice: q.listPrice, discount: q.discount || 0, discountAmount: q.discountAmount || 0, promo: q.promo ? { code: q.promo.code, amount: q.promo.amount } : null, pitchTotal: q.pitchTotal, serviceFee: q.serviceFee, total: q.total, perPlayer: q.perPlayer,
+        date, hour, duration, players: players || p.players, listPrice: q.listPrice, discount: q.discount || 0, discountAmount: q.discountAmount || 0, promo: q.promo ? { code: q.promo.code, amount: q.promo.amount } : null, pitchTotal: q.pitchTotal, serviceFee: q.serviceFee, total: q.total, perPlayer: q.perPlayer, deposit: q.deposit, payAtPitch: q.payAtPitch,
         payment: { method: paid.method, label: paid.label, ref: paid.id }, status: 'confirmed', createdAt: Date.now(), publishedMatchId: null, policy: p.cancelPolicy || 'standard', ...extra,
       };
     },
@@ -180,7 +191,7 @@
     cancellationPolicy(b) {
       const hoursLeft = (startsAt(b) - Date.now()) / 36e5;
       const share = PS().refundShare(b.policy, hoursLeft);
-      return { share, refund: Math.round(b.total * share), policy: PS().policyOf(b.policy), hoursLeft, kind: share === 1 ? 'full' : share > 0 ? 'half' : 'none' };
+      return { share, refund: Math.round(bookingService.paidOnline(b) * share), policy: PS().policyOf(b.policy), hoursLeft, kind: share === 1 ? 'full' : share > 0 ? 'half' : 'none' };
     },
     async cancel(id) {
       const b = store.get().bookings.find((x) => x.id === id);

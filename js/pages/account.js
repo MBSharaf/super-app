@@ -108,16 +108,16 @@
         <b class="pc-bal num" data-countup="${L.balance}">${L.balance.toLocaleString()}</b>
         <span class="small pc-sub">Worth <b>${money(Math.floor(L.value))}</b> in vouchers</span>
         <div class="pc-prog"><span style="--w:${Math.round(L.progress * 100)}%"></span></div>
-        <span class="xs pc-sub">${L.next ? `${(L.next.min - L.lifetime).toLocaleString()} points to ${L.next.name} — earn ×${L.next.mult} on everything` : 'Top tier — you earn ×1.5 on everything'}</span>
+        <span class="xs pc-sub">${L.next ? `${(L.next.min - L.lifetime).toLocaleString()} points to ${L.next.name}` : 'Top tier — Gold member'}</span>
         <button class="btn btn-sm pc-btn" data-redeem ${L.balance >= L.cfg.minRedeem ? '' : 'disabled'}>${icon('gift', 14)} Get a voucher</button>
         <span class="pc-coin" aria-hidden="true">S</span>
       </div>
       <div class="panel panel-pad points-how">
         <h2 class="h4">How you earn</h2>
         <ul class="how-list">
-          <li>${icon('pitch', 18)}<span><b>1 point for every ${L.cfg.earnPer} EGP</b> on games you play, orders delivered and tournament entries</span></li>
+          <li>${icon('pitch', 18)}<span><b>1 point for every ${L.cfg.earnPer === 1 ? '' : `${L.cfg.earnPer} `}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, the shop, tournaments and the Fantasy Pass. The points land the moment you pay.</span></li>
           <li>${icon('star', 18)}<span><b>+20 points</b> for each review after a game</span></li>
-          <li>${icon('trophy', 18)}<span><b>Silver ×1.25 · Gold ×1.5</b> — your tier rises with lifetime points (${L.lifetime.toLocaleString()} so far)</span></li>
+          <li>${icon('trophy', 18)}<span><b>Bronze · Silver · Gold</b> — your tier rises with lifetime points (${L.lifetime.toLocaleString()} so far)</span></li>
           <li>${icon('gift', 18)}<span><b>${Math.round(1 / L.cfg.pointValue)} points = 1 EGP</b> as a voucher, from ${L.cfg.minRedeem.toLocaleString()} points (${money(Math.round(L.cfg.minRedeem * L.cfg.pointValue))}). Use it on bookings, games, the shop, printed designs, tournaments and the Fantasy Pass — points can’t be turned into cash.</span></li>
         </ul>
         ${S.loyalty.vouchers().length ? `<h3 class="small strong" style="margin-top:16px">Your vouchers</h3><ul class="tx-list">${S.loyalty.vouchers().map((v) => `<li><span class="tx-ico credit">${icon('gift', 14, 2.2)}</span><span class="grow"><b class="small num">${esc(v.code)}</b><span class="xs muted" style="display:block">${v.balance ? `${money(v.balance)} left of ${money(v.amount)}` : `Used — ${money(v.amount)}`}</span></span>${v.balance ? '<span class="badge badge-turf">Ready</span>' : '<span class="badge">Used</span>'}</li>`).join('')}</ul>` : ''}

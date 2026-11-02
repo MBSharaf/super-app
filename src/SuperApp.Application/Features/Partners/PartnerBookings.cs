@@ -9,7 +9,10 @@ namespace SuperApp.Application.Features.Partners;
 /// </summary>
 public sealed record PartnerBookingsQuery(long? PitchId = null, DateOnly? From = null, DateOnly? To = null, string? Status = null, string? Q = null, int Page = 1, int PageSize = 20);
 
-/// <summary>A booking as the venue sees it. <c>Source</c>: App, WalkIn, Package, Series, Tournament, FreeSlot.</summary>
+/// <summary>
+/// A booking as the venue sees it. <c>Source</c>: App, WalkIn, Package, Series, Tournament, FreeSlot. <c>Deposit</c> was paid in
+/// the app; <c>BalanceDue</c> is collected in cash at the pitch when the QR is scanned (<c>BalancePaidAt</c>).
+/// </summary>
 public sealed record PartnerBookingDto(
     string Code,
     long PitchId,
@@ -29,7 +32,10 @@ public sealed record PartnerBookingDto(
     DateTime? CheckedInAt,
     DateTime? CancelledAt,
     decimal RefundAmount,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    decimal Deposit = 0,
+    decimal BalanceDue = 0,
+    DateTime? BalancePaidAt = null);
 
 /// <summary>POST /partner/bookings/walk-in — a booking taken at the venue (no service fee, no commission).</summary>
 public sealed record WalkInRequest(long PitchId, DateOnly Date, int Hour, int Duration, string Name, string? Phone);

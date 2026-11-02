@@ -1,7 +1,10 @@
 /**
- * Super Points — loyalty for players. Points are earned when a booked game is played, when a
- * shop order is delivered and on tournament entries; bonuses for reviews. Tiers raise the earn
- * rate. Points become vouchers only (never cash): 20 points = 1 EGP, from 2,000 points (a 100 EGP voucher).
+ * Super Points — loyalty for players. Owner's rule (2026-11-01): every 1 EGP the player pays earns 1 point, the
+ * moment it is paid: any payment in the app (booking deposits, games, the shop, tournaments, the Fantasy Pass), the
+ * rest of a booking paid at the pitch (when the venue scans the QR) and cash-on-delivery orders when delivered.
+ * Wallet top-ups earn nothing (the points come when the wallet money is spent), voucher money earns nothing, and a
+ * refund takes its points back. Each new earning shows a "Congratulations" pop-up (js/components/pointsPop.js).
+ * Activity from before this rule keeps the old rate (1 point per 10 EGP after the game, tiers raise it). Points become vouchers only (never cash): 20 points = 1 EGP, from 2,000 points (a 100 EGP voucher).
  * A voucher is spent at checkout anywhere in the app — pitch bookings, games, the shop, printed designs,
  * tournament entries and the Fantasy Pass. Rates come from Platform settings (admin).
  * Earned points are derived from the player's history, so they can never drift out of sync.
@@ -23,24 +26,37 @@
   const tierFor = (lifetime) => [...TIERS].reverse().find((t) => lifetime >= t.min);
   const stored = () => store.get().loyalty?.entries || [];
 
-  /** Earning events from the player's real activity */
+  /** When the 1 point = 1 EGP rule started on this device; older activity keeps the old rule */
+  const cutover = () => db().settings().loyaltyV3At || 0;
+  const LEGACY_PER = 10;
+
+  /** Earning events derived from the player's activity (payments made outside the app's checkout, and older activity) */
   const activity = () => {
-    const now = Date.now();
+    const now = Date.now(), cut = cutover();
     const out = [];
     store.get().bookings.forEach((b) => {
       const end = parseISO(b.date).getTime() + (b.hour + b.duration) * 36e5;
-      if (b.status !== 'cancelled' && end < now) out.push({ id: `bk-${b.id}`, at: end, base: b.pitchTotal, label: `Played at ${b.pitchName}`, kind: 'earn' });
+      if (b.deposit == null && (b.createdAt || 0) < cut) {
+        if (b.status !== 'cancelled' && end < now) out.push({ id: `bk-${b.id}`, at: end, base: b.pitchTotal, label: `Played at ${b.pitchName}`, kind: 'earn', legacy: true });
+        return;
+      }
+      // The rest of a deposit booking, paid to the venue at the pitch (recorded when they scan the QR)
+      const v = db().find('bookings', b.id);
+      if (v?.balancePaidAt && v.balancePaid > 0) out.push({ id: `bal-${b.id}`, at: v.balancePaidAt, base: v.balancePaid, label: `Paid at the pitch — ${b.pitchName}`, kind: 'earn' });
     });
     store.get().orders.forEach((o) => {
+      const cod = o.payment?.method === 'cod';
+      if (!cod && (o.createdAt || 0) >= cut) return; // paid online: earned at payment
       let tr; try { tr = SA.services.shop.trackingSync(o); } catch { tr = null; }
       (tr?.sellers || []).forEach((g) => {
         if (g.status !== 'delivered') return;
         const value = g.lines.reduce((t, l) => t + l.price * l.qty, 0);
-        out.push({ id: `or-${o.id}-${g.storeId}`, at: g.at?.delivered || o.createdAt + 48 * 36e5, base: value, label: `Order ${o.id} delivered (${g.storeName})`, kind: 'earn' });
+        out.push({ id: `or-${o.id}-${g.storeId}`, at: g.at?.delivered || o.createdAt + 48 * 36e5, base: value, label: `Order ${o.id} delivered (${g.storeName})${cod ? ' — cash on delivery' : ''}`, kind: 'earn', legacy: !cod || (o.createdAt || 0) < cut });
       });
     });
     (db().all('tournaments') || []).forEach((t) => t.teams?.forEach((tm) => {
-      if (tm.userId === (store.get().user?.id || 'u-001') && tm.paid && t.status !== 'cancelled') out.push({ id: `tr-${t.id}-${tm.id}`, at: tm.createdAt, base: t.fee, label: `Tournament entry — ${t.name}`, kind: 'earn' });
+      if ((tm.createdAt || 0) >= cut) return; // paid online: earned at payment
+      if (tm.userId === (store.get().user?.id || 'u-001') && tm.paid && t.status !== 'cancelled') out.push({ id: `tr-${t.id}-${tm.id}`, at: tm.createdAt, base: t.fee, label: `Tournament entry — ${t.name}`, kind: 'earn', legacy: true });
     }));
     return out;
   };
@@ -51,7 +67,7 @@
     let lifetime = 0, balance = 0;
     const history = events.map((e) => {
       let points = e.points;
-      if (e.kind === 'earn' && points == null) points = Math.floor((e.base / c.earnPer) * tierFor(lifetime).mult);
+      if (e.kind === 'earn' && points == null) points = e.legacy ? Math.floor((e.base / LEGACY_PER) * tierFor(lifetime).mult) : Math.floor(e.base / (c.earnPer || 1));
       if (points > 0) lifetime += points;
       balance += points;
       return { ...e, points, tier: tierFor(lifetime).key };
@@ -65,8 +81,22 @@
 
   const loyalty = {
     TIERS, summary: compute,
-    /** Points a payment of `amount` will earn at the current tier (shown at checkout) */
-    estimate(amount) { const s = compute(); return Math.floor((amount / s.cfg.earnPer) * s.tier.mult); },
+    /** Points a payment of `amount` EGP earns (1 point per EGP by default) */
+    estimate(amount) { return Math.max(0, Math.floor((+amount || 0) / (cfg().earnPer || 1))); },
+    /** Money was paid (called by the payment service): points straight away. Idempotent by ref. */
+    earn(amount, label, ref) {
+      const points = loyalty.estimate(amount);
+      if (!points || (ref && stored().some((e) => e.ref === ref))) return 0;
+      add({ ref, points, base: Math.round(amount), label, kind: 'earn' });
+      return points;
+    },
+    /** Money was refunded: its points go back (never below zero) */
+    reverse(amount, label, ref) {
+      const points = Math.min(loyalty.estimate(amount), Math.max(0, compute().balance));
+      if (!points || (ref && stored().some((e) => e.ref === ref))) return 0;
+      add({ ref, points: -points, label: /^Refund/.test(label) ? label : `Refund — ${label}`, kind: 'adjust' });
+      return points;
+    },
     /** One-off bonus (idempotent by key) */
     bonus(key, points, label) {
       if (stored().some((e) => e.key === key)) return;

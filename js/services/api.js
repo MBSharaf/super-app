@@ -47,6 +47,8 @@
   /** API mode only when this page is served by the Super App server (it answers the CSRF endpoint) */
   const detect = async () => {
     if (location.protocol === 'file:' || /github\.io$/.test(location.hostname)) return 'demo';
+    // The Android app uses the demo data until the server is online on a public HTTPS address
+    if (window.Capacitor?.isNativePlatform?.()) return 'demo';
     try { await refreshCsrf(); return 'api'; } catch { return 'demo'; }
   };
 

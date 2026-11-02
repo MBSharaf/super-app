@@ -26,6 +26,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             t.HasCheckConstraint("CK_Bookings_Total", "[Total] >= 0");
             t.HasCheckConstraint("CK_Bookings_CommissionRate", "[CommissionRate] BETWEEN 0 AND 100");
             t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 6");
+            t.HasCheckConstraint("CK_Bookings_Deposit", "[Deposit] >= 0 AND [BalanceDue] >= 0 AND [Deposit] + [BalanceDue] <= [Total]");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).HasMaxLength(12).IsUnicode(false);
@@ -39,6 +40,8 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(x => x.Total).HasPrecision(12, 2);
         builder.Property(x => x.CommissionRate).HasPrecision(5, 2);
         builder.Property(x => x.PayAtVenue).HasDefaultValue(false).ValueGeneratedNever();
+        builder.Property(x => x.Deposit).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
+        builder.Property(x => x.BalanceDue).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.PolicyKey).HasMaxLength(20).IsUnicode(false);
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(BookingStatus.Confirmed).ValueGeneratedNever();
         builder.Property(x => x.RefundAmount).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();

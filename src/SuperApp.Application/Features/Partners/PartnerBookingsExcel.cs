@@ -8,7 +8,7 @@ public static class PartnerBookingsExcel
     private static readonly string[] Headers =
     [
         "Code", "Pitch", "Date", "Start", "Hours", "Customer", "Phone", "Source", "Pitch amount", "Service fee", "Total",
-        "Commission %", "Pay at venue", "Status", "Checked in", "Cancelled", "Refund", "Booked at",
+        "Commission %", "Pay at venue", "Status", "Checked in", "Cancelled", "Refund", "Booked at", "Deposit (app)", "Due at pitch", "Collected at",
     ];
 
     public static ExcelDashboard Dashboard(string business, PartnerBookingsQuery q, IReadOnlyList<PartnerBookingDto> rows)
@@ -26,12 +26,14 @@ public static class PartnerBookingsExcel
             new("Pitch revenue", active.Sum(r => r.PitchAmount), IsMoney: true),
             new("Super App commission", active.Sum(r => Math.Round(r.PitchAmount * r.CommissionRate / 100, 2)), IsMoney: true),
             new("Refunded", rows.Sum(r => r.RefundAmount), IsMoney: true),
+            new("Deposits paid in the app", active.Sum(r => r.Deposit), IsMoney: true),
+            new("Due at the pitch (not collected yet)", active.Where(r => r.BalancePaidAt is null).Sum(r => r.BalanceDue), IsMoney: true),
         ]);
     }
 
     public static ExcelSheet Sheet(IReadOnlyList<PartnerBookingDto> rows) => new("Bookings", Headers, rows.Select(r => (IReadOnlyList<object?>)
     [
         r.Code, r.PitchName, r.Date, $"{r.StartHour:00}:00", r.Duration, r.CustomerName, r.CustomerPhone, r.Source, r.PitchAmount, r.ServiceFee, r.Total,
-        r.CommissionRate, r.PayAtVenue, r.Status, r.CheckedInAt, r.CancelledAt, r.RefundAmount, r.CreatedAt,
+        r.CommissionRate, r.PayAtVenue, r.Status, r.CheckedInAt, r.CancelledAt, r.RefundAmount, r.CreatedAt, r.Deposit, r.BalanceDue, r.BalancePaidAt,
     ]).ToList());
 }

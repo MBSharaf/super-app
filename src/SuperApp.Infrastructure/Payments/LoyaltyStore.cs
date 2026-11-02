@@ -17,7 +17,7 @@ public sealed class LoyaltyStore(AppDbContext db) : ILoyaltyStore, IPartnerCodeS
 
     public async Task<IReadOnlyList<PointRowDto>> HistoryAsync(Guid userId, CancellationToken ct) =>
         await db.Set<PointEntry>().Where(p => p.UserId == userId).OrderByDescending(p => p.Id).Take(100)
-            .Select(p => new PointRowDto(p.Points, p.Kind.ToString(), p.Reason, p.CreatedAt)).ToListAsync(ct);
+            .Select(p => new PointRowDto(p.Points, p.Kind.ToString(), p.Reason, p.CreatedAt, p.Id)).ToListAsync(ct);
 
     public Task<bool> HasPointsForAsync(Guid userId, PointKind kind, string refType, long refId, CancellationToken ct) =>
         db.Set<PointEntry>().AnyAsync(p => p.UserId == userId && p.Kind == kind && p.RefType == refType && p.RefId == refId, ct);

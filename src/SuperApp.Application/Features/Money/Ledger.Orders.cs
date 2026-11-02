@@ -69,6 +69,7 @@ public sealed partial class Ledger
         PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), -(amount - fromStores), LedgerBucket.Available, LedgerKind.Refund, "Order", order.Id, null, group);
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = order.CustomerId, Kind = ReceiptKind.Refund,
             Amount = amount, RefType = "Order", RefId = order.Id });
+        await points.TakeBackAsync(order.CustomerId, amount, "Order", order.Id, ct);
     }
 
     /// <summary>
@@ -86,6 +87,7 @@ public sealed partial class Ledger
             PostRaw(await store.WalletAsync(order.CustomerId, WalletType.Customer, ct), refund, LedgerBucket.Available, LedgerKind.Refund, "Return", returnId, null, group);
             store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = order.CustomerId, Kind = ReceiptKind.Refund,
                 Amount = refund, RefType = "Return", RefId = returnId });
+            await points.TakeBackAsync(order.CustomerId, refund, "Return", returnId, ct);
         }
         if (payer is null)
         {

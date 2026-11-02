@@ -29,6 +29,15 @@ public class Booking : BaseEntity, IHasRowVersion
     public decimal CommissionRate { get; set; }
     public long? PaymentId { get; set; }
     public bool PayAtVenue { get; set; }
+
+    /// <summary>
+    /// App bookings pay only a deposit online (owner's rule, 2026-11-01: 20% of the total, at least 100 EGP, never more than the
+    /// total). <c>BalanceDue</c> is the rest, paid in cash to the venue at the pitch and recorded at check-in (<c>BalancePaidAt</c>).
+    /// Both are 0 for walk-ins, tournament hours and bookings made before the rule.
+    /// </summary>
+    public decimal Deposit { get; set; }
+    public decimal BalanceDue { get; set; }
+    public DateTime? BalancePaidAt { get; set; }
     public string PolicyKey { get; set; } = string.Empty;
     public long? WaiverVersionId { get; set; }
     public BookingStatus Status { get; set; }

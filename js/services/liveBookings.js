@@ -151,7 +151,10 @@
       date: r.date, hour: r.startHour, duration: r.duration, players: prev.players || p.players || 10,
       listPrice: +r.pitchAmount, pitchTotal: +r.pitchAmount, serviceFee: +r.serviceFee, total: +r.total,
       discount: 0, discountAmount: 0, promo: null, publishedMatchId: prev.publishedMatchId || null,
-      payment: r.payAtVenue ? { method: 'cash', label: 'Pay at the venue' } : { method: 'card', label: 'Paid in the app' },
+      payment: r.payAtVenue ? { method: 'cash', label: 'Pay at the venue' } : { method: 'card', label: +r.deposit > 0 ? 'Deposit paid in the app' : 'Paid in the app' },
+      // Owner's rule (2026-11-01): the app takes the deposit, the rest is paid at the pitch (older bookings were paid in full)
+      ...(+r.deposit > 0 ? { deposit: +r.deposit, payAtPitch: +r.balanceDue, balancePaidAt: r.balancePaidAt ? Date.parse(r.balancePaidAt) : 0 } : {}),
+      checkedInAt: r.checkedInAt ? Date.parse(r.checkedInAt) : 0,
       status: r.status.startsWith('Cancelled') ? 'cancelled' : 'confirmed', awaitingPayment: r.status === 'AwaitingPayment', checkedIn: ['CheckedIn', 'Played'].includes(r.status),
       refund: +r.refundAmount, createdAt: Date.parse(r.createdAt), cancelledAt: r.cancelledAt ? Date.parse(r.cancelledAt) : 0,
       policy: r.policyKey, qrToken: r.qrToken || prev.qrToken || null,
@@ -166,7 +169,7 @@
 
   const hold = async ({ pitchId, date, hour, duration }) => {
     const h = await api.post('/bookings/hold', { pitchSlug: slugOf(pitchId), date, hour, duration });
-    return { listPrice: +h.pitchAmount, pitchTotal: +h.pitchAmount, serviceFee: +h.serviceFee, total: +h.total, discount: 0, discountAmount: 0, promo: null, expiresAt: Date.parse(h.expiresAt) };
+    return { listPrice: +h.pitchAmount, pitchTotal: +h.pitchAmount, serviceFee: +h.serviceFee, total: +h.total, deposit: +h.deposit, payAtPitch: +h.balanceDue, discount: 0, discountAmount: 0, promo: null, expiresAt: Date.parse(h.expiresAt) };
   };
 
   /** Price from the hour grid (the server confirms it when the hours are held at checkout) */
@@ -178,13 +181,13 @@
     for (let h = hour; h < hour + duration; h++) list += slots.find((s) => s.hour === h)?.price ?? p.price;
     const serviceFee = Math.round(list * SA.services.db.settings().serviceFee);
     const total = list + serviceFee;
-    return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players) };
+    return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...B.depositFor(total) };
   };
 
   const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false, code }) => {
     SA.services.legal?.requireWaiver(waiver, 'booking');
     const r = await api.post('/bookings', {
-      pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: payment?.method === 'cash', acceptWaiver: !!waiver,
+      pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: false, acceptWaiver: !!waiver,
       promoCode: code || undefined, voucherCode: payment?.voucher || undefined, payFromWallet: payment?.method === 'wallet',
     });
     SA.services.liveMoney?.sync();
@@ -245,7 +248,7 @@
         list += s?.price ?? (h >= 18 || [5, 6].includes(parseISO(d).getDay()) ? p.peakPrice : p.price);
       }
       const pitchTotal = Math.round(list * (1 - discount)), serviceFee = Math.round(pitchTotal * rate);
-      sessions.push(free ? { date: d, available: true, listPrice: list, discountAmount: list - pitchTotal, pitchTotal, serviceFee, total: pitchTotal + serviceFee } : { date: d, available: false });
+      sessions.push(free ? { date: d, available: true, listPrice: list, discountAmount: list - pitchTotal, pitchTotal, serviceFee, total: pitchTotal + serviceFee, ...B.depositFor(pitchTotal + serviceFee) } : { date: d, available: false });
     }
     return seriesTotals(sessions, discount);
   };
@@ -253,7 +256,7 @@
   const seriesTotals = (sessions, discount) => {
     const ok = sessions.filter((s) => s.available);
     const sum = (k) => ok.reduce((t, s) => t + s[k], 0);
-    return { sessions, booked: ok.length, skipped: sessions.length - ok.length, discount, listPrice: sum('listPrice'), discountAmount: sum('discountAmount'), pitchTotal: sum('pitchTotal'), serviceFee: sum('serviceFee'), total: sum('total') };
+    return { sessions, booked: ok.length, skipped: sessions.length - ok.length, discount, listPrice: sum('listPrice'), discountAmount: sum('discountAmount'), pitchTotal: sum('pitchTotal'), serviceFee: sum('serviceFee'), total: sum('total'), deposit: sum('deposit'), payAtPitch: sum('payAtPitch') };
   };
 
   /** The server's exact quote (checkout) in the same shape */
@@ -263,9 +266,9 @@
     const q = await api.get(`/packages/quote?pitchSlug=${slugOf(pitchId)}&optionId=${option.id}&startsOn=${date}&hour=${hour}&duration=${duration}`);
     const rate = SA.services.db.settings().serviceFee;
     const sessions = q.weeks.map((w) => (w.available
-      ? { date: w.date, available: true, listPrice: +w.listPrice, discountAmount: +w.listPrice - +w.price, pitchTotal: +w.price, serviceFee: Math.round(+w.price * rate), total: +w.price + Math.round(+w.price * rate) }
+      ? { date: w.date, available: true, listPrice: +w.listPrice, discountAmount: +w.listPrice - +w.price, pitchTotal: +w.price, serviceFee: Math.round(+w.price * rate), total: +w.price + Math.round(+w.price * rate), ...B.depositFor(+w.price + Math.round(+w.price * rate)) }
       : { date: w.date, available: false }));
-    return { ...seriesTotals(sessions, +q.discountPercent / 100), listPrice: +q.listPrice, discountAmount: +q.discountAmount, serviceFee: +q.serviceFee, total: +q.total, pitchTotal: +q.listPrice - +q.discountAmount };
+    return { ...seriesTotals(sessions, +q.discountPercent / 100), listPrice: +q.listPrice, discountAmount: +q.discountAmount, serviceFee: +q.serviceFee, total: +q.total, pitchTotal: +q.listPrice - +q.discountAmount, deposit: +q.deposit, payAtPitch: +q.balanceDue };
   };
 
   const createSeries = async ({ pitchId, date, hour, duration, weeks, payment, waiver = false }) => {
@@ -288,7 +291,8 @@
     return pk.matches.map((m) => {
       const b = bookings.get(m.code) || {};
       return { ...b, id: m.code, live: true, pitchId: idOf(pk.pitchSlug), pitchName: pk.pitchName, date: m.date, hour: m.startHour, duration: pk.duration,
-        total: +m.total, discountAmount: +m.discountAmount, status: MATCH_STATUS[m.status] || 'confirmed', seriesId: code, sessionNo: m.number, seriesSize: pk.matchCount,
+        total: +m.total, discountAmount: +m.discountAmount, status: MATCH_STATUS[m.status] || 'confirmed',
+        ...(+m.deposit > 0 ? { deposit: +m.deposit, payAtPitch: +m.balanceDue, balancePaidAt: m.balancePaidAt ? Date.parse(m.balancePaidAt) : 0 } : {}), seriesId: code, sessionNo: m.number, seriesSize: pk.matchCount,
         policy: b.policy || p.cancelPolicy || 'standard', checkedIn: !!m.checkedInAt };
     });
   };

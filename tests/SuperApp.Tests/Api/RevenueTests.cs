@@ -25,7 +25,8 @@ public sealed class RevenueTests(AccountsApiFactory api) : IClassFixture<Account
         revenue.Status.ShouldBe(HttpStatusCode.OK, revenue.Body.ToString());
         var day = revenue.Body.Data().GetProperty("daily")[0];
         (day.GetProperty("fees").GetDecimal() - before.GetProperty("fees").GetDecimal()).ShouldBe(booking.GetProperty("serviceFee").GetDecimal());
-        (day.GetProperty("gmv").GetDecimal() - before.GetProperty("gmv").GetDecimal()).ShouldBe(booking.GetProperty("total").GetDecimal());
+        // GMV is the money paid through Super App: the deposit (the rest is cash at the pitch)
+        (day.GetProperty("gmv").GetDecimal() - before.GetProperty("gmv").GetDecimal()).ShouldBe(booking.GetProperty("deposit").GetDecimal());
         (day.GetProperty("bookings").GetDecimal() - before.GetProperty("bookings").GetDecimal()).ShouldBeGreaterThan(0);
         revenue.Body.Data().GetProperty("owners").GetArrayLength().ShouldBeGreaterThan(0);
 

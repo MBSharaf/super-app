@@ -25,18 +25,20 @@
           <div><dt>Customer</dt><dd>${esc(b.customer.name)}</dd></div>
           <div><dt>Phone</dt><dd class="num">${esc(b.customer.phone || '—')}</dd></div>
           <div><dt>Pitch</dt><dd>${esc(b.pitchName)}</dd></div>
-          <div><dt>Payment</dt><dd>${esc(b.payment)}</dd></div>
+          <div><dt>Payment</dt><dd>${b.money.deposit != null ? `Deposit in the app (${esc(b.payment)})` : esc(b.payment)}</dd></div>
         </dl>
         <h3 class="small strong" style="margin-top:18px">Money</h3>
         <dl class="kv" style="margin-top:8px">
           <div><dt>Pitch price</dt><dd class="num">${money(b.amount)}</dd></div>
+          ${b.money.deposit != null && b.status !== 'cancelled' ? `<div><dt>Deposit paid in the app</dt><dd class="num">${money(b.money.deposit)}</dd></div>
+          <div><dt>${b.money.collected ? 'Collected at the pitch' : 'To collect at the pitch'}</dt><dd class="num" style="${b.money.collected ? 'color:var(--turf)' : 'color:var(--blaze)'}">${money(b.money.due)}</dd></div>` : ''}
           ${b.discountAmount || b.discount ? `<div><dt>Includes weekly discount</dt><dd class="num">${Math.round((b.discount || 0) * 100)}%</dd></div>` : ''}
           <div><dt>Super App commission (${b.source === 'app' ? +(D().bookingRate(b.ownerId) * 100).toFixed(1) : '0'}%)</dt><dd class="num">−${money(b.money.commission)}</dd></div>
           ${b.status === 'cancelled' ? `<div><dt>Refunded to customer</dt><dd class="num" style="color:var(--danger)">${money(b.money.refund)}</dd></div>` : ''}
           ${b.money.retained ? `<div><dt>Kept under the cancellation policy</dt><dd class="num">${money(b.money.gross)}</dd></div>` : ''}
           <div class="total"><dt>Your earnings</dt><dd class="num">${money(b.money.net)}</dd></div>
         </dl>
-        <p class="xs muted" style="margin-top:8px">${b.money.retained ? 'Late cancellation — the part the policy didn’t refund is yours.' : b.money.online ? 'Paid online — added to your wallet after the match.' : b.status === 'cancelled' ? '' : b.source === 'app' ? 'Paid at the venue — you collected the cash; the commission is deducted from your wallet.' : 'Paid at the venue — no Super App commission.'}</p>
+        <p class="xs muted" style="margin-top:8px">${b.money.retained ? 'Late cancellation — the part the policy didn’t refund is yours.' : b.money.deposit != null && b.status !== 'cancelled' ? `The customer paid a deposit in the app; the deposit’s pitch part (${money(b.money.online)}) less the commission goes to your wallet. The rest (${money(b.money.due)}) is paid to you at the pitch. Collect it when you scan their QR at check-in.` : b.money.online ? 'Paid online — added to your wallet after the match.' : b.status === 'cancelled' ? '' : b.source === 'app' ? 'Paid at the venue — you collected the cash; the commission is deducted from your wallet.' : 'Paid at the venue — no Super App commission.'}</p>
         <p class="xs muted">${icon('shield', 12)} ${esc(SA.services.pitches.policyOf(b.policy).name)} cancellation policy — ${esc(SA.services.pitches.policyOf(b.policy).summary)}</p>
         <button class="btn btn-outline btn-sm" data-invoice style="margin-top:12px">${icon('file', 14)} Invoice (PDF)</button>
       </div>`,

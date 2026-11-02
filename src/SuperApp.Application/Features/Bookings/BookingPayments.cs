@@ -15,9 +15,10 @@ public sealed class BookingNotices(INotifier notifier, IAuditLogger audit, ICust
     {
         var when = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{booking.Date:ddd d MMM} · {booking.StartHour:00}:00 · {booking.Duration} h");
         await notifier.NotifyUserAsync(booking.CustomerId!.Value, new NotificationMessage(NotificationCategory.Bookings,
-            $"Booking confirmed: {pitchName}", $"{when} · {booking.Code}", $"#/booking/{booking.Code}", NotificationTone.Success), ct);
+            $"Booking confirmed: {pitchName}", $"{when} · {booking.Code} · deposit {booking.Deposit:0} EGP paid · {booking.BalanceDue:0} EGP at the pitch",
+            $"#/booking/{booking.Code}", NotificationTone.Success), ct);
         await notifier.NotifyUserAsync(ownerUserId, new NotificationMessage(NotificationCategory.Bookings,
-            $"New booking at {pitchName}", $"{when} · {booking.Total:0} EGP", "#/dash/bookings", NotificationTone.Info), ct);
+            $"New booking at {pitchName}", $"{when} · deposit {booking.Deposit:0} EGP paid in the app · collect {booking.BalanceDue:0} EGP at the pitch", "#/dash/bookings", NotificationTone.Info), ct);
         await audit.LogAsync(AuditSystem.Site, "booking.created", $"Booking {booking.Code} at {pitchName}", "Booking", booking.Code,
             Details(booking, pitchName, await contacts.GetAsync(booking.CustomerId.Value, ct)), ct);
     }
@@ -26,7 +27,7 @@ public sealed class BookingNotices(INotifier notifier, IAuditLogger audit, ICust
     private static object Details(Booking b, string pitchName, CustomerContact customer) => new
     {
         b.Code, Pitch = pitchName, Date = b.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), b.StartHour, b.Duration,
-        b.PitchAmount, b.DiscountAmount, b.ServiceFee, b.Total, b.PayAtVenue, Source = b.Source.ToString(), b.CreatedAt,
+        b.PitchAmount, b.DiscountAmount, b.ServiceFee, b.Total, b.Deposit, b.BalanceDue, b.PayAtVenue, Source = b.Source.ToString(), b.CreatedAt,
         Customer = new { customer.Name, customer.Email, customer.Phone },
     };
 }

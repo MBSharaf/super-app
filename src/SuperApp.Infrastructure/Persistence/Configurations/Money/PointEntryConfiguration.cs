@@ -14,7 +14,7 @@ internal sealed class PointEntryConfiguration : IEntityTypeConfiguration<PointEn
         builder.ToTable("PointEntries", "money", t =>
         {
             t.HasCheckConstraint("CK_PointEntries_Points", "[Points] <> 0");
-            t.HasCheckConstraint("CK_PointEntries_Kind", "[Kind] BETWEEN 0 AND 5");
+            t.HasCheckConstraint("CK_PointEntries_Kind", "[Kind] BETWEEN 0 AND 7");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Kind).HasConversion<byte>();
