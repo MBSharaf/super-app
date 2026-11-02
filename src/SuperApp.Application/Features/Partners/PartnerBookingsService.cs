@@ -119,7 +119,7 @@ public sealed class PartnerBookingsService(
         }
         booking.Status = BookingStatus.CancelledByVenue;
         booking.CancelledAt = clock.UtcNow;
-        booking.RefundAmount = booking.PayAtVenue ? 0 : booking.Total;
+        booking.RefundAmount = Bookings.Deposits.PaidOnline(booking);
         await ledger.BookingRefundAsync(booking, scope.OwnerUserId, $"Cancelled by the venue: {request.Reason.Trim()}", ct);
         await unitOfWork.SaveChangesAsync(ct);
         await bookings.ReleaseSlotsAsync(booking.Id, ct);

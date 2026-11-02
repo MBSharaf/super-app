@@ -54,10 +54,11 @@ public interface IMoneyStore
 }
 
 /// <summary>
-/// The double-entry side of bookings. A paid booking: the partner's earning (total − service fee − commission) goes to its
-/// bookings wallet as Pending until 24 hours after kick-off; commission and service fee go to the platform revenue wallet.
-/// A refund goes to the customer's Super App wallet at once and takes back each share in proportion. Every payment and
-/// refund gets a receipt (PDF on demand).
+/// The double-entry side of bookings. A booking pays a deposit in the app and the rest (<c>BalanceDue</c>) in cash at the pitch.
+/// A paid deposit: commission and service fee go to the platform revenue wallet, the rest of the deposit is the partner's
+/// earning (its earning on the booking − the cash it collects at the pitch), Pending until 24 hours after kick-off.
+/// A refund (a share of the deposit) goes to the customer's Super App wallet at once, takes back each share in proportion and
+/// takes back the refunded money's Super Points. Every payment and refund gets a receipt (PDF on demand).
 /// </summary>
 public interface ILedger
 {
@@ -116,7 +117,7 @@ public interface ILedger
     Task ReverseAsync(Payment payment, Guid customerId, string refType, long refId, Guid requestedById, string reason, CancellationToken ct);
 }
 
-public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, IClock clock) : ILedger
+public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, SuperPoints points, IClock clock) : ILedger
 {
     public static readonly TimeSpan HoldAfterKickOff = TimeSpan.FromHours(24);
 
@@ -135,13 +136,14 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, ICl
         var group = Guid.NewGuid();
         var partner = await store.WalletAsync(await store.PitchOwnerAsync(booking.PitchId, ct), WalletType.PartnerBookings, ct);
         var revenue = await store.WalletAsync(null, WalletType.PlatformRevenue, ct);
-        Post(partner, earning, LedgerBucket.Pending, LedgerKind.BookingEarning, booking, Release(booking), group);
+        // The venue collects BalanceDue in cash at the pitch, so the app holds the rest of its earning
+        Post(partner, earning - booking.BalanceDue, LedgerBucket.Pending, LedgerKind.BookingEarning, booking, Release(booking), group);
         Post(revenue, commission, LedgerBucket.Available, LedgerKind.Commission, booking, null, group);
         Post(revenue, fee, LedgerBucket.Available, LedgerKind.ServiceFee, booking, null, group);
         Post(revenue, -voucher, LedgerBucket.Available, LedgerKind.Voucher, booking, null, group);
-        if (booking.Total > 0)
+        if (Bookings.Deposits.PaidOnline(booking) > 0)
         {
-            await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Payment, booking.Total, booking.Id, ct);
+            await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Payment, Bookings.Deposits.PaidOnline(booking), booking.Id, ct);
         }
     }
 
@@ -152,9 +154,9 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, ICl
         {
             return;
         }
-        var share = booking.RefundAmount / booking.Total;
+        var share = booking.RefundAmount / Bookings.Deposits.PaidOnline(booking);
         var (earning, _, _) = Shares(booking, await loyalty.VoucherOnBookingAsync(booking.Id, ct));
-        var partnerBack = Math.Round(earning * share, 2);
+        var partnerBack = Math.Round((earning - booking.BalanceDue) * share, 2);
         var platformBack = booking.RefundAmount - partnerBack;
         var group = Guid.NewGuid();
         var customer = await store.WalletAsync(booking.CustomerId, WalletType.Customer, ct);
@@ -171,6 +173,7 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, ICl
         });
         payment.Status = booking.RefundAmount >= payment.Amount ? PaymentStatus.Refunded : PaymentStatus.PartlyRefunded;
         await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Refund, booking.RefundAmount, booking.Id, ct);
+        await points.TakeBackAsync(booking.CustomerId.Value, booking.RefundAmount, "Booking", booking.Id, ct);
     }
 
     public async Task PlatformSaleAsync(Payment payment, string refType, long refId, CancellationToken ct)
@@ -244,6 +247,7 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, ICl
             Status = RefundStatus.Done, RequestedById = requestedById });
         payment.Status = PaymentStatus.Refunded;
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = customerId, Kind = ReceiptKind.Refund, Amount = payment.Amount, RefType = refType, RefId = refId });
+        await points.TakeBackAsync(customerId, payment.Amount, refType, refId, ct);
     }
 
     public async Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct)

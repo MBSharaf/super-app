@@ -12,7 +12,8 @@ namespace SuperApp.Application.Features.Money;
 
 public sealed record PointsDto(int Balance, int MinRedeem, decimal PointValue, int EarnPer, IReadOnlyList<PointRowDto> History);
 
-public sealed record PointRowDto(int Points, string Kind, string? Reason, DateTime CreatedAt);
+/// <summary>One line of the points history. <c>Id</c> lets the site show the "you earned" pop-up once per entry.</summary>
+public sealed record PointRowDto(int Points, string Kind, string? Reason, DateTime CreatedAt, long Id = 0);
 
 public sealed record VoucherDto(string Code, decimal Amount, string Source, string Status, DateTime? ExpiresAt, DateTime CreatedAt);
 
@@ -57,8 +58,7 @@ public interface ILoyaltyStore
 }
 
 /// <summary>
-/// Super Points (settings loyalty.*): 1 point for every <c>earnPer</c> EGP of a game played (given at check-in, once per
-/// booking) and +20 for a review; from <c>minRedeem</c> points they turn into a voucher (multiples of 100 EGP, 20 points = 1 EGP
+/// Super Points (settings loyalty.*): earned by <see cref="SuperPoints"/> (1 point per EGP paid) and +20 for a review; from <c>minRedeem</c> points they turn into a voucher (multiples of 100 EGP, 20 points = 1 EGP
 /// at pointValue 0.05) that pays part of a booking. Partner promo codes and vouchers are checked here.
 /// </summary>
 public sealed class LoyaltyService(
@@ -71,21 +71,6 @@ public sealed class LoyaltyService(
     IClock clock)
 {
     public const int ReviewBonus = 20;
-
-    /// <summary>Points for a game played (called at check-in). Not saved: the caller saves.</summary>
-    public async Task EarnForBookingAsync(Booking booking, CancellationToken ct)
-    {
-        var paid = booking.Total;
-        if (booking.CustomerId is not { } user || paid <= 0 || await store.HasPointsForAsync(user, PointKind.Booking, "Booking", booking.Id, ct))
-        {
-            return;
-        }
-        var points = (int)Math.Floor(paid / await settings.DecimalAsync("loyalty.earnPer", 10m, ct));
-        if (points > 0)
-        {
-            store.Add(new PointEntry { UserId = user, Points = points, Kind = PointKind.Booking, RefType = "Booking", RefId = booking.Id, Reason = $"Game {booking.Code}", CreatedAt = clock.UtcNow });
-        }
-    }
 
     /// <summary>+20 for reviewing a game, once per booking. Not saved: the caller saves.</summary>
     public async Task EarnForReviewAsync(Guid userId, long bookingId, string bookingCode, CancellationToken ct)
@@ -100,7 +85,7 @@ public sealed class LoyaltyService(
     {
         var me = Me();
         return new PointsDto(await store.BalanceAsync(me, ct), (int)await settings.DecimalAsync("loyalty.minRedeem", 2000m, ct),
-            await settings.DecimalAsync("loyalty.pointValue", 0.05m, ct), (int)await settings.DecimalAsync("loyalty.earnPer", 10m, ct), await store.HistoryAsync(me, ct));
+            await settings.DecimalAsync("loyalty.pointValue", 0.05m, ct), (int)await settings.DecimalAsync("loyalty.earnPer", 1m, ct), await store.HistoryAsync(me, ct));
     }
 
     public Task<IReadOnlyList<VoucherDto>> VouchersAsync(CancellationToken ct) => store.VouchersAsync(Me(), ct);
@@ -209,4 +194,73 @@ public sealed class LoyaltyService(
     private static VoucherDto ToDto(Voucher v) => new(v.Code, v.Amount, v.Source.ToString(), v.Status.ToString(), v.ExpiresAt, v.CreatedAt);
 
     private Guid Me() => currentUser.UserId ?? throw new UnauthorizedException();
+}
+
+/// <summary>
+/// Owner's rule (2026-11-01): every EGP a player pays earns Super Points (1 point per <c>loyalty.earnPer</c> EGP, 1 by default),
+/// at the moment it is paid — any payment in the app except a wallet top-up (the points come when the wallet money is spent),
+/// and the rest of a booking paid at the pitch (at check-in). A refund takes the points of the refunded money back (never below 0).
+/// Nothing here saves: the caller saves with its payment, booking or refund.
+/// </summary>
+public sealed class SuperPoints(ILoyaltyStore store, ISettingsReader settings, IClock clock)
+{
+    public const string PaymentRef = "Payment";
+
+    public async Task<int> ForAmountAsync(decimal amount, CancellationToken ct)
+    {
+        var per = await settings.DecimalAsync("loyalty.earnPer", 1m, ct);
+        return amount <= 0 || per <= 0 ? 0 : (int)Math.Floor(amount / per);
+    }
+
+    /// <summary>Points for a paid payment (called once, when it turns Paid).</summary>
+    public async Task EarnForPaymentAsync(Payment payment, CancellationToken ct)
+    {
+        if (payment.Purpose == PaymentPurpose.WalletTopUp || payment.PayerUserId is not { } payer || payment.Status != PaymentStatus.Paid)
+        {
+            return;
+        }
+        var points = await ForAmountAsync(payment.Amount, ct);
+        if (points > 0)
+        {
+            store.Add(new PointEntry { UserId = payer, Points = points, Kind = PointKind.Payment, RefType = PaymentRef, RefId = payment.Id == 0 ? null : payment.Id,
+                Reason = $"{Label(payment.Purpose)} · {payment.Code}", CreatedAt = clock.UtcNow });
+        }
+    }
+
+    /// <summary>Points for money paid to the venue at the pitch (once per booking).</summary>
+    public async Task EarnAtPitchAsync(Booking booking, decimal amount, CancellationToken ct)
+    {
+        if (booking.CustomerId is not { } user || amount <= 0 || await store.HasPointsForAsync(user, PointKind.Booking, "Booking", booking.Id, ct))
+        {
+            return;
+        }
+        var points = await ForAmountAsync(amount, ct);
+        if (points > 0)
+        {
+            store.Add(new PointEntry { UserId = user, Points = points, Kind = PointKind.Booking, RefType = "Booking", RefId = booking.Id,
+                Reason = $"Paid at the pitch · {booking.Code}", CreatedAt = clock.UtcNow });
+        }
+    }
+
+    /// <summary>A refund of <c>amount</c>: its points come back off the balance (as much as the balance allows).</summary>
+    public async Task TakeBackAsync(Guid userId, decimal amount, string refType, long refId, CancellationToken ct)
+    {
+        var points = Math.Min(await ForAmountAsync(amount, ct), await store.BalanceAsync(userId, ct));
+        if (points > 0)
+        {
+            store.Add(new PointEntry { UserId = userId, Points = -points, Kind = PointKind.Refund, RefType = refType, RefId = refId,
+                Reason = $"Refund · {amount:0.##} EGP", CreatedAt = clock.UtcNow });
+        }
+    }
+
+    private static string Label(PaymentPurpose purpose) => purpose switch
+    {
+        PaymentPurpose.Booking => "Booking deposit",
+        PaymentPurpose.Package => "Package deposit",
+        PaymentPurpose.GameShare => "Game",
+        PaymentPurpose.TournamentFee => "Tournament entry",
+        PaymentPurpose.ShopOrder => "Shop order",
+        PaymentPurpose.FantasyPass => "Fantasy Pass",
+        _ => "Payment",
+    };
 }

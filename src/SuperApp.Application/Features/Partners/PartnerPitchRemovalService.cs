@@ -44,7 +44,7 @@ public sealed class PartnerPitchRemovalService(
         {
             b.Status = BookingStatus.CancelledByVenue;
             b.CancelledAt = clock.UtcNow;
-            b.RefundAmount = b.PayAtVenue ? 0 : b.Total;
+            b.RefundAmount = Bookings.Deposits.PaidOnline(b);
             await ledger.BookingRefundAsync(b, scope.OwnerUserId, "The pitch was removed", ct);
         }
         pitch.IsDeleted = true;

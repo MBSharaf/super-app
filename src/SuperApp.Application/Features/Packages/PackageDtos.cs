@@ -32,13 +32,15 @@ public sealed record QuoteMatch(DateOnly Date, int Hour, bool Available, decimal
 
 /// <summary>Weeks already taken are skipped; the package runs up to 4 extra weeks to reach its size.</summary>
 public sealed record PackageQuoteDto(long OptionId, int MatchCount, decimal DiscountPercent, IReadOnlyList<QuoteMatch> Weeks, int Skipped,
-    decimal ListPrice, decimal DiscountAmount, decimal ServiceFee, decimal Total);
+    decimal ListPrice, decimal DiscountAmount, decimal ServiceFee, decimal Total, decimal Deposit = 0, decimal BalanceDue = 0);
 
 /// <summary>POST /packages — paid straight away until payments arrive (Phase 5). <c>AcceptWaiver</c> must be true.</summary>
 public sealed record BuyPackageRequest(string PitchSlug, long OptionId, DateOnly StartsOn, int Hour, int Duration, bool AcceptWaiver, bool PayFromWallet = false);
 
 /// <summary>One match of a package. Status as for bookings (Confirmed, CheckedIn, Played, NoShow, Cancelled…).</summary>
-public sealed record PackageMatchDto(int Number, string Code, DateOnly Date, int StartHour, string Status, DateTime? CheckedInAt, decimal Total, decimal DiscountAmount);
+/// <summary>One match of a package: <c>Deposit</c> paid in the app, <c>BalanceDue</c> paid at the pitch that week.</summary>
+public sealed record PackageMatchDto(int Number, string Code, DateOnly Date, int StartHour, string Status, DateTime? CheckedInAt, decimal Total, decimal DiscountAmount,
+    decimal Deposit = 0, decimal BalanceDue = 0, DateTime? BalancePaidAt = null);
 
 /// <summary>A package as its customer sees it. <c>QrToken</c> (one QR for every match) only on the package's own page.</summary>
 public sealed record PackageDto(

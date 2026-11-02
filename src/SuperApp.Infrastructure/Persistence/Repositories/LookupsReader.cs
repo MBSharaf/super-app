@@ -14,7 +14,7 @@ public sealed class LookupsReader(AppDbContext db) : ILookupsReader
 {
     /// <summary>Settings a visitor may read. Commissions, money limits and anything internal stay private.</summary>
     private static readonly string[] PublicKeys =
-        ["fees.service", "vat.rate", "delivery.fees", "loyalty.earnPer", "loyalty.pointValue", "loyalty.minRedeem", "fantasy.passPrice", "popups.timing", "content.announcement"];
+        ["fees.service", "vat.rate", "deposit.percent", "deposit.min", "delivery.fees", "loyalty.earnPer", "loyalty.pointValue", "loyalty.minRedeem", "fantasy.passPrice", "popups.timing", "content.announcement"];
 
     public async Task<IReadOnlyList<GovernorateDto>> GovernoratesAsync(CancellationToken ct) =>
         await db.Set<Governorate>().Where(g => g.IsActive).OrderBy(g => g.SortOrder)

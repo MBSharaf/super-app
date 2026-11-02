@@ -12,6 +12,9 @@ public sealed record ScanRequest(string? Token, string? Code, long? PitchId, str
 /// <summary>
 /// The answer to a scan. <c>Result</c>: accepted or rejected. <c>Reason</c> (when rejected): bad_signature, other_venue,
 /// wrong_day, wrong_hour, cancelled, already_used, package_finished, account_blocked. <c>Match</c>: "3 of 8" for packages.
+/// <c>Deposit</c> was paid in the app; <c>BalanceDue</c> is what the venue collects in cash at the pitch (<c>BalancePaidAt</c>
+/// once collected). <c>LateMinutes</c> / <c>MinutesLeft</c> / <c>EndHour</c>: the booked time never moves, so a late
+/// player sees what is left of it.
 /// </summary>
 public sealed record ScanResultDto(
     string Result,
@@ -23,7 +26,27 @@ public sealed record ScanResultDto(
     DateOnly? Date,
     int? StartHour,
     int? Duration,
-    string? Match);
+    string? Match,
+    decimal Deposit = 0,
+    decimal BalanceDue = 0,
+    DateTime? BalancePaidAt = null,
+    DateTime? CheckedInAt = null,
+    int LateMinutes = 0,
+    int MinutesLeft = 0,
+    int? EndHour = null);
+
+/// <summary>Where "now" (Cairo time) sits in a booking's fixed slot.</summary>
+public readonly record struct Timing(int LateMinutes, int MinutesLeft, int? EndHour)
+{
+    public static Timing Of(Booking b, DateTime nowCairo)
+    {
+        var start = b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
+        var end = start.AddHours(b.Duration);
+        var late = nowCairo > start ? (int)Math.Floor((Math.Min(nowCairo.Ticks, end.Ticks) - start.Ticks) / (double)TimeSpan.TicksPerMinute) : 0;
+        var left = nowCairo >= end ? 0 : (int)Math.Ceiling((end - (nowCairo > start ? nowCairo : start)).TotalMinutes);
+        return new Timing(late, left, (b.StartHour + b.Duration) % 24);
+    }
+}
 
 /// <summary>GET /check-in/history?pitchId&amp;date — one row per scan.</summary>
 public sealed record ScanRowDto(long Id, DateTime ScannedAt, string Result, string? Code, string? CustomerName, string ScannedBy, int? MatchNumber, string? Device);

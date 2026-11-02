@@ -51,5 +51,11 @@
     ['^(.+) checked in$', 'تم تسجيل حضور {1}'], ['^You’re checked in at (.+)$', 'اتسجل حضورك في {1}'],
     ['^(.+), (.+) at (\\d+(?::\\d+)? [AP]M)\\. Deposit ([\\d,]+) EGP paid; pay ([\\d,]+) EGP at the pitch\\.$', '{1}، {t2} الساعة {t3}. اتدفع عربون {4} ج.م؛ ادفع {5} ج.م في الملعب.'],
     ['^Paid at the pitch — (.+)$', 'اتدفع في الملعب — {1}'], ['^Booking deposit — (.+)$', 'عربون حجز — {1}'],
+    // Server answers in API mode (check-in scan and the points history)
+    ['^Checked in\\. Have a great game!(?: Match (\\d+) of (\\d+)\\.)?(?: Collect ([\\d,]+) EGP in cash \\(deposit ([\\d,]+) EGP paid in the app\\)\\.)?(?: (\\d+) min late: (\\d+) min left, ends at (\\d+:\\d+)\\.)?$', (m) => ['تم تسجيل الحضور. ماتش موفق!',
+      m[1] ? `الماتش ${m[1]} من ${m[2]}.` : '', m[3] ? `حصّل ${m[3]} ج.م كاش (العربون ${m[4]} ج.م اتدفع في التطبيق).` : '', m[5] ? `متأخر ${m[5]} دقيقة: فاضل ${m[6]} دقيقة، والحجز بيخلص الساعة ${m[7]}.` : ''].filter(Boolean).join(' ')],
+    ['^Booking deposit · (.+)$', 'عربون حجز · {1}'], ['^Package deposit · (.+)$', 'عربون باكدج · {1}'], ['^Paid at the pitch · (.+)$', 'اتدفع في الملعب · {1}'],
+    ['^Refund · ([\\d.,]+) EGP$', 'استرداد · {1} ج.م'],
+    ['^(\\d{4}-\\d{2}-\\d{2}) at (\\d+(?::\\d+)? [AP]M) — post it to players in the community in one tap\\.$', '{1} الساعة {t2} — انشرها للاعيبة في الكوميونيتي بضغطة واحدة.'],
   );
 })(window.SA);

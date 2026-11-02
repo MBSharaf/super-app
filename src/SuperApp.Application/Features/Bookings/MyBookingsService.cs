@@ -92,7 +92,7 @@ public sealed class MyBookingsService(
         var hoursLeft = Math.Round((kickOff - CairoTime.Now(clock)).TotalHours, 1);
         var open = b.Status is BookingStatus.Confirmed or BookingStatus.AwaitingPayment && hoursLeft > 0;
         var percent = !open || b.Status == BookingStatus.AwaitingPayment ? 0 : hoursLeft >= fullHours ? 100 : hoursLeft >= halfHours ? 50 : 0;
-        return new RefundPreview(b.Code, hoursLeft, percent, Math.Round(b.Total * percent / 100, 2), open);
+        return new RefundPreview(b.Code, hoursLeft, percent, Math.Round(Deposits.PaidOnline(b) * percent / 100, 2), open);
     }
 
     private async Task TellAboutCancelAsync(Booking b, CancellationToken ct)

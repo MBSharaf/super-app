@@ -43,6 +43,7 @@
     <PackageVersion Include="Serilog.Sinks.MSSqlServer" Version="10.0.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="SkiaSharp" Version="4.153.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.153.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <!-- Security pin: 10.0.0 (pulled in indirectly) has known vulnerabilities -->
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />

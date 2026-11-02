@@ -36,6 +36,7 @@
   };
   /** Live countdown to the booked end (late arrivals keep the same end time) */
   const clock = (b, t) => `<span data-clock="${t.end}" data-start="${t.start}"><b class="num" data-left>${t.left}</b> <span>min left</span> · <span>ends ${esc(t.endsAt)}</span>${t.late && !b.checkedInAt ? ` <span class="badge badge-gold">${t.late} min late</span>` : ''}</span>`;
+  let kept = null;   // the last accepted live scan, shown again after the page refreshes
   const tick = (root) => root.querySelectorAll('[data-clock]').forEach((n) => {
     const end = +n.dataset.clock, start = +n.dataset.start, now = Date.now();
     const v = n.querySelector('[data-left]'); if (v) v.textContent = Math.max(0, Math.round((end - Math.max(now, start)) / 6e4));
@@ -95,7 +96,7 @@
               <label class="small strong" for="ci-code">Or type the booking ID</label>
               <div class="row" style="--gap:8px"><input class="input num" id="ci-code" name="code" placeholder="e.g. SA-K3PX4821" autocomplete="off" autocapitalize="characters" /><button class="btn btn-primary" type="submit">Check</button></div>
             </form>
-            <div data-result aria-live="polite"></div>
+            <div data-result aria-live="polite">${kept && Date.now() - kept.at < 60000 ? resultCard(kept.res) : ''}</div>
           </section>
           <section class="dash-card ci-arrivals">
             <div class="row-between"><h2 class="h4">Today’s arrivals</h2><span class="xs muted">${fmtDate(SA.core.utils.today(), 'long')}</span></div>
@@ -120,6 +121,9 @@
       nativeDetector().then((d) => { el.querySelector('[data-engine]').textContent = d ? 'Built-in scanner' : 'Scanner ready'; });
 
       const show = (res) => {
+        // The server checks the player in on the scan: refresh today's counts and arrivals, keeping this answer on screen
+        if (res.live && res.state === 'checked') { if (navigator.vibrate) navigator.vibrate(60); kept = { res, at: Date.now() }; stop(); SA.app.rerender(); return; }
+        kept = null;
         out.innerHTML = resultCard(res);
         out.querySelector('.ci-result')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         if (navigator.vibrate) navigator.vibrate(['ok', 'checked'].includes(res.state) ? 60 : [40, 60, 40]);
@@ -194,7 +198,7 @@
           return;
         }
         const open = e.target.closest('[data-open]'); if (open) { SA.pages.dashBookings.openBooking(open.dataset.open); return; }
-        if (e.target.closest('[data-next]')) { out.innerHTML = ''; paused = false; const f = el.querySelector('#ci-code'); f.value = ''; if (!stream) f.focus(); }
+        if (e.target.closest('[data-next]')) { kept = null; out.innerHTML = ''; paused = false; const f = el.querySelector('#ci-code'); f.value = ''; if (!stream) f.focus(); }
       });
       return () => { clearInterval(ticker); stop(); };
     },

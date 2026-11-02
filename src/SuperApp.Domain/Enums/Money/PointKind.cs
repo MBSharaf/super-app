@@ -8,4 +8,8 @@ public enum PointKind : byte
     Review = 3,
     VoucherRedemption = 4,
     AdminAdjustment = 5,
+    /// <summary>1 point per EGP paid in the app (owner's rule, 2026-11-01).</summary>
+    Payment = 6,
+    /// <summary>A refund takes back the points of the money refunded.</summary>
+    Refund = 7,
 }

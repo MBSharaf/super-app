@@ -61,9 +61,9 @@ public sealed class WalletTopUpTests(AccountsApiFactory api) : IClassFixture<Acc
         (await TopUpAsync(player, 2000, Guid.NewGuid().ToString("N"))).Status.ShouldBe(HttpStatusCode.OK);
         var made = await player.PostAsync("/api/v1/bookings", booking);
         made.Status.ShouldBe(HttpStatusCode.Created, made.Body.ToString());
-        var total = made.Body.Data().GetProperty("total").GetDecimal();
+        var deposit = made.Body.Data().GetProperty("deposit").GetDecimal();
         made.Body.Data().GetProperty("status").GetString().ShouldBe("Confirmed");
-        (await BalanceAsync(player)).ShouldBe(2000 - total);
+        (await BalanceAsync(player)).ShouldBe(2000 - deposit);
 
         (await player.PostAsync($"/api/v1/bookings/{made.Body.Data().GetProperty("code").GetString()}/cancel")).Status.ShouldBe(HttpStatusCode.OK);
         (await BalanceAsync(player)).ShouldBe(2000);

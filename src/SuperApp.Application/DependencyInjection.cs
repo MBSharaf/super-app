@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<Features.Money.IWalletTopUpService, Features.Money.WalletTopUpService>();
         services.AddScoped<Features.Payments.IPaymentListener, Features.Money.WalletTopUpPaymentListener>();
         services.AddScoped<Features.Money.LoyaltyService>();
+        services.AddScoped<Features.Money.SuperPoints>();
         services.AddScoped<Features.Tournaments.TournamentViews>();
         services.AddScoped<Features.Tournaments.TournamentMoney>();
         services.AddScoped<Features.Tournaments.TournamentsService>();

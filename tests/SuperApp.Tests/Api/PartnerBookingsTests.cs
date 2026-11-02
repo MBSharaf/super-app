@@ -70,7 +70,7 @@ public sealed class PartnerBookingsTests(AccountsApiFactory api) : IClassFixture
         var cancelled = await partner.PostAsync($"/api/v1/partner/bookings/{code}/cancel", new { reason = "Floodlights repair" });
         cancelled.Status.ShouldBe(HttpStatusCode.OK, cancelled.Body.ToString());
         cancelled.Body.Data().GetProperty("status").GetString().ShouldBe("CancelledByVenue");
-        cancelled.Body.Data().GetProperty("refundAmount").GetDecimal().ShouldBe(booked.GetProperty("total").GetDecimal());
+        cancelled.Body.Data().GetProperty("refundAmount").GetDecimal().ShouldBe(booked.GetProperty("deposit").GetDecimal());
 
         var told = await api.DbAsync(db => db.Set<Notification>().AnyAsync(n => n.UserId == playerId && n.Title == "The venue cancelled your booking" && n.Body!.Contains("Floodlights repair")));
         told.ShouldBeTrue();

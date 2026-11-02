@@ -90,12 +90,10 @@ public sealed class BookingsTests(DemoApiFactory api) : IClassFixture<DemoApiFac
         noWaiver.Status.ShouldBe(HttpStatusCode.BadRequest);
         noWaiver.Body.HasFieldError("acceptWaiver").ShouldBeTrue();
 
-        await api.DbAsync(db => db.Set<SuperApp.Domain.Entities.Pitches.Pitch>().Where(p => p.Slug == "gezira-fives")
-            .ExecuteUpdateAsync(u => u.SetProperty(p => p.AllowCash, false)));
+        // App bookings always pay a deposit in the app; the rest is paid at the pitch
         var cash = await client.PostAsync("/api/v1/bookings", new { pitchSlug = "gezira-fives", date = day, hour = 12, duration = 1, payAtVenue = true, acceptWaiver = true });
         cash.Status.ShouldBe(HttpStatusCode.UnprocessableEntity);
-        cash.Body.Code().ShouldBe("cash_not_allowed");
-        (await client.PostAsync("/api/v1/bookings", Booking(day, 13, cash: true))).Status.ShouldBe(HttpStatusCode.Created);
+        cash.Body.Code().ShouldBe("deposit_required");
 
         var early = await client.PostAsync("/api/v1/bookings", Booking(day, 7));
         early.Status.ShouldBe(HttpStatusCode.UnprocessableEntity);
@@ -132,7 +130,7 @@ public sealed class BookingsTests(DemoApiFactory api) : IClassFixture<DemoApiFac
         preview.GetProperty("refundPercent").GetInt32().ShouldBe(100);
         var cancelled = (await client.PostAsync($"/api/v1/bookings/{code}/cancel")).Body.Data();
         cancelled.GetProperty("status").GetString().ShouldBe("CancelledByCustomer");
-        cancelled.GetProperty("refundAmount").GetDecimal().ShouldBe(booked.GetProperty("total").GetDecimal());
+        cancelled.GetProperty("refundAmount").GetDecimal().ShouldBe(booked.GetProperty("deposit").GetDecimal());
 
         (await client.PostAsync($"/api/v1/bookings/{code}/cancel")).Body.Code().ShouldBe("cannot_cancel");
         (await other.PostAsync("/api/v1/bookings", Booking(day, 15))).Status.ShouldBe(HttpStatusCode.Created);

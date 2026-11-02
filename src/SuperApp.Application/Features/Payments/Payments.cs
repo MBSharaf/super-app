@@ -91,7 +91,8 @@ public sealed class PaymentsService(
     IAuditLogger audit,
     ICurrentUser currentUser,
     IClock clock,
-    Money.ILedger ledger) : IPaymentsService
+    Money.ILedger ledger,
+    Money.SuperPoints points) : IPaymentsService
 {
     public const string WalletProvider = "wallet";
 
@@ -112,6 +113,7 @@ public sealed class PaymentsService(
         {
             payment.Status = PaymentStatus.Paid;
             payment.PaidAt = clock.UtcNow;
+            await points.EarnForPaymentAsync(payment, ct);
             return new PaymentStarted(payment, null);
         }
         var url = await OpenSessionAsync(payment, request.Description, request.ReturnPath, ct);
@@ -154,6 +156,10 @@ public sealed class PaymentsService(
         payment.ProviderRef ??= e.ProviderRef;
         payment.Status = paid ? PaymentStatus.Paid : PaymentStatus.Failed;
         payment.PaidAt = paid ? clock.UtcNow : null;
+        if (paid)
+        {
+            await points.EarnForPaymentAsync(payment, ct);
+        }
         await unitOfWork.SaveChangesAsync(ct);
         await audit.LogAsync(AuditSystem.Site, paid ? "payment.paid" : "payment.failed",
             $"Payment {payment.Code} {(paid ? "paid" : "failed")} ({payment.Amount:0.##} EGP)", "Payment", payment.Code, ct: ct);

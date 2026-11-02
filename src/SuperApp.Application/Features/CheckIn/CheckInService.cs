@@ -14,7 +14,8 @@ namespace SuperApp.Application.Features.CheckIn;
 /// <summary>
 /// QR check-in at the venue (API §3.6). A rejected scan is a normal answer (200, result "rejected" with the reason);
 /// the same Idempotency-Key always gets the same answer, so a double tap never checks in twice.
-/// Players can check in from 60 minutes before kick-off until the end of their booking.
+/// Players can check in from 60 minutes before kick-off until the end of their booking. The booked end never moves: a late
+/// player is told how many minutes are left. The scan also records the rest of the price, paid in cash to the venue.
 /// </summary>
 public interface ICheckInService
 {
@@ -34,7 +35,7 @@ public sealed class CheckInService(
     IClock clock,
     IValidator<ScanRequest> rules,
     IAuditLogger audit,
-    Money.LoyaltyService loyalty) : ICheckInService
+    Money.SuperPoints points) : ICheckInService
 {
     public static readonly TimeSpan EarlyWindow = TimeSpan.FromMinutes(60);
 
@@ -149,7 +150,7 @@ public sealed class CheckInService(
         {
             t.Booking.Status = BookingStatus.CheckedIn;
             t.Booking.CheckedInAt = clock.UtcNow;
-            await loyalty.EarnForBookingAsync(t.Booking, ct);
+            await CollectAsync(t.Booking, ct);
         }
         scans.Add(new QrScan
         {
@@ -165,16 +166,50 @@ public sealed class CheckInService(
         if (result == QrScanResult.Accepted && t?.Booking.CustomerId is { } customer)
         {
             await notifier.NotifyUserAsync(customer, new NotificationMessage(NotificationCategory.Bookings, $"Checked in at {t.PitchName}",
-                $"{t.Booking.Code} · have a great game!", $"#/booking/{t.Booking.Code}", NotificationTone.Success), ct);
+                PlayerNote(t.Booking), $"#/booking/{t.Booking.Code}", NotificationTone.Success), ct);
         }
     }
 
-    private static ScanResultDto Answer(QrScanResult result, ScanTarget? t, string? match = null)
+    /// <summary>
+    /// The rest of the price is paid to the venue at the pitch: recorded with the check-in, and it earns its Super Points then.
+    /// Bookings without a deposit (from before the rule, or cash at the desk) earn on their total, once.
+    /// </summary>
+    private async Task CollectAsync(Booking booking, CancellationToken ct)
+    {
+        if (booking.BalanceDue > 0 && booking.BalancePaidAt is null)
+        {
+            booking.BalancePaidAt = clock.UtcNow;
+        }
+        await points.EarnAtPitchAsync(booking, booking.Deposit > 0 ? booking.BalanceDue : booking.Total, ct);
+    }
+
+    private string PlayerNote(Booking b)
+    {
+        var time = Timing.Of(b, CairoTime.Now(clock));
+        var left = time.LateMinutes > 0 ? $"{time.LateMinutes} min late · {time.MinutesLeft} min left" : "have a great game!";
+        return b.BalanceDue > 0 ? $"{b.Code} · {b.BalanceDue:0} EGP paid at the pitch · {left}" : $"{b.Code} · {left}";
+    }
+
+    private ScanResultDto Answer(QrScanResult result, ScanTarget? t, string? match = null)
     {
         var b = t?.Booking;
         var (reason, message) = Reasons[result];
+        var time = b is null ? default : Timing.Of(b, CairoTime.Now(clock));
+        if (result == QrScanResult.Accepted && b is not null)
+        {
+            message = Collected(b, time, message);
+        }
         return new ScanResultDto(result == QrScanResult.Accepted ? "accepted" : "rejected", reason, match is null ? message : $"{message} Match {match}.",
-            b?.Code, t?.CustomerName, t?.PitchName, b?.Date, b?.StartHour, b?.Duration, match);
+            b?.Code, t?.CustomerName, t?.PitchName, b?.Date, b?.StartHour, b?.Duration, match,
+            b?.Deposit ?? 0, b?.BalanceDue ?? 0, b?.BalancePaidAt, b?.CheckedInAt, time.LateMinutes, time.MinutesLeft, time.EndHour);
+    }
+
+    /// <summary>What the staff reads on an accepted scan: the cash to collect and, for a late player, the time left.</summary>
+    private static string Collected(Booking b, Timing time, string message)
+    {
+        var cash = b.BalanceDue > 0 ? $" Collect {b.BalanceDue:0} EGP in cash (deposit {b.Deposit:0} EGP paid in the app)." : "";
+        var late = time.LateMinutes > 0 ? $" {time.LateMinutes} min late: {time.MinutesLeft} min left, ends at {time.EndHour:00}:00." : "";
+        return message + cash + late;
     }
 
     private static readonly Dictionary<QrScanResult, (string? Reason, string Message)> Reasons = new()

@@ -1069,6 +1069,14 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<decimal>("BalanceDue")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<DateTime?>("BalancePaidAt")
+                        .HasColumnType("datetime2(0)");
+
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("datetime2(0)");
 
@@ -1094,6 +1102,11 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
+
+                    b.Property<decimal>("Deposit")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<decimal>("DiscountAmount")
                         .HasPrecision(12, 2)
@@ -1210,6 +1223,8 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.ToTable("Bookings", "booking", t =>
                         {
                             t.HasCheckConstraint("CK_Bookings_CommissionRate", "[CommissionRate] BETWEEN 0 AND 100");
+
+                            t.HasCheckConstraint("CK_Bookings_Deposit", "[Deposit] >= 0 AND [BalanceDue] >= 0 AND [Deposit] + [BalanceDue] <= [Total]");
 
                             t.HasCheckConstraint("CK_Bookings_DiscountAmount", "[DiscountAmount] >= 0");
 
@@ -5109,7 +5124,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("PointEntries", "money", t =>
                         {
-                            t.HasCheckConstraint("CK_PointEntries_Kind", "[Kind] BETWEEN 0 AND 5");
+                            t.HasCheckConstraint("CK_PointEntries_Kind", "[Kind] BETWEEN 0 AND 7");
 
                             t.HasCheckConstraint("CK_PointEntries_Points", "[Points] <> 0");
                         });

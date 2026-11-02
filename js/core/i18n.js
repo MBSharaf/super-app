@@ -44,7 +44,7 @@
     if (out == null) {
       for (const [re, rep] of patterns) {
         const m = s.match(re);
-        if (m) { out = rep.replace(/\{t(\d)\}/g, (_, i) => tr(m[+i]) ?? m[+i]).replace(/\{(\d)\}/g, (_, i) => m[+i]); break; }
+        if (m) { out = typeof rep === 'function' ? rep(m) : rep.replace(/\{t(\d)\}/g, (_, i) => tr(m[+i]) ?? m[+i]).replace(/\{(\d)\}/g, (_, i) => m[+i]); break; }
       }
     }
     if (out == null) {

@@ -87,9 +87,11 @@
     id: r.code, live: true, pitchId, ownerId: ACCOUNT, date: r.date, hour: r.startHour, duration: r.duration, amount: +r.pitchAmount, fee: +r.serviceFee,
     customer: { id: r.source === 'WalkIn' ? 'walk-in' : `c-${r.code}`, name: r.customerName, phone: r.customerPhone || '' },
     source: r.source === 'WalkIn' ? 'walk-in' : 'app', payment: r.payAtVenue ? 'Cash at venue' : 'Card', status: BOOKING_STATUS[r.status] || 'confirmed',
+    // Owner's rule (2026-11-01): deposit paid in the app, the rest collected at the pitch when the QR is scanned
+    ...(+r.deposit > 0 ? { deposit: +r.deposit, payAtPitch: +r.balanceDue, balancePaidAt: r.balancePaidAt ? Date.parse(r.balancePaidAt) : 0 } : {}),
     checkedIn: !!r.checkedInAt, checkedInAt: r.checkedInAt ? Date.parse(r.checkedInAt) : null, refund: +r.refundAmount,
     cancelledBy: r.status === 'CancelledByCustomer' ? 'customer' : r.status === 'CancelledByVenue' ? 'venue' : undefined,
-    refundShare: r.status === 'CancelledByCustomer' && +r.total ? +r.refundAmount / +r.total : undefined,
+    refundShare: r.status === 'CancelledByCustomer' && +r.total ? +r.refundAmount / (+r.deposit > 0 ? +r.deposit : +r.total) : undefined,
     createdAt: Date.parse(r.createdAt), policy,
   });
 
@@ -292,7 +294,9 @@
     const booking = r.code ? dash.findBooking(r.code) : null;
     const late = r.reason === 'wrong_hour' && booking && booking.startsAt < Date.now();
     const state = r.result === 'accepted' ? 'checked' : r.reason === 'wrong_hour' ? (late ? 'ended' : 'early') : SCAN_STATE[r.reason] || 'invalid';
-    return { state, message: r.message, booking, manual: typed, live: true };
+    // The server's clock decides (late minutes, minutes left); the page shows the same live countdown as the demo
+    const timing = booking && r.result === 'accepted' ? { ...dash.timing(booking), late: r.lateMinutes, left: r.minutesLeft } : null;
+    return { state, message: r.message, booking, timing, manual: typed, live: true };
   };
 
   const bookingAction = async (id, action, reason = 'Cancelled by the venue') => {
