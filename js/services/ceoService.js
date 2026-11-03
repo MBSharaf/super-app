@@ -34,7 +34,7 @@
     ['pod', 'Printed designs', 'Print-on-demand products in the shop', 'shirt'],
     ['payouts', 'Withdrawals', 'Partners and sellers asking for money, and sending it', 'wallet'],
     ['applications', 'New applications', 'New pitch partners and sellers', 'users'],
-    ['fantasy', 'Fantasy', 'Saving teams and buying the Fantasy Pass', 'trophy'],
+    ['fantasy', 'Fantasy', 'Saving teams and joining leagues', 'trophy'],
     ['community', 'Community posting', 'New posts and comments', 'message'],
     ['games', 'Joining games', 'Players asking to join free-slot games', 'ball'],
   ];

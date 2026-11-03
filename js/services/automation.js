@@ -2,7 +2,8 @@
  * The owner's automation (n8n) on the demo site (GitHub Pages, no server): every new store order, pitch booking, weekly
  * package, published game and request to join a game is sent with all its details to the links in
  * `SA.config.automation` (orders → `orders`; bookings, packages and games → `bookings`). Fantasy: a new private league
- * (`league.created`), someone joining a league (`league.member.joined`) and a finished gameweek (`gameweek.finished`, one
+ * (`league.created`), someone joining a league (`league.member.joined`) and a finished gameweek (`gameweek.finished`, with
+ * `superAppLeague.weeklyWinners`: the gameweek's top 3 in the Super App League and the Super Points each won; one
  * per league with every member's rank and points and the gameweek's top three) → `fantasy` (the orders link). In API mode the server sends
  * these events itself (its webhooks), so nothing is sent from the browser there.
  *
@@ -166,7 +167,7 @@
     };
     const competition = () => { const i = F.leagueInfo(); return { key: i.key, name: i.label }; };
     const leagueOf = (g) => ({
-      leagueId: g.id, leagueName: g.name, type: g.members ? 'private' : g.kind === 'pass' ? 'prize' : 'official', code: g.code || null,
+      leagueId: g.id, leagueName: g.name, type: g.members ? 'private' : g.kind === 'official' ? 'superApp' : 'free', isFree: true, code: g.code || null,
       owner: g.owner || null, startGameweek: g.startGW || g.from || 1, membersCount: g.members ? g.members.length : g.participants || null,
       competition: competition(), link: link(`/fantasy/league/${g.id}`),
     });
@@ -227,17 +228,34 @@
      * request per "Listen" click, so one event per league lost all but the first. `league` / `winners` / `participants`
      * at the top level are the first league's, as before.
      */
-    const gameweekFinished = (gw) => {
+    /** The Super App League's weekly prize: the gameweek's top 3 and the Super Points each one won (1,500 / 1,000 / 500 by default) */
+    const superAppLeagueOf = (weekly, gw) => {
+      const sl = F.superLeague?.();
+      if (!sl) return null;
+      const amounts = F.weeklyPoints();
+      const rows = weekly?.winners || [];
+      return {
+        leagueId: sl.id, leagueName: sl.name, type: 'superApp', isFree: true, managedBy: 'admin', gameweekId: gw, competition: competition(),
+        prizes: amounts.map((points, i) => ({ place: i + 1, superPoints: points })),
+        weeklyWinners: rows.map((w) => ({ place: w.place, ...personOf(w), teamName: w.team || null, gameweekPoints: w.gw, totalPoints: w.total, superPointsWon: w.points })),
+        link: link(`/fantasy/league/${sl.id}`),
+      };
+    };
+    const gameweekFinished = (gw, weekly) => {
       const leagues = myLeagues().map((l) => F.group(l.id)).filter(Boolean).map((g) => leagueTable(g, gw));
       const me = customer(), t = F.totals();
+      const sal = superAppLeagueOf(weekly, gw);
+      const mine = sal?.weeklyWinners.find((w) => w.userId === me.id) || null;
       send(fantasyUrl(), 'gameweek.finished', {
-        gameweek: gw, gameweekId: gw, competition: competition(), finishedAt: new Date().toISOString(),
-        player: { userId: me.id, name: me.name, email: me.email, teamName: F.team()?.name || null, gameweekPoints: F.lastResult()?.pts ?? null, totalPoints: t.total || 0 },
+        gameweek: gw, gameweekId: gw, competition: competition(), finishedAt: new Date().toISOString(), allLeaguesFree: true,
+        player: { userId: me.id, name: me.name, email: me.email, teamName: F.team()?.name || null, gameweekPoints: F.lastResult()?.pts ?? null, totalPoints: t.total || 0,
+          superPointsWon: mine?.superPointsWon || 0, superAppLeaguePlace: mine?.place || null },
+        superAppLeague: sal,
         leaguesCount: leagues.length, ...(leagues[0] || {}), leagues,
       });
     };
 
-    /** A new fantasy team (the player is entered into the Grand League with it) */
+    /** A new fantasy team (the player is entered into the Super App League with it) */
     const saveSquad = F.saveSquad;
     F.saveSquad = async (ids, opts) => {
       const had = !!F.team();
@@ -256,7 +274,7 @@
     const simulateGameweek = F.simulateGameweek;
     F.simulateGameweek = async (...args) => {
       const out = await simulateGameweek(...args);
-      gameweekFinished(out.gw);
+      gameweekFinished(out.gw, out.weekly);
       return out;
     };
   }

@@ -13,7 +13,8 @@ namespace SuperApp.Application.Features.Fantasy;
 public sealed class FantasyScoringService(
     IFantasyScoringRepository repository,
     INotifier notifier,
-    IAuditLogger audit) : IFantasyScoringService
+    IAuditLogger audit,
+    FantasyWeeklyPrizes weeklyPrizes) : IFantasyScoringService
 {
     public async Task<int> ScoreAsync(long gameweekId, CancellationToken ct)
     {
@@ -30,7 +31,12 @@ public sealed class FantasyScoringService(
         if (gameweek.ScoredAt is null)
         {
             await TellManagersAsync(gameweek, teams, scores, ct);
-            await repository.QueueEventAsync("fantasy.gameweek.finished", new { competition = gameweek.Competition, gameweek = gameweek.Number, teams = teams.Count }, ct);
+            var winners = await weeklyPrizes.AwardAsync(gameweek, teams, scores, ct);
+            await repository.QueueEventAsync("fantasy.gameweek.finished", new
+            {
+                competition = gameweek.Competition, gameweek = gameweek.Number, teams = teams.Count, allLeaguesFree = true,
+                superAppLeague = new { managedBy = "admin", weeklyWinners = winners.Select(w => new { w.Place, w.UserId, w.TeamId, w.GameweekPoints, superPointsWon = w.SuperPoints }) },
+            }, ct);
         }
         await audit.LogAsync(AuditSystem.ApiOrAgent, gameweek.ScoredAt is null ? "fantasy.scored" : "fantasy.rescored",
             $"{gameweek.Competition} gameweek {gameweek.Number}: {teams.Count} team(s)", "Gameweek", gameweek.Id.ToString(), ct: ct);

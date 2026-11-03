@@ -122,7 +122,7 @@
       add({ points: -p, label: `Voucher ${code} — ${amount} EGP`, kind: 'redeem' });
       const v = { code, amount, balance: amount, points: p, at: Date.now(), uses: [] };
       store.set((st) => ({ vouchers: [v, ...(st.vouchers || [])] }), 'voucher');
-      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout anywhere in Super App: pitch bookings, games, the shop, printed designs, tournament entries and the Fantasy Pass. It can’t be exchanged for cash.' });
+      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super App: games, the shop, printed designs and tournament entries. It can’t be exchanged for cash.' });
       return Promise.resolve({ points: p, amount, code });
     },
     vouchers,

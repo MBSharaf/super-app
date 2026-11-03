@@ -12,4 +12,6 @@ public enum PointKind : byte
     Payment = 6,
     /// <summary>A refund takes back the points of the money refunded.</summary>
     Refund = 7,
+    /// <summary>Top 3 of a gameweek in the Super App League: 1,500 / 1,000 / 500 by default (owner's rule, 2026-11-03).</summary>
+    FantasyWeekly = 8,
 }

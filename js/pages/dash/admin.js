@@ -83,22 +83,17 @@
             <div class="field"><label for="ps-r">Refused deliveries before online payment is required</label><input class="input num" id="ps-r" name="refuseLimit" type="number" min="1" max="10" value="${db().settings().pod.refuseLimit}" /></div>
             <p class="field-error span-2" data-err="podset"></p>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save seller rules</button></div></form></section>
-        <section class="dash-card"><h2 class="h4">Fantasy Pass</h2><p class="small soft" style="margin-top:6px">Monthly price for the prize leagues. Prizes are sponsor prizes and vouchers — never cash.</p>
-          <form id="fpass" novalidate class="form-grid" style="margin-top:16px">
-            <div class="field"><label for="fp-1">One league (EGP / month)</label><input class="input num" id="fp-1" name="one" type="number" min="0" step="5" value="${db().settings().fantasySubs.one}" /></div>
-            <div class="field"><label for="fp-2">Both leagues (EGP / month)</label><input class="input num" id="fp-2" name="both" type="number" min="0" step="5" value="${db().settings().fantasySubs.both}" /></div>
-            <p class="field-error span-2" data-err="fpass"></p>
-            <div class="span-2"><button class="btn btn-primary" type="submit">Save Fantasy Pass prices</button></div></form></section>
+        <section class="dash-card"><h2 class="h4">Fantasy</h2><p class="small soft" style="margin-top:6px">Every fantasy league is free. In the Super App League, the top 3 of every gameweek win ${SA.services.fantasy.weeklyPoints().map((x) => x.toLocaleString()).join(' / ')} Super Points.</p>
+          <a class="btn btn-outline btn-sm" href="#/admin/fantasy?tab=weekly" style="margin-top:14px">Change weekly points</a></section>
         <section class="dash-card span-all"><h2 class="h4">Seller levels</h2><p class="small soft" style="margin-top:6px">Levels are reached on delivered items with a minimum rating. Leave “Designs” or “Codes” empty for unlimited.</p>
-          <form id="lvls" novalidate style="margin-top:14px"><div class="table-wrap"><table class="table lvl-edit"><thead><tr><th>Level</th><th>Items sold</th><th>Min rating</th><th>Designs</th><th>Codes</th><th>Base discount (EGP)</th><th>Store commission %</th><th>Fantasy discount %</th></tr></thead><tbody>
+          <form id="lvls" novalidate style="margin-top:14px"><div class="table-wrap"><table class="table lvl-edit"><thead><tr><th>Level</th><th>Items sold</th><th>Min rating</th><th>Designs</th><th>Codes</th><th>Base discount (EGP)</th><th>Store commission %</th></tr></thead><tbody>
             ${db().settings().sellerLevels.map((l, i) => `<tr><th scope="row"><span class="lvl-chip lvl-${l.id}">${esc(l.name)}</span></th>
               <td><input class="input num" name="sales-${i}" type="number" min="0" value="${l.sales}" ${i === 0 ? 'readonly' : ''} aria-label="${esc(l.name)} items sold" /></td>
               <td><input class="input num" name="rating-${i}" type="number" min="0" max="5" step="0.1" value="${l.rating}" ${i === 0 ? 'readonly' : ''} aria-label="${esc(l.name)} minimum rating" /></td>
               <td><input class="input num" name="designs-${i}" type="number" min="1" value="${l.designs ?? ''}" placeholder="∞" aria-label="${esc(l.name)} designs" /></td>
               <td><input class="input num" name="codes-${i}" type="number" min="0" value="${l.codes ?? ''}" placeholder="∞" aria-label="${esc(l.name)} codes" /></td>
               <td><input class="input num" name="baseDiscount-${i}" type="number" min="0" value="${l.baseDiscount}" aria-label="${esc(l.name)} base discount" /></td>
-              <td><input class="input num" name="commission-${i}" type="number" min="0" max="50" step="0.5" value="${+(l.commission * 100).toFixed(1)}" aria-label="${esc(l.name)} commission" /></td>
-              <td><input class="input num" name="fantasyDiscount-${i}" type="number" min="0" max="100" step="5" value="${Math.round(l.fantasyDiscount * 100)}" aria-label="${esc(l.name)} fantasy discount" /></td></tr>`).join('')}
+              <td><input class="input num" name="commission-${i}" type="number" min="0" max="50" step="0.5" value="${+(l.commission * 100).toFixed(1)}" aria-label="${esc(l.name)} commission" /></td></tr>`).join('')}
           </tbody></table></div><p class="field-error" data-err="lvls"></p><button class="btn btn-primary" type="submit" style="margin-top:12px">Save levels</button></form></section>
         <section class="dash-card"><h2 class="h4">Delivery & service fees</h2><p class="small soft" style="margin-top:6px">What customers pay on top: shop delivery and the booking service fee. Changes apply to new orders and bookings.</p>
           <form id="fees" novalidate class="form-grid" style="margin-top:16px">
@@ -116,7 +111,7 @@
             <div><button class="btn btn-primary" type="submit">Save</button></div></form></section>
         <section class="dash-card"><h2 class="h4">Demo data</h2><p class="small soft" style="margin-top:6px">Restore all pitches, products, stores and bookings to the original demo state on this device.</p><button class="btn btn-outline" data-reset style="margin-top:14px;color:var(--danger)">${icon('refresh', 15)} Reset platform data</button></section>
       </div>`;
-      return C.layout('settings', { title: 'Platform settings', subtitle: 'Commission, VAT, sellers, Fantasy Pass and demo data', body });
+      return C.layout('settings', { title: 'Platform settings', subtitle: 'Commission, VAT, sellers, fantasy and demo data', body });
     },
     mount(el) {
       el.querySelector('#cm')?.addEventListener('submit', (e) => {
@@ -148,21 +143,13 @@
         db().setSettings({ pod: v }); db().log(D().me().id, 'settings.pod', `Seller rules: ${v.holdDays}-day hold, ${v.minWithdraw} EGP minimum withdrawal`);
         SA.ui.overlay.toast('Seller rules saved'); SA.app.rerender();
       });
-      el.querySelector('#fpass')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const f = SA.core.utils.formData(e.target);
-        const v = { one: Math.round(+f.one), both: Math.round(+f.both) };
-        if (!(v.one >= 0 && v.both >= 0 && v.both <= v.one * 2)) { e.target.querySelector('[data-err="fpass"]').textContent = 'Prices can’t be negative, and both leagues shouldn’t cost more than two single passes.'; return; }
-        db().setSettings({ fantasySubs: v }); db().log(D().me().id, 'settings.fantasy', `Fantasy Pass: ${v.one} EGP one league, ${v.both} EGP both`);
-        SA.ui.overlay.toast('Fantasy Pass prices saved'); SA.app.rerender();
-      });
       el.querySelector('#lvls')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const f = SA.core.utils.formData(e.target);
         const cur = db().settings().sellerLevels;
         const opt = (v) => (v === '' || v == null ? null : Math.max(0, Math.round(+v)));
         const next = cur.map((l, i) => ({ ...l, sales: i === 0 ? 0 : Math.round(+f[`sales-${i}`]), rating: i === 0 ? 0 : +(+f[`rating-${i}`]).toFixed(1), designs: opt(f[`designs-${i}`]), codes: opt(f[`codes-${i}`]),
-          baseDiscount: Math.round(+f[`baseDiscount-${i}`]), commission: +(+f[`commission-${i}`] / 100).toFixed(3), fantasyDiscount: Math.min(1, +(+f[`fantasyDiscount-${i}`] / 100).toFixed(2)) }));
+          baseDiscount: Math.round(+f[`baseDiscount-${i}`]), commission: +(+f[`commission-${i}`] / 100).toFixed(3), fantasyDiscount: 0 }));
         const bad = next.some((l, i) => i > 0 && (l.sales <= next[i - 1].sales || l.rating < next[i - 1].rating)) || next.some((l) => !(l.rating >= 0 && l.rating <= 5 && l.commission >= 0 && l.commission <= 0.5 && l.baseDiscount >= 0))
           || next.some((l) => SA.services.pod.catalog({ all: true }).some((c) => c.base - l.baseDiscount <= c.partnerCost));
         if (bad) { e.target.querySelector('[data-err="lvls"]').textContent = 'Each level needs more items and at least the same rating as the one before; commission 0–50%; the base discount must keep every product above its partner cost.'; return; }

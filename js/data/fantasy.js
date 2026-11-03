@@ -2,7 +2,7 @@
  * Seed: fantasy datasets (mock) — Egyptian Premier League and English Premier League.
  * Clubs, a squad per club, fixtures for the season and per-gameweek points for completed rounds.
  * Generated deterministically so every reload shows the same "database".
- * Prizes are sponsor prizes, vouchers and discount codes — never cash. Prize leagues need a Fantasy Pass
+ * Prizes are sponsor prizes, vouchers and discount codes — never cash. Every league is free to enter
  * (monthly subscription, see fantasyService).
  */
 (function (SA) {
@@ -179,18 +179,18 @@
     },
     firsts: ['Mohamed', 'Ahmed', 'Mahmoud', 'Mostafa', 'Omar', 'Karim', 'Hossam', 'Youssef', 'Ali', 'Islam', 'Amr', 'Tarek', 'Hesham', 'Ibrahim', 'Khaled', 'Ziad', 'Hamza', 'Marwan', 'Seif', 'Hazem', 'Abdelrahman', 'Mazen', 'Ayman', 'Sherif', 'Kareem', 'Fady', 'Belal', 'Adham'],
     lasts: ['Gaber', 'Fathy', 'El Sayed', 'Hamdy', 'Abdelaziz', 'Mansour', 'Salah', 'Kamal', 'Shawky', 'Eid', 'Ragab', 'Soliman', 'Nasr', 'El Gendy', 'Fouad', 'Hegazy', 'Morsy', 'Wahba', 'Zaki', 'Atef', 'Galal', 'Shehata', 'Rizk', 'Barakat', 'El Masry', 'Tawfik', 'Farag', 'Lotfy'],
-    // Leagues run by Super App. "pass" leagues need a Fantasy Pass; prizes come from sponsors and partners.
+    // Every league is free (owner, 2026-11-03). "official" = the Super App League (weekly Super Points); "free" = sponsor leagues.
     officialLeagues: [
-      { id: 'ol-grand', name: 'Super App Grand League', kind: 'official', participants: 184320, prizeValue: 25000,
-        scope: 'Season', from: 1, blurb: 'Everyone who builds a team is entered automatically.', color: 'ink',
+      { id: 'ol-grand', name: 'Super App League', kind: 'official', participants: 184320, prizeValue: 0,
+        scope: 'Every gameweek', from: 1, blurb: 'Super App’s own league, run by the Super App team. Everyone who builds a team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
         prizes: [['1st', 'Two season tickets + signed kit'], ['2nd', 'Signed kit + 2,000 EGP shop voucher'], ['3rd', '1,000 EGP shop voucher'], ['Top 100', '15% shop discount code']] },
-      { id: 'ol-derby', name: 'Cairo Derby Cup', kind: 'pass', participants: 3846, cap: 5000, prizeValue: 60000,
+      { id: 'ol-derby', name: 'Cairo Derby Cup', kind: 'free', participants: 3846, cap: 5000, prizeValue: 60000,
         scope: 'GW 9 – GW 17', from: 9, to: 17, blurb: 'Nine gameweeks — the winner watches the derby from the stands.', color: 'blaze',
         prizes: [['1st', 'Two derby tickets + signed kit'], ['2nd', '10 free pitch hours at partner venues'], ['3rd', '1,500 EGP shop voucher'], ['4th – 10th', '500 EGP shop voucher each'], ['11th – 100th', '25% off one booking at partner venues']] },
-      { id: 'ol-weekly', name: 'Gameweek Sprint', kind: 'pass', participants: 9712, cap: 20000, prizeValue: 15000,
+      { id: 'ol-weekly', name: 'Gameweek Sprint', kind: 'free', participants: 9712, cap: 20000, prizeValue: 15000,
         scope: 'GW 9 only', from: 9, to: 9, blurb: 'One gameweek, instant results. Highest score on Monday night wins.', color: 'turf',
         prizes: [['1st', 'Signed shirt + 1,000 EGP shop voucher'], ['2nd', '5 free pitch hours'], ['3rd', '500 EGP shop voucher'], ['Top 500', '10% shop discount code']] },
-      { id: 'ol-elite', name: 'Champions Circle', kind: 'pass', participants: 412, cap: 1000, prizeValue: 40000,
+      { id: 'ol-elite', name: 'Champions Circle', kind: 'free', participants: 412, cap: 1000, prizeValue: 40000,
         scope: 'Rest of season', from: 9, to: 34, blurb: 'Capped at 1,000 managers. For the serious ones.', color: 'gold',
         prizes: [['1st', 'Away-match trip for two'], ['2nd', 'A season of free Thursday games at a partner venue'], ['3rd', '3,000 EGP shop voucher'], ['4th – 10th', '1,000 EGP shop voucher each']] },
     ],
@@ -253,13 +253,13 @@
     firsts: ['James', 'Jack', 'Harry', 'Oliver', 'George', 'Charlie', 'Tom', 'Josh', 'Ben', 'Lewis', 'Ryan', 'Callum', 'Luke', 'Jamie', 'Kyle', 'Aaron', 'Liam', 'Owen', 'Connor', 'Dan', 'Mason', 'Ethan', 'Sam', 'Joe'],
     lasts: ['Walker', 'Cooper', 'Hughes', 'Clarke', 'Wright', 'Turner', 'Mitchell', 'Phillips', 'Evans', 'Morris', 'Bennett', 'Barnes', 'Fletcher', 'Webb', 'Carter', 'Lowe', 'Shaw', 'Holmes', 'Dawson', 'Reid', 'Palmer', 'Knight', 'Ward', 'Burke'],
     officialLeagues: [
-      { id: 'ol-epl-grand', name: 'Super App Premier League Cup', kind: 'official', participants: 96410, prizeValue: 20000,
-        scope: 'Season', from: 1, blurb: 'Everyone who builds an English Premier League team is entered automatically.', color: 'ink',
+      { id: 'ol-epl-grand', name: 'Super App League', kind: 'official', participants: 96410, prizeValue: 0,
+        scope: 'Every gameweek', from: 1, blurb: 'Super App’s own league, run by the Super App team. Everyone who builds an English Premier League team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
         prizes: [['1st', 'Signed Premier League shirt + 2,000 EGP shop voucher'], ['2nd', '1,500 EGP shop voucher'], ['3rd', '1,000 EGP shop voucher'], ['Top 100', '15% shop discount code']] },
-      { id: 'ol-epl-kings', name: 'Egyptian Kings League', kind: 'pass', participants: 5120, cap: 10000, prizeValue: 35000,
+      { id: 'ol-epl-kings', name: 'Egyptian Kings League', kind: 'free', participants: 5120, cap: 10000, prizeValue: 35000,
         scope: 'GW 9 – GW 20', from: 9, to: 20, blurb: 'Back the Egyptians abroad — the top managers win watch-party nights and kits.', color: 'blaze',
         prizes: [['1st', 'Watch-party for 10 at a partner venue + two shirts'], ['2nd', '10 free pitch hours'], ['3rd', '1,500 EGP shop voucher'], ['4th – 50th', '20% off one booking']] },
-      { id: 'ol-epl-sprint', name: 'Super Sunday Sprint', kind: 'pass', participants: 7304, cap: 20000, prizeValue: 12000,
+      { id: 'ol-epl-sprint', name: 'Super Sunday Sprint', kind: 'free', participants: 7304, cap: 20000, prizeValue: 12000,
         scope: 'GW 9 only', from: 9, to: 9, blurb: 'One gameweek of English football. Best score wins.', color: 'turf',
         prizes: [['1st', 'Signed shirt'], ['2nd', '5 free pitch hours'], ['3rd', '500 EGP shop voucher'], ['Top 500', '10% shop discount code']] },
     ],

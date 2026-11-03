@@ -86,12 +86,12 @@ public sealed class FantasyController(IFantasyService fantasy, IFantasyTeamServi
 }
 
 /// <summary>
-/// Fantasy groups and the Fantasy Pass (API §6.1): my groups, official sponsor leagues (Fantasy Pass), private groups by
-/// invite code, paid groups (hidden until payments are live) and the tables.
+/// Fantasy groups (API §6.1): my groups, the official leagues and private groups by invite code, and the tables.
+/// Every league is free (owner, 2026-11-03): the Fantasy Pass endpoints were removed.
 /// </summary>
 [Route("api/v1/fantasy")]
 [Authorize]
-public sealed class FantasyGroupsController(IFantasyGroupsService groups, IFantasyPassService passes) : ApiControllerBase
+public sealed class FantasyGroupsController(IFantasyGroupsService groups) : ApiControllerBase
 {
     /// <summary>The grand league (my overall rank), my groups, official leagues, paid groups (empty until payments are live).</summary>
     [HttpGet("{comp}/groups")]
@@ -103,7 +103,7 @@ public sealed class FantasyGroupsController(IFantasyGroupsService groups, IFanta
     public async Task<ActionResult<object>> Create(string comp, CreateGroupRequest request, CancellationToken ct) =>
         Created(await groups.CreateAsync(comp, request, ct), "Group created. Share the invite code.");
 
-    /// <summary>404 unknown code · 409 already_member · 403 pass_required (official) · 422 payment_required (paid).</summary>
+    /// <summary>404 unknown code · 409 already_member. Every league is free.</summary>
     [HttpPost("groups/join")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Join(JoinGroupRequest request, CancellationToken ct) => Ok(await groups.JoinAsync(request, ct), "You joined the group.");
@@ -120,13 +120,4 @@ public sealed class FantasyGroupsController(IFantasyGroupsService groups, IFanta
     [HttpGet("groups/{id:long}/table")]
     [AllowAnonymous]
     public async Task<ActionResult<object>> Table(long id, CancellationToken ct) => Ok(await groups.TableAsync(id, ct));
-
-    [HttpGet("pass")]
-    public async Task<ActionResult<object>> Pass(CancellationToken ct) => Ok(await passes.StatusAsync(ct));
-
-    /// <summary>{ plan: egy | epl | both } + header Idempotency-Key; a repeat within 10 minutes buys nothing more.</summary>
-    [HttpPost("pass")]
-    [EnableRateLimiting(RateLimitPolicies.Write)]
-    public async Task<ActionResult<object>> BuyPass(BuyPassRequest request, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, CancellationToken ct) =>
-        Ok(await passes.BuyAsync(request, idempotencyKey, ct), "Fantasy Pass active.");
 }

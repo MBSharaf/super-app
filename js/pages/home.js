@@ -43,7 +43,7 @@
   const services = [
     { key: 'pitches', title: 'Book a pitch', text: 'Live availability for 5, 7 and 11-a-side pitches near you. Pay by Visa or wallet.', href: '#/pitches', icon: 'pitch', img: 'litField', cta: 'See pitches near me' },
     { key: 'players', title: 'Find players', text: 'Short on numbers? Post your booking and players nearby join in minutes.', href: '#/players', icon: 'users', img: 'menPlaying', cta: 'Browse open games' },
-    { key: 'fantasy', title: 'Play fantasy', text: 'Egyptian Premier League fantasy with private groups and paid prize leagues.', href: '#/fantasy', icon: 'trophy', img: 'stadiumNight', cta: 'Pick your team' },
+    { key: 'fantasy', title: 'Play fantasy', text: 'Free fantasy leagues. The top 3 of every gameweek in the Super App League win Super Points.', href: '#/fantasy', icon: 'trophy', img: 'stadiumNight', cta: 'Pick your team' },
     { key: 'shop', title: 'Shop gear', text: 'Boots, balls, kits and padel — original brands, delivered across Egypt.', href: '#/shop', icon: 'bag', img: 'goalTrees', productImg: 'photo-1511886929837-354d827aae26', cta: 'Shop now' },
   ].filter((x) => x.key !== 'shop' || SA.config.storeEnabled);
 
@@ -61,7 +61,7 @@
       const heroMatch = matches.find((m) => m.spotsLeft > 0 && !m.joined) || matches[0];
       const heroProduct = products.find((p) => p.discount > 0) || products[0];
       const tonight = matches.filter((m) => m.spotsLeft > 0).length;
-      const leagues = S.fantasy.officialLeagues().filter((l) => l.kind === 'pass');
+      const leagues = S.fantasy.officialLeagues();
       const spotlight = S.schedule.spotlight(8);
       const newsList = await S.news.list();
       // Live activity ticker, built from real data in the app
@@ -155,12 +155,12 @@
             <h2 class="h1" style="color:#fff;margin-top:16px">Gameweek ${meta.gw} locks in</h2>
             <div style="margin-top:16px">${c.countdown(meta.deadline)}</div>
             <p style="color:rgba(255,255,255,.75);margin-top:18px;max-width:46ch">${team ? `${esc(team.name)} is set. Check your captain and transfers before the deadline.` : 'Pick 15 players with 100M, choose a captain and take on your friends — or enter a paid league with real prizes.'}</p>
-            <div class="row wrap" style="margin-top:22px">${c.cta(team ? 'Manage my team' : 'Create my team', { href: team ? '#/fantasy' : '#/fantasy/squad', variant: 'blaze' })}<a class="btn btn-ghost" style="color:#fff" href="#/fantasy/leagues">Prize leagues</a></div>
+            <div class="row wrap" style="margin-top:22px">${c.cta(team ? 'Manage my team' : 'Create my team', { href: team ? '#/fantasy' : '#/fantasy/squad', variant: 'blaze' })}<a class="btn btn-ghost" style="color:#fff" href="#/fantasy/leagues">Free leagues</a></div>
           </div>
           <div class="fb-side">
             <h3 class="small" style="color:rgba(255,255,255,.7);font-weight:600">In form this week</h3>
             <ul class="fb-players">${topPlayers.map((p) => `<li>${c.kit(S.fantasy.teamById[p.teamId], 34, p.pos === 'GK')}<span class="grow"><b>${esc(p.name)}</b><span class="xs">${S.fantasy.teamById[p.teamId].name} · ${p.pos} · ${fantasyPrice(p.price)}</span></span><span class="fb-form num">${p.form.toFixed(1)}</span></li>`).join('')}</ul>
-            <div class="fb-leagues">${leagues.slice(0, 2).map((l) => `<a href="#/fantasy/league/${l.id}" class="fb-league"><span><b>${esc(l.name)}</b><span class="xs">Fantasy Pass · ${l.participants.toLocaleString()} managers</span></span><span class="fb-prize">${money(l.prizeValue || 0)}</span></a>`).join('')}</div>
+            <div class="fb-leagues">${leagues.slice(0, 2).map((l) => `<a href="#/fantasy/league/${l.id}" class="fb-league"><span><b>${esc(l.name)}</b><span class="xs">Free · ${l.participants.toLocaleString()} managers</span></span><span class="fb-prize">${l.kind === 'official' ? `${S.fantasy.weeklyPoints()[0].toLocaleString()} pts / GW` : money(l.prizeValue || 0)}</span></a>`).join('')}</div>
           </div>
         </div>
       </section>

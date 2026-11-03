@@ -1,4 +1,4 @@
-/** Admin console: fantasy — prize leagues (prizes, sponsor, cap), sponsors, winners and Fantasy Pass subscribers. */
+/** Admin console: fantasy — free leagues (prizes, sponsor, cap), the Super App League's weekly points, sponsors and winners. */
 (function (SA) {
   const { esc, money, fmtDate, timeAgo, isoDate, addDays, today } = SA.core.utils;
   const { icon } = SA.ui;
@@ -106,11 +106,12 @@
       const sponsors = db().all('sponsors') || [];
       const winners = (db().all('fantasyWinners') || []).slice().sort((a, b) => b.at - a.at);
       const from = isoDate(addDays(today(), -29)), to = isoDate(today());
-      const passes = AD().passSales(from, to);
+      const weekly = (db().all('fantasyWeekly') || []).slice().sort((a, b) => b.at - a.at);
+      const weeklyGiven = weekly.filter((w) => w.at >= addDays(today(), -29).getTime()).reduce((t, w) => t + w.winners.reduce((x, y) => x + y.points, 0), 0);
       let section = '';
       if (!tab) {
         section = Object.keys(LG).map((lg) => `<section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">${esc(LG[lg].label)}</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>League</th><th>Type</th><th>Sponsor</th><th>1st prize</th><th class="r">Managers</th><th>Status</th><th></th></tr></thead><tbody>
-          ${F().allOfficial(lg).map((l) => `<tr class="${l.hidden ? 'is-dim' : ''}"><td class="small"><b>${esc(l.name)}</b><span class="xs muted" style="display:block">${esc(l.scope)}</span></td><td>${l.kind === 'official' ? '<span class="badge">Free</span>' : `<span class="badge badge-gold">${icon('crown', 11, 2)} Pass</span>`}</td>
+          ${F().allOfficial(lg).map((l) => `<tr class="${l.hidden ? 'is-dim' : ''}"><td class="small"><b>${esc(l.name)}</b><span class="xs muted" style="display:block">${esc(l.scope)}</span></td><td>${l.kind === 'official' ? '<span class="badge badge-ink">Super App · Free</span>' : '<span class="badge">Free</span>'}</td>
             <td class="small">${l.sponsor ? `<i class="adm-dot" style="background:${esc(l.sponsor.color)}"></i>${esc(l.sponsor.name)}` : '<span class="muted">—</span>'}</td><td class="small">${esc(l.prizes[0]?.[1] || '')}</td><td class="r num">${l.participants.toLocaleString()}${l.cap ? `<span class="xs muted"> / ${l.cap.toLocaleString()}</span>` : ''}</td>
             <td>${l.hidden ? '<span class="badge badge-danger">Hidden</span>' : '<span class="badge badge-turf">Live</span>'}</td>
             <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-edit-league="${l.id}" data-lg="${lg}">Edit</button><button class="btn btn-outline btn-sm" data-winners="${l.id}" data-lg="${lg}">${icon('trophy', 13)} Announce winners</button></div></td></tr>`).join('')}
@@ -129,27 +130,35 @@
             <td>${r.delivered ? `<span class="badge badge-turf">${r.code ? 'Code sent' : 'Delivered'}</span>` : `<button class="btn btn-outline btn-sm" data-delivered="${w.id}" data-i="${i}">Mark delivered</button>`}</td></tr>`).join('')}
           </tbody></table></div></section>`).join('') || `<div class="dash-card">${SA.ui.c.empty({ icon: 'trophy', title: 'No winners announced yet', text: 'Announce winners from the Leagues tab when a round or a competition ends.' })}</div>`;
       } else {
-        const plans = { egy: 0, epl: 0, both: 0 }; passes.forEach((x) => { plans[x.plan]++; });
-        const prices = db().settings().fantasySubs;
-        section = `<div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">Fantasy Pass — last 30 days</h2>
-            <div class="adm-counts" style="grid-template-columns:repeat(2,minmax(0,1fr))">${[['trophy', passes.length, 'Passes sold'], ['wallet', money(passes.reduce((t, x) => t + x.amount, 0)), 'Revenue'], ['flag', plans.egy, 'Egyptian league'], ['globe', plans.epl, 'Premier League'], ['sparkle', plans.both, 'Both leagues'], ['percent', `${passes.length ? Math.round((plans.both / passes.length) * 100) : 0}%`, 'Chose both']].map(([ic, n, l]) => `<div class="adm-count"><span class="kpi-ico">${icon(ic, 18)}</span><b class="h4 num">${n}</b><span class="xs muted">${l}</span></div>`).join('')}</div></section>
-          <section class="dash-card"><h2 class="h4">Prices</h2><dl class="kv" style="margin-top:12px"><div><dt>One league / month</dt><dd class="num">${money(prices.one)}</dd></div><div><dt>Both leagues / month</dt><dd class="num">${money(prices.both)}</dd></div><div><dt>Pro sellers</dt><dd>50% off</dd></div><div><dt>Elite sellers</dt><dd>Free</dd></div></dl>
-            <a class="btn btn-outline btn-sm" href="#/admin/settings" style="margin-top:12px">Change prices</a>
-            <p class="xs muted" style="margin-top:10px">${icon('shield', 12)} Prize leagues give sponsor prizes and vouchers only — no cash prizes and no entry fees.</p></section></div>
-          <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Latest passes</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Customer</th><th>Plan</th><th class="r">Paid</th></tr></thead><tbody>
-            ${passes.slice(0, 25).map((x) => `<tr><td class="small">${fmtDate(new Date(x.at))}</td><td class="small">${esc(x.customer)}</td><td class="small">${{ egy: 'Egyptian league', epl: 'Premier League', both: 'Both leagues' }[x.plan]}</td><td class="r num">${money(x.amount)}</td></tr>`).join('')}</tbody></table></div></section>`;
+        // Super App League: the top 3 of every gameweek win Super Points (owner's rule, 2026-11-03)
+        const w = F().weeklyPoints();
+        section = `<div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">Super App League — weekly points</h2>
+            <p class="small soft" style="margin-top:6px">Every league is free. In the Super App League, the 3 highest gameweek scores win Super Points after each gameweek. The points go to their accounts automatically.</p>
+            <form class="form-grid" data-weekly style="margin-top:14px">${['1st', '2nd', '3rd'].map((p, i) => `<div class="field"><label for="fw-${i}">${p} place (points)</label><input class="input num" id="fw-${i}" name="p${i}" type="number" min="0" step="50" value="${w[i]}" /></div>`).join('')}
+              <div class="span-2"><button class="btn btn-primary" type="submit">Save weekly points</button></div></form></section>
+          <section class="dash-card"><h2 class="h4">Last 30 days</h2><dl class="kv" style="margin-top:12px"><div><dt>Gameweeks paid out</dt><dd class="num">${weekly.filter((x) => x.at >= addDays(today(), -29).getTime()).length}</dd></div><div><dt>Super Points given</dt><dd class="num">${weeklyGiven.toLocaleString()}</dd></div></dl>
+            <p class="xs muted" style="margin-top:10px">${icon('shield', 12)} No entry fees and no cash prizes.</p></section></div>
+          <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Weekly winners</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Gameweek</th><th>League</th><th>1st</th><th>2nd</th><th>3rd</th></tr></thead><tbody>
+            ${weekly.slice(0, 30).map((x) => `<tr><td class="small">GW${x.gw}<span class="xs muted" style="display:block">${fmtDate(new Date(x.at))}</span></td><td class="small">${esc(LG[x.league]?.label || x.league)}</td>${[0, 1, 2].map((i) => { const r = x.winners[i]; return `<td class="small">${r ? `<b>${esc(r.name)}</b>${r.isMe ? ' <span class="badge badge-info">This device</span>' : ''}<span class="xs muted" style="display:block">${r.gw} pts · +${r.points.toLocaleString()} Super Points</span>` : '—'}</td>`; }).join('')}</tr>`).join('') || '<tr><td colspan="5" class="small muted" style="padding:18px">No gameweek finished yet.</td></tr>'}</tbody></table></div></section>`;
       }
       const active = sponsors.filter((s) => !s.to || s.to >= isoDate(today()));
       const body = `<div class="kpi-grid kpi-sm">
-          ${C.kpi({ label: 'Prize leagues', value: Object.keys(LG).reduce((t, lg) => t + F().allOfficial(lg).filter((l) => !l.hidden).length, 0), ic: 'trophy' })}
+          ${C.kpi({ label: 'Leagues', value: Object.keys(LG).reduce((t, lg) => t + F().allOfficial(lg).filter((l) => !l.hidden).length, 0), ic: 'trophy' })}
           ${C.kpi({ label: 'Active sponsors', value: active.length, ic: 'sparkle', sub: money(active.reduce((t, s) => t + (s.value || 0), 0)) })}
-          ${C.kpi({ label: 'Passes (30 days)', value: passes.length.toLocaleString(), ic: 'crown', tone: 'k-turf', sub: money(passes.reduce((t, x) => t + x.amount, 0)) })}
+          ${C.kpi({ label: 'Weekly Super Points (30 days)', value: weeklyGiven.toLocaleString(), ic: 'sparkle', tone: 'k-turf' })}
           ${C.kpi({ label: 'Prizes to deliver', value: winners.reduce((t, w) => t + w.rows.filter((r) => !r.delivered).length, 0), ic: 'gift', tone: winners.some((w) => w.rows.some((r) => !r.delivered)) ? 'k-blaze' : '' })}
         </div>
-        ${A.tabs('/admin/fantasy', [['', 'Prize leagues'], ['sponsors', 'Sponsors', sponsors.length], ['winners', 'Winners', winners.length], ['pass', 'Fantasy Pass'], ['competitions', 'Competitions']], tab)}${tab === 'competitions' ? compsSection() : section}`;
-      return C.layout('fantasy', { title: 'Fantasy', subtitle: 'Prize leagues, sponsors, winners, Fantasy Pass subscribers and the competitions on the matches page', body });
+        ${A.tabs('/admin/fantasy', [['', 'Leagues'], ['sponsors', 'Sponsors', sponsors.length], ['winners', 'Winners', winners.length], ['weekly', 'Weekly points', weekly.length], ['competitions', 'Competitions']], tab)}${tab === 'competitions' ? compsSection() : section}`;
+      return C.layout('fantasy', { title: 'Fantasy', subtitle: 'Free leagues, the Super App League’s weekly points, sponsors, winners and the competitions on the matches page', body });
     },
     mount(el) {
+      el.querySelector('[data-weekly]')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = [0, 1, 2].map((i) => Math.max(0, Math.round(+e.target[`p${i}`].value) || 0));
+        db().setSettings({ fantasyWeekly: v });
+        db().log(SA.services.dash?.me?.()?.id || 'admin', 'settings.fantasy.weekly', `Super App League weekly points: ${v.join(' / ')}`);
+        toast('Weekly points saved'); SA.app.rerender();
+      });
       el.addEventListener('click', async (e) => {
         const t = (s) => e.target.closest(s);
         if (t('[data-edit-league]')) { const b = t('[data-edit-league]'); return leagueDialog(b.dataset.lg, F().allOfficial(b.dataset.lg).find((l) => l.id === b.dataset.editLeague)); }

@@ -5,7 +5,7 @@
  * In API mode this file loads the server's data into the shapes the pages already read and sends the pages' changes
  * to the server first, then loads again. Demo mode (GitHub Pages) is unchanged and the design stays the same.
  *   - Fantasy: players, clubs, fixtures and gameweeks (cached from API-FOOTBALL or the simulated provider), my team,
- *     lineup, transfers, groups, prize leagues and the Fantasy Pass. Gameweeks are scored by the server.
+ *     lineup, transfers, groups and the free leagues. Gameweeks are scored by the server.
  *   - Content: home banners, the announcement bar, pop-ups (views and clicks counted on the server), Super App news.
  *   - Communities: communities, posts, comments, reactions, polls, reports, join / leave.
  *   - Support: my tickets and replies.
@@ -122,7 +122,7 @@
     await loadGroups(k);
   };
 
-  const loadPass = async () => { pass = signedIn() ? await quiet(api.get('/fantasy/pass')) : null; };
+  const loadPass = async () => {}; // no Fantasy Pass any more: every league is free
 
   /** Lineup of the local team → PUT /team/lineup (after a swap, formation or armband change). */
   const pushLineup = (k = key()) => {
@@ -143,14 +143,15 @@
   };
 
   const officialOf = (g) => ({
-    id: `og-${g.id}`, apiId: g.id, name: g.name, kind: 'pass', participants: g.members, cap: 0, prizeValue: +g.prizeValue, scope: 'Season', from: 1,
+    id: `og-${g.id}`, apiId: g.id, name: g.name, kind: 'free', participants: g.members, cap: 0, prizeValue: +g.prizeValue, scope: 'Season', from: 1,
     blurb: g.prizeText || '', color: 'ink', prizes: g.prizeText ? [['1st', g.prizeText]] : [], sponsor: g.sponsor ? { name: g.sponsor.name, color: g.sponsor.color } : null,
     joined: g.joined, code: g.inviteCode,
   });
 
   const grandOf = (k) => ({
-    id: `grand-${k}`, name: k === 'epl' ? 'Super App Premier League Cup' : 'Super App Grand League', kind: 'official', participants: S(k)?.groups?.overall.managers || 0,
-    prizeValue: 0, scope: 'Season', from: 1, blurb: 'Everyone who builds a team is entered automatically.', color: 'ink', prizes: [], joined: !!fstate(k).team,
+    id: `grand-${k}`, name: 'Super App League', kind: 'official', participants: S(k)?.groups?.overall.managers || 0,
+    prizeValue: 0, scope: 'Every gameweek', from: 1, blurb: 'Super App’s own league, run by the Super App team. Everyone who builds a team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
+    prizes: demo.fantasy.weeklyPoints().map((p, i) => [`${['1st', '2nd', '3rd'][i]} every gameweek`, `${p.toLocaleString()} Super Points`]), joined: !!fstate(k).team,
   });
 
   const privateOf = (g, k) => ({
@@ -254,29 +255,8 @@
       return { ok: true };
     },
 
-    /* Fantasy Pass */
-    passPlans() {
-      if (!live() || !pass) return demo.fantasy.passPlans();
-      const label = (p) => (p === 'both' ? 'Both leagues' : LEAGUES[p]?.label || p);
-      return pass.plans.map((p) => ({ id: p.plan, label: label(p.plan), leagues: p.plan === 'both' ? ['egy', 'epl'] : [p.plan], list: +p.listPrice, price: +p.price, discount: +p.discount, best: p.plan === 'both' }));
-    },
-    pass() {
-      if (!live() || !pass) return demo.fantasy.pass();
-      const ends = Object.fromEntries(Object.entries(pass.coversUntil).filter(([, v]) => v).map(([k, v]) => [k, new Date(v).getTime()]));
-      const leagues = Object.keys(ends);
-      if (!leagues.length) return null;
-      return { leagues, until: ends[key()] || Math.max(...Object.values(ends)), ends };
-    },
-    passCovers(lg = key()) { return !live() || !pass ? demo.fantasy.passCovers(lg) : !!pass.coversUntil[lg]; },
-    async buyPass(planId, payment) {
-      if (!live()) return demo.fantasy.buyPass(planId, payment);
-      const res = await fetchWithKey('/fantasy/pass', { plan: planId, payFromWallet: payment?.method === 'wallet' });
-      pass = res;
-      SA.services.liveMoney?.sync();
-      if (res.paymentUrl) window.location.assign(res.paymentUrl);
-      SA.services.user?.notify?.({ kind: 'fantasy', title: 'Fantasy Pass active', body: 'Prize leagues are open.', link: '/fantasy/leagues' });
-      return { pass: fantasyLive.pass(), paid: null };
-    },
+    /* Leagues are free (owner, 2026-11-03): no Fantasy Pass */
+    pass: () => null, passCovers: () => true, passPlans: () => [],
   };
 
   /** POST with an Idempotency-Key (one purchase per click, even when the network repeats it). */

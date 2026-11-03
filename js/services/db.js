@@ -176,6 +176,9 @@
       data.settings.adminSeed = 1; changed = true;
     }
     if (!data.settings.fantasySubs) { data.settings.fantasySubs = { one: 50, both: 80 }; changed = true; }
+    // Rule (2026-11-03, owner): every fantasy league is free; the Super App League's top 3 of each gameweek win Super Points
+    if (!Array.isArray(data.settings.fantasyWeekly)) { data.settings.fantasyWeekly = [1500, 1000, 500]; changed = true; }
+    if (!Array.isArray(data.fantasyWeekly)) { data.fantasyWeekly = []; changed = true; }
     if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.05, minRedeem: 2000 }; changed = true; }
     // Rule (2026-10): 20 points = 1 EGP, the smallest voucher is 100 EGP (2,000 points), and points never become cash
     if (!data.settings.loyaltyV2) { data.settings.loyalty = { ...data.settings.loyalty, pointValue: 0.05, minRedeem: 2000 }; data.settings.loyaltyV2 = 1; changed = true; }

@@ -115,10 +115,10 @@
       <div class="panel panel-pad points-how">
         <h2 class="h4">How you earn</h2>
         <ul class="how-list">
-          <li>${icon('pitch', 18)}<span><b>1 point for every ${L.cfg.earnPer === 1 ? '' : `${L.cfg.earnPer} `}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, the shop, tournaments and the Fantasy Pass. The points land the moment you pay.</span></li>
+          <li>${icon('pitch', 18)}<span><b>1 point for every ${L.cfg.earnPer === 1 ? '' : `${L.cfg.earnPer} `}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, the shop and tournaments. The points land the moment you pay. The top 3 of every gameweek in the Super App fantasy league win points too.</span></li>
           <li>${icon('star', 18)}<span><b>+20 points</b> for each review after a game</span></li>
           <li>${icon('trophy', 18)}<span><b>Bronze · Silver · Gold</b> — your tier rises with lifetime points (${L.lifetime.toLocaleString()} so far)</span></li>
-          <li>${icon('gift', 18)}<span><b>${Math.round(1 / L.cfg.pointValue)} points = 1 EGP</b> as a voucher, from ${L.cfg.minRedeem.toLocaleString()} points (${money(Math.round(L.cfg.minRedeem * L.cfg.pointValue))}). Use it on bookings, games, the shop, printed designs, tournaments and the Fantasy Pass — points can’t be turned into cash.</span></li>
+          <li>${icon('gift', 18)}<span><b>${Math.round(1 / L.cfg.pointValue)} points = 1 EGP</b> as a voucher, from ${L.cfg.minRedeem.toLocaleString()} points (${money(Math.round(L.cfg.minRedeem * L.cfg.pointValue))}). Use it on games, the shop, printed designs and tournaments — points can’t be turned into cash.</span></li>
         </ul>
         ${S.loyalty.vouchers().length ? `<h3 class="small strong" style="margin-top:16px">Your vouchers</h3><ul class="tx-list">${S.loyalty.vouchers().map((v) => `<li><span class="tx-ico credit">${icon('gift', 14, 2.2)}</span><span class="grow"><b class="small num">${esc(v.code)}</b><span class="xs muted" style="display:block">${v.balance ? `${money(v.balance)} left of ${money(v.amount)}` : `Used — ${money(v.amount)}`}</span></span>${v.balance ? '<span class="badge badge-turf">Ready</span>' : '<span class="badge">Used</span>'}</li>`).join('')}</ul>` : ''}
         <h3 class="small strong" style="margin-top:16px">Points history</h3>

@@ -47,7 +47,6 @@
       ['Store commission', (l) => pct(l.commission)],
       ['Discount codes', (l) => lim(l.codes)],
       ['Design review', (l) => ({ normal: 'Normal', priority: 'Priority', instant: 'Instant' }[l.review])],
-      ['Fantasy subscription', (l) => (l.fantasyDiscount >= 1 ? 'Free' : l.fantasyDiscount ? `${pct(l.fantasyDiscount)} off` : '—')],
       ['Team kits orders', (l) => (l.teamKits ? icon('check', 14, 2.6) : '—')],
     ];
     return `<div class="table-wrap"><table class="table lvl-table">

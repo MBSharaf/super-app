@@ -22,9 +22,15 @@
   };
   index();
   const POS = ['GK', 'DEF', 'MID', 'FWD'];
-  /** Prize leagues with the admin's edits (prizes, blurb, cap, sponsor, hidden) */
+  /** Free leagues with the admin's edits (prizes, blurb, cap, sponsor, hidden) */
   const sponsorOf = (id) => (SA.services.db?.all('sponsors') || []).find((s) => s.id === id) || null;
-  const editLeague = (l) => { const e = SA.services.db?.settings().fantasyLeagues?.[l.id] || {}; const m = { ...l, ...e }; return { ...m, sponsor: sponsorOf(m.sponsorId) }; };
+  const editLeague = (l) => {
+    const e = SA.services.db?.settings().fantasyLeagues?.[l.id] || {};
+    const m = { ...l, ...e };
+    // The Super App League's prizes are the weekly Super Points (admin sets the amounts)
+    if (m.kind === 'official') { const w = weeklyPoints(); m.prizes = [['1st every gameweek', `${w[0].toLocaleString()} Super Points`], ['2nd every gameweek', `${w[1].toLocaleString()} Super Points`], ['3rd every gameweek', `${w[2].toLocaleString()} Super Points`]]; }
+    return { ...m, sponsor: m.kind === 'official' ? null : sponsorOf(m.sponsorId) };
+  };
   const OL = (lg) => (lg ? LEAGUES[lg] : D).officialLeagues.map(editLeague).filter((l) => !l.hidden);
 
   const fstate = () => store.get()[STATE_KEY[league()]] || blank();
@@ -120,36 +126,38 @@
   const managers = () => D.managers || 184320;
   const rankFor = (pts, rounds) => (rounds <= 0 ? managers() : Math.max(1, Math.round(managers() * (1 - phi((pts - 47 * rounds) / (13 * Math.sqrt(rounds)))))));
 
-  /* ---------- Fantasy Pass: monthly subscription for prize leagues (one league or both) ---------- */
-  const PASS_DAYS = 30;
-  const passPrices = () => SA.services.db?.settings().fantasySubs || { one: 50, both: 80 };
-  /** Sellers get their level discount (Pro 50%, Elite free) */
-  const sellerDiscount = () => { const s = SA.services.sellers?.mine(); return s ? SA.services.sellers.levelOf(s).fantasyDiscount || 0 : 0; };
-  const passPlans = () => {
-    const p = passPrices(), off = sellerDiscount();
-    const price = (v) => Math.round(v * (1 - off));
-    return [
-      { id: 'egy', label: LEAGUES.egy.label, leagues: ['egy'], list: p.one, price: price(p.one) },
-      { id: 'epl', label: LEAGUES.epl.label, leagues: ['epl'], list: p.one, price: price(p.one) },
-      { id: 'both', label: 'Both leagues', leagues: ['egy', 'epl'], list: p.both, price: price(p.both), best: true },
-    ].map((x) => ({ ...x, discount: off }));
-  };
-  // Each league has its own end date: { egy: timestamp, epl: timestamp }
-  const passRaw = () => { const p = store.get().fantasyPass; return p && typeof p === 'object' && !p.leagues ? p : {}; };
-  const pass = () => {
-    const p = passRaw(), now = Date.now();
-    const leagues = Object.keys(LEAGUES).filter((k) => (p[k] || 0) > now);
-    if (!leagues.length) return null;
-    const own = (p[league()] || 0) > now ? p[league()] : Math.max(...leagues.map((k) => p[k]));
-    return { leagues, until: own, ends: Object.fromEntries(leagues.map((k) => [k, p[k]])) };
-  };
-  const passCovers = (lg = league()) => (passRaw()[lg] || 0) > Date.now();
+  /* ---------- Super App League: weekly Super Points for the gameweek's top 3 (owner's rule, 2026-11-03) ---------- */
+  // Every league is free to enter (no Fantasy Pass). The Super App League is run by the admin; every team is in it.
+  const SUPER_LEAGUE_KIND = 'official';
+  function weeklyPoints() { const w = SA.services.db?.settings().fantasyWeekly; return Array.isArray(w) && w.length === 3 ? w.map((x) => Math.max(0, Math.round(+x) || 0)) : [1500, 1000, 500]; }
+  const superLeague = () => OL().find((l) => l.kind === SUPER_LEAGUE_KIND) || null;
 
   const userTotals = () => {
     const t = fstate().team;
     if (!t) return { total: 0, gwPts: 0, rounds: 0 };
     const h = t.history || [];
     return { total: sum(h, (x) => x.pts), gwPts: h.length ? h[h.length - 1].pts : 0, rounds: h.length };
+  };
+
+  /**
+   * After a gameweek: the Super App League's top 3 by gameweek points win 1,500 / 1,000 / 500 Super Points (admin can
+   * change the amounts). Saved once per league and gameweek; the player gets the points if they're one of the three.
+   */
+  const awardWeekly = (gw) => {
+    const sl = superLeague();
+    const db = SA.services.db;
+    if (!sl || !db) return null;
+    if ((db.all('fantasyWeekly') || []).some((w) => w.league === league() && w.gw === gw)) return null;
+    const amounts = weeklyPoints();
+    const rows = fantasyService.standings(sl).slice().sort((a, b) => b.gw - a.gw || b.total - a.total).slice(0, 3);
+    const winners = rows.map((r, i) => ({ place: i + 1, name: r.name, team: r.team, gw: r.gw, total: r.total, points: amounts[i], isMe: !!r.isMe }));
+    const rec = db.insert('fantasyWeekly', { league: league(), leagueName: sl.name, gw, winners, at: Date.now() }, 'fw');
+    const mine = winners.find((w) => w.isMe);
+    if (mine && mine.points > 0) {
+      SA.services.loyalty?.bonus(`fantasy-weekly-${league()}-${gw}`, mine.points, `${sl.name}: #${mine.place} in gameweek ${gw}`);
+      SA.services.user.notify({ kind: 'fantasy', title: `You finished #${mine.place} in gameweek ${gw}`, body: `${mine.points.toLocaleString()} Super Points added for the ${sl.name}.`, link: '/wallet' });
+    }
+    return rec;
   };
 
   // ---------- Public API ----------
@@ -166,24 +174,12 @@
       store.set({ fantasyLeague: key }, 'fantasy');
       index(); syncRounds();
     },
-    /* Fantasy Pass */
-    passPlans, pass, passCovers,
-    async buyPass(planId, payment) {
-      SA.services.ceo?.assertOn('fantasy');
-      const plan = passPlans().find((x) => x.id === planId);
-      if (!plan) throw new ApiError('Choose a plan.', 'validation');
-      SA.services.user.assertActive();
-      let paid = null;
-      if (plan.price > 0) paid = await SA.services.payment.charge({ ...payment, amount: plan.price, label: `Fantasy Pass — ${plan.label} (1 month)` });
-      // Each league in the plan gets 30 more days (renewing early keeps the remaining days)
-      const next = { ...passRaw() };
-      plan.leagues.forEach((k) => { next[k] = Math.max(next[k] || 0, Date.now()) + PASS_DAYS * 864e5; });
-      store.set({ fantasyPass: next }, 'fantasy');
-      SA.services.admin?.recordPass({ plan: plan.id, amount: plan.price, customer: store.get().user?.name || 'Customer' });
-      const until = Math.max(...plan.leagues.map((k) => next[k]));
-      SA.services.user.notify({ kind: 'fantasy', title: 'Fantasy Pass active', body: `${plan.label} · prize leagues open until ${new Date(until).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}.`, link: '/fantasy/leagues' });
-      return { pass: pass(), paid };
-    },
+    /* Super App League weekly prizes */
+    weeklyPoints, superLeague,
+    /** Weekly winners of the Super App League, newest first ({ league, gw, winners: [{ place, name, team, gw, points, isMe }] }) */
+    weeklyWinners: (lg = league()) => (SA.services.db?.all('fantasyWeekly') || []).filter((w) => w.league === lg).sort((a, b) => b.gw - a.gw),
+    /** Leagues are free: kept so older callers don't break */
+    pass: () => null, passCovers: () => true, passPlans: () => [],
     meta: () => {
       syncRounds();
       const gw = liveGW();
@@ -253,7 +249,7 @@
         const vice = xi.filter((x) => x !== captain).sort((a, b) => score(byId[b]) - score(byId[a]))[0];
         const team = { id: uid('FT'), name: (name || '').trim() || `${store.get().user.firstName} FC`, squad: ids, xi, bench, captain, vice, freeTransfers: 1, hits: 0, createdGW: liveGW(), history: [] };
         setF({ team });
-        SA.services.user.notify({ kind: 'fantasy', title: 'Your fantasy team is ready', body: `${team.name} is entered into the Super App Grand League. Join a private group to play your friends.`, link: '/fantasy' });
+        SA.services.user.notify({ kind: 'fantasy', title: 'Your fantasy team is ready', body: `${team.name} is entered into the Super App League. Join a private group to play your friends.`, link: '/fantasy' });
         return { created: true, team };
       }
       const incoming = ids.filter((id) => !cur.squad.includes(id));
@@ -328,8 +324,9 @@
         result = entry;
       }
       setF({ liveGW: gw + 1 });
+      const weekly = awardWeekly(gw);
       SA.services.user.notify({ kind: 'fantasy', title: `Gameweek ${gw} is complete`, body: result ? `You scored ${result.pts} points. Overall rank ${result.rank.toLocaleString()}.` : 'Build a team to start scoring next gameweek.', link: '/fantasy' });
-      return { gw, result };
+      return { gw, result, weekly };
     }, { latency: 1100 }),
 
     lastResult: () => { const h = fstate().team?.history || []; return h[h.length - 1] || null; },
@@ -398,13 +395,12 @@
       if ((f.createdGroups || []).some((g) => g.id === id)) return setF({ createdGroups: f.createdGroups.filter((g) => g.id !== id) });
       setF({ groupIds: (f.groupIds || D.privateGroups.map((g) => g.id)).filter((x) => x !== id) });
     },
-    /** Enter a prize league: free with an active Fantasy Pass for this league (no entry fees, no cash prizes) */
+    /** Enter a league: every league is free (no Fantasy Pass, no entry fees, no cash prizes) */
     async joinOfficial(id) {
       const l = OL().find((x) => x.id === id);
       if (!l) throw new ApiError('League not found.', 'not_found');
       if (!fstate().team) throw new ApiError('Create your fantasy team before entering a league.', 'no_team');
       if ((fstate().joinedLeagues || []).includes(id)) throw new ApiError('You’ve already entered this league.', 'already');
-      if (l.kind === 'pass' && !passCovers()) throw new ApiError(`Prize leagues need a Fantasy Pass for the ${D.label}.`, 'pass_required');
       if (l.cap && l.participants >= l.cap) throw new ApiError('This league is full.', 'full');
       setF((f) => ({ joinedLeagues: [...(f.joinedLeagues || []), id] }));
       SA.services.user.notify({ kind: 'fantasy', title: `You’ve entered ${l.name}`, body: `Competing from GW${l.from}. Good luck!`, link: `/fantasy/league/${id}` });

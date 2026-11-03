@@ -40,7 +40,7 @@ public sealed class FantasyGroupRepository(AppDbContext db) : IFantasyGroupRepos
         query.AsNoTracking().Select(g => new GroupDto(g.Id, g.Season.Competition.Key, g.Name, g.Type.ToString(),
             g.Type == FantasyGroupType.Official || g.Members.Any(m => m.TeamId == teamId) ? g.InviteCode : null,
             g.Members.Count, g.Members.Any(m => m.TeamId == teamId), g.OwnerUserId == userId,
-            g.Members.Where(m => m.TeamId == teamId).Select(m => m.Rank).FirstOrDefault(), g.Type == FantasyGroupType.Official, g.MonthlyPrice,
+            g.Members.Where(m => m.TeamId == teamId).Select(m => m.Rank).FirstOrDefault(), false, null,   // every league is free (2026-11-03)
             g.Sponsor == null ? null : new SponsorBadgeDto(g.Sponsor.Id, g.Sponsor.Name, g.Sponsor.Tier.ToString(), g.Sponsor.Color),
             g.PrizeText, g.PrizeValue, g.CreatedAt));
 

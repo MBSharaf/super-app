@@ -11,14 +11,14 @@
     const full = l.cap && l.participants >= l.cap;
     return `<article class="league-card lc-${l.color}">
       <div class="lc-top">
-        <div class="row wrap" style="--gap:6px">${l.kind === 'official' ? '<span class="badge badge-glass">Free · Official</span>' : `<span class="badge badge-glass">${icon('crown', 12, 2)} Fantasy Pass</span>`}<span class="badge badge-glass">${esc(l.scope)}</span></div>
+        <div class="row wrap" style="--gap:6px">${l.kind === 'official' ? '<span class="badge badge-glass">Free · Super App</span>' : '<span class="badge badge-glass">Free</span>'}<span class="badge badge-glass">${esc(l.scope)}</span></div>
         <h3 class="h3" style="margin-top:14px">${esc(l.name)}</h3>
         <p class="small lc-dim">${esc(l.blurb)}</p>
         ${l.sponsor ? `<p class="xs lc-dim lc-sponsor">${icon('sparkle', 12)} Prizes from <b>${esc(l.sponsor.name)}</b></p>` : ''}
       </div>
       <div class="lc-figs">
         <div><span class="xs lc-dim">1st prize</span><b class="small lc-prize">${esc(l.prizes?.[0]?.[1] || l.prizeText || '—')}</b></div>
-        <div><span class="xs lc-dim">Prizes worth</span><b class="num">${money(l.prizeValue || 0)}</b></div>
+        ${l.kind === 'official' ? `<div><span class="xs lc-dim">Every gameweek</span><b class="small">Top 3 win Super Points</b></div>` : `<div><span class="xs lc-dim">Prizes worth</span><b class="num">${money(l.prizeValue || 0)}</b></div>`}
         <div><span class="xs lc-dim">Managers</span><b class="num">${fmtNum(l.participants)}${l.cap ? `<span class="xs lc-dim"> / ${fmtNum(l.cap)}</span>` : ''}</b></div>
         <div><span class="xs lc-dim">${me ? 'Your rank' : `GW${meta.gw} locks in`}</span><b class="num">${me ? '#' + fmtNum(me.rank) : c.countdown(lock, { compact: true })}</b></div>
       </div>
@@ -27,56 +27,12 @@
         <a class="btn btn-ghost btn-sm lc-ghost" href="#/fantasy/league/${l.id}">Prizes & rules</a>
         ${l.joined ? `<a class="btn btn-sm lc-joined" href="#/fantasy/league/${l.id}">${icon('check', 14, 2.6)} Entered · view table</a>`
           : full ? `<button class="btn btn-sm" disabled>League full</button>`
-          : `<button class="btn btn-sm lc-join" data-join="${l.id}">${l.kind === 'pass' && !f.passCovers() ? `${icon('lock', 13)} Get Fantasy Pass` : 'Enter league'}</button>`}
+          : `<button class="btn btn-sm lc-join" data-join="${l.id}">Enter league</button>`}
       </div>
     </article>`;
   };
 
-  /** Fantasy Pass: monthly subscription that opens the prize leagues (one league or both) */
-  const openPass = (then) => {
-    const f = F();
-    const plans = f.passPlans();
-    const cur = f.pass();
-    const first = plans.find((p) => p.id === f.league()) || plans[0];
-    SA.ui.overlay.open({
-      title: 'Fantasy Pass', subtitle: 'One month of prize leagues. Prizes come from sponsors and partners — vouchers, kits, tickets and free pitch hours.',
-      body: `<form id="pass-form" class="stack" style="--gap:12px">
-        ${cur ? `<div class="notice turf">${icon('check', 16)}<span>${cur.leagues.map((k) => `${esc(f.leagues().find((x) => x.key === k).label)} until ${new Date(cur.ends[k]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`).join(' · ')}. Buying again adds a month.</span></div>` : ''}
-        <div class="pass-plans" role="radiogroup" aria-label="Plan">${plans.map((p) => `<label class="pass-plan ${p.best ? 'is-best' : ''}"><input type="radio" name="plan" value="${p.id}" ${p.id === first.id ? 'checked' : ''} />
-          ${p.best ? '<span class="badge badge-blaze pass-best">Best value</span>' : ''}<b class="small">${esc(p.label)}</b>
-          <span class="pass-price"><b class="num">${p.price ? money(p.price) : 'Free'}</b><span class="xs muted"> / month</span>${p.discount ? ` <s class="xs muted">${money(p.list)}</s>` : ''}</span><span class="radio-dot"></span></label>`).join('')}</div>
-        ${plans[0].discount ? `<p class="xs text-turf">${icon('sparkle', 12)} Seller level perk: ${plans[0].discount >= 1 ? 'your pass is free' : `${Math.round(plans[0].discount * 100)}% off`}.</p>` : ''}
-        <ul class="assurance small"><li>${icon('check', 14)} Enter every prize league of the leagues you choose</li><li>${icon('check', 14)} No entry fees and no cash prizes — sponsor prizes, vouchers and discount codes</li><li>${icon('check', 14)} Doesn’t renew by itself</li></ul>
-        <div data-pay></div>
-        <label class="row small" style="--gap:10px;align-items:flex-start"><input type="checkbox" name="agree" style="margin-top:3px" /> <span>I’m 18 or older and agree to the league rules.</span></label></form>`,
-      footer: `<div class="grow"><b class="num" data-pass-total></b><span class="xs muted" style="display:block">for 30 days</span></div><button class="btn btn-blaze" form="pass-form" type="submit">Get the pass</button>`,
-      onMount(el, close) {
-        const form = el.querySelector('#pass-form');
-        const plan = () => plans.find((p) => p.id === form.plan.value);
-        const draw = () => {
-          const p = plan();
-          el.querySelector('[data-pass-total]').textContent = p.price ? money(p.price) : 'Free';
-          el.querySelector('[data-pay]').innerHTML = p.price ? SA.ui.payment.render({ amount: p.price, name: 'pspay' }) : '';
-          if (p.price) SA.ui.payment.bind(form, { name: 'pspay' });
-        };
-        form.addEventListener('change', (e) => { if (e.target.name === 'plan') draw(); });
-        draw();
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          if (!form.agree.checked) return SA.ui.overlay.toast('Please confirm the league rules first.', { type: 'error' });
-          const p = plan();
-          const payment = p.price ? SA.ui.payment.read(form, { name: 'pspay' }) : { method: 'wallet' };
-          try {
-            await SA.ui.payment.process(() => f.buyPass(p.id, payment), { root: form, label: 'Activating your pass', methodHint: payment.method });
-            close(); SA.core.motion.confetti(); SA.ui.overlay.toast('Fantasy Pass active — prize leagues are open', { type: 'success' });
-            if (then) then(); else SA.app.rerender();
-          } catch { /* handled */ }
-        });
-      },
-    });
-  };
-
-  /** Enter a league: free leagues straight away, prize leagues with a Fantasy Pass */
+  /** Enter a league: every league is free */
   const openJoinLeague = (id) => {
     const f = F();
     if (!f.team()) {
@@ -84,7 +40,6 @@
       return;
     }
     const l = f.officialLeagues().find((x) => x.id === id);
-    if (l.kind === 'pass' && !f.passCovers()) return openPass(() => openJoinLeague(id));
     SA.ui.overlay.open({
       title: `Enter ${esc(l.name)}`, subtitle: `${esc(l.scope)} · ${fmtNum(l.participants)} managers so far`,
       body: `<div class="prize-mini">${l.prizes.slice(0, 3).map(([p, v]) => `<div><span class="xs muted">${p}</span><b>${esc(v)}</b></div>`).join('')}</div>
@@ -98,7 +53,6 @@
       },
     });
   };
-  SA.ui.fantasyPass = { open: openPass };
 
   SA.pages.fantasyLeagues = {
     title: 'Leagues — Super App Fantasy',
@@ -108,8 +62,7 @@
       const groups = f.privateGroups();
       return `${SA.pages.fantasy.header('leagues')}
       <div class="container fx-body">
-        <div class="sec-head"><div><h2 class="h2">Prize leagues</h2><p>Run by Super App with prizes from sponsors and partners — kits, tickets, vouchers and free pitch hours. Open to Fantasy Pass holders.</p></div>
-          ${(() => { const p = f.passCovers() && f.pass(); return p ? `<span class="badge badge-turf">${icon('crown', 12, 2)} Pass active until ${new Date(p.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>` : `<button class="btn btn-blaze" data-pass>${icon('crown', 16)} Fantasy Pass from ${money(Math.min(...f.passPlans().map((x) => x.price)))} / month</button>`; })()}</div>
+        <div class="sec-head"><div><h2 class="h2">Leagues</h2><p>Every league is free. The Super App League is run by Super App: the top 3 of every gameweek win ${f.weeklyPoints().map((x) => x.toLocaleString()).join(' / ')} Super Points.</p></div></div>
         <div class="league-grid">${official.map((l) => leagueCard(l, meta)).join('')}</div>
 
         <div class="sec-head" style="margin-top:56px"><div><h2 class="h2">Private groups</h2><p>Play against friends, colleagues or your weekly five-a-side crew. Free, invite-only.</p></div>
@@ -125,7 +78,6 @@
       const f = F();
       el.addEventListener('click', (e) => {
         const j = e.target.closest('[data-join]'); if (j) return openJoinLeague(j.dataset.join);
-        if (e.target.closest('[data-pass]')) return openPass();
         const r = e.target.closest('[data-href]'); if (r) return SA.core.router.go(r.dataset.href);
         if (e.target.closest('[data-create]')) {
           SA.ui.overlay.open({
@@ -175,7 +127,7 @@
         <a class="back-link" href="#/fantasy/leagues">${icon('chevronLeft', 16)} All leagues</a>
         <div class="row-between wrap" style="margin:12px 0 22px;align-items:flex-end">
           <div><h2 class="h1">${esc(g.name)}</h2><p class="soft" style="margin-top:6px">${isPrivate ? `Private group · created by ${esc(g.owner)} · ${g.standings.length} managers` : `${esc(official.scope)} · ${fmtNum(official.participants)} managers · Gameweek ${meta.gw}`}</p></div>
-          ${isPrivate ? '' : official.joined ? `<span class="badge badge-turf">${icon('check', 12, 2.6)} You’ve entered</span>` : `<button class="btn btn-blaze" data-join="${g.id}">${official.kind === 'pass' && !f.passCovers() ? `${icon('lock', 14)} Get Fantasy Pass` : 'Enter league'}</button>`}
+          ${isPrivate ? '' : official.joined ? `<span class="badge badge-turf">${icon('check', 12, 2.6)} You’ve entered</span>` : `<button class="btn btn-blaze" data-join="${g.id}">Enter league</button>`}
         </div>
         ${ctx.query.created ? `<div class="notice turf" style="margin-bottom:18px">${icon('check', 18)}<span><b>Group created.</b> Share the code below with your friends — they join from Leagues → Join with a code.</span></div>` : ''}
         <div class="league-layout">
@@ -201,14 +153,15 @@
             </div>` : `<div class="panel panel-pad">
               <h3 class="h4">Prizes</h3>
               <ul class="prize-list">${official.prizes.map(([p, v], i) => `<li><span class="medal m${Math.min(i + 1, 4)}">${i < 3 ? i + 1 : ''}</span><span class="grow small">${p}</span><b class="small">${esc(v)}</b></li>`).join('')}</ul>
-              <p class="xs muted" style="margin-top:10px">Prizes worth ${money(official.prizeValue || 0)}, provided by sponsors and Super App partners. No cash prizes.</p>
+              <p class="xs muted" style="margin-top:10px">${official.kind === 'official' ? 'Every gameweek, by gameweek points. The Super Points go straight to the winners’ accounts. No cash prizes.' : `Prizes worth ${money(official.prizeValue || 0)}, provided by sponsors and Super App partners. No cash prizes.`}</p>
             </div>
+            ${official.kind === 'official' ? (() => { const ww = f.weeklyWinners().slice(0, 3); return `<div class="panel panel-pad"><h3 class="h4">Weekly winners</h3>${ww.length ? ww.map((w) => `<div style="margin-top:12px"><b class="small">Gameweek ${w.gw}</b><ul class="prize-list">${w.winners.map((x) => `<li><span class="medal m${x.place}">${x.place}</span><span class="grow small">${esc(x.isMe ? 'You' : x.name)} <span class="xs muted">· ${x.gw} pts</span></span><b class="small num">+${x.points.toLocaleString()}</b></li>`).join('')}</ul></div>`).join('') : '<p class="small soft" style="margin-top:6px">The first winners appear when this gameweek is finished.</p>'}</div>`; })() : ''}
             <div class="panel panel-pad">
               <h3 class="h4">Rules</h3>
               <ul class="assurance small" style="margin-top:10px">
-                <li>${icon('check', 14)} Points count from GW${official.from}${official.to ? ` to GW${official.to}` : ' to the end of the season'}</li>
+                <li>${icon('check', 14)} ${official.kind === 'official' ? 'Each gameweek is a new race: the 3 highest gameweek scores win' : `Points count from GW${official.from}${official.to ? ` to GW${official.to}` : ' to the end of the season'}`}</li>
                 <li>${icon('check', 14)} Ties are split by fewest transfer hits, then GW points</li>
-                <li>${icon('check', 14)} ${official.kind === 'pass' ? 'Open to Fantasy Pass holders — no entry fee' : 'Free for every manager'}</li>
+                <li>${icon('check', 14)} Free for every manager — no entry fee</li>
                 <li>${icon('check', 14)} One entry per account; vouchers and codes go to your account, physical prizes are delivered</li>
               </ul>
               <div class="row-between" style="margin-top:14px"><span class="small soft">GW${meta.gw} locks in</span>${c.countdown(meta.deadline, { compact: true })}</div>
@@ -224,7 +177,6 @@
       el.addEventListener('click', async (e) => {
         const cp = e.target.closest('[data-copy]'); if (cp) { navigator.clipboard?.writeText(cp.dataset.copy); SA.ui.overlay.toast('Copied to clipboard'); return; }
         const j = e.target.closest('[data-join]'); if (j) return openJoinLeague(j.dataset.join);
-        if (e.target.closest('[data-pass]')) return openPass();
         if (e.target.closest('[data-leave]')) {
           if (await SA.ui.overlay.confirm({ title: 'Leave this group?', text: 'You can rejoin later with the invite code.', confirmLabel: 'Leave group', danger: true })) { f.leaveGroup(ctx.params.id); SA.core.router.go('/fantasy/leagues'); }
           return;

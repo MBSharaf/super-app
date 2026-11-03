@@ -10,8 +10,8 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Fantasy;
 
 /// <summary>
-/// Fantasy groups (API §6.1, FR-FAN-06/07): the grand league (every team), official sponsor leagues (Fantasy Pass),
-/// private groups with an invite code, paid groups hidden until payments are live. Tables follow total points.
+/// Fantasy groups (API §6.1, FR-FAN-06/07): the Super App League (every team), official sponsor leagues and private
+/// groups with an invite code. Every league is free to enter (owner, 2026-11-03). Tables follow total points.
 /// </summary>
 public interface IFantasyGroupsService
 {
@@ -78,7 +78,7 @@ public sealed class FantasyGroupsService(
         {
             throw new ConflictException($"You're already in {group.Name}.", "already_member");
         }
-        await CheckEntryAsync(group, ct);
+        CheckEntry(group);
         groups.AddMember(new GroupMember { GroupId = group.Id, TeamId = team.Id });
         await unitOfWork.SaveChangesAsync(ct);
         await notifier.NotifyUserAsync(UserId, new NotificationMessage(NotificationCategory.Fantasy, $"You joined {group.Name}",
@@ -86,23 +86,12 @@ public sealed class FantasyGroupsService(
         return (await groups.GroupDtoAsync(group.Id, team.Id, UserId, ct))!;
     }
 
-    /// <summary>Official leagues need a Fantasy Pass for the league; paid groups need a payment (Phase 5).</summary>
-    private async Task CheckEntryAsync(FantasyGroup group, CancellationToken ct)
+    /// <summary>Every league is free (owner, 2026-11-03): no Fantasy Pass and no paid groups.</summary>
+    private static void CheckEntry(FantasyGroup group)
     {
         if (group.Type == FantasyGroupType.Paid)
         {
-            throw new BusinessRuleException("This group has a monthly fee; paying for groups opens with online payments.", "payment_required");
-        }
-        if (group.Type != FantasyGroupType.Official)
-        {
-            return;
-        }
-        var key = await groups.CompetitionKeyAsync(group.SeasonId, ct);
-        var competitionId = (await passes.CompetitionsAsync(ct)).First(c => c.Key.Equals(key, StringComparison.OrdinalIgnoreCase)).Id;
-        var active = await passes.ActiveAsync(UserId, clock.UtcNow, ct);
-        if (!active.Any(p => p.CompetitionId is null || p.CompetitionId == competitionId))
-        {
-            throw new ForbiddenException("Prize leagues need a Fantasy Pass for this league.", "pass_required");
+            throw new BusinessRuleException("Every league is free; this group is closed.", "league_closed");
         }
     }
 

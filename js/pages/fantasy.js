@@ -16,7 +16,7 @@
         <div class="fx-head-top">
           <div>
             <div class="fx-leagues" role="tablist" aria-label="Choose the league you play">${f.leagues().map((l) => `<button class="fx-league" role="tab" data-league="${l.key}" aria-selected="${l.key === meta.league}">${esc(l.label)}${l.hasTeam && l.key !== meta.league ? ` <span class="fx-dot" aria-label="team ready"></span>` : ''}</button>`).join('')}</div>
-            <span class="xs fx-dim">${esc(meta.leagueLabel)} · Fantasy ${meta.season}${f.pass() ? ` · ${icon('crown', 11, 2)} Fantasy Pass` : ''}</span>
+            <span class="xs fx-dim">${esc(meta.leagueLabel)} · Fantasy ${meta.season}</span>
             <h1 class="h1 fx-title">${team ? esc(team.name) : 'Fantasy'}</h1>
           </div>
           <div class="fx-deadline">
@@ -150,7 +150,7 @@
       <div class="fx-onboard">
         <div>
           <h2 class="h1">Build your ${esc(F().leagueInfo().label)} team</h2>
-          <p class="lead" style="margin-top:12px">Pick 15 players with a 100M budget. Score points every gameweek from their goals, assists and clean sheets — then beat your friends in private groups or win prizes from our sponsors in Fantasy Pass leagues.</p>
+          <p class="lead" style="margin-top:12px">Pick 15 players with a 100M budget. Score points every gameweek from their goals, assists and clean sheets — then beat your friends in private groups. Every league is free, and the top 3 of every gameweek in the Super App League win Super Points.</p>
           <ol class="fx-steps">
             ${[['Pick 15 players', '2 goalkeepers, 5 defenders, 5 midfielders, 3 forwards. Max 3 from one club.'], ['Set your starting XI', 'Choose a formation and a captain — captains score double.'], ['Join leagues', 'Create a private group for friends or enter an official prize league.'], ['Score every gameweek', 'Make a free transfer each week and climb the rankings.']].map(([t, d], i) => `<li><span class="flow-n">${i + 1}</span><div><b>${t}</b><p class="small soft">${d}</p></div></li>`).join('')}
           </ol>

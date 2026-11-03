@@ -78,7 +78,7 @@
   const customerClick = async (e, id) => {
     const act = e.target.closest('[data-act]')?.dataset.act;
     try {
-      if (act === 'block') { const r = await A.reason({ title: 'Block this customer?', text: 'They can still browse, but can’t book, order, join games or buy a Fantasy Pass.', label: 'Reason (internal)', confirmLabel: 'Block', danger: true }); if (!r) return; await AD().blockCustomer(id, r.reason); toast('Customer blocked', 'info'); return true; }
+      if (act === 'block') { const r = await A.reason({ title: 'Block this customer?', text: 'They can still browse, but can’t book, order or join games.', label: 'Reason (internal)', confirmLabel: 'Block', danger: true }); if (!r) return; await AD().blockCustomer(id, r.reason); toast('Customer blocked', 'info'); return true; }
       if (act === 'unblock') { await AD().unblockCustomer(id); toast('Customer unblocked'); return true; }
       if (act === 'reset') { await AD().resetRefusals(id); toast('Refusals reset'); return true; }
       if (act === 'points') {

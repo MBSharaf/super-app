@@ -29,18 +29,6 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
         return (client, userId);
     }
 
-    private static async Task<(HttpStatusCode Status, JsonElement Body)> BuyPassAsync(ApiClient client, string plan, string? key)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/fantasy/pass") { Content = JsonContent.Create(new { plan }) };
-        if (key is not null)
-        {
-            request.Headers.Add("Idempotency-Key", key);
-        }
-        var response = await client.Http.SendAsync(request);
-        var text = await response.Content.ReadAsStringAsync();
-        return (response.StatusCode, JsonDocument.Parse(text).RootElement.Clone());
-    }
-
     [Fact]
     public async Task A_private_group_is_joined_by_its_code_and_only_members_see_the_table()
     {
@@ -96,23 +84,14 @@ public sealed class FantasyGroupsTests(FantasyApiFactory api) : IClassFixture<Fa
         created.Status.ShouldBe(HttpStatusCode.Created, created.Body.ToString());
         var code = created.Body.Data().GetProperty("inviteCode").GetString();
         var id = created.Body.Data().GetProperty("id").GetInt64();
-        (await ceo.PostAsync("/api/v1/admin/fantasy/groups", league with { type = "Paid", monthlyPrice = (decimal?)30m })).Body.Code().ShouldBe("payments_not_live");
+        // Every league is free (owner, 2026-11-03): no paid groups, no Fantasy Pass
+        (await ceo.PostAsync("/api/v1/admin/fantasy/groups", league with { type = "Paid", monthlyPrice = (decimal?)30m })).Status.ShouldBe(HttpStatusCode.BadRequest);
 
-        var (player, userId) = await ManagerAsync();
+        var (player, _) = await ManagerAsync();
         (await player.PostAsync("/api/v1/admin/fantasy/groups", league)).Status.ShouldBe(HttpStatusCode.Forbidden);
         var official = (await player.GetAsync("/api/v1/fantasy/EPL/groups")).Body.Data().GetProperty("official").EnumerateArray().Single(g => g.GetProperty("id").GetInt64() == id);
-        (official.GetProperty("needsPass").GetBoolean(), official.GetProperty("sponsor").GetProperty("name").GetString()).ShouldBe((true, "Nile Cola"));
-        (await player.PostAsync("/api/v1/fantasy/groups/join", new { inviteCode = code })).Body.Code().ShouldBe("pass_required");
-
-        var status = (await player.GetAsync("/api/v1/fantasy/pass")).Body.Data();
-        status.GetProperty("plans").EnumerateArray().Select(p => (p.GetProperty("plan").GetString(), p.GetProperty("price").GetDecimal())).ShouldBe([("epl", 50m)]);
-        (await BuyPassAsync(player, "epl", null)).Body.Code().ShouldBe("idempotency_key");
-        (await BuyPassAsync(player, "gold", "k-1")).Body.Code().ShouldBe("unknown_plan");
-        var bought = await BuyPassAsync(player, "epl", "k-2");
-        bought.Status.ShouldBe(HttpStatusCode.OK, bought.Body.ToString());
-        bought.Body.Data().GetProperty("coversUntil").GetProperty("epl").ValueKind.ShouldBe(JsonValueKind.String);
-        (await BuyPassAsync(player, "epl", "k-2")).Status.ShouldBe(HttpStatusCode.OK);
-        (await api.DbAsync(db => db.Set<FantasyPass>().CountAsync(p => p.UserId == userId))).ShouldBe(1);
+        (official.GetProperty("needsPass").GetBoolean(), official.GetProperty("sponsor").GetProperty("name").GetString()).ShouldBe((false, "Nile Cola"));
+        (await player.GetAsync("/api/v1/fantasy/pass")).Status.ShouldBe(HttpStatusCode.NotFound);
 
         (await player.PostAsync("/api/v1/fantasy/groups/join", new { inviteCode = code })).Status.ShouldBe(HttpStatusCode.OK);
         var table = await (await api.ClientAsync()).GetAsync($"/api/v1/fantasy/groups/{id}/table");

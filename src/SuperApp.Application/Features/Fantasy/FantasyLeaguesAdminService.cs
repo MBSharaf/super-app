@@ -105,7 +105,11 @@ public sealed class FantasyLeaguesAdminService(
     {
         if (type == FantasyGroupType.Private)
         {
-            throw new BadRequestException("Admins create official or paid groups.", "type");
+            throw new BadRequestException("Admins create official groups.", "type");
+        }
+        if (type == FantasyGroupType.Paid)
+        {
+            throw new BadRequestException("Every league is free; paid groups are no longer offered.", "type");
         }
         if (type == FantasyGroupType.Paid && !currentUser.HasPermission("fantasy.groups.paid"))
         {
