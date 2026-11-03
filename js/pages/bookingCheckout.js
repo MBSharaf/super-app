@@ -58,8 +58,8 @@
                 <span class="field-hint">Short on players? After booking you can post the match and players nearby can join.</span></div>
             </section>
             <section class="panel panel-pad">
-              <div class="notice turf deposit-note" style="margin-bottom:16px">${icon('wallet', 18)}<span><span>Pay now (deposit):</span> <b class="num">${money(q.deposit)}</b>. <span>Pay at the pitch:</span> <b class="num">${money(q.payAtPitch)}</b>. <span>You pay only a deposit in the app to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.</span></span></div>
-              ${SA.ui.payment.render({ amount: q.deposit, name: 'bkpay' })}</section>
+              <div class="notice turf deposit-note" style="margin-bottom:16px">${icon('wallet', 18)}<span><span>Pay now (deposit):</span> <b class="num">${money(q.deposit)}</b>. <span>Pay at the pitch:</span> <b class="num">${money(q.payAtPitch)}</b>. <span>You pay only a deposit online by card to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.</span></span></div>
+              ${SA.ui.payment.render({ amount: q.deposit, onlineOnly: true, name: 'bkpay' })}</section>
           </form>
           <aside class="panel panel-pad order-summary">
             <h2 class="h4">Price details</h2>

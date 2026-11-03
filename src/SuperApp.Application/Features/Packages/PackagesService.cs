@@ -72,7 +72,7 @@ public sealed class PackagesService(
         {
             matches.Add((await MatchAsync(p, package, plan, request.Duration, waiver, me, ct), p.Slots));
         }
-        var paymentUrl = await PayAsync(package, matches.Select(m => m.Item1).ToList(), first, me, request.PayFromWallet, ct);
+        var paymentUrl = await PayAsync(package, matches.Select(m => m.Item1).ToList(), first, me, fromWallet: false, ct);
         await packages.SaveAsync(package, matches, ct);
         if (paymentUrl is not null)
         {
@@ -226,5 +226,7 @@ public sealed class BuyPackageRequestValidator : AbstractValidator<BuyPackageReq
         RuleFor(x => x.Hour).InclusiveBetween(0, 29);
         RuleFor(x => x.Duration).InclusiveBetween(1, 4).WithMessage("Book 1 to 4 hours in a row.");
         RuleFor(x => x.AcceptWaiver).Equal(true).WithMessage("Please accept the injury waiver to book.");
+        // The deposit is paid online by card only
+        RuleFor(x => x.PayFromWallet).Equal(false).WithMessage("Pitch bookings are paid online by card only.");
     }
 }

@@ -12,6 +12,10 @@
   const bookingId = () => 'SA-' + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.floor(1000 + Math.random() * 9000);
   const startsAt = (b) => { const d = parseISO(b.date); d.setHours(0, 0, 0, 0); return d.getTime() + b.hour * 36e5; };
   const WEEK_OPTIONS = [4, 8, 12];
+  /** Pitch bookings: the deposit is paid online by card only (no wallet, no voucher, no cash) */
+  const onlineOnly = (payment) => {
+    if (payment?.method !== 'card' || payment.voucher) throw new ApiError('Pitch bookings are paid online by card only.', 'card_only');
+  };
   /**
    * Owner's rule (2026-11-01): a pitch booking pays only a deposit in the app, 20% of the total with a minimum of 100 EGP
    * (never more than the total). The rest is paid to the venue at the pitch and collected at check-in.
@@ -116,6 +120,7 @@
         if (!s || s.status !== 'available') throw new ApiError('Someone just booked part of this time. Pick another slot.', 'slot_taken');
       }
       const q = bookingService.quote({ pitchId, date, hour, duration, code });
+      onlineOnly(payment);
       const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `Booking deposit — ${p.name}` });
       return request(() => {
         const booking = bookingService._record(p, { date, hour, duration, players, q, paid });
@@ -142,6 +147,7 @@
       const q = bookingService.quoteSeries({ pitchId, date, hour, duration, weeks: +weeks });
       if (!q.sessions[0].available) throw new ApiError('Someone just booked the first session. Pick another slot.', 'slot_taken');
       if (q.booked < 2) throw new ApiError('Fewer than two of those weeks are free. Pick another time.', 'slot_taken');
+      onlineOnly(payment);
       const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `Weekly booking deposit × ${q.booked} — ${p.name}` });
       return request(() => {
         const u = store.get().user || {};

@@ -6,6 +6,8 @@
     /* ---------- Checkout: deposit ---------- */
     'Review and pay the deposit': 'راجع وادفع العربون', 'Pay now (deposit):': 'ادفع دلوقتي (عربون):', 'Pay at the pitch:': 'الباقي في الملعب:',
     'You pay only a deposit in the app to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.': 'إنت بتدفع عربون بس في التطبيق علشان تحجز الملعب. والباقي بتدفعه لصاحب الملعب في الملعب لما يعمل scan للـ QR بتاعك.',
+    'You pay only a deposit online by card to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.': 'إنت بتدفع عربون بس أونلاين بالكارت علشان تحجز الملعب. والباقي بتدفعه لصاحب الملعب في الملعب لما يعمل scan للـ QR بتاعك.',
+    'Pay online by card': 'ادفع أونلاين بالكارت', 'Pitch bookings are paid online by card only.': 'حجز الملاعب بيتدفع أونلاين بالكارت بس.',
     'Pay now — deposit': 'ادفع دلوقتي — العربون', '{0} of the total, at least {1} {2}': '{0} من الإجمالي، وبحد أدنى {1} {2}', '{0} of each game, at least {1} {2}': '{0} من كل ماتش، وبحد أدنى {1} {2}',
     'Pay at the pitch': 'ادفع في الملعب', 'No online payment for the rest — you pay it at the pitch.': 'الباقي مش بيتدفع أونلاين — بتدفعه في الملعب.',
     'No online payment for the rest — you pay it at the pitch each week.': 'الباقي مش بيتدفع أونلاين — بتدفعه في الملعب كل أسبوع.',

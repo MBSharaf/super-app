@@ -66,7 +66,7 @@ public sealed class BookingsService(
         booking.Total = plan.Total - discount.Total;
         await Deposits.ApplyAsync(settings, booking, ct);
         loyalty.Use(discount, booking);
-        var paymentUrl = await PayAsync(booking, plan, me, request.PayFromWallet, ct);
+        var paymentUrl = await PayAsync(booking, plan, me, fromWallet: false, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);
         if (discount.Voucher is { } voucher && discount.VoucherAmount > 0)
         {
@@ -155,6 +155,10 @@ public sealed class CreateBookingRequestValidator : AbstractValidator<CreateBook
         RuleFor(x => x.Hour).InclusiveBetween(0, 29);
         RuleFor(x => x.Duration).InclusiveBetween(1, 4).WithMessage("Book 1 to 4 hours in a row.");
         RuleFor(x => x.AcceptWaiver).Equal(true).WithMessage("Please accept the injury waiver to book.");
+        // The deposit is paid online by card only: no wallet, no Super Points voucher, no cash at the venue
+        RuleFor(x => x.PayAtVenue).Equal(false).WithMessage("Pitch bookings pay a deposit online by card.");
+        RuleFor(x => x.PayFromWallet).Equal(false).WithMessage("Pitch bookings are paid online by card only.");
+        RuleFor(x => x.VoucherCode).Empty().WithMessage("Vouchers can't pay a pitch booking; the deposit is paid by card.");
     }
 }
 

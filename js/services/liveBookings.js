@@ -188,7 +188,7 @@
     SA.services.legal?.requireWaiver(waiver, 'booking');
     const r = await api.post('/bookings', {
       pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: false, acceptWaiver: !!waiver,
-      promoCode: code || undefined, voucherCode: payment?.voucher || undefined, payFromWallet: payment?.method === 'wallet',
+      promoCode: code || undefined, payFromWallet: false, // deposit: online card payment only
     });
     SA.services.liveMoney?.sync();
     [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));
@@ -274,7 +274,7 @@
   const createSeries = async ({ pitchId, date, hour, duration, weeks, payment, waiver = false }) => {
     SA.services.legal?.requireWaiver(waiver, 'weekly package');
     const option = optionFor(pitches.get(pitchId), weeks);
-    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver, payFromWallet: payment?.method === 'wallet' });
+    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver, payFromWallet: false });
     SA.services.liveMoney?.sync();
     if (pk.paymentUrl) window.location.assign(pk.paymentUrl);
     packs.set(pk.code, pk);
