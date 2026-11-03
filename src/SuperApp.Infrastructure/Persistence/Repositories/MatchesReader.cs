@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SuperApp.Application.Common.Responses;
 using SuperApp.Application.Features.Content;
 using SuperApp.Domain.Entities.Content;
 using SuperApp.Domain.Entities.Fantasy;
@@ -38,32 +37,4 @@ public sealed class MatchesReader(AppDbContext db) : IMatchesReader
     public async Task<IReadOnlyList<MatchCompetitionDto>> CompetitionsAsync(CancellationToken ct) =>
         await db.Set<Competition>().AsNoTracking().Where(c => c.IsActive).OrderBy(c => c.SortOrder)
             .Select(c => new MatchCompetitionDto(c.Key, c.NameEn, c.NameAr, c.ShortName, c.Region, c.Color, c.FantasyEnabled)).ToListAsync(ct);
-}
-
-/// <summary>Super App news posts (soft-deleted; hidden or future posts stay out of the public list).</summary>
-public sealed class NewsRepository(AppDbContext db) : INewsRepository
-{
-    public async Task<PagedResult<NewsDto>> ListAsync(NewsQuery query, bool publicOnly, DateTime now, CancellationToken ct)
-    {
-        var page = new PageRequest(query.Page, query.PageSize);
-        var posts = Visible(publicOnly, now).Where(p => query.Category == null || p.Category == query.Category);
-        var total = await posts.CountAsync(ct);
-        var items = await Project(posts.OrderByDescending(p => p.PublishedAt).ThenByDescending(p => p.Id).Skip(page.Skip).Take(page.SafePageSize), withBody: false)
-            .ToListAsync(ct);
-        return new PagedResult<NewsDto>(items, page.SafePage, page.SafePageSize, total);
-    }
-
-    public Task<NewsDto?> GetAsync(long id, bool publicOnly, DateTime now, CancellationToken ct) =>
-        Project(Visible(publicOnly, now).Where(p => p.Id == id), withBody: true).FirstOrDefaultAsync(ct);
-
-    public Task<NewsPost?> FindAsync(long id, CancellationToken ct) => db.Set<NewsPost>().FirstOrDefaultAsync(p => p.Id == id, ct);
-
-    public void Add(NewsPost post) => db.Set<NewsPost>().Add(post);
-
-    private IQueryable<NewsPost> Visible(bool publicOnly, DateTime now) =>
-        db.Set<NewsPost>().AsNoTracking().Where(p => !publicOnly || (!p.IsHidden && p.PublishedAt <= now));
-
-    private static IQueryable<NewsDto> Project(IQueryable<NewsPost> query, bool withBody) =>
-        query.Select(p => new NewsDto(p.Id, p.Category, p.Title, p.Excerpt, withBody ? p.Body : null,
-            p.ImageFileId == null ? null : "/api/v1/files/" + p.ImageFileId, p.IsBreaking, p.IsHidden, p.PublishedAt));
 }

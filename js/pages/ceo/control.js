@@ -246,7 +246,7 @@
         ${sub ? `<p class="xs muted" style="margin-top:8px">${sub}</p>` : ''}</section>`;
       const body = `<p class="small muted">${icon('info', 12)} Every system opens in a new tab, signed in as the person you choose. Each opening is written in the audit log.</p>
         <div class="ceo-systems">
-          ${box('site', 'home', 'Super App', 'The site customers use: book, play, shop, fantasy and communities.', null)}
+          ${box('site', 'home', 'Super App', 'The site customers use: book, play, shop and fantasy.', null)}
           ${box('admin', 'shield', 'Admin console', 'Open it as yourself (everything) or as any role — see exactly what each agent sees.', admins.map((a) => [a.id, `${a.name} — ${CE().roleOfAccount(a)?.title || ''}`]), `${admins.length} admin accounts`)}
           ${box('partner', 'pitch', 'Partner dashboard', 'Any pitch partner’s own dashboard.', partners.map((a) => [a.id, `${a.company} — ${a.name}`]), `${partners.length} partners`)}
           ${box('seller', 'users', 'Seller dashboard', 'Any seller’s own dashboard.', sellers.map((s) => [s.id, `${s.name} (@${s.handle})`]), `${sellers.length} sellers`)}

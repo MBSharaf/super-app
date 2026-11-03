@@ -67,7 +67,7 @@
             <div class="field"><label for="vat-r">VAT rate (%)</label><input class="input num" id="vat-r" name="vat" type="number" min="0" max="30" step="0.5" value="${+(D().vat() * 100).toFixed(1)}" /><span class="field-hint">Egypt standard rate: 14%</span></div>
             <p class="field-error span-2" data-err="vat"></p>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save VAT rate</button></div></form></section>
-        <section class="dash-card"><h2 class="h4">Super Points (loyalty)</h2><p class="small soft" style="margin-top:6px">Players earn points on played games, delivered orders and tournament entries, and turn them into wallet cash.</p>
+        <section class="dash-card"><h2 class="h4">Super Points (loyalty)</h2><p class="small soft" style="margin-top:6px">Players earn points on played games, and delivered orders, and turn them into wallet cash.</p>
           <form id="lty" novalidate class="form-grid" style="margin-top:16px">
             <div class="field"><label for="lt-e">EGP spent per point</label><input class="input num" id="lt-e" name="earnPer" type="number" min="1" max="100" value="${SA.services.db.settings().loyalty.earnPer}" /></div>
             <div class="field"><label for="lt-v">Value of 1 point (EGP)</label><input class="input num" id="lt-v" name="pointValue" type="number" min="0.01" max="5" step="0.01" value="${SA.services.db.settings().loyalty.pointValue}" /></div>

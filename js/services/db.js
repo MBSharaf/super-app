@@ -120,7 +120,6 @@
     ensure('promos', () => []);
     ensure('saleOverrides', () => ({}));
     ensure('waitlist', () => []);
-    ensure('tournaments', () => []);
     ensure('codes', () => {
       const t = Date.now(), d = (n) => SA.core.utils.isoDate(new Date(t + n * DAY));
       const base = { status: 'active', usedBy: [], perCustomer: 1, createdAt: t - 9 * DAY, updatedAt: t - 9 * DAY, note: '' };
@@ -154,7 +153,6 @@
       { id: 'bn-mornings', title: 'Pitches from 500 EGP an hour before 4 PM', badge: 'Weekday mornings', cta: '', link: '#/pitches?sort=price', image: 'nightGrass', active: true, order: 2, from: '', to: '' },
       { id: 'bn-coaching', title: 'Private coaching with CAF-licensed coaches', badge: 'New', cta: '', link: '#/shop?cat=services', image: 'kidsTraining', active: true, order: 3, from: '', to: '' },
     ]);
-    ensure('newsPosts', () => []);
     // Fantasy sponsors (fictional demo companies) and announced winners
     ensure('sponsors', () => [
       { id: 'sp-nilefuel', name: 'Nile Fuel Drinks', tier: 'gold', contact: 'partnerships@nilefuel.example', value: 60000, from: SA.core.utils.isoDate(new Date(Date.now() - 40 * DAY)), to: SA.core.utils.isoDate(new Date(Date.now() + 140 * DAY)), color: '#0B6E4F', note: 'Grand League prizes and the derby trip' },

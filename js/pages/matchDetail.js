@@ -46,7 +46,7 @@
       const justPublished = ctx.query.published;
       const open = Array.from({ length: m.spotsLeft });
       const actionBlock = m.isMine
-        ? `<div class="stack" style="--gap:10px"><button class="btn btn-primary btn-lg btn-block" data-share>${icon('share', 16)} Share invite link</button><button class="btn btn-outline btn-block" data-share-community>${icon('users', 16)} Share in the community</button><a class="btn btn-outline btn-block" href="#/booking/${m.bookingId}">View booking</a><button class="btn btn-ghost btn-block" data-unpublish style="color:var(--danger)">Remove listing</button></div>`
+        ? `<div class="stack" style="--gap:10px"><button class="btn btn-primary btn-lg btn-block" data-share>${icon('share', 16)} Share invite link</button><a class="btn btn-outline btn-block" href="#/booking/${m.bookingId}">View booking</a><button class="btn btn-ghost btn-block" data-unpublish style="color:var(--danger)">Remove listing</button></div>`
         : myReq && myReq.status !== 'accepted'
           ? `<div class="notice ${myReq.status === 'waitlist' ? '' : 'gold'}">${icon('clock', 18)}<span><b>${myReq.status === 'waitlist' ? 'You’re on the waitlist.' : 'Request sent.'}</b> ${money(myReq.amount)} is held by Super App and comes back in full if you don’t get in.</span></div><button class="btn btn-outline btn-block" style="margin-top:12px" data-withdraw="${myReq.id}">Withdraw request</button>`
           : m.joined
@@ -132,7 +132,6 @@
         const list = [...f.querySelectorAll('[data-rr]')].map((row) => { const rid = row.dataset.rr; return { requestId: rid, showed: f[`showed-${rid}`].checked, stars: +(f.querySelector(`[name="stars-${rid}"]:checked`)?.value || 4) }; });
         S.games.rate(id, list); SA.ui.overlay.toast('Ratings saved — thanks!'); SA.app.rerender();
       });
-      el.querySelectorAll('[data-share-community]').forEach((b) => b.addEventListener('click', () => { try { const p = S.community.shareGame(id); SA.ui.overlay.toast('Shared in Pitches & free slots', { action: 'View', onAction: () => SA.core.router.go(`/community/pitches/${p.id}`) }); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } }));
       el.querySelectorAll('[data-leave]').forEach((b) => b.addEventListener('click', async () => {
         if (!(await SA.ui.overlay.confirm({ title: 'Leave this match?', text: 'Your spot opens up for other players. If you paid online, your share is refunded to your wallet.', confirmLabel: 'Leave match', danger: true }))) return;
         await S.matches.leave(id); SA.ui.overlay.toast('You left the match'); SA.app.rerender();

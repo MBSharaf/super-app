@@ -1,6 +1,6 @@
 """
 Builds the demo seed files (ERD §12 step 11) from the raw front-end export: the same partners, pitches, stores,
-products, sellers, designs, orders, tournaments, community posts and AI agents the site shows today, already
+products, sellers, designs, orders and AI agents the site shows today, already
 normalised to the backend's tables (enum names, natural keys), so the C# seeders only map fields.
 
 Output: src/SuperApp.Infrastructure/Persistence/Seed/Data/Demo/*.json. All people and companies are fictional.
@@ -24,8 +24,8 @@ ACTION_PERMISSIONS = {
     "payout.approve": ["payouts.send"], "payout.prepare": ["payouts.read", "payouts.prepare"], "settle": ["finance.approve"],
     "refund": ["refunds.issue"], "credit": ["credits.issue"], "adjust": ["finance.approve"],
     "approve.partner": ["approvals.partners"], "approve.seller": ["approvals.sellers"], "suspend": ["partners.manage", "sellers.manage"],
-    "customer.block": ["customers.manage"], "moderate": ["community.moderate"], "designs": ["designs.review", "designs.reports"],
-    "promo": ["codes.manage"], "broadcast": ["broadcasts.send"], "content": ["content.banners", "content.popups", "content.news"],
+    "customer.block": ["customers.manage"], "moderate": ["reviews.moderate"], "designs": ["designs.review", "designs.reports"],
+    "promo": ["codes.manage"], "broadcast": ["broadcasts.send"], "content": ["content.banners", "content.popups"],
     "fantasy": ["fantasy.manage"], "factory": ["factories.read", "factories.manage", "shipping.manage"],
     "orders": ["orders.read", "orders.manage", "bookings.read", "bookings.manage"], "settings": ["settings.platform"], "audit": ["audit.read"],
 }
@@ -33,11 +33,10 @@ ACTION_PERMISSIONS = {
 SECTION_PERMISSIONS = {
     "analytics": ["analytics.read"], "revenue": ["revenue.read"], "orders": ["orders.read", "bookings.read"], "factories": ["factories.read"],
     "support": ["support.read"], "customers": ["customers.read"], "partners": ["partners.read"], "sellers": ["sellers.read"],
-    "payouts": ["payouts.read"], "audit": ["audit.read"], "returns": ["returns.manage"], "games": ["games.moderate"], "community": ["community.moderate"],
+    "payouts": ["payouts.read"], "audit": ["audit.read"], "returns": ["returns.manage"], "games": ["games.moderate"],
 }
 ITEM_STATUS = {"received": "Received", "printing": "Printing", "packed": "Packed", "shipped": "Shipped", "delivered": "Delivered", "refused": "Refused"}
 DESIGN_STATUS = {"live": "Live", "review": "InReview", "draft": "Draft", "rejected": "Rejected", "paused": "Paused"}
-TOURNAMENT_STATUS = {"open": "Registration", "running": "Running", "finished": "Finished", "cancelled": "Cancelled"}
 
 
 def iso(ms: int) -> str | None:
@@ -187,29 +186,7 @@ class Demo:
                                    "deliveredAt": iso(i.get("deliveredAt", 0))} for i in items]})
         return out
 
-    # ---------- tournaments, community, agents ----------
-    def tournaments(self) -> list:
-        out = []
-        for t in self.db["tournaments"]:
-            dates = sorted(r["date"] for r in t["reserved"])
-            hours = sorted({h for r in t["reserved"] for h in r["hours"]})
-            teams = [{"name": tm["name"], "captain": self.person(f"cap-{slug(tm['captain'])}", tm["captain"], ["Customer"]), "phone": tm["phone"]} for tm in t["teams"]]
-            out.append({"name": t["name"], "partner": t["ownerId"], "pitch": t["pitchId"].removeprefix("p-"), "type": "League" if t["format"] == "league" else "KnockoutCup",
-                        "teamCount": t["maxTeams"], "fee": t["fee"], "prize": t.get("prize"), "startsOn": dates[0], "endsOn": dates[-1],
-                        "hours": ",".join(map(str, hours)), "rules": t.get("rules"), "status": TOURNAMENT_STATUS[t["status"]], "teams": teams})
-        return out
-
-    def posts(self) -> list:
-        slugs = {c["id"]: c["slug"] for c in self.db["communities"]}
-        out = []
-        for p in sorted(self.db["communityPosts"], key=lambda x: x["at"]):
-            a = p["author"]
-            author = a["id"] if a["id"].startswith("acc-") else self.person(a["id"], a["name"], ["Customer"])
-            out.append({"community": slugs[p["communityId"]], "author": author, "asAdmin": a["kind"] == "admin", "text": p["text"],
-                        "pinned": p.get("pinned", False), "announcement": p.get("announcement", False), "reactions": p.get("seedReactions", 0),
-                        "comments": len(p.get("comments", [])), "at": iso(p["at"])})
-        return out
-
+    # ---------- agents ----------
     def agents(self) -> list:
         out = []
         for r in self.data["org"]["ROLES"]:
@@ -237,15 +214,13 @@ def main() -> None:
     pitches = {"partners": demo.partners(), "pitches": demo.pitches()}
     shop = {"stores": demo.stores(), "products": demo.products()}
     pod = {"sellers": demo.sellers(), "designs": demo.designs()}
-    orders, tournaments, posts = demo.orders(), demo.tournaments(), demo.posts()
+    orders = demo.orders()
     write("people.json", {"people": list(demo.people.values()), "staffLimits": demo.staff_limits()})
     write("media.json", list(demo.files.values()))
     write("pitches.json", pitches)
     write("shop.json", shop)
     write("pod.json", pod)
     write("orders.json", orders)
-    write("tournaments.json", tournaments)
-    write("community.json", posts)
     write("agents.json", demo.agents())
 
 

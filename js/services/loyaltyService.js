@@ -1,12 +1,11 @@
 /**
  * Super Points — loyalty for players. Owner's rule (2026-11-01): every 1 EGP the player pays earns 1 point, the
- * moment it is paid: any payment in the app (booking deposits, games, the shop, tournaments, the Fantasy Pass), the
+ * moment it is paid: any payment in the app (booking deposits, games, the shop), the
  * rest of a booking paid at the pitch (when the venue scans the QR) and cash-on-delivery orders when delivered.
  * Wallet top-ups earn nothing (the points come when the wallet money is spent), voucher money earns nothing, and a
  * refund takes its points back. Each new earning shows a "Congratulations" pop-up (js/components/pointsPop.js).
  * Activity from before this rule keeps the old rate (1 point per 10 EGP after the game, tiers raise it). Points become vouchers only (never cash): 20 points = 1 EGP, from 2,000 points (a 100 EGP voucher).
- * A voucher is spent at checkout anywhere in the app — pitch bookings, games, the shop, printed designs,
- * tournament entries and the Fantasy Pass. Rates come from Platform settings (admin).
+ * A voucher is spent at checkout anywhere in the app — pitch bookings, games, the shop, printed designs. Rates come from Platform settings (admin).
  * Earned points are derived from the player's history, so they can never drift out of sync.
  * Future API: GET /me/points, POST /me/points/redeem
  */
@@ -54,10 +53,6 @@
         out.push({ id: `or-${o.id}-${g.storeId}`, at: g.at?.delivered || o.createdAt + 48 * 36e5, base: value, label: `Order ${o.id} delivered (${g.storeName})${cod ? ' — cash on delivery' : ''}`, kind: 'earn', legacy: !cod || (o.createdAt || 0) < cut });
       });
     });
-    (db().all('tournaments') || []).forEach((t) => t.teams?.forEach((tm) => {
-      if ((tm.createdAt || 0) >= cut) return; // paid online: earned at payment
-      if (tm.userId === (store.get().user?.id || 'u-001') && tm.paid && t.status !== 'cancelled') out.push({ id: `tr-${t.id}-${tm.id}`, at: tm.createdAt, base: t.fee, label: `Tournament entry — ${t.name}`, kind: 'earn', legacy: true });
-    }));
     return out;
   };
 
@@ -122,7 +117,7 @@
       add({ points: -p, label: `Voucher ${code} — ${amount} EGP`, kind: 'redeem' });
       const v = { code, amount, balance: amount, points: p, at: Date.now(), uses: [] };
       store.set((st) => ({ vouchers: [v, ...(st.vouchers || [])] }), 'voucher');
-      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super App: games, the shop, printed designs and tournament entries. It can’t be exchanged for cash.' });
+      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super App: games, the shop and printed designs. It can’t be exchanged for cash.' });
       return Promise.resolve({ points: p, amount, code });
     },
     vouchers,

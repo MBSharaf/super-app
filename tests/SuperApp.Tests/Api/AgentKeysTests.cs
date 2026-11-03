@@ -78,7 +78,7 @@ public sealed class AgentKeysTests(AccountsApiFactory api) : IClassFixture<Accou
         me.Body.Data().GetProperty("keyPrefix").GetString().ShouldBe(key[..8]);
 
         (await agent.GetAsync("/api/v1/admin/support/tickets")).Status.ShouldBe(HttpStatusCode.OK);
-        var notAllowed = await agent.GetAsync("/api/v1/admin/community/reports");
+        var notAllowed = await agent.GetAsync("/api/v1/admin/review-reports");
         notAllowed.Status.ShouldBe(HttpStatusCode.Forbidden);
         notAllowed.Body.Code().ShouldBe("forbidden");
         (await agent.GetAsync("/api/v1/ceo/agents")).Status.ShouldBe(HttpStatusCode.Forbidden);
@@ -174,15 +174,15 @@ public sealed class AgentKeysTests(AccountsApiFactory api) : IClassFixture<Accou
         var (id, key) = await ActiveAgentAsync(ceo);
         (await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/agents/{id}/permissions", new { permissions = new[] { "payouts.send" } })).Status.ShouldBe(HttpStatusCode.BadRequest);
         (await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/agents/{id}/permissions", new { permissions = new[] { "nope.code" } })).Status.ShouldBe(HttpStatusCode.BadRequest);
-        (await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/agents/{id}/permissions", new { permissions = new[] { "community.moderate" } })).Status.ShouldBe(HttpStatusCode.OK);
-        (await AgentClient(key).GetAsync("/api/v1/admin/community/reports")).Status.ShouldBe(HttpStatusCode.OK);
+        (await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/agents/{id}/permissions", new { permissions = new[] { "reviews.moderate" } })).Status.ShouldBe(HttpStatusCode.OK);
+        (await AgentClient(key).GetAsync("/api/v1/admin/review-reports")).Status.ShouldBe(HttpStatusCode.OK);
 
         var tasks = await ceo.SendAsync(HttpMethod.Put, $"/api/v1/ceo/agents/{id}/tasks", new
         {
             tasks = new object[]
             {
                 new { title = "Morning sweep", description = "Check reports", trigger = "Schedule", cron = "0 7 * * *" },
-                new { title = "New report", description = "Look at it", trigger = "Event", eventType = "community.reported" },
+                new { title = "New report", description = "Look at it", trigger = "Event", eventType = "review.reported" },
             },
         });
         tasks.Status.ShouldBe(HttpStatusCode.OK, tasks.Body.ToString());

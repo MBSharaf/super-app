@@ -4,7 +4,7 @@
   const TOPICS = [
     ['bookings', 'pitch', 'Bookings', 'الحجوزات'], ['packages', 'repeat', 'Weekly packages', 'الباقات الأسبوعية'], ['payments', 'wallet', 'Payments & wallet', 'الدفع والمحفظة'],
     ['shop', 'bag', 'Shop & delivery', 'المتجر والتوصيل'], ['returns', 'refresh', 'Returns & refunds', 'المرتجعات والاسترجاع'], ['printed', 'shirt', 'Printed designs', 'التصميمات المطبوعة'],
-    ['games', 'users', 'Games & tournaments', 'الماتشات والبطولات'], ['fantasy', 'trophy', 'Fantasy', 'الفانتازي'], ['points', 'gift', 'Super Points', 'نقاط Super'],
+    ['games', 'users', 'Games', 'الماتشات'], ['fantasy', 'trophy', 'Fantasy', 'الفانتازي'], ['points', 'gift', 'Super Points', 'نقاط Super'],
     ['sellers', 'image', 'Selling on Super App', 'البيع على Super App'], ['partners', 'grid', 'Pitch partners', 'شركاء الملاعب'], ['account', 'user', 'Account & privacy', 'الحساب والخصوصية'],
   ];
   const QA = [
@@ -21,7 +21,6 @@
     q('returns', 'When do I get my money back?', 'فلوسي بترجع إمتى؟', 'As soon as the return is received and checked — straight to your wallet, with a receipt.', 'أول ما المرتجع يوصل ويتراجع — على محفظتك على طول، ومعاه إيصال.'),
     q('printed', 'My printed item has a problem', 'القطعة المطبوعة فيها مشكلة', 'Open the order and tap “Return or exchange” with a photo. A faulty print, wrong size or damage is reprinted free or refunded. Made-to-order items can’t be returned for a change of mind.', 'افتح الطلب ودوس "إرجاع أو استبدال" مع صورة. الطباعة اللي فيها عيب أو المقاس الغلط أو التلف بيتطبع تاني ببلاش أو بترجعلك فلوسك. القطع اللي بتتعمل حسب الطلب مينفعش ترجع لو غيّرت رأيك.'),
     q('games', 'How do I join a game?', 'أنضم لماتش إزاي؟', 'Open <a href="#/players">Find players</a>, pick a game and ask to join. Your share is held until the host accepts; if they don’t, it comes back to you.', 'افتح <a href="#/players">دوّر على لعيبة</a>، واختار ماتش واطلب تنضم. نصيبك بيتحجز لحد ما صاحب الماتش يوافق، ولو موافقش بيرجعلك.'),
-    q('games', 'How do I enter a tournament?', 'أدخل بطولة إزاي؟', 'Open <a href="#/tournaments">Tournaments</a>, choose one with open registration and register your team. Entry fees are refunded only if the venue cancels.', 'افتح <a href="#/tournaments">البطولات</a>، واختار واحدة التسجيل فيها مفتوح، وسجّل فريقك. رسوم الدخول بترجع بس لو الملعب لغى.'),
     q('fantasy', 'How do fantasy points work?', 'نقاط الفانتازي بتتحسب إزاي؟', 'Pick 15 players within the budget. Points come from real match events: goals, assists, clean sheets and more. Your captain scores double.', 'اختار 15 لاعب في حدود الميزانية. النقاط بتيجي من أحداث الماتشات الحقيقية: الأهداف والأسيستات والشباك النضيفة وغيرها. والكابتن نقطه بتتضاعف.'),
     q('points', 'How do I use Super Points?', 'أستخدم نقاط Super إزاي؟', 'From 2,000 points you can turn them into a voucher (20 points = 1 EGP) in your <a href="#/wallet">wallet</a> and use it at checkout.', 'من أول 2,000 نقطة تقدر تحوّلها لقسيمة (كل 20 نقطة = 1 جنيه) من <a href="#/wallet">محفظتك</a> وتستخدمها وإنت بتدفع.'),
     q('sellers', 'How do I start selling?', 'أبدأ أبيع إزاي؟', 'Apply from <a href="#/sell">Sell on Super App</a>. Once approved you can upload designs (we print and ship them) or list your own products.', 'قدّم من <a href="#/sell">البيع على Super App</a>. أول ما تتقبل تقدر ترفع تصميمات (إحنا بنطبعها ونشحنها) أو تعرض منتجاتك.'),

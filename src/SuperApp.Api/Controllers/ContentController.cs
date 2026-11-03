@@ -67,7 +67,7 @@ public sealed class ContentController(IContentService content, ILegalHelpService
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Vote(long id, HelpVoteRequest request, CancellationToken ct) => Ok(await legal.VoteAsync(id, request, ct), "Thanks for telling us.");
 
-    /// <summary>Sitemap from live data (public pages, live pitches, news, public communities).</summary>
+    /// <summary>Sitemap from live data (public pages and live pitches).</summary>
     [HttpGet("seo/sitemap.xml")]
     public async Task<IActionResult> Sitemap(CancellationToken ct) => Content(await content.SitemapAsync(ct), "application/xml");
 

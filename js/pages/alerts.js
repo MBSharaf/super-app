@@ -12,10 +12,10 @@
       const alerts = S.games.alerts();
       const pitches = S.db.all('pitches').filter((p) => !p.deleted && p.status === 'active');
       const areas = [...new Set(pitches.map((p) => p.area))].sort();
-      const slots = S.db.all('communityPosts').filter((p) => !p.deleted && !p.hidden && p.card?.type === 'slot' && SA.ui.linkCards.slotState(p.card).state === 'free').sort((a, b) => b.at - a.at).slice(0, 6);
+      const slots = S.games.slotPosts().filter((p) => !p.hidden && SA.ui.linkCards.slotState(p.card).state === 'free').sort((a, b) => b.at - a.at).slice(0, 6);
       const pre = ctx.query.pitch || '';
       return `<div class="container section-tight">
-        <div class="page-head"><a class="back-link" href="#/community/pitches">${icon('chevronLeft', 16)} Pitches & free slots</a><h1 class="h1" style="margin-top:10px">Free-slot alerts</h1><p class="lead">Be the first to know when a venue frees up an hour you’d play.</p></div>
+        <div class="page-head"><a class="back-link" href="#/pitches">${icon('chevronLeft', 16)} Book a pitch</a><h1 class="h1" style="margin-top:10px">Free-slot alerts</h1><p class="lead">Be the first to know when a venue frees up an hour you’d play.</p></div>
         <div class="sup-grid">
           <section class="panel panel-pad"><h2 class="h3">New alert</h2>
             <form class="form-grid" data-alert novalidate style="margin-top:14px">

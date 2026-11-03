@@ -48,7 +48,6 @@
               <div class="stack" style="--gap:10px;margin-top:14px">
                 <label class="choice"><input type="radio" name="accept" value="manual" checked /><span class="radio-dot"></span><span class="grow"><b>I decide each request</b><span class="xs muted" style="display:block">See each player’s level, position, attendance and rating, then accept or decline.</span></span></label>
                 <label class="choice"><input type="radio" name="accept" value="auto" /><span class="radio-dot"></span><span class="grow"><b>Accept automatically</b><span class="xs muted" style="display:block">The first players to ask get the spots. You can still remove someone.</span></span></label>
-                <label class="choice"><input type="checkbox" name="share" checked /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Share it in “Pitches & free slots”</b><span class="xs muted" style="display:block">Posts a card in the community so more players see it.</span></span></label>
               </div>
             </section>
           </form>
@@ -107,7 +106,6 @@
         btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Publishing…';
         try {
           const { id } = await S.matches.publish({ bookingId: booking().id, total: out('total').value, have: out('have').value, level: form.level.value, type: form.type.value, gender, needsGK: form.needsGK.checked, notes: notes.value, autoAccept: form.accept.value === 'auto' });
-          if (form.share.checked) { try { S.community.shareGame(id); } catch (err) { console.warn(err); } }
           // Demo: players nearby ask to join a few seconds later
           setTimeout(() => { try { S.games.simulateApplicants(id, 3); if (SA.core.router.location().includes(id)) SA.app.rerender(); } catch (err) { console.warn(err); } }, 4000);
           SA.core.router.go(`/players/${id}?published=1`);

@@ -1,6 +1,6 @@
 /**
  * Pop-up ads for Super App's own services and offers: become a seller, fantasy, discount codes, the shop, pitches,
- * tournaments… One small card at a time slides in with a 3D flip, tilts toward the pointer (layers at different depths)
+ * pickup games… One small card at a time slides in with a 3D flip, tilts toward the pointer (layers at different depths)
  * and carries a 3D object: a spinning cube with icons, a discount coin with thickness, or the real 3D T-shirt (three.js).
  *
  * Rhythm (set in the admin console, Site content → Pop-ups): first one after a few seconds, then one every `interval`

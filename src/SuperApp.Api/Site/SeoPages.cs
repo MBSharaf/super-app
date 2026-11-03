@@ -12,11 +12,11 @@ namespace SuperApp.Api.Site;
 public sealed record SeoPage(string Title, string Description, string Path, string Body, object? JsonLd = null);
 
 /// <summary>
-/// Search-engine HTML for the main public pages (home, pitches, a pitch, news, an article). The server writes it into
+/// Search-engine HTML for the main public pages (home, pitches, a pitch). The server writes it into
 /// index.html — title, description, canonical, share tags, JSON-LD and readable content inside &lt;main id="app"&gt; — and
 /// the app replaces that content as soon as it loads, so visitors see the site exactly as before.
 /// </summary>
-public sealed class SeoPages(IPitchesService pitches, INewsService news)
+public sealed class SeoPages(IPitchesService pitches)
 {
     private const string Brand = "Super App";
 
@@ -30,8 +30,6 @@ public sealed class SeoPages(IPitchesService pitches, INewsService news)
                 [] => await HomeAsync(ct),
                 ["pitches"] => await PitchesAsync(ct),
                 ["pitches", var id] when id.StartsWith("p-", StringComparison.Ordinal) => await PitchAsync(id[2..], ct),
-                ["news"] => await NewsListAsync(ct),
-                ["news", var id] when long.TryParse(id, out var n) => await ArticleAsync(n, ct),
                 _ => null,
             };
         }
@@ -44,11 +42,9 @@ public sealed class SeoPages(IPitchesService pitches, INewsService news)
     private async Task<SeoPage> HomeAsync(CancellationToken ct)
     {
         var top = await pitches.SearchAsync(new PitchSearchQuery(PageSize: 8), ct);
-        var latest = await news.NewsAsync(new NewsQuery(PageSize: 5), admin: false, ct);
         var body = new StringBuilder("<h1>Super App — book football pitches, find players and play fantasy in Egypt</h1>")
             .Append("<p>Book 5, 7 and 11-a-side pitches near you in Cairo, Giza and Alexandria, find players for your match and play fantasy football.</p>")
-            .Append("<h2>Top pitches</h2>").Append(PitchList(top.Items))
-            .Append("<h2>Latest news</h2>").Append(NewsList(latest.Items));
+            .Append("<h2>Top pitches</h2>").Append(PitchList(top.Items));
         return new SeoPage("Super App — Book, play, compete", "Book football pitches near you, find players for your match and play Egyptian Premier League fantasy — in one app.", "", body.ToString(),
             new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@type"] = "WebSite", ["name"] = Brand });
     }
@@ -83,27 +79,8 @@ public sealed class SeoPages(IPitchesService pitches, INewsService news)
         return new SeoPage($"{c.Name} — {c.AreaEn} | Book on Super App", $"{c.Name} in {c.AreaEn}: {c.Format}-a-side, {price} an hour, rated {c.Rating:0.0}. See live hours and book online.", $"pitches/p-{slug}", body, ld);
     }
 
-    private async Task<SeoPage> NewsListAsync(CancellationToken ct)
-    {
-        var list = await news.NewsAsync(new NewsQuery(PageSize: 30), admin: false, ct);
-        return new SeoPage("Football news — Super App", "The latest Egyptian and English football news, transfers and match previews.", "news",
-            "<h1>Football news</h1>" + NewsList(list.Items));
-    }
-
-    private async Task<SeoPage> ArticleAsync(long id, CancellationToken ct)
-    {
-        var a = await news.PostAsync(id, admin: false, ct);
-        var body = $"<article><h1>{E(a.Title)}</h1><p>{E(a.Excerpt)}</p>{string.Concat((a.Body ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(p => $"<p>{E(p)}</p>"))}</article>";
-        var ld = new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@type"] = "NewsArticle", ["headline"] = a.Title, ["description"] = a.Excerpt,
-            ["datePublished"] = a.PublishedAt.ToString("o", CultureInfo.InvariantCulture), ["publisher"] = new Dictionary<string, object> { ["@type"] = "Organization", ["name"] = Brand } };
-        return new SeoPage($"{a.Title} — Super App", a.Excerpt, $"news/{id}", body, ld);
-    }
-
     private static string PitchList(IEnumerable<PitchCardDto> items) =>
         "<ul>" + string.Concat(items.Select(p => $"<li><a href=\"/super-app/pitches/p-{E(p.Slug)}\">{E(p.Name)}</a> — {E(p.AreaEn)}, {p.PricePerHour.ToString("0", CultureInfo.InvariantCulture)} EGP / hour</li>")) + "</ul>";
-
-    private static string NewsList(IEnumerable<NewsDto> items) =>
-        "<ul>" + string.Concat(items.Select(n => $"<li><a href=\"/super-app/news/{n.Id}\">{E(n.Title)}</a> — {E(n.Excerpt)}</li>")) + "</ul>";
 
     private static string E(string? text) => WebUtility.HtmlEncode(text ?? "");
 

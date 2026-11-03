@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SuperApp.Application.Features.Content;
-using SuperApp.Domain.Entities.Communities;
 using SuperApp.Domain.Entities.Content;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Domain.Entities.Pitches;
@@ -64,13 +63,8 @@ public sealed class ContentRepository(AppDbContext db) : IContentRepository
 
     public void AddConsent(CookieConsent consent) => db.Set<CookieConsent>().Add(consent);
 
-    public async Task<(IReadOnlyList<string> Pitches, IReadOnlyList<long> News, IReadOnlyList<string> Communities)> SitemapAsync(DateTime now, CancellationToken ct)
-    {
-        var pitches = await db.Set<Pitch>().Where(p => p.Status == PitchStatus.Live).OrderBy(p => p.Slug).Select(p => p.Slug).ToListAsync(ct);
-        var news = await db.Set<NewsPost>().Where(n => !n.IsHidden && n.PublishedAt <= now).OrderByDescending(n => n.PublishedAt).Select(n => n.Id).Take(500).ToListAsync(ct);
-        var communities = await db.Set<Community>().Where(c => !c.IsArchived && c.Audience == CommunityAudience.Everyone).Select(c => c.Slug).ToListAsync(ct);
-        return (pitches, news, communities);
-    }
+    public async Task<IReadOnlyList<string>> SitemapAsync(DateTime now, CancellationToken ct) =>
+        await db.Set<Pitch>().Where(p => p.Status == PitchStatus.Live).OrderBy(p => p.Slug).Select(p => p.Slug).ToListAsync(ct);
 }
 
 /// <summary>Legal documents and versions, help topics, articles and votes.</summary>

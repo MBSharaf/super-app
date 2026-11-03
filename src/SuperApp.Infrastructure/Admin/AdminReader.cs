@@ -6,7 +6,6 @@ using SuperApp.Application.Security;
 using SuperApp.Domain.Entities.Ai;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Domain.Entities.Bookings;
-using SuperApp.Domain.Entities.Communities;
 using SuperApp.Domain.Entities.Money;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Domain.Entities.Pitches;

@@ -97,14 +97,6 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
         await db.SaveChangesAsync(ct);
         var ids = late.Select(b => b.Id).ToList();
         await db.Set<BookingSlot>().Where(s => ids.Contains(s.BookingId)).ExecuteUpdateAsync(u => u.SetProperty(s => s.IsActive, false), ct);
-        // Tournament teams whose entry fee was never paid give their spot back
-        var teams = await db.Set<TournamentTeam>().Include(t => t.Payment)
-            .Where(t => t.Status == TournamentTeamStatus.Registered && t.Payment != null && t.Payment.Status == PaymentStatus.Pending && t.Payment.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
-        foreach (var t in teams)
-        {
-            t.Status = TournamentTeamStatus.Withdrawn;
-            t.Payment!.Status = PaymentStatus.Failed;
-        }
         var requests = await db.Set<GameRequest>().Include(r => r.Payment)
             .Where(r => r.Status != GameRequestStatus.Withdrawn && r.Payment != null && r.Payment.Status == PaymentStatus.Pending && r.Payment.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var r in requests)
@@ -113,7 +105,7 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
             r.Payment!.Status = PaymentStatus.Failed;
         }
         await db.SaveChangesAsync(ct);
-        return late.Count + teams.Count + requests.Count + await ExpireOrdersAsync(scope.ServiceProvider, db, now, ct);
+        return late.Count + requests.Count + await ExpireOrdersAsync(scope.ServiceProvider, db, now, ct);
     }
 
     /// <summary>Store orders still not paid: called off, the stock and the code use given back, the customer told.</summary>

@@ -10,7 +10,7 @@
 (function (SA) {
   const DEPTS = [
     { key: 'ops', name: 'Operations', head: 'coo', icon: 'grid', tone: 'turf', text: 'Bookings, orders, the factory and delivery run on time.' },
-    { key: 'support', name: 'Customer support & trust', head: 'support-lead', parent: 'ops', icon: 'message', tone: 'info', text: 'Every customer, partner and seller gets a fair, fast answer; reviews and communities stay clean.' },
+    { key: 'support', name: 'Customer support & trust', head: 'support-lead', parent: 'ops', icon: 'message', tone: 'info', text: 'Every customer, partner and seller gets a fair, fast answer; reviews stay clean.' },
     { key: 'bizdev', name: 'Business development', head: 'partners-agent', parent: 'ops', icon: 'pitch', tone: 'gold', text: 'New pitch partners, sellers and factories join and grow.' },
     { key: 'finance', name: 'Finance', head: 'cfo', icon: 'wallet', tone: 'blaze', text: 'Money in, money out, every pound reconciled.' },
     { key: 'legal', name: 'Legal & compliance', head: 'counsel', icon: 'shield', tone: 'ink', text: 'Contracts, taxes, data protection and ID checks.' },
@@ -41,8 +41,8 @@
 
     { id: 'coo', title: 'Operations lead', dept: 'ops', reportsTo: 'ceo', holder: 'ai', name: 'Atlas', cost: 2400, sections: ['overview', 'orders', 'approvals', 'factories', 'support', 'analytics'], can: ['orders', 'factory', 'audit'], limit: 0,
       duties: ['Watches bookings, orders and the factory every hour', 'Escalates late jobs and problems', 'Writes the daily operations summary'], watch: ['admin.booking', 'admin.order', 'factory.'] },
-    { id: 'bookings-ops', title: 'Pitch & bookings agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Kick', cost: 1500, sections: ['overview', 'orders', 'tournaments', 'games'], can: ['orders'], limit: 0,
-      duties: ['Checks double bookings and no-shows', 'Weekly packages and make-up games', 'Tournaments and free-slot games'], watch: ['admin.booking', 'admin.package', 'admin.games', 'admin.slot', 'booking.', 'checkin.'] },
+    { id: 'bookings-ops', title: 'Pitch & bookings agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Kick', cost: 1500, sections: ['overview', 'orders', 'games'], can: ['orders'], limit: 0,
+      duties: ['Checks double bookings and no-shows', 'Weekly packages and make-up games', 'Free-slot games'], watch: ['admin.booking', 'admin.package', 'admin.games', 'admin.slot', 'booking.', 'checkin.'] },
     { id: 'orders-ops', title: 'Orders & factory agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Loom', cost: 1500, sections: ['overview', 'orders', 'returns', 'store', 'factories', 'samples'], can: ['orders', 'factory'], limit: 0,
       duties: ['Sends printed orders to the factory', 'Chases late jobs and quality problems', 'Keeps the Super App Store stocked'], watch: ['admin.factory', 'admin.sample', 'admin.store', 'factory.job', 'pod.'] },
     { id: 'logistics', title: 'Courier & delivery agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Route', cost: 1100, sections: ['overview', 'factories', 'orders'], can: ['factory'], limit: 0,
@@ -52,8 +52,8 @@
       duties: ['Answers disputes and decides refunds up to 1,000 EGP', 'Blocks abusive customers', 'Reviews the frontline agent’s answers'], watch: ['admin.support', 'admin.customer', 'support.'] },
     { id: 'support-agent', title: 'Frontline support agent', dept: 'support', reportsTo: 'support-lead', holder: 'ai', name: 'Echo', cost: 1800, sections: ['support', 'customers', 'orders', 'returns'], can: ['refund'], limit: 300,
       duties: ['Replies to every ticket within 2 hours', 'Refunds up to 300 EGP', 'Hands harder cases to the lead'], watch: ['admin.support', 'support.'] },
-    { id: 'trust', title: 'Trust & safety agent', dept: 'support', reportsTo: 'support-lead', holder: 'ai', name: 'Shield', cost: 1300, sections: ['reviews', 'pod-review', 'community', 'sellers'], can: ['moderate', 'designs', 'suspend'], limit: 0,
-      duties: ['Checks designs for copyright', 'Moderates reviews and communities', 'Gives sellers strikes'], watch: ['admin.design', 'admin.review', 'admin.community', 'admin.seller.strike', 'design.'] },
+    { id: 'trust', title: 'Trust & safety agent', dept: 'support', reportsTo: 'support-lead', holder: 'ai', name: 'Shield', cost: 1300, sections: ['reviews', 'pod-review', 'sellers'], can: ['moderate', 'designs', 'suspend'], limit: 0,
+      duties: ['Checks designs for copyright', 'Moderates reviews', 'Gives sellers strikes'], watch: ['admin.design', 'admin.review', 'admin.seller.strike', 'design.'] },
 
     { id: 'partners-agent', title: 'Partnerships agent', dept: 'bizdev', reportsTo: 'coo', holder: 'ai', name: 'Bridge', cost: 1400, sections: ['partners', 'approvals'], can: ['approve.partner'], limit: 0,
       duties: ['Reviews pitch partner applications', 'Onboards new pitches', 'Talks commission deals (the CEO signs)'], watch: ['admin.partner', 'admin.pitch', 'partner.'] },
@@ -72,9 +72,9 @@
 
     { id: 'cmo', title: 'Marketing lead', dept: 'marketing', reportsTo: 'ceo', holder: 'ai', name: 'Pulse', cost: 2200, sections: ['overview', 'promos', 'broadcast', 'analytics', 'content'], can: ['promo', 'broadcast', 'content'], limit: 0,
       duties: ['Plans campaigns within the budget', 'Creates promo codes', 'Sends broadcasts to the right people'], watch: ['admin.promo', 'admin.broadcast'] },
-    { id: 'social', title: 'Social media & content agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Buzz', cost: 1700, sections: ['content', 'community', 'broadcast'], can: ['content'], limit: 0,
-      duties: ['Posts on social media every day', 'News, banners and the announcement bar', 'Runs the official communities'], watch: ['admin.content', 'admin.news', 'admin.banner', 'admin.community.post'] },
-    { id: 'arena', title: 'Fantasy & games agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Arena', cost: 900, sections: ['fantasy', 'games', 'community'], can: ['fantasy'], limit: 0,
+    { id: 'social', title: 'Social media & content agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Buzz', cost: 1700, sections: ['content', 'broadcast'], can: ['content'], limit: 0,
+      duties: ['Posts on social media every day', 'Banners, pop-ups and the announcement bar'], watch: ['admin.content', 'admin.banner'] },
+    { id: 'arena', title: 'Fantasy & games agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Arena', cost: 900, sections: ['fantasy', 'games'], can: ['fantasy'], limit: 0,
       duties: ['Runs fantasy leagues and prizes', 'Free-slot games and player safety', 'Match-day content'], watch: ['admin.fantasy', 'admin.games', 'fantasy.'] },
 
     { id: 'cto', title: 'Technology lead', dept: 'tech', reportsTo: 'ceo', holder: 'ai', name: 'Forge', cost: 2600, sections: ['settings', 'content', 'analytics', 'audit'], can: ['settings', 'audit'], limit: 0,

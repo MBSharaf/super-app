@@ -1,13 +1,12 @@
 /**
- * Fantasy and content from the real API (backend Phase 6). Loaded after the fantasy, news, content, community and
- * support services.
+ * Fantasy and content from the real API (backend Phase 6). Loaded after the fantasy, content and support
+ * services.
  *
  * In API mode this file loads the server's data into the shapes the pages already read and sends the pages' changes
  * to the server first, then loads again. Demo mode (GitHub Pages) is unchanged and the design stays the same.
  *   - Fantasy: players, clubs, fixtures and gameweeks (cached from API-FOOTBALL or the simulated provider), my team,
  *     lineup, transfers, groups and the free leagues. Gameweeks are scored by the server.
- *   - Content: home banners, the announcement bar, pop-ups (views and clicks counted on the server), Super App news.
- *   - Communities: communities, posts, comments, reactions, polls, reports, join / leave.
+ *   - Content: home banners, the announcement bar, pop-ups (views and clicks counted on the server).
  *   - Support: my tickets and replies.
  */
 (function (SA) {
@@ -265,22 +264,16 @@
   Object.keys(fantasyLive).forEach((name) => { F[name] = fantasyLive[name]; });
 
   /* ======================================================================
-   * Content: banners, announcement, pop-ups, news
+   * Content: banners, announcement, pop-ups
    * ==================================================================== */
 
   const C = SA.services.content;
   const demoContent = { ...C };
-  let home = null, popups = null, news = [];
+  let home = null, popups = null;
 
   const toPopup = (p) => ({
     id: `pop-${p.id}`, apiId: p.id, active: p.isActive, shape: p.shape, icons: p.icons, color: p.color, badge: p.badge,
     title: ar() ? p.titleAr : p.titleEn, text: ar() ? p.textAr : p.textEn, cta: ar() ? p.ctaAr : p.ctaEn, link: p.link, forNonSellers: p.hideFromSellers,
-  });
-
-  const toStory = (n) => ({
-    id: `sn-${n.id}`, apiId: n.id, cat: n.category, clubs: [], type: 'Super App', breaking: n.isBreaking, at: new Date(n.publishedAt).getTime(),
-    hoursAgo: (Date.now() - new Date(n.publishedAt).getTime()) / 36e5, read: 2, img: n.imageUrl ? `${location.origin}${n.imageUrl}` : 'stadiumNight',
-    title: n.title, excerpt: n.excerpt, body: [n.excerpt], own: true, live: true,
   });
 
   Object.assign(C, {
@@ -304,145 +297,11 @@
       quiet(api.post(`/content/popups/${p.id}/event`, { kind }));
       return undefined;
     },
-    stories() { return live() && news.length ? [...news, ...demoContent.stories().filter((s) => !s.own)] : demoContent.stories(); },
-    allStories() { return live() && news.length ? [...news, ...demoContent.allStories().filter((s) => !s.own)] : demoContent.allStories(); },
   });
 
   const loadContent = async () => {
     [home, popups] = await Promise.all([quiet(api.get('/content/home')), quiet(api.get('/content/popups'))]);
-    const n = await quiet(api.get('/news?pageSize=50'));
-    news = (n?.items || []).map(toStory);
   };
-
-  /* ======================================================================
-   * Communities
-   * ==================================================================== */
-
-  const CM = SA.services.community;
-  const demoCommunity = { ...CM };
-  const REACT_TO = { '👍': 'Like', '🔥': 'Fire', '😂': 'Laugh', '❤️': 'Clap' };
-  const REACT_FROM = { Like: '👍', Fire: '🔥', Laugh: '😂', Clap: '❤️', Goal: '🔥', Sad: '👍' };
-  const AUD = { Everyone: 'everyone', Sellers: 'sellers', ProAndEliteSellers: 'sellers-pro' };
-  const cmId = (slug) => `cm-${slug}`;
-  const isLiveC = (id) => live() && !!db.find('communities', id)?.live;
-  const isLiveP = (id) => live() && !!db.find('communityPosts', id)?.live;
-  const meId = () => store.get().user?.id || SA.data.user.profile.id;
-
-  const toCommunity = (c, i) => ({
-    id: cmId(c.slug), apiId: c.id, slug: c.slug, name: c.name, about: c.about || '', audience: AUD[c.audience] || 'everyone', icon: c.icon || 'users', color: c.color || '#0B6E4F',
-    cover: 'stadium', baseMembers: Math.max(0, c.members - (c.joined ? 1 : 0)), order: i, rules: c.rules, slowMode: Math.ceil(c.slowModeSeconds / 60), status: c.isArchived ? 'archived' : 'active',
-    createdAt: Date.now(), createdBy: 'acc-admin', live: true,
-  });
-
-  const toAuthor = (a, asAdmin, mine) => (asAdmin ? { ...CM.ADMIN } : {
-    kind: 'user', id: mine ? meId() : `u-${a.name}`, name: a.name, avatar: 0,
-    badge: a.badges.includes('seller') ? { label: `${a.badges[1] || ''} seller`.trim(), tone: a.badges[1] || 'starter' } : null,
-  });
-
-  const toComment = (c) => ({ id: `cc-${c.id}`, apiId: c.id, author: toAuthor(c.author, c.asSuperAppAdmin, c.isMine), text: c.text, at: new Date(c.createdAt).getTime(), replyTo: c.parentId ? `cc-${c.parentId}` : null });
-
-  const toPost = (p, comments = []) => {
-    const mine = p.myReaction ? REACT_FROM[p.myReaction] : null;
-    return {
-      id: `cp-${p.id}`, apiId: p.id, communityId: cmId(p.community), author: toAuthor(p.author, p.asSuperAppAdmin, p.isMine), text: p.text, image: p.imageUrl ? `${location.origin}${p.imageUrl}` : null,
-      card: p.cards[0] ? { type: p.cards[0].kind, id: p.cards[0].id, hash: p.cards[0].link } : null,
-      poll: p.poll ? { options: p.poll.options.map((o) => ({ apiId: o.id, text: o.text, votes: p.poll.myVote === o.id ? [meId()] : [], seed: o.votes - (p.poll.myVote === o.id ? 1 : 0) })) } : null,
-      reactions: mine ? { [mine]: [meId()] } : {}, seedReactions: p.reactionsCount - (mine ? 1 : 0), comments: comments.map(toComment),
-      pinned: p.isPinned, announcement: p.isAnnouncement, locked: p.commentsClosed, at: new Date(p.createdAt).getTime(), live: true,
-    };
-  };
-
-  const loadPosts = async (c) => {
-    const page = await quiet(api.get(`/communities/${c.slug}/posts?pageSize=30`));
-    if (!page) return [];
-    return Promise.all(page.items.map(async (p) => toPost(p, p.commentsCount ? (await quiet(api.get(`/posts/${p.id}/comments`))) || [] : [])));
-  };
-
-  const loadCommunities = async () => {
-    const list = await quiet(api.get('/communities'));
-    if (!list) return;
-    const posts = (await Promise.all(list.filter((c) => c.canJoin || c.joined).map(loadPosts))).flat();
-    const raw = db.raw();
-    raw.communities = list.map(toCommunity);
-    raw.communityPosts = posts;
-    store.set({ communities: list.filter((c) => c.joined).map((c) => cmId(c.slug)) }, 'community');
-    try { db.touch('communities'); db.touch('communityPosts'); } catch { /* storage full */ }
-  };
-
-  const refreshPost = async (postId) => {
-    const apiId = db.find('communityPosts', postId)?.apiId;
-    const [p, comments] = await Promise.all([api.get(`/posts/${apiId}`), api.get(`/posts/${apiId}/comments`)]);
-    db.update('communityPosts', postId, toPost(p, comments));
-  };
-
-  const slugOf = (communityId) => db.find('communities', communityId)?.slug;
-
-  Object.assign(CM, {
-    async join(id) {
-      if (!isLiveC(id)) return demoCommunity.join(id);
-      await api.post(`/communities/${slugOf(id)}/join`);
-      store.set((s) => ({ communities: [...new Set([...(s.communities || []), id])] }), 'community');
-      return undefined;
-    },
-    async leave(id) {
-      if (!isLiveC(id)) return demoCommunity.leave(id);
-      await api.del(`/communities/${slugOf(id)}/join`);
-      store.set((s) => ({ communities: (s.communities || []).filter((x) => x !== id) }), 'community');
-      return undefined;
-    },
-    async createPost(communityId, data) {
-      if (!isLiveC(communityId)) return demoCommunity.createPost(communityId, data);
-      if (!(store.get().communities || []).includes(communityId)) await CM.join(communityId);
-      const text = [data.text, data.card?.hash].filter(Boolean).join(' ');
-      const p = await api.post(`/communities/${slugOf(communityId)}/posts`, { text, pollOptions: (data.poll || []).filter(Boolean) });
-      if (data.image && String(data.image).startsWith('data:')) {
-        const form = new FormData();
-        form.append('image', api.blob(data.image), 'photo.jpg');
-        await quiet(api.form(`/posts/${p.id}/image`, form));
-      }
-      const fresh = toPost(await api.get(`/posts/${p.id}`));
-      db.insert('communityPosts', fresh);
-      return fresh;
-    },
-    async comment(postId, text, replyTo = null) {
-      if (!isLiveP(postId)) return demoCommunity.comment(postId, text, replyTo);
-      const apiId = db.find('communityPosts', postId).apiId;
-      const parent = replyTo ? Number(String(replyTo).replace(/^cc-/, '')) : null;
-      const c = await api.post(parent ? `/posts/${apiId}/comments/${parent}/replies` : `/posts/${apiId}/comments`, { text });
-      await refreshPost(postId);
-      return toComment(c);
-    },
-    async react(postId, emoji) {
-      if (!isLiveP(postId)) return demoCommunity.react(postId, emoji);
-      const p = db.find('communityPosts', postId);
-      const had = (p.reactions?.[emoji] || []).includes(meId());
-      if (had) await api.del(`/posts/${p.apiId}/reaction`);
-      else await api.put(`/posts/${p.apiId}/reaction`, { type: REACT_TO[emoji] || 'Like' });
-      await refreshPost(postId);
-      return undefined;
-    },
-    async vote(postId, i) {
-      if (!isLiveP(postId)) return demoCommunity.vote(postId, i);
-      const p = db.find('communityPosts', postId);
-      await api.post(`/posts/${p.apiId}/vote`, { optionId: p.poll.options[i].apiId });
-      await refreshPost(postId);
-      return undefined;
-    },
-    async report(postId, { commentId = null, reason }) {
-      if (!isLiveP(postId)) return demoCommunity.report(postId, { commentId, reason });
-      const p = db.find('communityPosts', postId);
-      const why = { spam: 'Spam', abuse: 'Abuse', scam: 'Scam', offtopic: 'OffTopic', other: 'Other' }[reason] || 'Other';
-      const path = commentId ? `/comments/${String(commentId).replace(/^cc-/, '')}/report` : `/posts/${p.apiId}/report`;
-      await api.post(path, { reason: why, detail: null });
-      return undefined;
-    },
-    async deleteOwn(postId, commentId = null) {
-      if (!isLiveP(postId) || commentId) return demoCommunity.deleteOwn(postId, commentId);
-      await api.del(`/posts/${db.find('communityPosts', postId).apiId}`);
-      db.update('communityPosts', postId, { deleted: true });
-      return undefined;
-    },
-  });
 
   /* ======================================================================
    * Support: my tickets
@@ -521,11 +380,11 @@
     // Signing in or out changes my team, pass, groups and tickets
     SA.services.session?.subscribe(() => quiet(Promise.all(['egy', 'epl'].filter((k) => server[k]).map((k) => loadTeam(k).then(() => loadGroups(k))).concat([loadPass(), loadTickets()]))));
     await Promise.all([
-      quiet(loadLeague('egy')), quiet(loadLeague('epl')), quiet(loadPass()), quiet(loadContent()), quiet(loadCommunities()), quiet(loadTickets()),
+      quiet(loadLeague('egy')), quiet(loadLeague('epl')), quiet(loadPass()), quiet(loadContent()), quiet(loadTickets()),
     ]);
     settleLeague();
     store.set({ liveFantasyAt: Date.now() }, 'fantasy');
   });
 
-  SA.services.liveFantasy = { reload: () => Promise.all([loadLeague(key()), loadPass(), loadContent(), loadCommunities(), loadTickets()]) };
+  SA.services.liveFantasy = { reload: () => Promise.all([loadLeague(key()), loadPass(), loadContent(), loadTickets()]) };
 })(window.SA);

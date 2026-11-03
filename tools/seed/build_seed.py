@@ -120,12 +120,7 @@ class Builder:
         banners = [{"title": b["title"], "badge": b["badge"] or None, "cta": b["cta"] or None, "link": b["link"], "image": b["image"],
                     "active": b["active"], "order": b["order"]} for b in self.db["banners"]]
         popups = [self.popup(i, p) for i, p in enumerate(self.data["promoPops"])]
-        communities = [{"slug": c["slug"], "name": c["name"], "about": c["about"], "audience": c["audience"], "rules": c.get("rules", []),
-                        "slowMode": c.get("slowMode", 0), "color": c.get("color"), "icon": c.get("icon"), "order": c.get("order", 0)}
-                       for c in self.db["communities"]]
-        words = self.db["settings"]["community"]["bannedWords"]
-        return {"legal": legal, "helpTopics": topics, "helpArticles": articles, "banners": banners, "popups": popups,
-                "communities": communities, "bannedWords": [{"word": w, "language": "ar" if any("؀" <= ch <= "ۿ" for ch in w) else "en"} for w in words]}
+        return {"legal": legal, "helpTopics": topics, "helpArticles": articles, "banners": banners, "popups": popups}
 
     @staticmethod
     def markdown(sections: list, lang: str) -> str:

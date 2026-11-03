@@ -4,7 +4,6 @@ using Shouldly;
 using SuperApp.Domain.Entities.Ai;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Domain.Entities.Bookings;
-using SuperApp.Domain.Entities.Communities;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Domain.Entities.Pitches;
 using SuperApp.Domain.Entities.Pod;
@@ -42,8 +41,6 @@ public sealed class DemoSeedTests(SeedDatabaseFixture fixture) : IClassFixture<S
         first["designs"].ShouldBe(11);
         first["orders"].ShouldBe(52);
         first["orderItems"].ShouldBe(54);
-        first["tournaments"].ShouldBe(3);
-        first["posts"].ShouldBe(18);
         first["agents"].ShouldBe(18);
         first["positions"].ShouldBe(22);
     }
@@ -77,9 +74,6 @@ public sealed class DemoSeedTests(SeedDatabaseFixture fixture) : IClassFixture<S
         ["designColors"] = await fixture.CountAsync<DesignColor>(),
         ["orders"] = await fixture.CountAsync<Order>(),
         ["orderItems"] = await fixture.CountAsync<OrderItem>(),
-        ["tournaments"] = await fixture.CountAsync<Tournament>(),
-        ["teams"] = await fixture.CountAsync<TournamentTeam>(),
-        ["posts"] = await fixture.CountAsync<Post>(),
         ["agents"] = await fixture.CountAsync<Agent>(),
         ["agentPermissions"] = await fixture.CountAsync<AgentPermission>(),
         ["positions"] = await fixture.CountAsync<OrgPosition>(),

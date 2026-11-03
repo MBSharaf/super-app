@@ -27,7 +27,5 @@
   { "key": "fantasy.passPrice", "group": "fantasy", "value": { "one": 50, "both": 80 } },
 
   { "key": "popups.timing", "group": "popups", "value": { "on": true, "first": 6, "interval": 10, "stay": 7, "max": 6 } },
-  { "key": "content.announcement", "group": "content", "value": { "on": false, "text": "", "link": "", "cta": "", "tone": "info", "until": "" } },
-
-  { "key": "community.rules", "group": "community", "value": { "blockContacts": true } }
+  { "key": "content.announcement", "group": "content", "value": { "on": false, "text": "", "link": "", "cta": "", "tone": "info", "until": "" } }
 ]

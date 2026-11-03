@@ -1,8 +1,7 @@
-/** Shared renderers for News and Matches: crests, news cards, match rows. */
+/** Shared renderers for Matches: crests and match rows. */
 (function (SA) {
-  const { esc, timeAgo, fmtNum } = SA.core.utils;
+  const { esc } = SA.core.utils;
   const { icon } = SA.ui;
-  const media = SA.data.media;
 
   /** Original crest: split shield in club colours with a monogram (no official badges). */
   const crest = (t, size = 36) => {
@@ -16,21 +15,6 @@
       <text x="20" y="25" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="900" font-size="${t.short.length > 3 ? 8.5 : 10.5}" fill="${ink}" style="font-variation-settings:'wdth' 110">${esc(t.short)}</text></svg>`;
   };
 
-  const typeBadge = (s) => s.video ? `<span class="nbadge nb-video">${icon('play', 11, 2.4)} ${s.video}</span>` : `<span class="nbadge nb-${s.type.toLowerCase()}">${s.type === 'TV' ? 'TV' : s.type === 'Club' ? 'Club statement' : 'Press'}</span>`;
-
-  const newsCard = (s, { size = '' } = {}) => `
-    <article class="news-card ${size}" style="--cat:${s.category.color}">
-      <a class="news-card-link" href="#/news/${s.id}" aria-label="${esc(s.title)}"></a>
-      <div class="media news-media"><img src="${media.photo(s.img, size === 'lg' ? 1200 : 640, size === 'lg' ? 760 : 420)}" alt="" loading="lazy" />
-        ${s.video ? `<span class="play-btn" aria-hidden="true">${icon('play', 20, 2.4)}</span>` : ''}
-        <span class="news-cat">${esc(s.category.name)}</span></div>
-      <div class="news-body">
-        <div class="row" style="--gap:8px">${typeBadge(s)}${s.breaking ? '<span class="nbadge nb-breaking"><span class="live-dot"></span>Breaking</span>' : ''}</div>
-        <h3 class="news-title">${esc(s.title)}</h3>
-        ${size !== 'sm' ? `<p class="news-excerpt">${esc(s.excerpt)}</p>` : ''}
-        <p class="news-meta xs">${timeAgo(s.at)} · ${s.read} min read · ${fmtNum(s.views)} views</p>
-      </div>
-    </article>`;
 
   const matchRow = (m) => {
     const live = m.status === 'live', fin = m.status === 'finished';
@@ -48,5 +32,5 @@
     </article>`;
   };
 
-  SA.ui.sports = { crest, newsCard, matchRow, typeBadge };
+  SA.ui.sports = { crest, matchRow };
 })(window.SA);

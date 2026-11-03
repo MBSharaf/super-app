@@ -7,7 +7,7 @@
  * - After kick-off the host rates players (stars + showed up / no-show). That builds each player's record:
  *   games played, attendance and average rating — shown on player cards and used later (matching, trust, freelancers).
  * - Slot alerts: a player follows a pitch or an area (optionally a time window) and is notified when a free slot that
- *   matches is posted in "Pitches & free slots".
+ *   matches is posted from the partner dashboard.
  *
  * Demo: only this device's shopper is real. Other players are simulated (their requests, payments and the decisions of
  * other hosts), so every side of the flow can be tried on one phone.
@@ -183,6 +183,16 @@
       return a;
     },
     removeAlert(id) { store.set((s) => ({ slotAlerts: (s.slotAlerts || []).filter((a) => a.id !== id) }), 'alerts'); },
+    /** Free slots posted by venues from the partner dashboard (#/dash/slots); shown on #/alerts and matched to alerts */
+    slotPosts: () => (db().all('slotPosts') || []).filter((p) => !p.deleted),
+    postSlot({ ownerId, pitchId, date, hour, pct = 0, text = '', promoId = null }) {
+      const p = db().find('pitches', pitchId);
+      if (!p) throw new ApiError('Pitch not found.', 'not_found');
+      const card = { type: 'slot', pitchId, date, hour, duration: 1, pct, promoId };
+      const post = db().insert('slotPosts', { ownerId, author: { id: ownerId, name: p.name }, text: String(text || '').trim().slice(0, 280), card, hidden: false, at: Date.now() }, 'sp');
+      games.matchAlerts(card);
+      return post;
+    },
     /** Called when a free slot is posted: notify the shopper if one of their alerts matches */
     matchAlerts(slot) {
       const p = SA.services.pitches.getSync(slot.pitchId); if (!p) return 0;
@@ -194,5 +204,6 @@
 
   SA.services.games = games;
   if (!db().all('gameRequests')) { db().raw().gameRequests = []; db().raw().playerRatings = []; try { db().touch('gameRequests'); } catch { /* storage full */ } }
+  if (!db().all('slotPosts')) { db().raw().slotPosts = []; try { db().touch('slotPosts'); } catch { /* storage full */ } }
   setInterval(() => { try { games.sweep(); } catch (e) { console.warn(e); } }, 10e3);
 })(window.SA);

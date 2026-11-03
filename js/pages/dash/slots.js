@@ -1,6 +1,6 @@
 /**
  * Partner dashboard: post free slots (#/dash/slots). The owner picks a pitch, a day and free hours, optionally a
- * last-minute discount (an offer for that hour), and each hour becomes a live card in "Pitches & free slots".
+ * last-minute discount (an offer for that hour), and each hour becomes a live free-slot card (on #/alerts).
  * Players with a matching alert are notified. Limited per day (set by the Super App team); posted vs booked stats.
  */
 (function (SA) {
@@ -9,10 +9,10 @@
   const C = SA.pages.dashCommon;
   const D = () => SA.services.dash;
   const db = () => SA.services.db;
-  const CS = () => SA.services.community;
+  const CS = () => SA.services.games;
   const toast = (m, type = 'success') => SA.ui.overlay.toast(m, { type });
   const limit = () => db().settings().slotPosting?.perDay ?? 5;
-  const myPosts = (ownerId) => db().all('communityPosts').filter((p) => !p.deleted && p.card?.type === 'slot' && p.author?.id === ownerId).sort((a, b) => b.at - a.at);
+  const myPosts = (ownerId) => CS().slotPosts().filter((p) => p.ownerId === ownerId).sort((a, b) => b.at - a.at);
   const postedToday = (ownerId) => myPosts(ownerId).filter((p) => isoDate(new Date(p.at)) === isoDate(today())).length;
 
   SA.pages.dashSlots = C.guard({
@@ -36,13 +36,13 @@
       const href = (patch) => SA.core.router.href('/dash/slots', { pitch: pitch?.id, date, ...patch });
       const body = `<div class="kpi-grid kpi-sm">
           ${C.kpi({ label: 'Slots posted', value: posted.length, ic: 'megaphone' })}
-          ${C.kpi({ label: 'Booked from the community', value: booked, ic: 'check', tone: 'k-turf', sub: posted.length ? `${Math.round((booked / posted.length) * 100)}% of posted slots` : '' })}
+          ${C.kpi({ label: 'Booked from free slots', value: booked, ic: 'check', tone: 'k-turf', sub: posted.length ? `${Math.round((booked / posted.length) * 100)}% of posted slots` : '' })}
           ${C.kpi({ label: 'Still free', value: st.filter((s) => s === 'free').length, ic: 'clock' })}
           ${C.kpi({ label: 'Left to post today', value: `${left} / ${limit()}`, ic: 'calendar', tone: left ? '' : 'k-blaze' })}
         </div>
         ${blocked ? `<div class="notice blaze">${icon('ban', 18)}<span><b>Posting is paused by Super App.</b> ${esc(blocked)} Contact Help & support.</span></div>` : ''}
         ${!pitches.length ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No live pitches yet', text: 'Once a pitch is approved and open, you can post its free hours here.' })}</div>` : `
-        <section class="dash-card"><h2 class="h4">Post a free hour</h2><p class="small soft" style="margin-top:4px">It shows as a live card in “Pitches & free slots” with a Book now button, and players with alerts for this pitch or area are notified.</p>
+        <section class="dash-card"><h2 class="h4">Post a free hour</h2><p class="small soft" style="margin-top:4px">It shows as a live card on the free-slot alerts page with a Book now button, and players with alerts for this pitch or area are notified.</p>
           <div class="form-grid" style="margin-top:14px"><label class="field"><span class="field-label">Pitch</span><select class="select" data-pitch>${pitches.map((p) => `<option value="${p.id}" ${p.id === pitch.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label></div>
           <div class="chips" style="margin-top:12px">${days.map((d) => `<a class="chip" href="${href({ date: d, hour: undefined })}" aria-pressed="${d === date}">${d === days[0] ? 'Today' : d === days[1] ? 'Tomorrow' : fmtDate(d)}</a>`).join('')}</div>
           <form data-slots novalidate style="margin-top:14px">
@@ -52,13 +52,13 @@
               <label class="field"><span class="field-label">Last-minute discount</span><select class="select" name="pct"><option value="0">No discount</option>${[10, 15, 20, 25, 30].map((v) => `<option value="${v}">${v}% off</option>`).join('')}</select></label>
               <label class="field"><span class="field-label">Message (optional)</span><input class="input" name="text" maxlength="200" placeholder="e.g. A team cancelled — grab it!" /></label></div>
             <p class="field-error" data-err="slots"></p>
-            <button class="btn btn-primary" type="submit" style="margin-top:8px" ${blocked || !left || !free.length ? 'disabled' : ''}>${icon('megaphone', 15)} Post to the community</button>
+            <button class="btn btn-primary" type="submit" style="margin-top:8px" ${blocked || !left || !free.length ? 'disabled' : ''}>${icon('megaphone', 15)} Post free slot</button>
           </form></section>`}
         <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Your posted slots</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Pitch</th><th>When</th><th>Discount</th><th>Posted</th><th>Status</th><th></th></tr></thead><tbody>
           ${posted.slice(0, 30).map((p, i) => { const pt = db().find('pitches', p.card.pitchId); const s = st[i]; return `<tr><td class="small"><b>${esc(pt?.name || '')}</b></td><td class="small nowrap">${fmtDate(p.card.date)} · ${fmtHour(p.card.hour)}</td><td class="small">${p.card.pct ? `${Math.round(p.card.pct * 100)}%` : '—'}</td><td class="xs muted">${SA.core.utils.timeAgo(p.at)}</td>
-            <td><span class="badge ${s === 'free' ? 'badge-info' : s === 'booked' ? 'badge-turf' : ''}">${s === 'free' ? 'Still free' : s === 'booked' ? 'Booked' : 'Expired'}</span>${p.hidden ? ' <span class="badge badge-danger">Hidden by Super App</span>' : ''}</td><td class="r"><a class="btn btn-ghost btn-sm" href="#/community/pitches/${p.id}" target="_blank" rel="noopener">View</a></td></tr>`; }).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">Nothing posted yet.</td></tr>'}
+            <td><span class="badge ${s === 'free' ? 'badge-info' : s === 'booked' ? 'badge-turf' : ''}">${s === 'free' ? 'Still free' : s === 'booked' ? 'Booked' : 'Expired'}</span>${p.hidden ? ' <span class="badge badge-danger">Hidden by Super App</span>' : ''}</td><td class="r"><a class="btn btn-ghost btn-sm" href="#/alerts" target="_blank" rel="noopener">View</a></td></tr>`; }).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">Nothing posted yet.</td></tr>'}
         </tbody></table></div></section>`;
-      return C.layout('slots', { title: 'Free slots', subtitle: 'Fill empty hours: post them to the players in “Pitches & free slots”', body });
+      return C.layout('slots', { title: 'Free slots', subtitle: 'Fill empty hours: post them to players as free slots', body });
     },
     mount(el, ctx) {
       el.querySelector('[data-pitch]')?.addEventListener('change', (e) => SA.core.router.go(SA.core.router.href('/dash/slots', { pitch: e.target.value, date: ctx.query.date }).slice(1)));
@@ -82,7 +82,7 @@
             CS().postSlot({ ownerId: p.ownerId, pitchId, date, hour: h, pct: pct / 100, promoId, text: f.text.value });
           });
           D().auth && db().log(a.id, 'slot.posted', `Posted ${hours.length} free slot${hours.length > 1 ? 's' : ''} at ${p.name} on ${date}${pct ? ` with ${pct}% off` : ''}`, pitchId);
-          toast(`${hours.length} slot${hours.length > 1 ? 's' : ''} posted to the community`); SA.app.rerender();
+          toast(`${hours.length} slot${hours.length > 1 ? 's' : ''} posted`); SA.app.rerender();
         } catch (e2) { err(e2.fields ? Object.values(e2.fields)[0] : e2.message); }
       });
     },

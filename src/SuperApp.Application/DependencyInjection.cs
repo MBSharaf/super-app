@@ -42,11 +42,6 @@ public static class DependencyInjection
         services.AddScoped<Features.Payments.IPaymentListener, Features.Money.WalletTopUpPaymentListener>();
         services.AddScoped<Features.Money.LoyaltyService>();
         services.AddScoped<Features.Money.SuperPoints>();
-        services.AddScoped<Features.Tournaments.TournamentViews>();
-        services.AddScoped<Features.Tournaments.TournamentMoney>();
-        services.AddScoped<Features.Tournaments.TournamentsService>();
-        services.AddScoped<Features.Tournaments.PartnerTournamentsService>();
-        services.AddScoped<Features.Payments.IPaymentListener, Features.Tournaments.TournamentPaymentListener>();
         services.AddScoped<Features.Payments.IPaymentListener, Features.Games.GameSharePaymentListener>();
         services.AddScoped<Features.Money.PartnerCodesService>();
         services.AddScoped<Features.Payments.IPaymentListener, BookingPaymentListener>();

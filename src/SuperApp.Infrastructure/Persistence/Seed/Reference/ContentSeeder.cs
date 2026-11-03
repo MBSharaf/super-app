@@ -17,10 +17,8 @@ public sealed class ContentSeeder(AppDbContext db, IClock clock) : ISeeder
     internal sealed record BannerRow(string Title, string? Badge, string? Cta, string Link, string Image, bool Active, int Order);
     internal sealed record PopupRow(string TitleEn, string TitleAr, string TextEn, string TextAr, string CtaEn, string CtaAr, string Link,
         string? Badge, string Color, PopupShape Shape, string? Icons, bool HideFromSellers, bool Active, int Order);
-    internal sealed record CommunityRow(string Slug, string Name, string About, string Audience, List<string> Rules, int SlowMode, string? Color, string? Icon, int Order);
-    internal sealed record WordRow(string Word, string Language);
     internal sealed record ContentFile(List<LegalRow> Legal, List<TopicRow> HelpTopics, List<ArticleRow> HelpArticles, List<BannerRow> Banners,
-        List<PopupRow> Popups, List<CommunityRow> Communities, List<WordRow> BannedWords);
+        List<PopupRow> Popups);
 
     internal static ContentFile Load() => SeedFile.Read<ContentFile>("Reference/content.json");
 

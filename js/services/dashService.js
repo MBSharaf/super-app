@@ -246,14 +246,11 @@
     const capacity = sumBy(pitches, (p) => openHoursOf(p) * days);
     const hours = sumBy(active, (b) => b.duration);
     const S = salesFor(myStores({ ownerId }).map((s) => s.id), from, to);
-    // Tournament entry fees count as pitch income (they pay for pitch time)
-    const T = SA.services.tournaments ? SA.services.tournaments.income(myPitches({ ownerId, includeDeleted: true }).filter((p) => !pitchIds || pitchIds.includes(p.id)).map((p) => p.id), from, to) : [];
     return {
-      from, to, pitches, ledger: L, sales: S, tourLines: T,
+      from, to, pitches, ledger: L, sales: S,
       bookings: active.length, cancelled: L.length - active.length, hours, capacity, occupancy: capacity ? hours / capacity : 0,
-      gross: sumBy(L, (b) => b.money.gross) + sumBy(T, (x) => x.gross), commission: sumBy(L, (b) => b.money.commission) + sumBy(T, (x) => x.commission), net: sumBy(L, (b) => b.money.net) + sumBy(T, (x) => x.net),
-      tourGross: sumBy(T, (x) => x.gross), tourNet: sumBy(T, (x) => x.net), tourTeams: T.length,
-      online: sumBy(L, (b) => b.money.online) + sumBy(T, (x) => x.online), cash: sumBy(L, (b) => b.money.cash) + sumBy(T, (x) => x.cash), refunds: sumBy(L, (b) => b.money.refund), retained: sumBy(L, (b) => (b.money.retained ? b.money.gross : 0)),
+      gross: sumBy(L, (b) => b.money.gross), commission: sumBy(L, (b) => b.money.commission), net: sumBy(L, (b) => b.money.net),
+      online: sumBy(L, (b) => b.money.online), cash: sumBy(L, (b) => b.money.cash), refunds: sumBy(L, (b) => b.money.refund), retained: sumBy(L, (b) => (b.money.retained ? b.money.gross : 0)),
       walkIns: active.filter((b) => b.source === 'walk-in').length, teams: active.filter((b) => b.source === 'team' || b.seriesId).length, avgValue: active.length ? sumBy(active, (b) => b.money.gross) / active.length : 0,
       storeGross: sumBy(S, (s) => s.money.gross), storeCommission: sumBy(S, (s) => s.money.commission), storeNet: sumBy(S, (s) => s.money.net), storeUnits: sumBy(S, (s) => s.qty), storeOrders: new Set(S.map((s) => s.orderId)).size,
     };
@@ -304,13 +301,6 @@
       if (!x.money.online) b.cashCommission += x.money.commission;
       if (end < cut) { b.settled += x.money.wallet; const k = weekKey(end); weekly.set(k, (weekly.get(k) || 0) + x.money.wallet); }
       else b.available += x.money.wallet;
-    });
-    // Online tournament entry fees: available the day after the first match day
-    if (SA.services.tournaments) SA.services.tournaments.income(pitches.map((p) => p.id)).forEach((x) => {
-      if (!x.online) return;
-      if (x.availableAt > now) { b.pending += x.net; return; }
-      if (x.availableAt < cut) { b.settled += x.net; const k = weekKey(x.availableAt); weekly.set(k, (weekly.get(k) || 0) + x.net); }
-      else b.available += x.net;
     });
     S.forEach((x) => {
       const deliveredAt = x.money.deliveredAt || x.createdAt + 48 * 36e5;
@@ -614,7 +604,6 @@
     },
     removeClosure(id) {
       const c = db.find('closures', id); assert(c && canPitch(db.find('pitches', c.pitchId)));
-      if (c.tournamentId) throw new ApiError('These hours belong to a tournament. Change the tournament instead.', 'invalid');
       db.remove('closures', id);
       db.log(me().id, 'closure.removed', `Unblocked ${db.find('pitches', c.pitchId)?.name} ${c.from}`, id);
     },
@@ -1027,10 +1016,6 @@
           const kyc = db.all('sellers').filter((s) => s.kyc === 'pending').length;
           if (kyc) out.push({ key: 'kyc', icon: 'shield', tone: 'info', count: kyc, title: `${kyc} seller ID check${kyc > 1 ? 's' : ''}`, text: 'Verify before their first withdrawal.', href: '#/dash/pod-review?tab=sellers' });
         }
-      }
-      if (SA.services.tournaments) {
-        const todo = SA.services.tournaments.mine({ ownerId }).filter((t) => (['open', 'full'].includes(t.status) && isoDate(today()) > t.regDeadline && (t.format === 'knockout' ? [4, 8, 16].includes(t.teams.length) : t.teams.length >= 3)) || (t.status === 'running' && t.fixtures.some((f) => f.status !== 'played' && f.date <= isoDate(today()) && parseISO(f.date).getTime() + (f.hour + 1) * 36e5 < Date.now())));
-        if (todo.length) out.push({ key: 'tournaments', icon: 'trophy', tone: 'blaze', count: todo.length, title: `${todo.length} tournament${todo.length > 1 ? 's' : ''} need${todo.length > 1 ? '' : 's'} you`, text: 'Draw fixtures or enter today’s results.', href: todo.length === 1 ? `#/dash/tournaments/${todo[0].id}` : '#/dash/tournaments' });
       }
       const arr = dash.arrivals(ownerId).filter((b) => ['upcoming', 'in-progress'].includes(b.status) && b.startsAt - Date.now() < 2 * 36e5);
       if (arr.length) out.push({ key: 'arrivals', icon: 'qr', tone: 'turf', count: arr.length, title: `${arr.length} arrival${arr.length > 1 ? 's' : ''} in the next 2 hours`, text: 'Scan their booking QR at reception.', href: '#/dash/checkin' });

@@ -136,13 +136,13 @@ public sealed class AdminConsoleTests(DemoApiFactory api) : IClassFixture<DemoAp
         var money = await ceo.SendAsync(HttpMethod.Put, "/api/v1/admin/settings/money", new { values = new Dictionary<string, object> { ["commission.bookings"] = 0.5 } });
         money.Status.ShouldBe(HttpStatusCode.Forbidden);
         money.Body.Code().ShouldBe("money_setting");
-        (await ceo.SendAsync(HttpMethod.Put, "/api/v1/admin/settings/community", new { values = new Dictionary<string, object> { ["nope"] = 1 } })).Status.ShouldBe(HttpStatusCode.BadRequest);
+        (await ceo.SendAsync(HttpMethod.Put, "/api/v1/admin/settings/content", new { values = new Dictionary<string, object> { ["nope"] = 1 } })).Status.ShouldBe(HttpStatusCode.BadRequest);
         (await ceo.SendAsync(HttpMethod.Put, "/api/v1/admin/settings/nothing", new { values = new Dictionary<string, object> { ["x"] = 1 } })).Status.ShouldBe(HttpStatusCode.NotFound);
 
-        var rules = new { value = new[] { "Be kind", "No spam" } };
-        var saved = await ceo.SendAsync(HttpMethod.Put, "/api/v1/admin/settings/community", new { values = new Dictionary<string, object> { ["community.rules"] = rules } });
+        var bar = new { on = true, text = "Pitch week", link = "#/pitches", cta = "Book", tone = "info", until = "" };
+        var saved = await ceo.SendAsync(HttpMethod.Put, "/api/v1/admin/settings/content", new { values = new Dictionary<string, object> { ["content.announcement"] = bar } });
         saved.Status.ShouldBe(HttpStatusCode.OK, saved.Body.ToString());
-        saved.Body.Data()[0].GetProperty("value").GetProperty("value").GetArrayLength().ShouldBe(2);
+        saved.Body.Data()[0].GetProperty("value").GetProperty("text").GetString().ShouldBe("Pitch week");
     }
 
     [Fact]

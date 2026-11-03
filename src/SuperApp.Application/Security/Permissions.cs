@@ -62,7 +62,6 @@ public static class Permissions
 
         new("content.banners", "Content", "Edit banners", "تعديل البانرات"),
         new("content.popups", "Content", "Edit pop-ups", "تعديل النوافذ المنبثقة"),
-        new("content.news", "Content", "Edit news", "تعديل الأخبار"),
         new("content.help", "Content", "Edit help articles", "تعديل مقالات المساعدة"),
         new("content.legal", "Content", "Edit legal documents", "تعديل المستندات القانونية", true),
         new("content.categories", "Content", "Edit categories", "تعديل الفئات"),
@@ -70,14 +69,10 @@ public static class Permissions
         new("games.moderate", "Content", "Moderate games", "الإشراف على الماتشات"),
         new("reviews.moderate", "Content", "Moderate pitch reviews", "الإشراف على تقييمات الملاعب"),
 
-        new("community.moderate", "Community", "Moderate communities", "الإشراف على المجتمعات"),
-        new("community.manage", "Community", "Create and edit communities", "إنشاء وتعديل المجتمعات"),
-        new("community.postAsAdmin", "Community", "Post as Super App", "النشر باسم سوبر آب"),
 
         new("fantasy.manage", "Fantasy", "Run fantasy", "إدارة الفانتازي"),
         new("fantasy.groups.paid", "Fantasy", "Manage paid groups", "إدارة المجموعات المدفوعة", true),
 
-        new("tournaments.manage", "Tournaments", "Run tournaments", "إدارة البطولات"),
         new("store.official", "Official store", "Run the official store", "إدارة المتجر الرسمي"),
 
         new("analytics.read", "Analytics", "See reports", "عرض التقارير"),

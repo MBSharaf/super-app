@@ -18,27 +18,24 @@
     pitches: L('pitches', 'Book a pitch', '#/pitches', 'pitch', 'Live availability near you', /^\/(pitches|booking)/),
     players: L('players', 'Find players', '#/players', 'users', 'Join a game or fill your squad', /^\/players(?!\/new)/),
     post: L('post', 'Post a match', '#/players/new', 'plus', 'Short on players? Post your game', /^\/players\/new/),
-    tournaments: L('tournaments', 'Tournaments', '#/tournaments', 'trophy', 'Cups and leagues at pitches near you', /^\/tournaments/),
-    community: L('community', 'Communities', '#/community', 'message', 'Talk football and find free slots', /^\/community/),
     matches: L('matches', 'Matches', '#/matches', 'calendar', 'Live scores and fixtures', /^\/matches/),
-    news: L('news', 'News', '#/news', 'news', 'The latest from Egyptian football', /^\/news/),
     fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'star', 'Egyptian league fantasy and prizes', /^\/fantasy/),
     shop: L('shop', 'Shop', '#/shop', 'bag', 'Boots, kits and gear', /^\/(shop|cart|checkout|order\/)/),
     wishlist: L('wishlist', 'Wishlist', '#/wishlist', 'heart', 'Items you saved', /^\/wishlist/),
     sell: L('sell', 'Sell on Super App', '#/sell', 'shirt', 'Sell your designs', /^\/(sell|s\/)/),
   };
   const GROUPS = [
-    { key: 'play', label: 'Play', items: ['pitches', 'players', 'post', 'tournaments', 'community'] },
-    { key: 'football', label: 'Football', items: ['matches', 'news', 'fantasy'] },
+    { key: 'play', label: 'Play', items: ['pitches', 'players', 'post'] },
+    { key: 'football', label: 'Football', items: ['matches', 'fantasy'] },
     { key: 'shop', label: 'Shop', items: ['shop', 'wishlist', 'sell'] },
   ].map((g) => ({ ...g, items: g.items.map((k) => LINKS[k]) }));
   const MINE = [['#/bookings', 'ticket', 'My bookings'], ['#/my-games', 'users', 'My games'], ['#/orders', 'package', 'Orders'], ['#/wallet', 'wallet', 'Wallet'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/profile', 'user', 'Profile'], ['#/help', 'help', 'Help center'], ['#/support', 'message', 'Contact support']];
-  // Desktop header: Home · Play ▾ · Fantasy · Matches & news ▾ · Shop ▾
+  // Desktop header: Home · Play ▾ · Fantasy · Matches · Shop ▾
   const DESK = [
     { link: NAV[0] },
     { label: 'Play', items: GROUPS[0].items },
     { link: LINKS.fantasy },
-    { label: 'Matches & news', items: [LINKS.matches, LINKS.news] },
+    { link: LINKS.matches },
     { label: 'Shop', items: GROUPS[2].items },
   ];
   const liveCount = () => { try { return SA.services.schedule.listSync(SA.core.utils.isoDate(SA.core.utils.today())).filter((m) => m.status === 'live').length; } catch { return 0; } };
@@ -90,10 +87,10 @@
   const footer = () => `<div class="container">
     <div class="footer-grid">
       <div class="footer-brand">${brand}<p>Book pitches, fill your squad, play Egyptian Premier League fantasy and gear up — all from one account and one wallet.</p>${SA.ui.social.render({ variant: 'dark' })}</div>
-      <div><h4>Play</h4><a href="#/pitches">Book a pitch</a><a href="#/players">Find players</a><a href="#/tournaments">Tournaments</a><a href="#/players/new">Post a match</a><a href="#/bookings">My bookings</a></div>
+      <div><h4>Play</h4><a href="#/pitches">Book a pitch</a><a href="#/players">Find players</a><a href="#/players/new">Post a match</a><a href="#/bookings">My bookings</a></div>
       <div><h4>Fantasy</h4><a href="#/fantasy">My team</a><a href="#/fantasy/leagues">Leagues</a><a href="#/fantasy/fixtures">Fixtures</a><a href="#/fantasy/stats">Player stats</a></div>
       <div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super App</a></div>
-      <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/community">Communities</a><a href="#/help">Help center</a><a href="#/support">Contact support</a><a href="#/dash">Partner dashboard</a><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
+      <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/help">Help center</a><a href="#/support">Contact support</a><a href="#/dash">Partner dashboard</a><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
     </div>
     <div class="footer-legal"><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/refunds">Refunds & returns</a><a href="#/legal/waiver">Injury waiver</a><a href="#/legal/cookies">Cookies</a><button class="footer-link" data-cookie-settings>Cookie settings</button><a href="#/legal">All legal</a></div>
     <div class="footer-base"><span>© 2026 Super App. Cairo, Egypt.</span><span>Frontend demo: payments, bookings and fantasy scores are simulated on this device.</span></div>

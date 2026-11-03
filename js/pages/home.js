@@ -63,7 +63,6 @@
       const tonight = matches.filter((m) => m.spotsLeft > 0).length;
       const leagues = S.fantasy.officialLeagues();
       const spotlight = S.schedule.spotlight(8);
-      const newsList = await S.news.list();
       // Live activity ticker, built from real data in the app
       const people = SA.data.matches.people;
       const tickerItems = [
@@ -95,7 +94,7 @@
 
       <section class="container">
         <nav class="quick-nav reveal" aria-label="Everything in Super App">
-          ${['pitches', 'players', 'tournaments', 'community', 'matches', 'news', 'fantasy', 'shop'].filter((k) => k !== 'shop' || SA.config.storeEnabled).map((k) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item"><span class="quick-nav-ico">${icon(n.icon, 22)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${n.label}</span></a>`; }).join('')}
+          ${['pitches', 'players', 'post', 'matches', 'fantasy', 'shop'].filter((k) => k !== 'shop' || SA.config.storeEnabled).map((k) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item"><span class="quick-nav-ico">${icon(n.icon, 22)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${n.label}</span></a>`; }).join('')}
         </nav>
       </section>
 
@@ -131,10 +130,6 @@
           <div class="row">${loc?.source === 'gps' ? '' : `<button class="btn btn-outline btn-sm" data-locate>${icon('locate', 16)} Use my location</button>`}<a class="btn btn-ghost btn-sm" href="#/pitches">All pitches ${icon('arrowRight', 16)}</a></div></div>
         <div class="scroller" style="--col:clamp(260px, 30vw, 330px)">${nearby.slice(0, 6).map((p) => cards.pitch(p)).join('')}</div>
       </section>
-
-      ${(() => { const tours = SA.services.db.all('tournaments').filter((t) => ['open', 'full', 'running'].includes(t.status)).map((t) => S.tournaments.getSync(t.id)).slice(0, 3); return tours.length ? `<section class="container section-tight home-tours">
-        <div class="sec-head"><div><h2 class="h2">${icon('trophy', 26)} Cups & leagues</h2><p>Register your team for a tournament at a pitch near you — or follow the tables.</p></div><a class="btn btn-ghost btn-sm" href="#/tournaments">All tournaments ${icon('arrowRight', 16)}</a></div>
-        <div class="tour-grid">${tours.map((t, i) => SA.ui.tourCard(t, i)).join('')}</div></section>` : ''; })()}
 
       <section class="section players-band" style="position:relative;overflow:hidden">
         <span class="watermark" data-parallax="-0.4" aria-hidden="true" style="top:10px;left:-4%">Missing players? Missing players?</span>
@@ -176,11 +171,6 @@
                 <span>${SA.ui.sports.crest(m.awayT, 40)}<b>${esc(m.awayT.short)}</b></span></span>
               <span class="hm-names xs">${esc(m.homeT.name)} vs ${esc(m.awayT.name)}</span></a>`).join('')}</div>
         </div>
-      </section>
-
-      <section class="container section">
-        <div class="sec-head"><div><h2 class="h2">Football news</h2><p>The latest on Al Ahly, Zamalek, the Pharaohs and the whole Egyptian game.</p></div><a class="btn btn-ghost btn-sm" href="#/news">All news ${icon('arrowRight', 16)}</a></div>
-        <div class="home-news">${SA.ui.sports.newsCard(newsList[0], { size: 'lg' })}<div class="home-news-side">${newsList.slice(1, 4).map((s) => SA.ui.sports.newsCard(s, { size: 'sm' })).join('')}</div></div>
       </section>
 
       <section class="container section-tight">
@@ -242,7 +232,6 @@
         { sel: '.match-grid', x: 0.5 },
         { sel: '.fantasy-band', x: 0.3 },
         { sel: '.home-matches', x: 0.72 },
-        { sel: '.home-news', x: 0.2 },
         { sel: '.promo-grid', x: 0.76 },
         { sel: '.product-grid', x: 0.16 },
         { sel: '.stats-strip', x: 0.82 },

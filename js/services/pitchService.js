@@ -72,8 +72,6 @@
     const ahead = (d - today().getTime()) / 864e5;
     if (ahead > 0) busy *= Math.max(0.12, 1 - ahead / 9);
     if (!(r < busy)) return false;
-    // Hours a tournament reserved were never open to other customers
-    if (db.all('closures').some((c) => c.tournamentId && c.pitchId === p.id && dateISO >= c.from && dateISO <= c.to && (!c.hours || c.hours.includes(h)))) return false;
     return raw || db.raw().bookingOverrides[`SB-${p.id}-${dateISO}-${h}`]?.status !== 'cancelled';
   };
 

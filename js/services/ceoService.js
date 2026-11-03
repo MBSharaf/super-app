@@ -35,7 +35,6 @@
     ['payouts', 'Withdrawals', 'Partners and sellers asking for money, and sending it', 'wallet'],
     ['applications', 'New applications', 'New pitch partners and sellers', 'users'],
     ['fantasy', 'Fantasy', 'Saving teams and joining leagues', 'trophy'],
-    ['community', 'Community posting', 'New posts and comments', 'message'],
     ['games', 'Joining games', 'Players asking to join free-slot games', 'ball'],
   ];
   const agentAcc = (roleId) => `acc-ag-${roleId}`;
@@ -348,7 +347,7 @@
     return SWITCHES.map(([key, label, text, ic]) => ({ key, label, text, icon: ic, on: key === 'bookings' ? !m.bookings : key === 'shop' ? !m.shop : s[key]?.on !== false, reason: key === 'bookings' || key === 'shop' ? m.message || '' : s[key]?.reason || '', at: s[key]?.at || m.at || 0 }));
   };
   const isOn = (key) => { try { if (key === 'bookings' || key === 'shop') return !(db().settings().maintenance || {})[key]; return cfg().switches?.[key]?.on !== false; } catch { return true; } };
-  const OFF_MSG = { pod: 'Printed designs are paused right now.', payouts: 'Withdrawals are paused right now. Your balance is safe — try again later.', applications: 'New applications are paused right now. Please try again soon.', fantasy: 'Fantasy is paused for a short while. Please try again soon.', community: 'Posting is paused for a short while.', games: 'Joining games is paused right now.' };
+  const OFF_MSG = { pod: 'Printed designs are paused right now.', payouts: 'Withdrawals are paused right now. Your balance is safe — try again later.', applications: 'New applications are paused right now. Please try again soon.', fantasy: 'Fantasy is paused for a short while. Please try again soon.', games: 'Joining games is paused right now.' };
   const assertOn = (key) => { if (!isOn(key)) throw new ApiError(OFF_MSG[key] || 'This is paused right now.', 'paused'); };
   const setSwitch = (key, on, reason = '') => {
     me();
@@ -408,7 +407,7 @@
     const over = (dept) => { const b = B.find((x) => x.dept === dept); return b && b.spent > b.budget ? 1 : 0; };
     const issues = {
       ops: [[fa.late, `${fa.late} late factory job(s)`, 12], [fa.issues, `${fa.issues} production problem(s)`, 10], [cnt('stock'), 'Store products low on stock', 4]],
-      support: [[K.ticketsOpen, `${K.ticketsOpen} open ticket(s)`, 4], [cnt('reviews'), 'Reported reviews waiting', 4], [cnt('community'), 'Community reports waiting', 4]],
+      support: [[K.ticketsOpen, `${K.ticketsOpen} open ticket(s)`, 4], [cnt('reviews'), 'Reported reviews waiting', 4]],
       bizdev: [[cnt('approvals'), `${cnt('approvals')} application(s) waiting`, 5], [cnt('kyc'), 'Seller ID checks waiting', 5]],
       finance: [[K.payoutsWaiting, `${K.payoutsWaiting} withdrawal(s) waiting`, 4], [K.approvals, `${K.approvals} approval(s) waiting for you`, 6], [K.cost > K.income * 0.2 ? 1 : 0, 'Costs over 20% of income', 15]],
       legal: [[late('legal'), 'Overdue legal deadline(s)', 20], [cnt('designs'), 'Copyright reviews waiting', 3]],

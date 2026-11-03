@@ -14,7 +14,6 @@
     { key: 'bookings', label: 'Bookings', href: '#/dash/bookings', icon: 'ticket' },
     { key: 'teams', label: 'Teams & memberships', href: '#/dash/teams', icon: 'repeat' },
     { key: 'reviews', label: 'Reviews', href: '#/dash/reviews', icon: 'star', badge: 'reviews' },
-    { key: 'tournaments', label: 'Tournaments', href: '#/dash/tournaments', icon: 'trophy', badge: 'tournaments' },
     { group: 'Money' },
     { key: 'finance', label: 'Finance', href: '#/dash/finance', icon: 'percent' },
     { key: 'wallet', label: 'Wallet', href: '#/dash/wallet', icon: 'wallet' },
@@ -37,7 +36,7 @@
   const A = () => SA.pages.adminCommon;
   /** Pages shared with the admin console keep working there: their dashboard links point to the admin routes */
   const ADMIN_LINKS = [['#/dash/notifications', '#/admin/notifications'], ['#/dash/pod-review', '#/admin/designs'], ['#/dash/pod-catalog', '#/admin/catalog'],
-    ['#/dash/settings', '#/admin/settings'], ['#/dash/partners', '#/admin/partners'], ['#/dash/reviews', '#/admin/reviews'], ['#/dash/activity', '#/admin/audit'], ['#/dash/store', '#/admin/store'], ['#/dash/orders', '#/admin/store-orders'], ['#/dash/tournaments', '#/admin/tournaments']];
+    ['#/dash/settings', '#/admin/settings'], ['#/dash/partners', '#/admin/partners'], ['#/dash/reviews', '#/admin/reviews'], ['#/dash/activity', '#/admin/audit'], ['#/dash/store', '#/admin/store'], ['#/dash/orders', '#/admin/store-orders']];
   const adminLinks = (html) => ADMIN_LINKS.reduce((h, [a, b]) => h.split(a).join(b), html);
   const ROLE_LABEL = { admin: ['badge-blaze', 'Admin'], owner: ['badge-turf', 'Owner'], printer: ['badge-gold', 'Print partner'], seller: ['badge-turf', 'Seller'] };
   /** Navigation per role; pages outside it send the user to the role's home page */
@@ -132,7 +131,6 @@
   const ADMIN_HELP = {
     store: 'Super App’s own official store — products Super App buys and sells itself (not a seller’s). You have full control: add and edit products, prices, stock, photos and sales, and handle every order.',
     orders: 'Orders from Super App’s official store. Mark them packed and shipped, print the packing slip, or cancel and refund.',
-    tournaments: 'Every tournament pitch partners run on Super App. You have the same powers as the organiser: teams and registrations, the schedule, scores and tables — and you can cancel a tournament, which refunds every team.',
     'pod-catalog': 'The blank products sellers can print their designs on (tee, oversized tee, hoodie, cap). For each one you set the colours, sizes, the lowest shop price, the factory’s price and the extra for a back print. Pause a product and its designs leave the shop.',
   };
   const layout = (active, { title, subtitle = '', actions = '', body }) => {
@@ -420,7 +418,7 @@
           <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
           <span class="badge badge-turf">${icon('pitch', 13)} Pitch partners</span>
           <h1 class="display dl-title">Run your pitches. Fill every hour. Get paid.</h1>
-          <p class="lead">Bookings, availability, check-in, tournaments, free slots and your money — in one place.</p>
+          <p class="lead">Bookings, availability, check-in, free slots and your money — in one place.</p>
           <h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
           <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>

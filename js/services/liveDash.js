@@ -3,13 +3,13 @@
  *
  * In API mode, for the signed-in venue (the live partner account): the reviews page lists `/partner/reviews`
  * and replies, removes replies and reports through the server; "Free slots" posts each hour to
- * `/partner/free-slots` (with its discount) instead of the demo community feed. The same service methods
+ * `/partner/free-slots` (with its discount) instead of the demo slot list. The same service methods
  * answer, from a small cache filled on first read; the page re-renders when the server answers.
  */
 (function (SA) {
   const api = SA.services.api;
   const D = SA.services.dash;
-  const C = SA.services.community;
+  const C = SA.services.games;
   const { ApiError } = SA.services.http;
   const demo = { reviews: D.reviews, review: D.review, replyReview: D.replyReview, deleteReply: D.deleteReply, reportReview: D.reportReview, createPromo: D.createPromo, postSlot: C?.postSlot };
 

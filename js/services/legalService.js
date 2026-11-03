@@ -15,14 +15,14 @@
   const legal = {
     docs: () => SA.data.legal.DOCS.map((d) => ({ ...d, review: reviews()[d.key] || null, accepted: (db().all('legalAccepts') || []).filter((x) => x.doc === d.key).length })),
     doc: (key) => { const d = legal.docs().find((x) => x.key === key); if (!d) throw new ApiError('Document not found.', 'not_found'); return d; },
-    /** Record that someone accepted documents (booking, joining a game, a tournament, applying to sell or partner, cookies) */
+    /** Record that someone accepted documents (booking, joining a game, applying to sell or partner, cookies) */
     accept(keys, { where = '', person = who() } = {}) {
       ensure();
       [].concat(keys).forEach((k) => { const d = SA.data.legal.DOCS.find((x) => x.key === k); if (d) db().raw().legalAccepts.unshift({ id: db().uid('la'), doc: k, version: d.version, who: person, where, at: Date.now() }); });
       db().raw().legalAccepts = db().raw().legalAccepts.slice(0, 3000);
       db().touch('legalAccepts');
     },
-    /** Services call this before a booking, a game request or a tournament entry */
+    /** Services call this before a booking or a game request */
     requireWaiver(flag, where) {
       if (!flag) throw new ApiError('Please accept the injury & conduct waiver.', 'invalid', { waiver: 'Please accept the injury & conduct waiver.' });
       legal.accept(['waiver', 'terms'], { where });

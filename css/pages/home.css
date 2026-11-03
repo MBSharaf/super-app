@@ -162,7 +162,7 @@
 .pitch3d-anchor { position: absolute; left: 50%; top: 50%; width: 2px; height: 2px; transform: translateZ(0); }
 
 /* Shortcuts to every section, under the hero */
-.quick-nav { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+.quick-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 10px; margin-bottom: 18px; }
 .quick-nav-item { display: grid; justify-items: center; gap: 8px; padding: 14px 6px; border-radius: var(--r-lg, 16px); background: var(--surface); border: 1px solid var(--line); font-size: var(--fs-sm); font-weight: 650; text-align: center; transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast); }
 .quick-nav-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-1); border-color: transparent; }
 .quick-nav-ico { position: relative; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--surface-3); color: var(--ink); }

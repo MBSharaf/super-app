@@ -1,5 +1,5 @@
 /**
- * Legal pages (#/legal, #/legal/:key), the consent checkbox used on booking / game / tournament forms, and the cookie
+ * Legal pages (#/legal, #/legal/:key), the consent checkbox used on booking and game forms, and the cookie
  * banner. Document text is shown in the reader's language straight from js/data/legal.js (not the runtime translator).
  */
 (function (SA) {

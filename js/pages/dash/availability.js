@@ -86,8 +86,7 @@
           available: `<span class="av-price num">${money(s.price)}</span><span class="av-actions"><button class="btn btn-sm btn-outline" data-block="${s.hour}">${icon('lock', 13)} Block</button><button class="btn btn-sm btn-primary" data-walkin="${s.hour}">${icon('plus', 13)} Walk-in</button></span>`,
           booked: b ? `<span class="av-who"><b class="truncate">${esc(b.customer.name)}</b><span class="xs">${esc(b.sourceLabel)} · ${b.payment} · ${money(b.amount)}</span></span>${wlTag}${C.statusBadge(b.status)}` : `<span class="xs">Booked</span>${wlTag}`,
           yours: b ? `<span class="av-who"><b class="truncate">${esc(b.customer.name)}</b><span class="xs">App · ${b.payment} · ${money(b.amount)}</span></span>${C.statusBadge(b.status)}` : '<span class="xs">Booked</span>',
-          blocked: cl?.tournamentId ? `<span class="av-who"><b>${icon('trophy', 13)} Tournament</b><span class="xs truncate">${esc((cl.reason || '').replace('Tournament: ', ''))}</span></span>${wlTag}<a class="btn btn-sm btn-outline" href="#/dash/tournaments/${cl.tournamentId}">Open</a>`
-            : `<span class="av-who"><b>Blocked</b><span class="xs truncate">${esc(cl?.reason || '')}</span></span>${wlTag}<button class="btn btn-sm btn-outline" data-unblock="${cl?.id || ''}">Unblock</button>`,
+          blocked: `<span class="av-who"><b>Blocked</b><span class="xs truncate">${esc(cl?.reason || '')}</span></span>${wlTag}<button class="btn btn-sm btn-outline" data-unblock="${cl?.id || ''}">Unblock</button>`,
           closed: '<span class="xs">Pitch closed</span>',
           past: '<span class="xs">Passed</span>',
         }[s.status];

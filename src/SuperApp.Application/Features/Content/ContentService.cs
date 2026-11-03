@@ -83,14 +83,13 @@ public sealed class ContentService(
         await unitOfWork.SaveChangesAsync(ct);
     }
 
-    /// <summary>Public pages, live pitches, news posts and communities; private systems are left out.</summary>
+    /// <summary>Public pages and live pitches; private systems are left out.</summary>
     public async Task<string> SitemapAsync(CancellationToken ct)
     {
-        var (pitches, news, communities) = await content.SitemapAsync(clock.UtcNow, ct);
+        var pitches = await content.SitemapAsync(clock.UtcNow, ct);
         var root = BaseUrl();
-        string[] pages = ["", "pitches", "players", "fantasy", "matches", "news", "shop", "communities", "tournaments", "help", "legal"];
-        var urls = pages.Select(p => $"{root}#/{p}").Concat(pitches.Select(s => $"{root}#/pitches/p-{s}")).Concat(news.Select(n => $"{root}#/news/{n}"))
-            .Concat(communities.Select(c => $"{root}#/communities/{c}"));
+        string[] pages = ["", "pitches", "players", "fantasy", "matches", "shop", "help", "legal"];
+        var urls = pages.Select(p => $"{root}#/{p}").Concat(pitches.Select(s => $"{root}#/pitches/p-{s}"));
         var xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
         foreach (var url in urls)
         {

@@ -51,7 +51,7 @@
 
   // Any change that can free an hour triggers a re-check
   const run = debounce(() => { try { waitlist.check(); } catch (err) { console.warn('waitlist check', err); } }, 150);
-  db.subscribe((col) => { if (['bookings', 'closures', 'pitches', 'series', 'tournaments', '*'].includes(col)) run(); });
+  db.subscribe((col) => { if (['bookings', 'closures', 'pitches', 'series', '*'].includes(col)) run(); });
 
   SA.services.waitlist = waitlist;
 })(window.SA);

@@ -18,7 +18,6 @@ public static class KillSwitches
     public const string Payouts = "kill.payouts";
     public const string Applications = "kill.applications";
     public const string Fantasy = "kill.fantasy";
-    public const string Community = "kill.community";
     public const string Games = "kill.games";
     public const string Agents = "kill.agents";
 }

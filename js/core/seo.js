@@ -1,6 +1,6 @@
 /**
  * SEO: after every page, update the description, the canonical URL, Open Graph / Twitter tags (for link previews on
- * WhatsApp, Facebook and X) and structured data (JSON-LD) for pitches, products, tournaments and the organisation.
+ * WhatsApp, Facebook and X) and structured data (JSON-LD) for pitches, products and the organisation.
  * Private pages (dashboards, the admin console, the factory, the CEO system, cart and account) are marked noindex.
  * Link previews and search engines read the static tags in index.html; these runtime tags help Google, which runs JS.
  * A server-rendered or pre-rendered version comes with the backend for the best results.
@@ -16,13 +16,10 @@
     '/players': 'Need players for tonight? Join football games near you or post yours and fill the squad in minutes.',
     '/players/new': 'Post your football game and find the players you need.',
     '/matches': 'Today’s football: Egyptian Premier League, CAF, Premier League and more — fixtures, live scores and results.',
-    '/news': 'Egyptian and world football news, transfers and match reports.',
-    '/tournaments': 'Join 5-a-side tournaments and leagues near you — prizes, fixtures and tables.',
     '/fantasy': 'Play Egyptian Premier League fantasy: pick your squad, join leagues and win prizes.',
     '/shop': 'Football boots, jerseys, balls and original printed designs from Egyptian creators — delivered across Egypt.',
     '/sell': 'Sell your football designs on Super App: we print, ship and pay you — or list your own products.',
     '/partner/apply': 'List your football pitch on Super App: online bookings, payments and a free partner dashboard.',
-    '/community': 'Football communities: players, fantasy managers, creators and venues talking football.',
     '/help': 'Answers about bookings, payments, delivery, returns, fantasy and selling on Super App.',
     '/legal': 'Super App terms, privacy policy, refunds and returns, and agreements.',
   };
@@ -60,18 +57,8 @@
             offers: { '@type': 'Offer', priceCurrency: 'EGP', price: p.price, availability: (p.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', url: `${SITE}/shop/${p.id}` },
             ...(p.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.reviewCount || p.reviews || 1 } } : {}) } };
       }
-      if (a === 'tournaments' && b) {
-        const t = S.tournaments.getSync(b); if (!t) return {};
-        return { desc: clip(`${t.name}: ${t.format || ''} tournament${t.fee ? `, entry ${t.fee} EGP` : ''}. Register your team on Super App.`),
-          ld: { '@context': 'https://schema.org', '@type': 'SportsEvent', name: t.name, sport: 'Football', url: `${SITE}/tournaments/${t.id}`, ...(t.startDate ? { startDate: t.startDate } : {}) } };
-      }
-      if (a === 'news' && b) {
-        const n = (SA.data.news?.stories || []).find?.((x) => x.id === b);
-        return n ? { desc: clip(n.summary || n.title), ld: { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: n.title, url: `${SITE}/news/${n.id}` } } : {};
-      }
       if (a === 's' && b) { const s = S.sellers?.byHandle?.(b); return s ? { desc: clip(`${s.name} on Super App — ${s.bio || 'original football designs, printed and delivered across Egypt.'}`) } : {}; }
       if (a === 'legal' && b) { const d = SA.data.legal.DOCS.find((x) => x.key === b); return d ? { desc: clip(d.summary.en) } : {}; }
-      if (a === 'community' && b) { const c = (S.db.all('communities') || []).find((x) => x.slug === b); return c ? { desc: clip(c.about || c.name) } : {}; }
     } catch (e) { console.warn('seo', e); }
     return {};
   };

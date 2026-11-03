@@ -1,4 +1,4 @@
-/** Admin console: site content — home banners, the announcement bar, pop-up ads, news, and pickup-game moderation. */
+/** Admin console: site content — home banners, the announcement bar, pop-up ads and pickup-game moderation. */
 (function (SA) {
   const { esc, fmtDate, fmtHour, timeAgo, isoDate, addDays, today } = SA.core.utils;
   const { icon } = SA.ui;
@@ -41,22 +41,6 @@
       m.querySelector('[data-banner]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveBanner({ ...SA.core.utils.formData(e.target), active: b ? b.active : true }, b?.id); close(); toast('Banner saved'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } });
     },
   });
-  const newsDialog = (n = null) => SA.ui.overlay.open({
-    wide: true, title: n ? 'Edit story' : 'Write a story', subtitle: 'Published as “Super App” in the news section. Leave an empty line between paragraphs.',
-    body: `<form class="form-grid" data-news novalidate>
-      <div class="field span-2"><label for="nw-t">Headline</label><input class="input" id="nw-t" name="title" maxlength="110" value="${esc(n?.title || '')}" /><p class="field-error" data-err="title"></p></div>
-      <div class="field"><label for="nw-c">Category</label><select class="select" id="nw-c" name="cat">${SA.data.news.categories.map((c) => `<option value="${c.id}" ${n?.cat === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select><p class="field-error" data-err="cat"></p></div>
-      <label class="choice" style="align-self:end"><input type="checkbox" name="breaking" ${n?.breaking ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Breaking</b></span></label>
-      <div class="field span-2"><label for="nw-x">Summary</label><textarea class="input" id="nw-x" name="excerpt" rows="2" maxlength="260">${esc(n?.excerpt || '')}</textarea><p class="field-error" data-err="excerpt"></p></div>
-      <div class="field span-2"><label for="nw-b">Story</label><textarea class="input" id="nw-b" name="body" rows="8">${esc((n?.body || []).join('\n\n'))}</textarea><p class="field-error" data-err="body"></p></div>
-      <div class="field span-2"><span class="field-label">Photo</span>${picker('img', n?.img || '')}</div>
-      <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${n ? 'Save story' : 'Publish'}</button></div></form>`,
-    onMount(m, close) {
-      bindPicker(m);
-      m.querySelector('[data-news]').addEventListener('submit', (e) => { e.preventDefault(); try { const out = AD().saveNews(SA.core.utils.formData(e.target), n?.id); close(); toast(n ? 'Story saved' : 'Story published', 'success'); SA.app.rerender(); void out; } catch (err) { C.showErrors(e.target, err.details || {}); } });
-    },
-  });
-
   /** Pop-up ad editor: what it says, where it goes, its colour and its 3D object */
   const popupDialog = (p = null) => SA.ui.overlay.open({
     wide: true, title: p ? 'Edit pop-up' : 'New pop-up', subtitle: 'A small card with a 3D object that slides in on the public site. Visitors can close it or turn offers off.',
@@ -113,14 +97,6 @@
             <ul class="adm-banners" style="margin-top:12px">${cfg.items.map((p) => { const s2 = stats[p.id] || { shown: 0, clicked: 0 }; return `<li class="${p.active ? '' : 'is-off'}"><span class="adm-pp-dot" style="background:${esc(p.color)}">${icon(p.shape === 'coin' ? 'percent' : p.shape === 'tee' ? 'shirt' : (p.icons || [])[0] || 'sparkle', 18)}</span>
               <span class="grow"><b class="small">${esc(p.title)}</b><span class="xs muted" style="display:block">${esc(p.text)}</span><span class="xs muted" style="display:block"><span>${SH[p.shape] || 'Cube'}</span> · <span translate="no">${esc(p.link)}</span> · <span>shown ${s2.shown} · clicked ${s2.clicked}${s2.shown ? ` (${Math.round((s2.clicked / s2.shown) * 100)}%)` : ''}</span></span></span>
               <span class="adm-row-tools"><button class="btn btn-ghost btn-sm" data-preview-popup="${p.id}">Preview</button><button class="btn btn-ghost btn-sm" data-toggle-popup="${p.id}">${p.active ? 'Pause' : 'Turn on'}</button><button class="icon-btn" data-edit-popup="${p.id}" aria-label="Edit">${icon('edit', 15)}</button><button class="icon-btn" data-del-popup="${p.id}" aria-label="Delete">${icon('trash', 15)}</button></span></li>`; }).join('')}</ul></section>`;
-      } else if (tab === 'news') {
-        const all = CT().allStories();
-        section = `<section class="dash-card table-card"><div class="row-between" style="padding:18px 18px 0"><div><h2 class="h4">News</h2><p class="xs muted" style="margin-top:4px">Your stories plus the news feed. Hide anything that shouldn’t be on Super App.</p></div><button class="btn btn-primary btn-sm" data-new-news>${icon('edit', 14)} Write a story</button></div>
-          <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Story</th><th>Source</th><th>Published</th><th>Status</th><th></th></tr></thead><tbody>
-          ${all.slice(0, 60).map((s) => `<tr class="${s.hidden ? 'is-dim' : ''}"><td class="small"><b>${esc(s.title)}</b><span class="xs muted" style="display:block">${esc(SA.data.news.categories.find((c) => c.id === s.cat)?.name || '')}</span></td><td>${s.own ? '<span class="badge badge-blaze">Super App</span>' : `<span class="badge">${esc(s.type)}</span>`}</td><td class="xs">${timeAgo(s.at)}</td>
-            <td>${s.hidden ? '<span class="badge badge-danger">Hidden</span>' : s.breaking ? '<span class="badge badge-blaze">Breaking</span>' : '<span class="badge badge-turf">Live</span>'}</td>
-            <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="#/news/${s.id}" target="_blank" rel="noopener">View</a>${s.own ? `<button class="btn btn-ghost btn-sm" data-edit-news="${s.id}">Edit</button>` : ''}<button class="btn btn-ghost btn-sm" data-break="${s.id}" data-on="${s.breaking ? '' : '1'}">${s.breaking ? 'Not breaking' : 'Breaking'}</button><button class="btn btn-ghost btn-sm" data-hide-news="${s.id}" data-on="${s.hidden ? '' : '1'}">${s.hidden ? 'Show' : 'Hide'}</button>${s.own ? `<button class="icon-btn" data-del-news="${s.id}" aria-label="Delete">${icon('trash', 15)}</button>` : ''}</div></td></tr>`).join('')}
-          </tbody></table></div></section>`;
       } else if (tab === 'categories') {
         const cats = SA.data.products.categories;
         const count = (id) => db().all('products').filter((p) => p.cat === id && !p.deleted).length;
@@ -146,8 +122,8 @@
             <td>${hidden[m.id] ? `<span class="badge badge-danger" title="${esc(hidden[m.id].reason || '')}">Hidden</span>` : '<span class="badge badge-turf">Live</span>'}</td><td class="r"><button class="btn btn-ghost btn-sm" data-hide-match="${m.id}" data-on="${hidden[m.id] ? '' : '1'}">${hidden[m.id] ? 'Restore' : 'Hide'}</button></td></tr>`).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">No upcoming games.</td></tr>'}
           </tbody></table></div></section>`;
       }
-      const body = `${A.tabs('/admin/content', [['', 'Home banners'], ['announce', 'Announcement bar'], ['popups', 'Pop-ups'], ['news', 'News'], ['games', 'Pickup games'], ['categories', 'Shop categories']], tab)}${section}`;
-      return C.layout('content', { title: 'Site content', subtitle: 'What visitors see: home banners, the announcement bar, pop-ups, news and pickup games', actions: '<a class="btn btn-ghost btn-sm" href="#/" target="_blank" rel="noopener">Open the site ' + icon('arrowUpRight', 14) + '</a>', body });
+      const body = `${A.tabs('/admin/content', [['', 'Home banners'], ['announce', 'Announcement bar'], ['popups', 'Pop-ups'], ['games', 'Pickup games'], ['categories', 'Shop categories']], tab)}${section}`;
+      return C.layout('content', { title: 'Site content', subtitle: 'What visitors see: home banners, the announcement bar, pop-ups and pickup games', actions: '<a class="btn btn-ghost btn-sm" href="#/" target="_blank" rel="noopener">Open the site ' + icon('arrowUpRight', 14) + '</a>', body });
     },
     mount(el) {
       el.querySelector('[data-popup-rhythm]')?.addEventListener('submit', (e) => { e.preventDefault(); try { AD().setPopupRhythm(SA.core.utils.formData(e.target)); toast('Pop-up settings saved'); SA.app.rerender(); } catch (err) { toast(err.message, 'error'); } });
@@ -171,11 +147,6 @@
         if (t('[data-toggle-banner]')) { AD().toggleBanner(t('[data-toggle-banner]').dataset.toggleBanner); SA.app.rerender(); return; }
         if (t('[data-move]')) { AD().moveBanner(t('[data-move]').dataset.move, +t('[data-move]').dataset.dir); SA.app.rerender(); return; }
         if (t('[data-del-banner]')) { if (!(await SA.ui.overlay.confirm({ title: 'Delete this banner?', text: 'It disappears from the home page.', confirmLabel: 'Delete', danger: true }))) return; AD().deleteBanner(t('[data-del-banner]').dataset.delBanner); toast('Banner deleted', 'info'); SA.app.rerender(); return; }
-        if (t('[data-new-news]')) return newsDialog();
-        if (t('[data-edit-news]')) return newsDialog(db().find('newsPosts', t('[data-edit-news]').dataset.editNews));
-        if (t('[data-del-news]')) { if (!(await SA.ui.overlay.confirm({ title: 'Delete this story?', text: 'It disappears from the news section.', confirmLabel: 'Delete', danger: true }))) return; AD().deleteNews(t('[data-del-news]').dataset.delNews); toast('Story deleted', 'info'); SA.app.rerender(); return; }
-        if (t('[data-break]')) { AD().flagNews(t('[data-break]').dataset.break, { breaking: !!t('[data-break]').dataset.on }); SA.app.rerender(); return; }
-        if (t('[data-hide-news]')) { AD().flagNews(t('[data-hide-news]').dataset.hideNews, { hidden: !!t('[data-hide-news]').dataset.on }); toast(t('[data-hide-news]').dataset.on ? 'Story hidden' : 'Story is back', 'info'); SA.app.rerender(); return; }
         const hm = t('[data-hide-match]');
         if (hm) {
           let reason = '';

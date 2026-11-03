@@ -53,7 +53,6 @@
             <h2 class="h3 sub-title">Facilities</h2>
             <ul class="facility-grid">${p.facilities.map((f) => `<li>${icon(c.facilityIcon(f), 20)}<span>${F[f]}</span></li>`).join('')}</ul>
 
-            ${S.tournaments.forPitch(p.id).map((t) => `<a class="tour-strip" href="#/tournaments/${t.id}">${icon('trophy', 20)}<span class="grow"><b>${esc(t.name)}</b><span class="small soft" style="display:block">${t.regOpen ? `Registration open · ${t.spotsLeft} spot${t.spotsLeft === 1 ? '' : 's'} left · ${money(t.fee)} per team` : t.status === 'running' ? `In progress · next match ${t.next ? fmtDate(t.next.date) : 'soon'}` : 'Full'}</span></span>${icon('chevronRight', 18)}</a>`).join('')}
             <h2 class="h3 sub-title">Cancellation policy</h2>
             ${policyBlock(S.pitches.policyOf(p.cancelPolicy))}
 
