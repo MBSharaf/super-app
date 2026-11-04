@@ -52,6 +52,8 @@
     code: b.id, status: b.status, date: b.date, startTime: hh(b.hour), duration: b.duration, endTime: hh(b.hour + b.duration), players: b.players,
     listPrice: b.listPrice, discountPercent: b.discount || 0, discountAmount: b.discountAmount || 0, promoCode: b.promo?.code || null, promoAmount: b.promo?.amount || 0,
     pitchTotal: b.pitchTotal, serviceFee: b.serviceFee, total: b.total, currency: 'EGP', payment: b.payment, createdAt: iso(b.createdAt),
+    // Deposit rule: only the deposit is paid online, the rest at the pitch (QR check-in)
+    depositPaid: b.deposit ?? null, payAtPitch: b.payAtPitch ?? null, perPlayer: b.perPlayer ?? null, cancelPolicy: b.policy || null,
     packageId: b.seriesId || null, sessionNo: b.sessionNo || null, sessions: b.seriesSize || null,
   });
 
