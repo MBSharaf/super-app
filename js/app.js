@@ -271,7 +271,7 @@
     });
     SA.ui.photoMock.load();
   }
-  SA.ui.whatsapp.init();
+  SA.ui.chatbot.init();
   SA.ui.promoPop?.init();
   SA.ui.pointsPop?.init();
   router.onChange((m) => render(m));
