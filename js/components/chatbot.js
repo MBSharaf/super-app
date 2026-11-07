@@ -60,6 +60,32 @@
     return reply ? esc(String(reply)).replace(/\n/g, '<br>') : null;
   };
 
+  /* ---------- Cancellation requests (js/services/cancellationService.js) speak through the chat ---------- */
+  let ui = null;
+  const cxText = (rec, phase) => {
+    const code = `<b class="num">${esc(rec.id)}</b>`;
+    const what = `${esc(rec.label)}`;
+    const link = `<a href="#${esc(rec.link)}">${L('Open it', 'افتحه')}</a>`;
+    const money = (n) => `${Math.round(n || 0).toLocaleString()} ${L('EGP', 'جنيه')}`;
+    if (phase === 'sent') {
+      return L(`Your cancellation request ${code} was sent to the Super App team for: ${what}. We’ll reply within 2 hours, here and in your notifications. Until then it stays active. ${link}`,
+        `طلب الإلغاء رقم ${code} اتبعت لفريق Super App عشان: ${what}. هنرد عليك في خلال ساعتين، هنا وفي الإشعارات. لحد ما نرد هيفضل شغال زي ما هو. ${link}`);
+    }
+    if (phase === 'approved') {
+      return L(`Good news: cancellation ${code} was approved. ${what} is cancelled.${rec.refunded ? ` ${money(rec.refunded)} is back in your wallet.` : ''}${rec.note ? ` ${esc(rec.note)}` : ''} ${link}`,
+        `طلب الإلغاء ${code} اتوافق عليه. ${what} اتلغى.${rec.refunded ? ` رجعلك ${money(rec.refunded)} في المحفظة.` : ''}${rec.note ? ` ${esc(rec.note)}` : ''} ${link}`);
+    }
+    return L(`Cancellation ${code} wasn’t approved: ${esc(rec.note || '')} ${what} stays active. ${link}`,
+      `طلب الإلغاء ${code} متوافقش عليه: ${esc(rec.note || '')} ${what} هيفضل شغال. ${link}`);
+  };
+  const cancellation = (rec, phase) => {
+    const html = cxText(rec, phase);
+    if (ui) { ui.push('bot', html); if (phase === 'sent') setTimeout(() => ui.open(true), 80); return; }
+    const st = load() || { id: sessionId(), msgs: [] };
+    st.msgs = [...st.msgs, { from: 'bot', html, at: Date.now() }].slice(-60);
+    save(st);
+  };
+
   const init = () => {
     const cfg = SA.config.chatbot || {};
     const state = load() || { id: sessionId(), msgs: [] };
@@ -137,7 +163,8 @@
     log.addEventListener('click', (e) => { if (e.target.closest('a[href^="#/"]')) open(false); });
 
     SA.core.router.onChange(() => open(false));
+    ui = { push, open };
   };
 
-  SA.ui.chatbot = { init };
+  SA.ui.chatbot = { init, cancellation, open: () => ui?.open(true) };
 })(window.SA);

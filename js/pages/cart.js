@@ -178,7 +178,7 @@
           <div class="ticket-body">
             <div class="row-between wrap"><div><span class="xs muted">Order number</span><b class="ticket-id num">${o.id}</b></div><div style="text-align:right"><span class="xs muted">Estimated delivery</span><b style="display:block">${fmtDate(o.eta, 'long')}</b></div></div>
             ${o.awaitingPayment ? `<div class="notice" style="margin-top:16px">${icon('clock', 18)}<span><b>Waiting for your payment.</b> Pay within 15 minutes to keep the items — after that the order is called off.</span></div>`
-              : o.status === 'cancelled' ? `<div class="notice blaze" style="margin-top:16px">${icon('x', 18)}<span><b>${o.live ? 'This order was cancelled.' : 'This order was cancelled by the seller.'}</b> ${o.payment.method !== 'cod' && (!o.live || o.paid) ? `${money(o.live ? o.total : o.cancelledValue)} went back to your wallet.` : 'Nothing was charged.'}</span></div>`
+              : o.status === 'cancelled' ? `<div class="notice blaze" style="margin-top:16px">${icon('x', 18)}<span><b>${o.live ? 'This order was cancelled.' : o.cancelledAt ? 'This order was cancelled at your request.' : 'This order was cancelled by the seller.'}</b> ${o.payment.method !== 'cod' && (!o.live || o.paid) ? `${money(o.live ? o.total : o.cancelledValue)} went back to your wallet.` : 'Nothing was charged.'}</span></div>`
               : `<ol class="track">${STAGES.map(([k, l, ic], i) => `<li class="${i <= stage ? 'is-done' : ''} ${i === stage ? 'is-current' : ''}"><span>${icon(ic, 16, 2.2)}</span><b class="xs">${l}</b></li>`).join('')}</ol>`}
           </div>
           ${multi ? `<div class="ticket-body seller-track">${o.sellers.map((g) => `<div class="st-row">
@@ -197,12 +197,18 @@
           </div>
         </article>
         ${SA.ui.returns?.orderBlock(o) || ''}
-        <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button><a class="btn btn-outline" href="#/orders">Order history</a><a class="btn btn-ghost" href="#/support?ref=order:${encodeURIComponent(o.id)}">${icon('help', 16)} Get help</a></div>
+        ${SA.ui.cancelRequest.notice('order', o.id)}
+        <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button>${!o.live && !o.awaitingPayment && ['confirmed', 'packed'].includes(o.status) && !S.cancellations.openFor('order', o.id) ? '<button class="btn btn-ghost" data-cancel-order style="color:var(--danger)">Cancel order</button>' : ''}<a class="btn btn-outline" href="#/orders">Order history</a><a class="btn btn-ghost" href="#/support?ref=order:${encodeURIComponent(o.id)}">${icon('help', 16)} Get help</a></div>
       </div>`;
     },
     mount(el, ctx) {
       if (ctx.query.new) setTimeout(() => { const m = el.querySelector('.success-mark')?.getBoundingClientRect(); SA.core.motion.confetti(m ? { x: m.left + m.width / 2, y: m.top + m.height / 2 } : {}); }, 350);
       el.querySelector('[data-rt-new]')?.addEventListener('click', async () => SA.ui.returns.openForm(await S.shop.order(ctx.params.id)));
+      el.querySelector('[data-cancel-order]')?.addEventListener('click', async () => {
+        const o = await S.shop.order(ctx.params.id);
+        const paid = o.payment.method === 'cod' ? 0 : Math.max(0, o.total - (o.refunded || 0));
+        await SA.ui.cancelRequest.ask({ kind: 'order', refId: o.id, title: 'Cancel this order?', text: paid ? `If it’s approved before it ships, ${money(paid)} comes back to your wallet.` : 'If it’s approved before it ships, nothing is delivered and you pay nothing.' });
+      });
       el.querySelector('[data-invoice]')?.addEventListener('click', async (e) => {
         const btn = e.currentTarget; btn.disabled = true;
         try { await SA.ui.docs.orderInvoice(await S.shop.order(ctx.params.id)); } catch (err) { console.error(err); SA.ui.overlay.toast('Couldn’t create the invoice. Try again.', { type: 'error' }); }

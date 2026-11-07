@@ -28,6 +28,9 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
     bookings: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/BOOKING-created',
     // Fantasy (league.created, league.member.joined, gameweek.finished) goes to the orders link too (owner's request, 2026-10-31)
     fantasy: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
+    // Cancellation requests (cancellation.requested / .approved / .rejected) — the AI agent's trigger. Uses the orders link
+    // until the owner sends the cancellation workflow's own link.
+    cancellations: '',
   },
   // Chatbot support — paste the AI agent's webhook link here (POST JSON, replies { reply } or { output }).
   // Empty = the built-in demo assistant answers from the Help center.

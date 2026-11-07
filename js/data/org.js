@@ -48,10 +48,10 @@
     { id: 'logistics', title: 'Courier & delivery agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Route', cost: 1100, sections: ['overview', 'factories', 'orders'], can: ['factory'], limit: 0,
       duties: ['Books the courier when an order is packed', 'Follows every parcel to delivery', 'Handles refused parcels'], watch: ['factory.shipment', 'admin.shipping'] },
 
-    { id: 'support-lead', title: 'Support & trust lead', dept: 'support', reportsTo: 'coo', holder: 'ai', name: 'Haven', cost: 2000, sections: ['overview', 'support', 'customers', 'reviews', 'orders', 'returns'], can: ['refund', 'credit', 'customer.block', 'moderate'], limit: 1000,
+    { id: 'support-lead', title: 'Support & trust lead', dept: 'support', reportsTo: 'coo', holder: 'ai', name: 'Haven', cost: 2000, sections: ['overview', 'support', 'customers', 'reviews', 'orders', 'returns', 'cancellations'], can: ['refund', 'credit', 'customer.block', 'moderate'], limit: 1000,
       duties: ['Answers disputes and decides refunds up to 1,000 EGP', 'Blocks abusive customers', 'Reviews the frontline agent’s answers'], watch: ['admin.support', 'admin.customer', 'support.'] },
-    { id: 'support-agent', title: 'Frontline support agent', dept: 'support', reportsTo: 'support-lead', holder: 'ai', name: 'Echo', cost: 1800, sections: ['support', 'customers', 'orders', 'returns'], can: ['refund'], limit: 300,
-      duties: ['Replies to every ticket within 2 hours', 'Refunds up to 300 EGP', 'Hands harder cases to the lead'], watch: ['admin.support', 'support.'] },
+    { id: 'support-agent', title: 'Frontline support agent', dept: 'support', reportsTo: 'support-lead', holder: 'ai', name: 'Echo', cost: 1800, sections: ['support', 'customers', 'orders', 'returns', 'cancellations'], can: ['refund'], limit: 300,
+      duties: ['Replies to every ticket within 2 hours', 'Answers cancellation requests within 2 hours', 'Refunds up to 300 EGP', 'Hands harder cases to the lead'], watch: ['admin.support', 'support.', 'admin.cancellation', 'cancellation.'] },
     { id: 'trust', title: 'Trust & safety agent', dept: 'support', reportsTo: 'support-lead', holder: 'ai', name: 'Shield', cost: 1300, sections: ['reviews', 'pod-review', 'sellers'], can: ['moderate', 'designs', 'suspend'], limit: 0,
       duties: ['Checks designs for copyright', 'Moderates reviews', 'Gives sellers strikes'], watch: ['admin.design', 'admin.review', 'admin.seller.strike', 'design.'] },
 

@@ -44,13 +44,17 @@
       const req = SA.core.store.get().matchRequests[m.id];
       const myReq = !m.isMine ? S.games.myRequest(m.id) : null;
       const justPublished = ctx.query.published;
+      // Paid places are cancelled through a cancellation request (reply within 2 hours in the chat)
+      const cx = myReq ? ['game-request', myReq.id] : ['game', m.id];
+      const cxOpen = S.cancellations.openFor(...cx);
+      const cxBtn = (label, attr) => (cxOpen ? SA.ui.cancelRequest.notice(...cx) : `<button class="btn btn-outline btn-block" style="margin-top:12px" ${attr}>${label}</button>`);
       const open = Array.from({ length: m.spotsLeft });
       const actionBlock = m.isMine
         ? `<div class="stack" style="--gap:10px"><button class="btn btn-primary btn-lg btn-block" data-share>${icon('share', 16)} Share invite link</button><a class="btn btn-outline btn-block" href="#/booking/${m.bookingId}">View booking</a><button class="btn btn-ghost btn-block" data-unpublish style="color:var(--danger)">Remove listing</button></div>`
         : myReq && myReq.status !== 'accepted'
-          ? `<div class="notice ${myReq.status === 'waitlist' ? '' : 'gold'}">${icon('clock', 18)}<span><b>${myReq.status === 'waitlist' ? 'You’re on the waitlist.' : 'Request sent.'}</b> ${money(myReq.amount)} is held by Super App and comes back in full if you don’t get in.</span></div><button class="btn btn-outline btn-block" style="margin-top:12px" data-withdraw="${myReq.id}">Withdraw request</button>`
+          ? `<div class="notice ${myReq.status === 'waitlist' ? '' : 'gold'}">${icon('clock', 18)}<span><b>${myReq.status === 'waitlist' ? 'You’re on the waitlist.' : 'Request sent.'}</b> ${money(myReq.amount)} is held by Super App and comes back in full if you don’t get in.</span></div>${cxBtn('Withdraw request', `data-withdraw="${myReq.id}"`)}`
           : m.joined
-          ? `<div class="notice turf">${icon('check', 18)}<span><b>You’re in this match.</b> ${req?.payment ? (req.payment === 'Paid online' ? 'Your share is paid online.' : `Paid with ${esc(req.payment)}.`) : ''}</span></div><button class="btn btn-outline btn-block" style="margin-top:12px" data-leave>Leave match</button>`
+          ? `<div class="notice turf">${icon('check', 18)}<span><b>You’re in this match.</b> ${req?.payment ? (req.payment === 'Paid online' ? 'Your share is paid online.' : `Paid with ${esc(req.payment)}.`) : ''}</span></div>${cxBtn('Leave match', 'data-leave')}`
           : m.spotsLeft ? c.cta(`Join · ${money(m.pricePerPlayer)}`, { variant: 'blaze', size: 'lg', attrs: `data-action="join-match" data-id="${m.id}" style="width:100%;justify-content:space-between"` }) : `<button class="btn btn-outline btn-block" disabled>Match is full</button>`;
 
       return `<div class="container has-action-bar">
@@ -95,7 +99,7 @@
           </aside>
         </div>
       </div>
-      <div class="action-bar">${m.isMine ? `<button class="btn btn-primary btn-block" data-share>${icon('share', 16)} Share invite link</button>` : m.joined ? `<span class="badge badge-turf">${icon('check', 12)} You’re in</span><span class="grow"></span><button class="btn btn-outline btn-sm" data-leave>Leave</button>` : `<div class="grow"><b class="num">${money(m.pricePerPlayer)}</b><span class="xs muted" style="display:block">${m.spotsLeft} spots left</span></div>${m.spotsLeft ? `<button class="btn btn-blaze" data-action="join-match" data-id="${m.id}">Join match</button>` : ''}`}</div>`;
+      <div class="action-bar">${m.isMine ? `<button class="btn btn-primary btn-block" data-share>${icon('share', 16)} Share invite link</button>` : m.joined ? `<span class="badge badge-turf">${icon('check', 12)} You’re in</span><span class="grow"></span>${cxOpen ? '' : '<button class="btn btn-outline btn-sm" data-leave>Leave</button>'}` : `<div class="grow"><b class="num">${money(m.pricePerPlayer)}</b><span class="xs muted" style="display:block">${m.spotsLeft} spots left</span></div>${m.spotsLeft ? `<button class="btn btn-blaze" data-action="join-match" data-id="${m.id}">Join match</button>` : ''}`}</div>`;
     },
     mount(el, ctx) {
       const id = ctx.params.id;
@@ -121,7 +125,11 @@
           if (t('[data-accept]')) { S.games.accept(t('[data-accept]').dataset.accept); SA.ui.overlay.toast('Player accepted — they’re in'); SA.app.rerender(); return; }
           if (t('[data-decline]')) { await S.games.decline(t('[data-decline]').dataset.decline); SA.ui.overlay.toast('Request declined — the player gets a full refund', { type: 'info' }); SA.app.rerender(); return; }
           if (t('[data-remove]')) { if (!(await SA.ui.overlay.confirm({ title: 'Remove this player?', text: 'Their spot opens up and they get a full refund. The first player on the waitlist moves up.', confirmLabel: 'Remove', danger: true }))) return; await S.games.remove(t('[data-remove]').dataset.remove); SA.ui.overlay.toast('Player removed', { type: 'info' }); SA.app.rerender(); return; }
-          if (t('[data-withdraw]')) { if (!(await SA.ui.overlay.confirm({ title: 'Withdraw your request?', text: 'Your held share comes back to your wallet.', confirmLabel: 'Withdraw', danger: true }))) return; await S.games.withdraw(t('[data-withdraw]').dataset.withdraw); SA.ui.overlay.toast('Request withdrawn — refunded', { type: 'info' }); SA.app.rerender(); }
+          if (t('[data-withdraw]')) {
+            const rq = SA.services.db.find('gameRequests', t('[data-withdraw]').dataset.withdraw);
+            if (rq?.paid) { await SA.ui.cancelRequest.ask({ kind: 'game-request', refId: rq.id, title: 'Withdraw your request?', text: 'If it’s approved, your held share comes back to your wallet.' }); return; }
+            if (!(await SA.ui.overlay.confirm({ title: 'Withdraw your request?', text: 'You can ask to join again later.', confirmLabel: 'Withdraw', danger: true }))) return; await S.games.withdraw(rq.id); SA.ui.overlay.toast('Request withdrawn', { type: 'info' }); SA.app.rerender();
+          }
         } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
       });
       el.querySelector('[data-auto]')?.addEventListener('change', (e) => { S.games.setHost(id, { autoAccept: e.target.checked }); SA.ui.overlay.toast(e.target.checked ? 'New requests are accepted automatically' : 'You decide each request', { type: 'info' }); });
@@ -133,8 +141,14 @@
         S.games.rate(id, list); SA.ui.overlay.toast('Ratings saved — thanks!'); SA.app.rerender();
       });
       el.querySelectorAll('[data-leave]').forEach((b) => b.addEventListener('click', async () => {
-        if (!(await SA.ui.overlay.confirm({ title: 'Leave this match?', text: 'Your spot opens up for other players. If you paid online, your share is refunded to your wallet.', confirmLabel: 'Leave match', danger: true }))) return;
-        await S.matches.leave(id); SA.ui.overlay.toast('You left the match'); SA.app.rerender();
+        // Paid share: ask the Super App team (cancellation request); paying at the pitch: leave straight away
+        const rq = S.games.myRequest(id);
+        const req = SA.core.store.get().matchRequests[id];
+        if (rq?.status === 'accepted' && rq.paid) { await SA.ui.cancelRequest.ask({ kind: 'game-request', refId: rq.id, title: 'Leave this match?', text: 'If it’s approved, your spot opens up and your share is refunded under the game’s rules.' }); return; }
+        if (!rq && req && req.payment !== 'Pay at the pitch') { await SA.ui.cancelRequest.ask({ kind: 'game', refId: id, title: 'Leave this match?', text: 'If it’s approved, your spot opens up and your share is refunded to your wallet.' }); return; }
+        if (!(await SA.ui.overlay.confirm({ title: 'Leave this match?', text: 'Your spot opens up for other players.', confirmLabel: 'Leave match', danger: true }))) return;
+        if (rq?.status === 'accepted') await S.games.withdraw(rq.id); else await S.matches.leave(id);
+        SA.ui.overlay.toast('You left the match'); SA.app.rerender();
       }));
       el.querySelector('[data-unpublish]')?.addEventListener('click', async () => {
         if (!(await SA.ui.overlay.confirm({ title: 'Remove this listing?', text: 'Your booking stays. Players will no longer be able to find or join this match.', confirmLabel: 'Remove listing', danger: true }))) return;

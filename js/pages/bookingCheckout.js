@@ -134,6 +134,7 @@
       const isNew = ctx.query.new;
       const venue = S.bookings.venueRecord(b.id);
       const checkedIn = venue?.checkedInAt || venue?.checkedIn;
+      const cxOpen = S.cancellations.openFor('booking', b.id);
       const balancePaid = !!venue?.balancePaidAt;
       // After the venue scans the QR: the clock runs to the booked end (arriving late doesn't move it)
       const endAt = b.startsAt + b.duration * 36e5;
@@ -191,7 +192,8 @@
           <div class="pkg-stats"><span><b class="num">${pk.played}</b><span class="xs">Played</span></span><span class="is-bad"><b class="num">${pk.missed}</b><span class="xs">Missed</span></span><span><b class="num">${pk.left}</b><span class="xs">Left</span></span><span><b class="num">${pk.total}</b><span class="xs">In the package</span></span></div>
           <p class="xs muted">${icon('info', 12)} A game you don’t come to counts as used. Can’t make it? Cancel it before kick-off from its page.${pk.exception ? ' One missed game was excused by Super App — a make-up game was added.' : ''}</p>
           <ul class="pkg-list">${pk.sessions.map((x) => { const bk = series.find((y) => y.id === x.id); return `<li class="${x.id === b.id ? 'is-me' : ''}"><a href="#/booking/${x.id}" class="row-between" style="--gap:8px"><span class="small"><b class="num">${x.no ? `#${x.no}` : '—'}</b> · ${fmtDate(x.date)} · ${fmtRange(x.hour, x.duration)}${x.makeup ? ' <span class="badge badge-gold">Make-up</span>' : ''}</span><span class="badge ${ST[x.state][0]}">${ST[x.state][1]}</span></a></li>`; }).join('')}</ul>
-          ${live.length > 1 ? `<button class="btn btn-ghost btn-sm" data-cancel-series style="color:var(--danger);margin-top:10px">Cancel all ${live.length} remaining games</button>` : ''}
+          ${SA.ui.cancelRequest.notice('package', b.seriesId)}
+          ${live.length > 1 && !S.cancellations.openFor('package', b.seriesId) ? `<button class="btn btn-ghost btn-sm" data-cancel-series style="color:var(--danger);margin-top:10px">Cancel all ${live.length} remaining games</button>` : ''}
         </section>` : ''}
 
         ${!cancelled && !past ? `<section class="panel panel-pad need-players">
@@ -205,11 +207,12 @@
             : `<h2 class="h4">How was ${esc(b.pitchName)}?</h2><p class="small soft">Your review helps other players choose — and the venue can reply.</p>${reviewForm()}`}
         </section>` : ''}
 
+        ${SA.ui.cancelRequest.notice('booking', b.id)}
         <div class="row wrap confirm-actions">
           ${!cancelled && !past ? `<button class="btn btn-outline" data-ics>${icon('calendar', 16)} Add to calendar</button>
           <a class="btn btn-outline" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}">${icon('map', 16)} Directions</a>` : `<a class="btn btn-primary" href="#/pitches/${p.id}">Book again</a>`}
           <button class="btn btn-outline" data-invoice>${icon('file', 16)} ${pk ? 'Package invoice (PDF)' : 'Invoice (PDF)'}</button>
-          ${!cancelled && !past && !checkedIn ? `<button class="btn btn-ghost" data-cancel style="color:var(--danger)">Cancel booking</button>` : ''}
+          ${!cancelled && !past && !checkedIn && !cxOpen ? `<button class="btn btn-ghost" data-cancel style="color:var(--danger)">Cancel booking</button>` : ''}
           <a class="btn btn-ghost" href="#/bookings">All bookings</a>
           <a class="btn btn-ghost" href="#/support?ref=booking:${encodeURIComponent(b.id)}">${icon('help', 16)} Get help</a>
         </div>
@@ -242,24 +245,15 @@
       });
       el.querySelector('[data-cancel]')?.addEventListener('click', async () => {
         const c0 = S.bookings.cancellationPolicy(b);
-        const text = c0.kind === 'full' ? `You’ll get your full ${b.deposit != null ? 'deposit, ' : ''}${money(S.bookings.paidOnline(b))}, back in your wallet.`
-          : c0.kind === 'half' ? `Under the ${c0.policy.name.toLowerCase()} policy you get 50% back (${money(c0.refund)}) because kick-off is less than ${c0.policy.full} hours away.`
-          : `Under the ${c0.policy.name.toLowerCase()} policy there’s no refund less than ${c0.policy.half} hours before kick-off. You can still cancel to free the pitch for others.`;
-        const ok = await SA.ui.overlay.confirm({ title: 'Cancel this booking?', text, confirmLabel: 'Cancel booking', cancelLabel: 'Keep booking', danger: true });
-        if (!ok) return;
-        if (b.publishedMatchId) await S.matches.unpublish(b.publishedMatchId);
-        const { refund } = await S.bookings.cancel(b.id);
-        SA.ui.overlay.toast(refund ? `Booking cancelled — ${money(refund)} refunded to your wallet` : 'Booking cancelled');
-        SA.app.rerender();
+        const text = c0.kind === 'full' ? `If it’s approved you get your full ${b.deposit != null ? 'deposit, ' : ''}${money(S.bookings.paidOnline(b))}, back in your wallet.`
+          : c0.kind === 'half' ? `Under the ${c0.policy.name.toLowerCase()} policy you’d get 50% back (${money(c0.refund)}) because kick-off is less than ${c0.policy.full} hours away.`
+          : `Under the ${c0.policy.name.toLowerCase()} policy there’s no refund less than ${c0.policy.half} hours before kick-off.`;
+        await SA.ui.cancelRequest.ask({ kind: 'booking', refId: b.id, title: 'Cancel this booking?', text });
       });
       el.querySelector('[data-cancel-series]')?.addEventListener('click', async () => {
         const list = S.bookings.seriesOf(b.seriesId).filter((x) => x.status === 'confirmed' && parseISO(x.date).getTime() + x.hour * 36e5 > Date.now());
         const refund = list.reduce((t, x) => t + S.bookings.cancellationPolicy(x).refund, 0);
-        const ok = await SA.ui.overlay.confirm({ title: `Cancel ${list.length} remaining games?`, text: `Each game follows the cancellation policy — you get ${money(refund)} back in your wallet in total.`, confirmLabel: 'Cancel all', cancelLabel: 'Keep them', danger: true });
-        if (!ok) return;
-        const r = await S.bookings.cancelSeries(b.seriesId);
-        SA.ui.overlay.toast(`${r.count} games cancelled — ${money(r.refund)} refunded`);
-        SA.app.rerender();
+        await SA.ui.cancelRequest.ask({ kind: 'package', refId: b.seriesId, title: `Cancel ${list.length} remaining games?`, text: `Each game follows the cancellation policy — if it’s approved you get ${money(refund)} back in your wallet in total.` });
       });
       const rf = el.querySelector('[data-rate]');
       rf?.addEventListener('submit', async (e) => {

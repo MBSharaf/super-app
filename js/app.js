@@ -133,6 +133,7 @@
     .add('/admin/payouts', P.adminPayouts)
     .add('/admin/finance-approvals', P.adminFinanceApprovals)
     .add('/admin/returns', P.adminReturns)
+    .add('/admin/cancellations', P.adminCancellations)
     .add('/admin/revenue', P.adminRevenue)
     .add('/admin/notifications', P.dashNotifications)
     .add('/admin/designs', P.dashPodReview)

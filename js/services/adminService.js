@@ -99,6 +99,9 @@
     add('kyc', 'shield', 'info', kyc, `${kyc} seller ID check${kyc > 1 ? 's' : ''}`, 'Verify before their first withdrawal.', '#/admin/designs?tab=sellers');
     const rv = db().all('reviews').filter((r) => r.reported && !r.reported.resolved && !r.hidden).length;
     add('reviews', 'star', 'danger', rv, `${rv} reported review${rv > 1 ? 's' : ''}`, 'Partners asked Super App to check these.', '#/admin/reviews?filter=reported');
+    const cx = SA.services.cancellations?.pending() || [];
+    const cxLate = cx.filter((r) => r.dueAt < Date.now()).length;
+    add('cancellations', 'x', 'blaze', cx.length, `${cx.length} cancellation request${cx.length > 1 ? 's' : ''} waiting`, cxLate ? `${cxLate} past the 2-hour reply time.` : 'Reply within 2 hours of each request.', '#/admin/cancellations');
     const tk = (db().all('tickets') || []).filter((t) => t.status === 'open').length;
     add('support', 'message', 'blaze', tk, `${tk} support ticket${tk > 1 ? 's' : ''} waiting`, 'Customers, partners and sellers waiting for a reply.', '#/admin/support');
     const sm = (db().all('samples') || []).filter((x) => x.status === 'requested').length;

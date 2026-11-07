@@ -6,6 +6,8 @@
  * `superAppLeague.weeklyWinners`: the gameweek's top 3 in the Super App League and the Super Points each won; one
  * per league with every member's rank and points and the gameweek's top three) → `fantasy` (the orders link). In API mode the server sends
  * these events itself (its webhooks), so nothing is sent from the browser there.
+ * Cancellation requests (`cancellation.requested`, then `.approved` / `.rejected`) → `cancellations` (the orders link until
+ * the AI agent's own link is set): the request number is the trigger of the AI agent's workflow.
  *
  * Sent as JSON. The links are ngrok tunnels: a POST from a browser goes through (ngrok's warning page is only shown for
  * page visits). If the browser refuses the cross-site call, the same JSON is sent again as plain text, so n8n still gets it.
@@ -279,6 +281,30 @@
       gameweekFinished(out.gw, out.weekly);
       return out;
     };
+  }
+
+  /* ---------- Cancellation requests: the trigger of the AI agent's cancellation workflow ---------- */
+  const CX = S.cancellations;
+  if (CX) {
+    const cxUrl = () => cfg().cancellations || cfg().orders;
+    const cxOf = (r) => ({
+      requestId: r.id, status: r.status, type: r.kind, typeLabel: r.kindLabel, referenceId: r.refId, item: r.label, link: link(r.link),
+      paidOnline: r.paid || 0, refundIfApproved: r.refund || 0, refunded: r.refunded ?? null, currency: 'EGP', cancelPolicy: r.policy || null, games: r.games || null,
+      reason: r.reason || null, createdAt: iso(r.createdAt), replyBy: iso(r.dueAt), replyWithinHours: CX.REPLY_HOURS, channel: r.channel,
+      decision: r.decidedAt ? { status: r.status, note: r.note || null, by: r.decidedBy || null, at: iso(r.decidedAt) } : null,
+      adminLink: link(`/admin/cancellations?id=${r.id}`),
+    });
+    const extra = (r) => (r.pitchId ? pitchOf(r.pitchId) : {});
+    const request = CX.request;
+    CX.request = (d) => {
+      const r = request(d);
+      send(cxUrl(), 'cancellation.requested', { cancellation: cxOf(r), customer: { ...customer(), ...r.customer }, ...extra(r) });
+      return r;
+    };
+    const approve = CX.approve;
+    CX.approve = async (...a) => { const r = await approve(...a); send(cxUrl(), 'cancellation.approved', { cancellation: cxOf(r), customer: r.customer, ...extra(r) }); return r; };
+    const reject = CX.reject;
+    CX.reject = (...a) => { const r = reject(...a); send(cxUrl(), 'cancellation.rejected', { cancellation: cxOf(r), customer: r.customer, ...extra(r) }); return r; };
   }
 
   S.automation = { send };
