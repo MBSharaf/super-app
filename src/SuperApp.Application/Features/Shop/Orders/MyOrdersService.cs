@@ -17,7 +17,14 @@ public interface IMyOrdersService
     Task<OrderDetailsDto> GetAsync(string code, CancellationToken ct);
 
     /// <summary>Only before anything is packed, shipped or printed (422 too_late); stock goes back and everyone is told.</summary>
+    /// <summary>The customer cancels an order not paid yet; a paid one needs a cancellation request (409 request_required).</summary>
     Task<OrderDetailsDto> CancelAsync(string code, CancellationToken ct);
+
+    /// <summary>The customer's order for a cancellation request: whether it can still be cancelled and what was paid.</summary>
+    Task<(Order Order, decimal Paid)> ForRequestAsync(string code, Guid customerId, CancellationToken ct);
+
+    /// <summary>An approved cancellation request: cancels, restocks and refunds; returns the refund.</summary>
+    Task<decimal> CancelApprovedAsync(string code, Guid customerId, CancellationToken ct);
 
     Task<(byte[] File, string Name)> ReceiptAsync(string code, CancellationToken ct);
 }
@@ -43,18 +50,41 @@ public sealed class MyOrdersService(
     public async Task<OrderDetailsDto> CancelAsync(string code, CancellationToken ct)
     {
         var order = await orders.FindAsync(Me(), code, ct) ?? throw new NotFoundException("Order not found.");
+        if (OrderPayments.IsPaid(order.Status))
+        {
+            throw new ConflictException("Paid orders are cancelled through a cancellation request — the Super App team replies within 2 hours.", "request_required");
+        }
+        await CancelCoreAsync(order, "Cancelled by the customer", ct);
+        return await GetAsync(code, ct);
+    }
+
+    public async Task<(Order Order, decimal Paid)> ForRequestAsync(string code, Guid customerId, CancellationToken ct)
+    {
+        var order = await orders.FindAsync(customerId, code, ct) ?? throw new NotFoundException("Order not found.");
+        EnsureCancellable(order, await orders.JobsAsync(order.Id, ct));
+        return (order, OrderPayments.IsPaid(order.Status) ? order.Total : 0);
+    }
+
+    public async Task<decimal> CancelApprovedAsync(string code, Guid customerId, CancellationToken ct)
+    {
+        var (order, paid) = await ForRequestAsync(code, customerId, ct);
+        await CancelCoreAsync(order, "Cancellation request approved", ct);
+        return paid;
+    }
+
+    private async Task CancelCoreAsync(Order order, string reason, CancellationToken ct)
+    {
         var jobs = await orders.JobsAsync(order.Id, ct);
         EnsureCancellable(order, jobs);
         var people = await orders.PeopleToTellAsync(order.Id, ct);
         var wasPaid = OrderPayments.IsPaid(order.Status);
         var open = order.Items.Where(i => i.Status == OrderItemStatus.Received).ToList();
-        Cancel(order, jobs, "Cancelled by the customer");
+        Cancel(order, jobs, reason);
         await unitOfWork.SaveChangesAsync(ct);
         await money.RefundAsync(order, open, deliveryFee: true, wasPaid, ct);
         await orders.RestockAsync(order.Items.Where(i => i.ProductVariantId is not null).Select(i => (i.ProductVariantId!.Value, i.Qty)).ToList(), ct);
         await orders.ReleasePromoAsync(order.Id, ct);
         await notices.CancelledAsync(order, people, "the customer", ct);
-        return await GetAsync(code, ct);
     }
 
     public async Task<(byte[] File, string Name)> ReceiptAsync(string code, CancellationToken ct)

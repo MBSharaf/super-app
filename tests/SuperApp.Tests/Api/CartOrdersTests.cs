@@ -84,7 +84,7 @@ public sealed class CartOrdersTests(DemoApiFactory api) : IClassFixture<DemoApiF
         placed.Status.ShouldBe(HttpStatusCode.Created, placed.Body.ToString());
         placed.Body.Data().GetProperty("order").GetProperty("discount").GetDecimal().ShouldBe(77);
         (await api.DbAsync(db => db.Set<PromoCode>().Where(p => p.Code == "SUPER10").Select(p => p.UsesCount).SingleAsync())).ShouldBe(1);
-        (await person.PostAsync($"/api/v1/orders/{placed.Body.Data().GetProperty("code").GetString()}/cancel")).Status.ShouldBe(HttpStatusCode.OK);
+        await api.CancelThroughRequestAsync(person, "order", placed.Body.Data().GetProperty("code").GetString()!);
         (await api.DbAsync(db => db.Set<PromoCode>().Where(p => p.Code == "SUPER10").Select(p => p.UsesCount).SingleAsync())).ShouldBe(0);
 
         await person.PostAsync("/api/v1/cart/items", new { designId = await kit.DesignIdAsync("Keep Calm & Press High"), size = "M", color = "White", qty = 1 });
@@ -176,15 +176,16 @@ public sealed class CartOrdersTests(DemoApiFactory api) : IClassFixture<DemoApiF
         var (other, _) = await kit.PersonAsync();
         (await other.GetAsync($"/api/v1/orders/{code}")).Status.ShouldBe(HttpStatusCode.NotFound);
 
-        var cancelled = (await person.PostAsync($"/api/v1/orders/{code}/cancel")).Body.Data();
-        cancelled.GetProperty("status").GetString().ShouldBe("Cancelled");
+        (await person.PostAsync($"/api/v1/orders/{code}/cancel")).Body.Code().ShouldBe("request_required");
+        await api.CancelThroughRequestAsync(person, "order", code);
+        (await person.GetAsync($"/api/v1/orders/{code}")).Body.Data().GetProperty("status").GetString().ShouldBe("Cancelled");
         (await kit.VariantsAsync("sh-cones")).Single(v => v.Id == cones.Id).Stock.ShouldBe(cones.Stock);
-        (await person.PostAsync($"/api/v1/orders/{code}/cancel")).Body.Code().ShouldBe("order_closed");
+        (await person.PostAsync("/api/v1/cancellations", new { kind = "order", reference = code })).Body.Code().ShouldBe("order_closed");
 
         await person.PostAsync("/api/v1/cart/items", new { designId = await kit.DesignIdAsync("No Days Off"), size = "S", color = "Black", qty = 1 });
         var printed = (await ShopKit.CheckoutAsync(person)).Body.Data().GetProperty("code").GetString()!;
         await api.DbAsync(db => db.Set<Job>().Where(j => j.OrderItem.Order.Code == printed).ExecuteUpdateAsync(u => u.SetProperty(j => j.Stage, JobStage.Printing)));
-        (await person.PostAsync($"/api/v1/orders/{printed}/cancel")).Body.Code().ShouldBe("too_late");
+        (await person.PostAsync("/api/v1/cancellations", new { kind = "order", reference = printed })).Body.Code().ShouldBe("too_late");
         (await person.GetAsync("/api/v1/orders/mine?status=cancelled")).Body.Data().GetArrayLength().ShouldBe(1);
     }
 

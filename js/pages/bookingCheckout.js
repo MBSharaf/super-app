@@ -130,6 +130,7 @@
     title: 'Booking — Super App',
     async render(ctx) {
       const b = await S.bookings.get(ctx.params.id);
+      await S.cancellations.ready?.();
       const p = S.pitches.getSync(b.pitchId) || { images: [b.image], address: '', area: b.area, city: b.city, lat: 0, lng: 0, id: b.pitchId };
       const isNew = ctx.query.new;
       const venue = S.bookings.venueRecord(b.id);

@@ -67,6 +67,10 @@ public static class DependencyInjection
         services.AddScoped<Features.FreeSlots.IFreeSlotsService, Features.FreeSlots.FreeSlotsService>();
         services.AddScoped<Features.Games.IGamesService, Features.Games.GamesService>();
         services.AddScoped<Features.Webhooks.IWebhooksService, Features.Webhooks.WebhooksService>();
+        services.AddScoped<Features.Cancellations.CancellationTargets>();
+        services.AddScoped<Features.Cancellations.CancellationNotices>();
+        services.AddScoped<Features.Cancellations.ICancellationsService, Features.Cancellations.CancellationsService>();
+        services.AddScoped<Features.Cancellations.ICancellationsAdminService, Features.Cancellations.CancellationsAdminService>();
         Features.Fantasy.FantasyRegistration.AddFantasy(services);   // Phase 6 (branch phase-6-fantasy)
         Features.AdminConsole.AdminRegistration.AddAdmin(services);   // Phase 7 (branch phase-7-admin)
         return services;

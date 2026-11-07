@@ -136,7 +136,7 @@
   G.myRequest = (id) => {
     if (!isLive(id)) return demo.games.myRequest(id);
     const m = games.get(id);
-    return m && ['Waiting', 'Waitlisted', 'Accepted'].includes(m.myStatus) ? { id: `mine:${id}`, matchId: id, status: REQ[m.myStatus], amount: m.pricePerPlayer } : null;
+    return m && ['Waiting', 'Waitlisted', 'Accepted'].includes(m.myStatus) ? { id: `mine:${id}`, matchId: id, status: REQ[m.myStatus], amount: m.pricePerPlayer, paid: true } : null;
   };
   G.hostSettings = (m) => (m.live ? { autoAccept: m.autoAccept, closed: m.closed, positions: m.needsGK ? 'Goalkeeper' : '' } : demo.games.hostSettings(m));
   G.request = async (id, { position, message = '', payment, waiver = false }) => {

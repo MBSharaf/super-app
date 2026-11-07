@@ -38,7 +38,7 @@ public sealed class LedgerTests(AccountsApiFactory api) : IClassFixture<Accounts
         (await pdf.Content.ReadAsByteArrayAsync()).Take(4).ShouldBe("%PDF"u8.ToArray());
         (await partner.Http.GetAsync($"/api/v1/receipts/{number}.pdf")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
-        (await player.PostAsync($"/api/v1/bookings/{first.GetProperty("code").GetString()}/cancel")).Status.ShouldBe(HttpStatusCode.OK);
+        await api.CancelThroughRequestAsync(player, "booking", first.GetProperty("code").GetString()!);
         // Only the deposit was paid in the app, so the deposit comes back
         Wallet((await player.GetAsync("/api/v1/wallet")).Body.Data(), "Customer").GetProperty("available").GetDecimal().ShouldBe(first.GetProperty("deposit").GetDecimal());
         Wallet((await partner.GetAsync("/api/v1/wallet")).Body.Data(), "PartnerBookings").GetProperty("pending").GetDecimal().ShouldBe(0);

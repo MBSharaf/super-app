@@ -5,7 +5,8 @@
  * chatbot tells the customer it was sent and that the team replies within 2 hours, and the n8n automation gets
  * `cancellation.requested` (the trigger of the AI agent's workflow). The admin (or the AI agent) approves it — the
  * service is then cancelled with the usual refund rules — or refuses it with a reason. Either way the customer is told.
- * Data: db.cancelRequests. Future API: POST /me/cancellations, GET /admin/cancellations, POST /admin/cancellations/:id/approve|reject
+ * Demo data: db.cancelRequests. On the real API (js/services/liveCancellations.js) the server does all of it: POST /cancellations,
+ * GET /cancellations/mine, GET /admin/cancellations, POST /admin/cancellations/{code}/approve|reject.
  */
 (function (SA) {
   const { ApiError } = SA.services.http;

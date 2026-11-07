@@ -41,6 +41,7 @@
     title: 'Match — Super App',
     async render(ctx) {
       const m = await S.matches.get(ctx.params.id);
+      await S.cancellations.ready?.();
       const req = SA.core.store.get().matchRequests[m.id];
       const myReq = !m.isMine ? S.games.myRequest(m.id) : null;
       const justPublished = ctx.query.published;
@@ -126,7 +127,7 @@
           if (t('[data-decline]')) { await S.games.decline(t('[data-decline]').dataset.decline); SA.ui.overlay.toast('Request declined — the player gets a full refund', { type: 'info' }); SA.app.rerender(); return; }
           if (t('[data-remove]')) { if (!(await SA.ui.overlay.confirm({ title: 'Remove this player?', text: 'Their spot opens up and they get a full refund. The first player on the waitlist moves up.', confirmLabel: 'Remove', danger: true }))) return; await S.games.remove(t('[data-remove]').dataset.remove); SA.ui.overlay.toast('Player removed', { type: 'info' }); SA.app.rerender(); return; }
           if (t('[data-withdraw]')) {
-            const rq = SA.services.db.find('gameRequests', t('[data-withdraw]').dataset.withdraw);
+            const rq = S.games.myRequest(id) || SA.services.db.find('gameRequests', t('[data-withdraw]').dataset.withdraw);
             if (rq?.paid) { await SA.ui.cancelRequest.ask({ kind: 'game-request', refId: rq.id, title: 'Withdraw your request?', text: 'If it’s approved, your held share comes back to your wallet.' }); return; }
             if (!(await SA.ui.overlay.confirm({ title: 'Withdraw your request?', text: 'You can ask to join again later.', confirmLabel: 'Withdraw', danger: true }))) return; await S.games.withdraw(rq.id); SA.ui.overlay.toast('Request withdrawn', { type: 'info' }); SA.app.rerender();
           }

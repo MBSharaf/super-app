@@ -19,7 +19,8 @@
 
   SA.pages.adminCancellations = A.guard({
     title: 'Cancellation requests — Super App Admin',
-    render(ctx) {
+    async render(ctx) {
+      await CX().ready?.();
       const tab = ctx.query.tab || '';
       const all = CX().all();
       const waiting = all.filter((r) => r.status === 'pending');
@@ -60,7 +61,7 @@
             const id = t('[data-cx-no]').dataset.cxNo;
             const r = await A.reason({ title: `Refuse cancellation ${id}?`, text: 'The service stays active. The customer sees your reason in the chat.', label: 'Reason the customer sees', confirmLabel: 'Refuse request', danger: true });
             if (!r) return;
-            CX().reject(id, r.reason); toast(`Cancellation ${id} refused`, 'info'); SA.app.rerender();
+            await CX().reject(id, r.reason); toast(`Cancellation ${id} refused`, 'info'); SA.app.rerender();
           }
         } catch (err) { toast(err.message, 'error'); }
       });

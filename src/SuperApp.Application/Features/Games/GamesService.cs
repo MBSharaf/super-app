@@ -94,7 +94,14 @@ public interface IGamesService
 
     Task<GameDetailDto> DecideAsync(string code, long requestId, string action, CancellationToken ct);
 
+    /// <summary>The player leaves; a paid share needs a cancellation request (409 request_required).</summary>
     Task<GameDetailDto> WithdrawAsync(string code, CancellationToken ct);
+
+    /// <summary>The player's open place in a game, for a cancellation request.</summary>
+    Task<(Game Game, GameRequest Request)> ForRequestAsync(string code, Guid playerId, CancellationToken ct);
+
+    /// <summary>An approved cancellation request: the player is out and the share refunded; returns the refund.</summary>
+    Task<decimal> WithdrawApprovedAsync(string code, Guid playerId, CancellationToken ct);
 
     Task RateAsync(string code, RatingsRequest request, CancellationToken ct);
 
@@ -253,17 +260,39 @@ public sealed class GamesService(
 
     public async Task<GameDetailDto> WithdrawAsync(string code, CancellationToken ct)
     {
-        var me = Me();
+        var (game, mine) = await ForRequestAsync(code, Me(), ct);
+        if (mine.Payment is { Status: PaymentStatus.Paid })
+        {
+            throw new ConflictException("A paid place is cancelled through a cancellation request — the Super App team replies within 2 hours.", "request_required");
+        }
+        await WithdrawCoreAsync(game, mine, "Left the game", ct);
+        return await GetAsync(code, ct);
+    }
+
+    public async Task<(Game Game, GameRequest Request)> ForRequestAsync(string code, Guid playerId, CancellationToken ct)
+    {
         var game = await games.FindAsync(code, ct) ?? throw new NotFoundException("This game does not exist.");
-        var mine = game.Requests.FirstOrDefault(r => r.PlayerId == me && r.Status is GameRequestStatus.Waiting or GameRequestStatus.Accepted or GameRequestStatus.Waitlisted)
+        var mine = game.Requests.FirstOrDefault(r => r.PlayerId == playerId && r.Status is GameRequestStatus.Waiting or GameRequestStatus.Accepted or GameRequestStatus.Waitlisted)
             ?? throw new NotFoundException("You haven’t asked to join this game.");
         if (Start(game.Booking) <= CairoTime.Now(clock)) { throw new BusinessRuleException("The game has started.", "started"); }
+        return (game, mine);
+    }
+
+    public async Task<decimal> WithdrawApprovedAsync(string code, Guid playerId, CancellationToken ct)
+    {
+        var (game, mine) = await ForRequestAsync(code, playerId, ct);
+        var refund = mine.Payment is { Status: PaymentStatus.Paid } p ? p.Amount : 0;
+        await WithdrawCoreAsync(game, mine, "Cancellation request approved", ct);
+        return refund;
+    }
+
+    private async Task WithdrawCoreAsync(Game game, GameRequest mine, string reason, CancellationToken ct)
+    {
         mine.Status = GameRequestStatus.Withdrawn;
-        await RefundShareAsync(mine, me, "Left the game", ct);
+        await RefundShareAsync(mine, mine.PlayerId, reason, ct);
         Refill(game, 0);
         await unitOfWork.SaveChangesAsync(ct);
         await Tell(game.HostId, "A player left your game", game, ct);
-        return await GetAsync(code, ct);
     }
 
     public async Task RateAsync(string code, RatingsRequest request, CancellationToken ct)

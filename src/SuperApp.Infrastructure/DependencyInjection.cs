@@ -104,6 +104,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.Games.IGameRepository, GameRepository>();
         Webhooks.WebhookRegistration.AddWebhooks(services);
         services.AddScoped<Application.Features.Waitlist.IWaitlistRepository, WaitlistRepository>();
+        services.AddScoped<Application.Features.Cancellations.ICancellationRepository, CancellationRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();
         services.AddSingleton<IQrTokens, QrTokens>();

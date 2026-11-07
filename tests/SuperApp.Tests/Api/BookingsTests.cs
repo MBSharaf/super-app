@@ -128,11 +128,13 @@ public sealed class BookingsTests(DemoApiFactory api) : IClassFixture<DemoApiFac
 
         var preview = (await client.GetAsync($"/api/v1/bookings/{code}/refund-preview")).Body.Data();
         preview.GetProperty("refundPercent").GetInt32().ShouldBe(100);
-        var cancelled = (await client.PostAsync($"/api/v1/bookings/{code}/cancel")).Body.Data();
+        (await client.PostAsync($"/api/v1/bookings/{code}/cancel")).Body.Code().ShouldBe("request_required");
+        var approved = await api.CancelThroughRequestAsync(client, "booking", code!);
+        approved.GetProperty("refunded").GetDecimal().ShouldBe(booked.GetProperty("deposit").GetDecimal());
+        var cancelled = (await client.GetAsync($"/api/v1/bookings/{code}")).Body.Data();
         cancelled.GetProperty("status").GetString().ShouldBe("CancelledByCustomer");
-        cancelled.GetProperty("refundAmount").GetDecimal().ShouldBe(booked.GetProperty("deposit").GetDecimal());
 
-        (await client.PostAsync($"/api/v1/bookings/{code}/cancel")).Body.Code().ShouldBe("cannot_cancel");
+        (await client.PostAsync("/api/v1/cancellations", new { kind = "booking", reference = code })).Body.Code().ShouldBe("cannot_cancel");
         (await other.PostAsync("/api/v1/bookings", Booking(day, 15))).Status.ShouldBe(HttpStatusCode.Created);
         (await client.GetAsync("/api/v1/bookings/mine?tab=cancelled")).Body.Data().GetArrayLength().ShouldBe(1);
     }

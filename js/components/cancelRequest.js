@@ -22,13 +22,16 @@
       footer: '<button class="btn btn-outline" data-close>Keep it</button><button class="btn btn-blaze" data-cx-send>Send cancellation request</button>',
       onMount(m, close) {
         const f = m.querySelector('[data-cx]');
-        const send = (e) => {
+        const btn = m.querySelector('[data-cx-send]');
+        const send = async (e) => {
           e?.preventDefault();
-          try { const r = CX().request({ kind, refId, reason: f.reason.value }); done = true; resolve(r); close(); SA.ui.overlay.toast(`Cancellation request ${r.id} sent`); SA.app.rerender(); }
-          catch (err) { f.querySelector('[data-err="form"]').textContent = err.message; }
+          if (btn.disabled) return;
+          btn.disabled = true;
+          try { const r = await CX().request({ kind, refId, reason: f.reason.value }); done = true; resolve(r); close(); SA.ui.overlay.toast(`Cancellation request ${r.id} sent`); SA.app.rerender(); }
+          catch (err) { f.querySelector('[data-err="form"]').textContent = err.message; btn.disabled = false; }
         };
         f.addEventListener('submit', send);
-        m.querySelector('[data-cx-send]').addEventListener('click', send);
+        btn.addEventListener('click', send);
       },
       onClose: () => { if (!done) resolve(null); },
     });

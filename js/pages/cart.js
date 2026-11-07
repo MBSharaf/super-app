@@ -167,6 +167,7 @@
     title: 'Order — Super App Shop',
     async render(ctx) {
       const o = await S.shop.order(ctx.params.id);
+      await S.cancellations.ready?.();
       const stage = STAGES.findIndex((s) => s[0] === o.status);
       const multi = o.sellers.length > 1 || o.sellers.some((g) => !g.official);
       const sellerStage = (g) => STAGES.findIndex((s) => s[0] === g.status);
@@ -198,7 +199,7 @@
         </article>
         ${SA.ui.returns?.orderBlock(o) || ''}
         ${SA.ui.cancelRequest.notice('order', o.id)}
-        <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button>${!o.live && !o.awaitingPayment && ['confirmed', 'packed'].includes(o.status) && !S.cancellations.openFor('order', o.id) ? '<button class="btn btn-ghost" data-cancel-order style="color:var(--danger)">Cancel order</button>' : ''}<a class="btn btn-outline" href="#/orders">Order history</a><a class="btn btn-ghost" href="#/support?ref=order:${encodeURIComponent(o.id)}">${icon('help', 16)} Get help</a></div>
+        <div class="row wrap confirm-actions"><a class="btn btn-primary" href="#/shop">Continue shopping</a><button class="btn btn-outline" data-invoice>${icon('file', 16)} Invoice (PDF)</button>${!o.awaitingPayment && (o.live ? o.canCancel : ['confirmed', 'packed'].includes(o.status)) && !S.cancellations.openFor('order', o.id) ? '<button class="btn btn-ghost" data-cancel-order style="color:var(--danger)">Cancel order</button>' : ''}<a class="btn btn-outline" href="#/orders">Order history</a><a class="btn btn-ghost" href="#/support?ref=order:${encodeURIComponent(o.id)}">${icon('help', 16)} Get help</a></div>
       </div>`;
     },
     mount(el, ctx) {

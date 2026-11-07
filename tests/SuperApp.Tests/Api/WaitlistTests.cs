@@ -34,7 +34,7 @@ public sealed class WaitlistTests(AccountsApiFactory api) : IClassFixture<Accoun
         joined.Body.Data().GetProperty("waiting").GetInt32().ShouldBe(1);
         (await second.PostAsync("/api/v1/waitlist", new { pitchSlug = slug, date = day, hour = 21 })).Body.Code().ShouldBe("already_waiting");
 
-        (await first.PostAsync($"/api/v1/bookings/{code}/cancel")).Status.ShouldBe(HttpStatusCode.OK);
+        await api.CancelThroughRequestAsync(first, "booking", code!);
         (await ToldAsync(secondId)).ShouldBeTrue();
         (await second.GetAsync("/api/v1/waitlist/mine")).Body.Data()[0].GetProperty("status").GetString().ShouldBe("FreeNow");
 

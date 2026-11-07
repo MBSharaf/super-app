@@ -79,6 +79,20 @@
     'This request is already answered.': 'الطلب ده اترد عليه خلاص.',
     'Write the reason for the customer (5+ characters).': 'اكتب السبب للعميل (5 حروف أو أكتر).',
     'Write the reason.': 'اكتب السبب.',
+    'Paid bookings are cancelled through a cancellation request — the Super App team replies within 2 hours.': 'الحجوزات المدفوعة بتتلغي عن طريق طلب إلغاء — فريق Super App بيرد في خلال ساعتين.',
+    'Paid orders are cancelled through a cancellation request — the Super App team replies within 2 hours.': 'الطلبات المدفوعة بتتلغي عن طريق طلب إلغاء — فريق Super App بيرد في خلال ساعتين.',
+    'A paid place is cancelled through a cancellation request — the Super App team replies within 2 hours.': 'المكان المدفوع بيتلغي عن طريق طلب إلغاء — فريق Super App بيرد في خلال ساعتين.',
+    'Nothing was paid online for this, so you can cancel it straight away.': 'مفيش فلوس اتدفعت أونلاين على ده، فتقدر تلغيه على طول.',
+    'Cancellation request sent. We’ll reply within 2 hours.': 'طلب الإلغاء اتبعت. هنرد عليك في خلال ساعتين.',
+    'Cancellation request not found.': 'طلب الإلغاء مش موجود.',
+    'Package not found.': 'الباقة مش موجودة.',
+    'Choose booking, package, order or game.': 'اختار حجز أو باقة أو طلب أو ماتش.',
+    'Enter the code of what you want to cancel.': 'اكتب كود الحاجة اللي عايز تلغيها.',
+    'Write the reason the customer sees (5+ characters).': 'اكتب السبب اللي العميل هيشوفه (5 حروف أو أكتر).',
+    'Approved — cancelled and refunded.': 'اتوافق — اتلغى والفلوس رجعت.',
+    'Refused — the customer is told.': 'اترفض — والعميل اتبلغ.',
+    'Place in a game': 'مكان في ماتش',
+    'This booking can no longer be cancelled.': 'الحجز ده مبقاش ينفع يتلغي.',
     /* ---------- Chatbot (replaces the WhatsApp button) ---------- */
     'Chat with Super App assistant': 'اتكلم مع مساعد Super App',
     'Chat with the Super App assistant': 'اتكلم مع مساعد Super App',
@@ -108,5 +122,6 @@
     ['^(.+) · ([A-Z][\\w -]+): (.+)\\. Reply within (\\d+) hours\\.$', (m) => `${m[1]} · ${SA.i18n.t(m[2])}: ${SA.i18n.t(m[3])}. رد في خلال ${m[4]} ساعات.`],
     ['^([A-Z][\\w -]+) cancelled\\.(?: ([\\d,]+) EGP is back in your wallet\\.)?(.*)$', (m) => `${SA.i18n.t(m[1])} اتلغى.${m[2] ? ` رجعلك ${m[2]} جنيه على محفظتك.` : ''}${m[3]}`],
     ['^(.+) Your (pitch booking|weekly package|shop order|request to join a game|joined game) stays active\\.$', (m) => `${m[1]} ${SA.i18n.t(m[2].replace(/^./, (c) => c.toUpperCase()))} هيفضل شغال.`],
+    ['^(.+) · we’ll reply within (\\d+) hours\\. It stays active until then\\.$', '{1} · هنرد عليك في خلال {2} ساعات. هيفضل شغال لحد ساعتها.'],
   );
 })(window.SA);

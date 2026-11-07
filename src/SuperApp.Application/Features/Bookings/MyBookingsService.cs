@@ -18,7 +18,14 @@ public interface IMyBookingsService
 
     Task<RefundPreview> RefundPreviewAsync(string code, CancellationToken ct);
 
+    /// <summary>The customer cancels a booking with nothing paid online; a paid one needs a cancellation request (409 request_required).</summary>
     Task<BookingResponse> CancelAsync(string code, CancellationToken ct);
+
+    /// <summary>The customer's booking and its refund under the pitch's policy now (for a cancellation request).</summary>
+    Task<(Booking Booking, string PitchName, RefundPreview Preview)> ForRequestAsync(string code, Guid customerId, CancellationToken ct);
+
+    /// <summary>An approved cancellation request: cancels and refunds under the policy; returns the refund.</summary>
+    Task<decimal> CancelApprovedAsync(string code, Guid customerId, string reason, CancellationToken ct);
 
     Task<byte[]> QrPngAsync(string code, CancellationToken ct);
 }
@@ -52,17 +59,36 @@ public sealed class MyBookingsService(
     public async Task<BookingResponse> GetAsync(string code, CancellationToken ct) =>
         await ToResponseAsync(await OwnAsync(code, ct), withQr: true, ct);
 
-    public async Task<RefundPreview> RefundPreviewAsync(string code, CancellationToken ct)
-    {
-        var booking = await OwnAsync(code, ct);
-        var pitch = await bookings.PitchAsync((await bookings.PitchInfoAsync(booking.PitchId, ct)).Slug, ct);
-        return Preview(booking, pitch?.FullRefundHours ?? 6, pitch?.HalfRefundHours ?? 0);
-    }
+    public async Task<RefundPreview> RefundPreviewAsync(string code, CancellationToken ct) => await PreviewAsync(await OwnAsync(code, ct), ct);
 
     public async Task<BookingResponse> CancelAsync(string code, CancellationToken ct)
     {
         var booking = await OwnAsync(code, ct);
-        var preview = await RefundPreviewAsync(code, ct);
+        if (booking.Status == BookingStatus.Confirmed && Deposits.PaidOnline(booking) > 0)
+        {
+            throw new ConflictException("Paid bookings are cancelled through a cancellation request — the Super App team replies within 2 hours.", "request_required");
+        }
+        await CancelCoreAsync(booking, "Cancelled by the customer", ct);
+        return await ToResponseAsync(booking, withQr: false, ct);
+    }
+
+    public async Task<(Booking Booking, string PitchName, RefundPreview Preview)> ForRequestAsync(string code, Guid customerId, CancellationToken ct)
+    {
+        var booking = await bookings.FindAsync(code, ct);
+        if (booking is null || booking.CustomerId != customerId) { throw new NotFoundException("This booking does not exist."); }
+        return (booking, (await bookings.PitchInfoAsync(booking.PitchId, ct)).Name, await PreviewAsync(booking, ct));
+    }
+
+    public async Task<decimal> CancelApprovedAsync(string code, Guid customerId, string reason, CancellationToken ct)
+    {
+        var (booking, _, _) = await ForRequestAsync(code, customerId, ct);
+        await CancelCoreAsync(booking, reason, ct);
+        return booking.RefundAmount;
+    }
+
+    private async Task CancelCoreAsync(Booking booking, string reason, CancellationToken ct)
+    {
+        var preview = await PreviewAsync(booking, ct);
         if (!preview.CanCancel)
         {
             throw new BusinessRuleException("This booking can no longer be cancelled.", "cannot_cancel");
@@ -70,13 +96,18 @@ public sealed class MyBookingsService(
         booking.Status = BookingStatus.CancelledByCustomer;
         booking.CancelledAt = clock.UtcNow;
         booking.RefundAmount = preview.RefundAmount;
-        await ledger.BookingRefundAsync(booking, booking.CustomerId!.Value, "Cancelled by the customer", ct);
+        await ledger.BookingRefundAsync(booking, booking.CustomerId!.Value, reason, ct);
         await unitOfWork.SaveChangesAsync(ct);
         await bookings.ReleaseSlotsAsync(booking.Id, ct);
         var info = await bookings.PitchInfoAsync(booking.PitchId, ct);
         await waitlist.HoursFreedAsync(booking, info.Name, info.Slug, ct);
         await TellAboutCancelAsync(booking, ct);
-        return await ToResponseAsync(booking, withQr: false, ct);
+    }
+
+    private async Task<RefundPreview> PreviewAsync(Booking booking, CancellationToken ct)
+    {
+        var pitch = await bookings.PitchAsync((await bookings.PitchInfoAsync(booking.PitchId, ct)).Slug, ct);
+        return Preview(booking, pitch?.FullRefundHours ?? 6, pitch?.HalfRefundHours ?? 0);
     }
 
     public async Task<byte[]> QrPngAsync(string code, CancellationToken ct)

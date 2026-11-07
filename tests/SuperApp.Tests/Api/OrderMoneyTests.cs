@@ -81,7 +81,8 @@ public sealed class OrderMoneyTests(DemoApiFactory api) : IClassFixture<DemoApiF
         var (partner, customer, variant) = await CartAsync();
         var placed = (await ShopKit.CheckoutAsync(customer)).Body.Data();
         var code = placed.GetProperty("code").GetString()!;
-        (await customer.PostAsync($"/api/v1/orders/{code}/cancel")).Status.ShouldBe(HttpStatusCode.OK);
+        (await customer.PostAsync($"/api/v1/orders/{code}/cancel")).Body.Code().ShouldBe("request_required");
+        await api.CancelThroughRequestAsync(customer, "order", code);
 
         Wallet((await customer.GetAsync("/api/v1/wallet")).Body.Data(), "Customer").GetProperty("available").GetDecimal()
             .ShouldBe(placed.GetProperty("total").GetDecimal());   // the items and the delivery fee

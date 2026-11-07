@@ -77,8 +77,8 @@ public sealed class DepositCheckInTests(AccountsApiFactory api) : IClassFixture<
         var booked = (await player.PostAsync("/api/v1/bookings", Booking(slug, PartnerKit.Day(6), 20))).Body.Data();
         var deposit = booked.GetProperty("deposit").GetDecimal();
         (await PointsAsync(playerId)).ShouldBe((int)deposit);
-        var cancelled = (await player.PostAsync($"/api/v1/bookings/{booked.GetProperty("code").GetString()}/cancel")).Body.Data();
-        cancelled.GetProperty("refundAmount").GetDecimal().ShouldBe(deposit);
+        var cancelled = await api.CancelThroughRequestAsync(player, "booking", booked.GetProperty("code").GetString()!);
+        cancelled.GetProperty("refunded").GetDecimal().ShouldBe(deposit);
         (await PointsAsync(playerId)).ShouldBe(0);
         (await api.DbAsync(db => db.Set<PointEntry>().CountAsync(p => p.UserId == playerId && p.Kind == PointKind.Refund))).ShouldBe(1);
     }

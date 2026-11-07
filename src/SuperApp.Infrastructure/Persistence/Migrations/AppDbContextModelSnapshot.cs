@@ -8944,6 +8944,112 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SuperApp.Domain.Entities.Support.CancellationRequest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DecidedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<Guid?>("DecidedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DecisionNote")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("DueAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<byte>("Kind")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("PaidOnline")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<decimal>("RefundIfApproved")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal?>("Refunded")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_CancellationRequests_Code");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("IX_CancellationRequests_CustomerId");
+
+                    b.HasIndex("DecidedById");
+
+                    b.HasIndex("Kind", "Reference")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_CancellationRequests_Open")
+                        .HasFilter("[Status] = 0");
+
+                    b.HasIndex("Status", "DueAt")
+                        .HasDatabaseName("IX_CancellationRequests_Status_DueAt");
+
+                    b.ToTable("CancellationRequests", "support", t =>
+                        {
+                            t.HasCheckConstraint("CK_CancellationRequests_Kind", "[Kind] BETWEEN 0 AND 3");
+
+                            t.HasCheckConstraint("CK_CancellationRequests_Money", "[PaidOnline] >= 0 AND [RefundIfApproved] >= 0 AND ([Refunded] IS NULL OR [Refunded] >= 0)");
+
+                            t.HasCheckConstraint("CK_CancellationRequests_Status", "[Status] BETWEEN 0 AND 2");
+                        });
+                });
+
             modelBuilder.Entity("SuperApp.Domain.Entities.Support.Ticket", b =>
                 {
                     b.Property<long>("Id")
@@ -11503,6 +11609,24 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SuperApp.Domain.Entities.Support.CancellationRequest", b =>
+                {
+                    b.HasOne("SuperApp.Domain.Entities.Auth.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SuperApp.Domain.Entities.Auth.User", "DecidedBy")
+                        .WithMany()
+                        .HasForeignKey("DecidedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DecidedBy");
                 });
 
             modelBuilder.Entity("SuperApp.Domain.Entities.Support.Ticket", b =>
