@@ -32,9 +32,10 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
     // until the owner sends the cancellation workflow's own link.
     cancellations: '',
   },
-  // Chatbot support — paste the AI agent's webhook link here (POST JSON, replies { reply } or { output }).
-  // Empty = the built-in demo assistant answers from the Help center.
-  chatbot: { url: '', hours: '' },
+  // Chatbot support — the AI agent's webhook (n8n, owner's link 2026-11-07). POST JSON with the message, the conversation,
+  // the customer's data on this device and knowledgeUrl (chatbot/knowledge.md); replies { reply, action? }.
+  // Empty, or no answer = the built-in demo assistant answers from the Help center.
+  chatbot: { url: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/support', hours: '' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.
   social: { facebook: '', instagram: '', tiktok: '' },
 } };

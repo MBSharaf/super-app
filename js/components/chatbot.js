@@ -45,20 +45,82 @@
   };
 
   /* ---------- The AI agent (when its link is set) ---------- */
+
+  /**
+   * Everything the agent needs about this customer, from this device (the demo site has no database yet): profile, wallet,
+   * Super Points, bookings and packages, games published / joined / asked to join, shop orders, fantasy team and leagues,
+   * cancellation requests and the last payments. Each list keeps the newest 20.
+   */
+  const customerContext = () => {
+    const S = SA.services, st = SA.core.store.get();
+    const top = (a, n = 20) => (Array.isArray(a) ? a.slice(-n).reverse() : []);
+    const iso = (t) => (t ? new Date(t).toISOString() : null);
+    const hh = (h) => (h == null ? null : `${String(Math.floor(h) % 24).padStart(2, '0')}:${h % 1 ? '30' : '00'}`);
+    const safe = (fn, d = null) => { try { return fn(); } catch { return d; } };
+    const u = st.user || {};
+    const pts = safe(() => S.loyalty.summary());
+    const bookings = top(st.bookings).map((b) => ({
+      code: b.id, status: b.status, pitch: b.pitchName, pitchId: b.pitchId, area: b.area, city: b.city, date: b.date, startTime: hh(b.hour), duration: b.duration,
+      players: b.players, total: b.total, depositPaid: b.deposit ?? null, payAtPitch: b.payAtPitch ?? null, cancelPolicy: b.policy || null,
+      packageId: b.seriesId || null, sessionNo: b.sessionNo || null, publishedGameId: b.publishedMatchId || null, link: `/booking/${b.id}`,
+      cancellationPolicy: safe(() => { const p = S.bookings.cancellationPolicy(b); return { refundNow: p.refund ?? null, policy: p.policy?.name || null }; }),
+    }));
+    const games = top(st.publishedMatches).map((m) => ({ id: m.id, mine: !!m.isMine, date: m.date, startTime: hh(m.hour), playersNeeded: m.total, playersAlready: m.filled,
+      level: m.level, type: m.type, gender: m.gender, pricePerPlayer: m.pricePerPlayer, status: m.closed ? 'closed' : 'open', bookingCode: m.bookingId || null, link: `/players/${m.id}` }));
+    const requests = Object.entries(st.matchRequests || {}).map(([id, r]) => {
+      const m = safe(() => S.matches.allSync().find((x) => x.id === id)) || {};
+      return { gameId: id, status: r.status, at: iso(r.at), payment: r.payment || null, date: m.date || null, startTime: hh(m.hour), host: m.hostName || null, pitch: m.pitch?.name || m.pitchName || null, link: `/players/${id}` };
+    });
+    const orders = top(safe(() => S.shop.orders(), st.orders) || st.orders).map((o) => ({
+      code: o.id, status: o.status, placedAt: iso(o.createdAt || o.placedAt), total: o.total, payment: o.payment?.method || null, delivery: o.delivery || o.speed || null,
+      items: (o.lines || []).map((l) => ({ name: l.name, size: l.variant?.size || null, color: l.variant?.color || null, qty: l.qty, price: l.price })), link: `/order/${o.id}`,
+    }));
+    const f = st.fantasy || {};
+    return {
+      customer: { id: u.id || null, name: u.name || null, email: u.email || null, phone: u.phone || null, city: u.city || null, area: u.area || null },
+      context: {
+        wallet: { balance: st.wallet?.balance ?? 0, currency: 'EGP', lastTransactions: top(st.wallet?.transactions, 10).map((t) => ({ at: iso(t.at), type: t.type, label: t.label, amount: t.amount })) },
+        superPoints: pts ? { points: pts.balance ?? pts.points ?? null, tier: pts.tier?.name || pts.tier || null } : null,
+        bookings, games, gameRequests: requests, orders,
+        fantasy: { team: f.team ? { name: f.team.name, players: (f.team.squad || []).length, gameweeksPlayed: (f.team.history || []).length, totalPoints: safe(() => S.fantasy.totals().total, null) } : null,
+          leaguesCreated: (f.createdGroups || []).map((g) => ({ id: g.id, name: g.name, code: g.code })), leaguesJoined: f.joinedLeagues || [] },
+        cancellationRequests: top(safe(() => S.cancellations.mine(), [])).map((c) => ({ code: c.id, kind: c.kind, about: c.label, status: c.status, createdAt: iso(c.createdAt), note: c.note || null })),
+        lastPayments: top(st.payments, 10).map((p) => ({ id: p.id, at: iso(p.at), kind: p.kind, label: p.label, amount: p.amount, method: p.method })),
+      },
+    };
+  };
+
   const askAgent = async (state, message, topic) => {
     const url = SA.config.chatbot?.url;
     if (!url) return null;
-    const u = SA.services.user?.me?.() || null;
+    const site = new URL(SA.core.router.url('/'), location.href).href;
     const res = await fetch(url, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: state.id, message, topic: topic || null, lang: ar() ? 'ar' : 'en', page: location.hash || '#/', user: u ? { id: u.id, name: u.name, email: u.email || null } : null }),
+      body: JSON.stringify({
+        event: 'support.message', source: 'demo-site', site, sentAt: new Date().toISOString(),
+        sessionId: state.id, message, topic: topic || null, lang: ar() ? 'ar' : 'en', page: location.pathname + location.search,
+        // The conversation so far (text only), so the agent keeps the thread even without its own memory
+        history: state.msgs.slice(-12).map((m) => ({ from: m.from === 'me' ? 'customer' : 'assistant', text: String(m.html).replace(/<br\s*\/?>/g, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'") })),
+        ...customerContext(),
+        knowledgeUrl: new URL('chatbot/knowledge.md', site).href,
+      }),
     });
     if (!res.ok) throw new Error(`chatbot ${res.status}`);
     const data = await res.json().catch(() => ({}));
     const body = Array.isArray(data) ? data[0] : data;
     const reply = body?.reply ?? body?.output ?? body?.text;
-    return reply ? esc(String(reply)).replace(/\n/g, '<br>') : null;
+    if (!reply) return null;
+    const actions = [].concat(body.actions || [], body.action ? [body.action] : []).filter((a) => a && typeof a === 'object' && ['cancel', 'open'].includes(a.type));
+    return { html: esc(String(reply)).replace(/\n/g, '<br>'), actions };
   };
+
+  /** Buttons for what the agent proposes; nothing happens until the customer presses one */
+  const KIND_LABEL = { booking: ['booking', 'الحجز'], package: ['package', 'الباكدج'], order: ['order', 'الأوردر'], 'game-request': ['request to join', 'طلب الانضمام'], game: ['game', 'الماتش'] };
+  const actionButtons = (actions) => actions.map((a, i) => {
+    if (a.type === 'open') return `<button type="button" class="btn btn-outline btn-sm" data-cb-act="${i}">${esc(a.label || L('Open', 'افتح'))}</button>`;
+    const k = KIND_LABEL[a.kind] || [a.kind, a.kind];
+    return `<button type="button" class="btn btn-primary btn-sm" data-cb-act="${i}">${esc(L(`Send cancellation request (${k[0]} ${a.id})`, `ابعت طلب إلغاء (${k[1]} ${a.id})`))}</button>`;
+  }).join('');
 
   /* ---------- Cancellation requests (js/services/cancellationService.js) speak through the chat ---------- */
   let ui = null;
@@ -124,9 +186,25 @@
     const input = form.msg;
     let busy = false;
 
-    const bubble = (m) => `<div class="cb-msg ${m.from === 'me' ? 'is-me' : 'is-bot'}">${m.html}</div>`;
+    const bubble = (m, i) => `<div class="cb-msg ${m.from === 'me' ? 'is-me' : 'is-bot'}">${m.html}${m.acts?.length && !m.done ? `<div class="row" style="--gap:6px;margin-top:8px;flex-wrap:wrap" data-cb-msg="${i}">${actionButtons(m.acts)}</div>` : ''}</div>`;
     const paint = () => { log.innerHTML = state.msgs.map(bubble).join(''); body.scrollTop = body.scrollHeight; };
-    const push = (from, html) => { state.msgs = [...state.msgs, { from, html, at: Date.now() }].slice(-60); save(state); paint(); };
+    const push = (from, html, acts) => { state.msgs = [...state.msgs, { from, html, at: Date.now(), ...(acts?.length ? { acts } : {}) }].slice(-60); save(state); paint(); };
+
+    /** The customer pressed an agent's button: open a page, or (after a confirm) send the cancellation request */
+    const runAction = (msgIdx, actIdx) => {
+      const m = state.msgs[msgIdx];
+      const a = m?.acts?.[actIdx];
+      if (!a || m.done) return;
+      if (a.type === 'open') { open(false); SA.core.router.go(String(a.path || '/').replace(/^#/, '')); return; }
+      if (!window.confirm(L(`Send a cancellation request for ${a.id}? The Super App team replies within 2 hours.`, `تبعت طلب إلغاء لـ ${a.id}؟ فريق Super App هيرد في خلال ساعتين.`))) return;
+      m.done = true; save(state);
+      try { SA.services.cancellations.request({ kind: a.kind, refId: a.id, reason: a.reason || '' }); paint(); }
+      catch (err) { m.done = false; save(state); push('bot', esc(err.message || L('That couldn’t be sent.', 'مقدرتش أبعت الطلب.'))); }
+    };
+    log.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-cb-act]');
+      if (b) runAction(+b.closest('[data-cb-msg]').dataset.cbMsg, +b.dataset.cbAct);
+    });
 
     const ask = async (text, topic = '', fromTopic = false) => {
       if (busy) return;
@@ -138,9 +216,9 @@
       body.scrollTop = body.scrollHeight;
       let reply = null;
       try { reply = await askAgent(state, t, topic); } catch (e) { console.warn('[chatbot]', e?.message || e); }
-      if (!reply) { await new Promise((r) => setTimeout(r, 450)); reply = demoReply(t, topic, fromTopic); }
+      if (!reply) { await new Promise((r) => setTimeout(r, 450)); reply = { html: demoReply(t, topic, fromTopic), actions: [] }; }
       busy = false;
-      push('bot', reply);
+      push('bot', reply.html, reply.actions);
     };
 
     const open = (on) => {
