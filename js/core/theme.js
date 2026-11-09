@@ -17,7 +17,7 @@
     root.dataset.frame = resolved();
     root.dataset.theme = dash ? 'dark' : resolved();
     if (dash) root.dataset.skin = 'match'; else delete root.dataset.skin;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dash ? '#2A0E12' : root.dataset.theme === 'dark' ? '#0A0F0D' : '#F1F2EE');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dash ? '#08100D' : root.dataset.theme === 'dark' ? '#0A0F0D' : '#F1F2EE');
     document.querySelectorAll('[data-theme-label]').forEach((n) => (n.textContent = SA.i18n?.t(label()) || label()));
   };
   const label = () => ({ auto: 'Auto', light: 'Light', dark: 'Dark' }[read()]);
