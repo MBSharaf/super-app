@@ -3,6 +3,19 @@
   const D = SA.data.i18nAr;
   const add = (o) => Object.entries(o).forEach(([k, v]) => { if (!(k in D.strings)) D.strings[k] = v; });
   add({
+    // Egyptian league fantasy removed (2026-11-09): the site now offers Premier League fantasy only
+    'Book pitches, fill your squad, play Premier League fantasy and gear up — all from one account and one wallet.': 'احجز ملاعب، كمّل فريقك، العب فانتازي الدوري الإنجليزي واشتري معداتك — كله من حساب واحد ومحفظة واحدة.',
+    'Super App finds open pitches near you, fills the empty spots in your match, runs your Premier League fantasy team and delivers your gear — with one account and one wallet.': 'Super App بيلاقيلك ملاعب فاضية قريبة منك، بيكمّل الأماكن الناقصة في ماتشك، بيدير فريق فانتازي الدوري الإنجليزي ويوصلك معداتك — بحساب واحد ومحفظة واحدة.',
+    'Super App finds open pitches near you, fills the empty spots in your match and runs your Premier League fantasy team — with one account and one wallet.': 'Super App بيلاقيلك ملاعب فاضية قريبة منك، بيكمّل الأماكن الناقصة في ماتشك وبيدير فريق فانتازي الدوري الإنجليزي — بحساب واحد ومحفظة واحدة.',
+    'Book football pitches near you, find players for your match, play Premier League fantasy and shop sports gear — in one app.': 'احجز ملاعب كورة قريبة منك، لاقي لاعيبة لماتشك، العب فانتازي الدوري الإنجليزي واشتري معدات رياضية — في تطبيق واحد.',
+    'Play Premier League fantasy: pick your squad, join leagues and win prizes.': 'العب فانتازي الدوري الإنجليزي: اختار تشكيلتك، ادخل دوريات واكسب جوايز.',
+    'English Premier League · Fantasy {0}/{1}': 'الدوري الإنجليزي الممتاز · فانتازي {0}/{1}',
+    'Premier League fantasy and prizes': 'فانتازي الدوري الإنجليزي والجوايز',
+    'Play Premier League fantasy': 'العب فانتازي الدوري الإنجليزي',
+    'English Premier League {0}/{1}': 'الدوري الإنجليزي الممتاز {0}/{1}',
+    'Super App League': 'دوري Super App',
+  });
+  add({
     'It shows as a live card on the free-slot alerts page with a Book now button, and players with alerts for this pitch or area are notified.': 'بتظهر ككارت حي في صفحة تنبيهات الساعات الفاضية فيه زرار احجز دلوقتي، واللاعيبة اللي عاملين تنبيه للملعب ده أو المنطقة بيوصلهم إشعار.',
     'Fill empty hours: post them to players as free slots': 'املا الساعات الفاضية: انزلها للاعيبة كساعات فاضية',
     'Booked from free slots': 'اتحجزت من الساعات الفاضية',

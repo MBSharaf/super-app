@@ -275,5 +275,7 @@
 
   SA.data.fantasy = build(EGY);
   SA.data.fantasyEPL = build(EPL);
-  SA.data.fantasyLeagues = { egy: SA.data.fantasy, epl: SA.data.fantasyEPL };
+  // Egyptian league fantasy is off (owner, 2026-11-09): no free source has its player statistics. Its demo data stays
+  // in SA.data.fantasy for later; only the Premier League is offered.
+  SA.data.fantasyLeagues = { epl: SA.data.fantasyEPL };
 })(window.SA);

@@ -8,12 +8,12 @@
   const store = SA.core.store;
   const { request, ApiError } = SA.services.http;
   const { seeded, rng, addDays, uid, sum } = SA.core.utils;
-  // Two leagues to play: the Egyptian Premier League ("egy") and the English Premier League ("epl").
+  // Leagues to play: the English Premier League ("epl"). Egyptian league fantasy ("egy") is off since 2026-11-09.
   // Each has its own dataset and its own saved state (team, groups, leagues entered).
   const LEAGUES = SA.data.fantasyLeagues;
   const STATE_KEY = { egy: 'fantasy', epl: 'fantasyEpl' };
   const blank = () => ({ team: null, joinedLeagues: [], createdGroups: [] });
-  const league = () => (LEAGUES[store.get().fantasyLeague] ? store.get().fantasyLeague : 'egy');
+  const league = () => (LEAGUES[store.get().fantasyLeague] ? store.get().fantasyLeague : 'epl');
   let D, byId, teamById;
   const index = () => {
     D = LEAGUES[league()];

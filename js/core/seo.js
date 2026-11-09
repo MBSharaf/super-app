@@ -8,7 +8,7 @@
 (function (SA) {
   const SITE = 'https://mbsharaf.github.io/super-app';
   const IMAGE = `${SITE}/og-image.png`;
-  const DEFAULT = 'Book football pitches near you, find players for your match, play Egyptian Premier League fantasy and shop sports gear — in one app.';
+  const DEFAULT = 'Book football pitches near you, find players for your match, play Premier League fantasy and shop sports gear — in one app.';
   const PRIVATE = /^\/(dash|seller|admin|factory|ceo|checkout|cart|profile|wallet|orders|order|booking|bookings|wishlist|alerts|my-games|support|sell\/studio|sell\/bulk)(\/|$)/;
   const PAGES = {
     '/': DEFAULT,
@@ -16,7 +16,7 @@
     '/players': 'Need players for tonight? Join football games near you or post yours and fill the squad in minutes.',
     '/players/new': 'Post your football game and find the players you need.',
     '/matches': 'Today’s football: Egyptian Premier League, CAF, Premier League and more — fixtures, live scores and results.',
-    '/fantasy': 'Play Egyptian Premier League fantasy: pick your squad, join leagues and win prizes.',
+    '/fantasy': 'Play Premier League fantasy: pick your squad, join leagues and win prizes.',
     '/shop': 'Football boots, jerseys, balls and original printed designs from Egyptian creators — delivered across Egypt.',
     '/sell': 'Sell your football designs on Super App: we print, ship and pay you — or list your own products.',
     '/partner/apply': 'List your football pitch on Super App: online bookings, payments and a free partner dashboard.',

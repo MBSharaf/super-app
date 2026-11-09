@@ -19,7 +19,7 @@
     players: L('players', 'Find players', '#/players', 'users', 'Join a game or fill your squad', /^\/players(?!\/new)/),
     post: L('post', 'Post a match', '#/players/new', 'plus', 'Short on players? Post your game', /^\/players\/new/),
     matches: L('matches', 'Matches', '#/matches', 'calendar', 'Live scores and fixtures', /^\/matches/),
-    fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'star', 'Egyptian league fantasy and prizes', /^\/fantasy/),
+    fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'star', 'Premier League fantasy and prizes', /^\/fantasy/),
     shop: L('shop', 'Shop', '#/shop', 'bag', 'Boots, kits and gear', /^\/(shop|cart|checkout|order\/)/),
     wishlist: L('wishlist', 'Wishlist', '#/wishlist', 'heart', 'Items you saved', /^\/wishlist/),
     sell: L('sell', 'Sell on Super App', '#/sell', 'shirt', 'Sell your designs', /^\/(sell|s\/)/),
@@ -86,7 +86,7 @@
 
   const footer = () => `<div class="container">
     <div class="footer-grid">
-      <div class="footer-brand">${brand}<p>Book pitches, fill your squad, play Egyptian Premier League fantasy and gear up — all from one account and one wallet.</p>${SA.ui.social.render({ variant: 'dark' })}</div>
+      <div class="footer-brand">${brand}<p>Book pitches, fill your squad, play Premier League fantasy and gear up — all from one account and one wallet.</p>${SA.ui.social.render({ variant: 'dark' })}</div>
       <div><h4>Play</h4><a href="#/pitches">Book a pitch</a><a href="#/players">Find players</a><a href="#/players/new">Post a match</a><a href="#/bookings">My bookings</a></div>
       <div><h4>Fantasy</h4><a href="#/fantasy">My team</a><a href="#/fantasy/leagues">Leagues</a><a href="#/fantasy/fixtures">Fixtures</a><a href="#/fantasy/stats">Player stats</a></div>
       <div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super App</a></div>

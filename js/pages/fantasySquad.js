@@ -115,7 +115,7 @@
     promptCreate,
     render(ctx) {
       const f = F(), team = f.team();
-      // Switching between the Egyptian and English leagues starts a fresh draft and clears the club filter
+      // Switching leagues starts a fresh draft and clears the club filter
       if (draftLeague !== f.league()) { draft = null; filt.team = ''; draftLeague = f.league(); }
       if (!draft || ctx.query.reset) draft = team ? team.squad.slice() : [];
       if (ctx.query.out && draft.includes(ctx.query.out)) { filt.pos = f.byId[ctx.query.out].pos; draft = draft.filter((x) => x !== ctx.query.out); }

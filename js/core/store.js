@@ -22,7 +22,7 @@
     coupon: null,
     fantasy: { team: null, joinedLeagues: [], createdGroups: [] },      // Egyptian Premier League
     fantasyEpl: { team: null, joinedLeagues: [], createdGroups: [] },   // English Premier League
-    fantasyLeague: 'egy',  // which league the fantasy pages show
+    fantasyLeague: 'epl',  // which league the fantasy pages show (Egyptian fantasy is off since 2026-11-09)
     fantasyPass: null,     // { egy: endsAt, epl: endsAt } monthly Fantasy Pass for prize leagues, per league
     notifications: [],
     favoritesPitches: [],

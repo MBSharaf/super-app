@@ -357,7 +357,7 @@
   });
 
   /* ======================================================================
-   * Leagues on offer: only those the server has fantasy for (Egyptian fantasy is paused, decisions 2026-10-27)
+   * Leagues on offer: only those the server has fantasy for (Egyptian fantasy is off: paused 2026-10-27, removed from the site 2026-11-09)
    * ==================================================================== */
 
   let leaguesKnown = false;
@@ -366,7 +366,7 @@
   /** After the first load: a visitor who had a paused league selected moves to one that is on */
   const settleLeague = () => {
     leaguesKnown = true;
-    const on = ['egy', 'epl'].filter((k) => server[k]);
+    const on = ['epl'].filter((k) => server[k]);
     if (on.length && !server[F.league()]) demo.fantasy.use(on[0]);
   };
 
@@ -378,9 +378,9 @@
     if (mode !== 'api') return;
     await quiet(SA.services.session?.load() || Promise.resolve());
     // Signing in or out changes my team, pass, groups and tickets
-    SA.services.session?.subscribe(() => quiet(Promise.all(['egy', 'epl'].filter((k) => server[k]).map((k) => loadTeam(k).then(() => loadGroups(k))).concat([loadPass(), loadTickets()]))));
+    SA.services.session?.subscribe(() => quiet(Promise.all(['epl'].filter((k) => server[k]).map((k) => loadTeam(k).then(() => loadGroups(k))).concat([loadPass(), loadTickets()]))));
     await Promise.all([
-      quiet(loadLeague('egy')), quiet(loadLeague('epl')), quiet(loadPass()), quiet(loadContent()), quiet(loadTickets()),
+      quiet(loadLeague('epl')), quiet(loadPass()), quiet(loadContent()), quiet(loadTickets()),
     ]);
     settleLeague();
     store.set({ liveFantasyAt: Date.now() }, 'fantasy');

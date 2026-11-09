@@ -15,7 +15,7 @@
       <div class="container">
         <div class="fx-head-top">
           <div>
-            <div class="fx-leagues" role="tablist" aria-label="Choose the league you play">${f.leagues().map((l) => `<button class="fx-league" role="tab" data-league="${l.key}" aria-selected="${l.key === meta.league}">${esc(l.label)}${l.hasTeam && l.key !== meta.league ? ` <span class="fx-dot" aria-label="team ready"></span>` : ''}</button>`).join('')}</div>
+            ${f.leagues().length < 2 ? '' : `<div class="fx-leagues" role="tablist" aria-label="Choose the league you play">${f.leagues().map((l) => `<button class="fx-league" role="tab" data-league="${l.key}" aria-selected="${l.key === meta.league}">${esc(l.label)}${l.hasTeam && l.key !== meta.league ? ` <span class="fx-dot" aria-label="team ready"></span>` : ''}</button>`).join('')}</div>`}
             <span class="xs fx-dim">${esc(meta.leagueLabel)} · Fantasy ${meta.season}</span>
             <h1 class="h1 fx-title">${team ? esc(team.name) : 'Fantasy'}</h1>
           </div>

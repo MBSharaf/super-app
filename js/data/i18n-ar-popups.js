@@ -4,7 +4,7 @@
   Object.assign(D.strings, {
     /* ---------- Default pop-ups ---------- */
     'No stock, no cost': 'من غير مخزون ولا تكلفة', 'Join as a seller and earn': 'انضم كبائع واكسب', 'Upload your designs — we print, ship and pay you for every sale.': 'ارفع تصميماتك — إحنا بنطبع وبنشحن وبندفعلك في كل بيعة.', 'Start selling': 'ابدأ البيع',
-    'Free to play': 'ببلاش', 'Play Egyptian League fantasy': 'العب فانتازي الدوري المصري', 'Pick your 15, join a league with your friends and win prizes every gameweek.': 'اختار الـ 15 بتوعك، ادخل دوري مع صحابك واكسب جوايز كل جولة.', 'Pick my team': 'اختار فريقي',
+    'Free to play': 'ببلاش', 'Play Egyptian League fantasy': 'العب فانتازي الدوري المصري', 'Play Premier League fantasy': 'العب فانتازي الدوري الإنجليزي', 'Pick your 15, join a league with your friends and win prizes every gameweek.': 'اختار الـ 15 بتوعك، ادخل دوري مع صحابك واكسب جوايز كل جولة.', 'Pick my team': 'اختار فريقي',
     '10% off your first order': 'خصم 10% على أول طلب', 'Use code KICKOFF10 at checkout in the Super App shop.': 'استخدم كود KICKOFF10 وإنت بتدفع في متجر Super App.', 'Shop now': 'اشتري دلوقتي',
     'Before 4 PM': 'قبل 4 العصر', 'Pitches from 500 EGP an hour': 'ملاعب من 500 ج.م في الساعة', 'Weekday mornings and afternoons cost less. See the free hours near you.': 'الصبح والضهر في أيام الأسبوع أرخص. شوف المواعيد الفاضية جنبك.', 'Book a pitch': 'احجز ملعب',
     'Delivered across Egypt': 'توصيل لكل مصر', 'Boots, kits and printed designs': 'جزم وأطقم وتصميمات مطبوعة', 'Football gear and original designs from Egyptian creators in one shop.': 'لبس ومعدات كورة وتصميمات أصلية من مصممين مصريين في متجر واحد.', 'Open the shop': 'افتح المتجر',

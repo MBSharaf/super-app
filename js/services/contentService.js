@@ -11,7 +11,7 @@
   const GONE = /^#\/(tournaments|news|community)(\/|\?|$)/;
   const PROMO_DEFAULTS = [
     { id: 'pp-seller', active: true, shape: 'tee', color: '#E8590C', badge: 'No stock, no cost', title: 'Join as a seller and earn', text: 'Upload your designs — we print, ship and pay you for every sale.', cta: 'Start selling', link: '#/sell', forNonSellers: true },
-    { id: 'pp-fantasy', active: true, shape: 'cube', icons: ['trophy', 'ball', 'star', 'users'], color: '#0B6E4F', badge: 'Free to play', title: 'Play Egyptian League fantasy', text: 'Pick your 15, join a league with your friends and win prizes every gameweek.', cta: 'Pick my team', link: '#/fantasy' },
+    { id: 'pp-fantasy', active: true, shape: 'cube', icons: ['trophy', 'ball', 'star', 'users'], color: '#0B6E4F', badge: 'Free to play', title: 'Play Premier League fantasy', text: 'Pick your 15, join a league with your friends and win prizes every gameweek.', cta: 'Pick my team', link: '#/fantasy' },
     { id: 'pp-kickoff', active: true, shape: 'coin', color: '#C2410C', badge: '10%', title: '10% off your first order', text: 'Use code KICKOFF10 at checkout in the Super App shop.', cta: 'Shop now', link: '#/shop' },
     { id: 'pp-pitches', active: true, shape: 'cube', icons: ['pitch', 'clock', 'calendar', 'ball'], color: '#15803D', badge: 'Before 4 PM', title: 'Pitches from 500 EGP an hour', text: 'Weekday mornings and afternoons cost less. See the free hours near you.', cta: 'Book a pitch', link: '#/pitches?sort=price' },
     { id: 'pp-shop', active: true, shape: 'cube', icons: ['bag', 'boot', 'shirt', 'ball'], color: '#1D4ED8', badge: 'Delivered across Egypt', title: 'Boots, kits and printed designs', text: 'Football gear and original designs from Egyptian creators in one shop.', cta: 'Open the shop', link: '#/shop' },
@@ -20,6 +20,9 @@
     { id: 'pp-points', active: true, shape: 'coin', color: '#A16207', badge: 'pts', title: 'Points on every booking and order', text: 'Collect points and swap them for vouchers from 100 EGP.', cta: 'My points', link: '#/wallet' },
     { id: 'pp-partner', active: true, shape: 'cube', icons: ['pitch', 'wallet', 'calendar', 'chart'], color: '#0B6E4F', badge: 'For pitch owners', title: 'List your pitch on Super App', text: 'Online bookings and payments, plus a free dashboard for your team.', cta: 'Apply now', link: '#/partner/apply' },
   ];
+
+  // Egyptian league fantasy is off (2026-11-09): a saved pop-up that still offers it now offers the Premier League
+  const noEgyFantasy = (x) => (x.title === 'Play Egyptian League fantasy' ? { ...x, title: 'Play Premier League fantasy' } : x);
 
   const content = {
     /** Live home banners (max 3, in order, inside their dates) */
@@ -38,7 +41,7 @@
     promoPops() {
       // Tournaments, news and communities were removed from the site: old pop-ups that point there are dropped
       const cfg = settings().promoPops || {};
-      return { on: cfg.on ?? true, first: cfg.first ?? 6, interval: Math.max(5, cfg.interval ?? 10), stay: Math.max(4, cfg.stay ?? 7), max: cfg.max ?? 6, items: (cfg.items || structuredClone(PROMO_DEFAULTS)).filter((x) => !GONE.test(x.link || '')) };
+      return { on: cfg.on ?? true, first: cfg.first ?? 6, interval: Math.max(5, cfg.interval ?? 10), stay: Math.max(4, cfg.stay ?? 7), max: cfg.max ?? 6, items: (cfg.items || structuredClone(PROMO_DEFAULTS)).filter((x) => !GONE.test(x.link || '')).map(noEgyFantasy) };
     },
     promoStat(id, kind) {
       const st = { ...(settings().promoStats || {}) };
