@@ -35,7 +35,12 @@
     (function () { try {
       var t = localStorage.getItem('superapp.theme') || 'auto';
       var dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      var be = document.querySelector('base'), b = (be ? be.getAttribute('href') : '/').replace(/\/$/, '');
+      var path = location.hash ? location.hash.slice(1) : location.pathname.slice(b.length);
+      var dash = /^\/(dash|admin|factory|seller|ceo)(\/|\?|$)/.test(path);
+      document.documentElement.setAttribute('data-theme', dark || dash ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-frame', dark ? 'dark' : 'light');
+      if (dash) document.documentElement.setAttribute('data-skin', 'match');
       if (localStorage.getItem('superapp.lang') === 'ar') { document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl'; }
     } catch (e) {} })();
   </script>
@@ -75,6 +80,7 @@
   <link rel="stylesheet" href="css/motion.css" />
   <link rel="stylesheet" href="css/dark.css" />
   <link rel="stylesheet" href="css/rtl.css" />
+  <link rel="stylesheet" href="css/dash-skin.css" />
 </head>
 <body>
   <button class="skip-link" type="button" onclick="document.getElementById('app').focus()">Skip to content</button>

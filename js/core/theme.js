@@ -4,14 +4,20 @@
  */
 (function (SA) {
   const KEY = 'superapp.theme';
+  const DASH = /^\/(dash|admin|factory|seller|ceo)(\/|\?|$)/;
   const mq = matchMedia('(prefers-color-scheme: dark)');
   const read = () => { try { return localStorage.getItem(KEY) || 'auto'; } catch { return 'auto'; } };
   const resolved = (pref = read()) => (pref === 'auto' ? (mq.matches ? 'dark' : 'light') : pref);
   const apply = (animate) => {
     const root = document.documentElement;
     if (animate) { root.classList.add('theme-anim'); setTimeout(() => root.classList.remove('theme-anim'), 450); }
-    root.dataset.theme = resolved();
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', root.dataset.theme === 'dark' ? '#0A0F0D' : '#F1F2EE');
+    // Dashboards (partner, seller, admin, factory, CEO) always use the dark "match night" skin; Light/Dark only changes
+    // the frame around them (owner's redesign, 2026-11-09)
+    const dash = DASH.test(SA.core.router?.location?.() || location.hash.replace(/^#/, '') || '/');
+    root.dataset.frame = resolved();
+    root.dataset.theme = dash ? 'dark' : resolved();
+    if (dash) root.dataset.skin = 'match'; else delete root.dataset.skin;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dash ? '#2A0E12' : root.dataset.theme === 'dark' ? '#0A0F0D' : '#F1F2EE');
     document.querySelectorAll('[data-theme-label]').forEach((n) => (n.textContent = SA.i18n?.t(label()) || label()));
   };
   const label = () => ({ auto: 'Auto', light: 'Light', dark: 'Dark' }[read()]);

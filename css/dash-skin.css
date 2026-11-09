@@ -1,0 +1,231 @@
+/* ==========================================================================
+   "Match night" dashboard skin (owner's redesign, 2026-11-09).
+   Every dashboard — pitch partner, seller, admin console, factory and CEO Command Center — sits in one rounded dark
+   app frame: deep burgundy panels, a coral kick-off accent, an icon rail that opens on hover, a glowing hero stat and
+   pitch markings drawn into the cards. js/core/theme.js puts <html data-skin="match" data-theme="dark"> on dashboard
+   routes; Light/Dark only changes the frame around the app (data-frame).
+   ========================================================================== */
+html[data-skin="match"] {
+  --frame: #F3D3D1;
+  --app: #3B1519;
+  --rail: #2A0E12;
+  --card: #4E1C22;
+  --card-2: #5E242A;
+  --card-hi: #6E2C33;
+  --coral: #FF6B57;
+  --coral-2: #FF8E6E;
+  --coral-deep: #D93B3B;
+  --coral-grad: linear-gradient(135deg, #FF9273 0%, #FF6B57 42%, #D93B3B 100%);
+  --night-grad: linear-gradient(160deg, #6A2A31 0%, #4E1C22 55%, #3E161B 100%);
+
+  --paper: var(--app);
+  --surface: var(--card);
+  --surface-2: #572127;
+  --surface-3: #6A2A31;
+  --ink: #FFF1EE;
+  --ink-2: #EBC8C3;
+  --ink-3: #BE928E;
+  --line: rgba(255, 220, 214, .14);
+  --line-2: rgba(255, 220, 214, .08);
+  --ink-bg: #2A0E12;
+  --glass: rgba(59, 21, 25, .86);
+  --glass-2: rgba(78, 28, 34, .96);
+
+  --turf: #46D69A;
+  --turf-2: #63E2AE;
+  --turf-deep: #B6F2D7;
+  --turf-tint: rgba(70, 214, 154, .15);
+  --turf-fill: #1F9E6C;
+  --blaze: #FF6B57;
+  --blaze-2: #FF8E6E;
+  --blaze-tint: rgba(255, 107, 87, .16);
+  --gold: #FFC24D;
+  --gold-tint: rgba(255, 194, 77, .15);
+  --danger: #FF7A8A;
+  --danger-tint: rgba(255, 122, 138, .15);
+  --info: #9AB4FF;
+  --info-tint: rgba(154, 180, 255, .15);
+  --r-lg: 26px;
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 10px 24px -18px rgba(0, 0, 0, .7);
+  --shadow-2: 0 18px 40px -20px rgba(0, 0, 0, .8);
+}
+html[data-skin="match"][data-frame="dark"] { --frame: #12060A; }
+html[data-skin="match"] body { background: var(--frame); }
+
+/* ---------- The app frame ---------- */
+[data-skin="match"] body.dash-mode .app { padding: 14px; }
+[data-skin="match"] .dash {
+  grid-template-columns: 92px minmax(0, 1fr); gap: 0; min-height: calc(100vh - 28px);
+  background: radial-gradient(90% 60% at 100% 0%, rgba(255, 107, 87, .10), transparent 60%), var(--app);
+  border-radius: 34px; box-shadow: 0 40px 80px -40px rgba(60, 10, 16, .55), 0 0 0 1px rgba(255, 255, 255, .04) inset;
+}
+
+/* ---------- Icon rail (opens on hover / keyboard focus) ---------- */
+[data-skin="match"] .dash-side {
+  top: 14px; height: calc(100vh - 28px); width: 76px; margin: 0 0 0 0; z-index: 60;
+  margin-inline-start: 8px; padding: 14px 10px; gap: 10px; overflow-x: hidden;
+  background: var(--rail); border: 0; border-radius: 26px; margin-block: 8px; height: calc(100vh - 44px);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .04) inset;
+  transition: width 320ms var(--ease), box-shadow 320ms;
+  scrollbar-width: none;
+}
+[data-skin="match"] .dash-side::-webkit-scrollbar { display: none; }
+[data-skin="match"] .dash-side:hover, [data-skin="match"] .dash-side:focus-within {
+  width: 268px; box-shadow: 30px 0 60px -20px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .05) inset;
+}
+[data-skin="match"] .dash.is-admin .dash-side, [data-skin="match"] .dash.is-ceo .dash-side, [data-skin="match"] .dash.is-factory .dash-side { background: var(--rail); }
+/* Labels fade in only when the rail is open */
+[data-skin="match"] .dash-side .grow, [data-skin="match"] .dash-brand > span:last-child, [data-skin="match"] .dash-acct .badge,
+[data-skin="match"] .dash-nav-label, [data-skin="match"] .dash-foot-link > :not(svg), [data-skin="match"] .dash-acct .grow {
+  white-space: nowrap; transition: opacity 200ms;
+}
+[data-skin="match"] .dash-side:not(:hover):not(:focus-within) :is(.dash-brand > span:last-child, .dash-acct .grow, .dash-acct .badge, .dash-nav .grow, .dash-nav-label, .dash-foot-link .grow) { opacity: 0; pointer-events: none; }
+[data-skin="match"] .dash-side:not(:hover):not(:focus-within) .dash-nav-label { height: 10px; padding: 0; overflow: hidden; }
+[data-skin="match"] .dash-side:not(:hover):not(:focus-within) .dash-foot-link { font-size: 0; }
+[data-skin="match"] .dash-side:not(:hover):not(:focus-within) .dash-foot-link svg:not(:first-child) { display: none; }
+[data-skin="match"] .dash-side:not(:hover):not(:focus-within) .nav-badge:not([hidden]) { position: absolute; top: 4px; inset-inline-end: 4px; min-width: 16px; height: 16px; padding: 0 4px; font-size: 9.5px; }
+
+[data-skin="match"] .dash-brand { padding: 4px 6px; gap: 12px; }
+[data-skin="match"] .dash-side .brand-mark { width: 40px; height: 40px; flex: none; border-radius: 13px; background: var(--coral-grad); box-shadow: 0 10px 20px -10px rgba(255, 107, 87, .8); }
+[data-skin="match"] .dash-brand .xs, [data-skin="match"] .dash.is-admin .dash-brand .xs { color: var(--coral-2); }
+[data-skin="match"] .dash-acct { padding: 6px; gap: 12px; border-radius: 18px; background: rgba(255, 255, 255, .04); border: 0; }
+[data-skin="match"] .dash.is-admin .dash-acct { background: rgba(255, 107, 87, .08); }
+[data-skin="match"] .dash-acct .avatar { flex: none; box-shadow: 0 0 0 2px var(--coral); }
+
+[data-skin="match"] .dash-nav { gap: 4px; }
+[data-skin="match"] .dash-nav a, [data-skin="match"] .dash-foot-link {
+  min-height: 44px; padding: 0 14px; gap: 16px; border-radius: 15px; color: #D9AFA9;
+}
+[data-skin="match"] .dash-nav a svg, [data-skin="match"] .dash-foot-link svg { flex: none; }
+[data-skin="match"] .dash-nav a:hover, [data-skin="match"] .dash-foot-link:hover { background: rgba(255, 255, 255, .06); color: #fff; transform: none; }
+[data-skin="match"] .dash-nav a[aria-current="page"], [data-skin="match"] .dash.is-admin .dash-nav a[aria-current="page"],
+[data-skin="match"] .dash.is-ceo .dash-nav a[aria-current="page"], [data-skin="match"] .dash.is-factory .dash-nav a[aria-current="page"] {
+  background: rgba(255, 107, 87, .14); color: #fff; box-shadow: none;
+}
+[data-skin="match"] .dash-nav a[aria-current="page"] svg, [data-skin="match"] .dash.is-admin .dash-nav a[aria-current="page"] svg { color: var(--coral); }
+[data-skin="match"] .dash-nav a[aria-current="page"]::before {
+  content: ""; position: absolute; inset-inline-start: -10px; top: 10px; bottom: 10px; width: 4px; border-radius: 0 4px 4px 0; background: var(--coral);
+}
+[dir="rtl"][data-skin="match"] .dash-nav a[aria-current="page"]::before { border-radius: 4px 0 0 4px; }
+[data-skin="match"] .dash-nav a[aria-current="page"] .nav-badge { box-shadow: 0 0 0 2px var(--rail); }
+[data-skin="match"] .dash-nav-label, [data-skin="match"] .dash.is-admin .dash-nav-label { color: rgba(255, 190, 180, .45); padding: 12px 14px 2px; }
+[data-skin="match"] .dash-nav-sep, [data-skin="match"] .dash-side-foot { border-color: rgba(255, 255, 255, .07); }
+[data-skin="match"] .dash-nav-notes { border-top-color: rgba(255, 255, 255, .07); }
+[data-skin="match"] .dash-side-foot { padding-top: 10px; gap: 4px; }
+[data-skin="match"] .dash-drawer { background: var(--rail); }
+[data-skin="match"] .dash-drawer .dash-nav a, [data-skin="match"] .dash-drawer .dash-foot-link { color: #E3BCB6; }
+
+/* ---------- Top bar: greeting, round icon buttons ---------- */
+[data-skin="match"] .dash-main { padding-inline-end: 6px; }
+[data-skin="match"] .dash-top, [data-theme="dark"][data-skin="match"] .dash-top {
+  top: 14px; margin: 8px 8px 0; padding: 18px 22px; border: 0; border-radius: 26px; background: transparent; backdrop-filter: none;
+}
+[data-skin="match"] .dash-top { background: var(--app); }
+[data-skin="match"] .dash-title { font-size: clamp(1.25rem, 1rem + .8vw, 1.6rem); color: #fff; letter-spacing: -0.01em; }
+[data-skin="match"] .dash-titles p { color: var(--ink-3); }
+[data-skin="match"] .dash-top .icon-btn, [data-skin="match"] .dash-prefs .icon-btn, [data-skin="match"] .dash-bell {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--card); color: #FFD9D2; border: 0;
+}
+[data-skin="match"] .dash-top .icon-btn:hover { background: var(--card-hi); color: #fff; }
+[data-skin="match"] .bell-dot { background: var(--coral); box-shadow: 0 0 0 2px var(--app); }
+[data-skin="match"] .bell-pop { background: var(--card); border: 1px solid var(--line); }
+[data-skin="match"] .dash-body { padding: 10px 22px 28px; gap: 20px; }
+
+/* ---------- Cards ---------- */
+[data-skin="match"] .dash-card, [data-skin="match"] .kpi {
+  background: var(--card); border: 0; border-radius: 26px; box-shadow: var(--shadow-1);
+}
+[data-skin="match"] .dash-card { position: relative; }
+[data-skin="match"] .dash-card .h4, [data-skin="match"] .dash-card .h3 { color: #fff; }
+[data-skin="match"] .dash-card a.link, [data-skin="match"] .dash-card .row-between > a:not(.btn) { color: var(--coral-2); }
+
+/* KPI tiles: round coloured icon, big number; the first one is the glowing "hero" card with pitch markings */
+[data-skin="match"] .kpi { padding: 20px; gap: 6px; }
+[data-skin="match"] .kpi::after { inset-inline-end: -50px; top: -50px; width: 150px; height: 150px; border: 2px solid currentColor; opacity: .08; border-radius: 50%; }
+[data-skin="match"] .kpi-ico { width: 42px; height: 42px; border-radius: 50%; background: var(--card-hi); color: #FFD9D2; }
+[data-skin="match"] .kpi.k-turf .kpi-ico { background: #1F9E6C; }
+[data-skin="match"] .kpi.k-blaze .kpi-ico { background: var(--coral-grad); }
+[data-skin="match"] .kpi.k-gold .kpi-ico { background: #E9A72A; }
+[data-skin="match"] .kpi-label { color: var(--ink-3); }
+[data-skin="match"] .kpi-value { color: #fff; }
+[data-skin="match"] .kpi-grid > .kpi:first-child, [data-skin="match"] .kpi.k-ink {
+  color: #fff; background: var(--coral-grad); box-shadow: 0 24px 40px -24px rgba(255, 107, 87, .75);
+}
+[data-skin="match"] .kpi-grid > .kpi:first-child::before {
+  /* halfway line and centre circle of a pitch */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .22;
+  background:
+    radial-gradient(circle at 78% 50%, transparent 42px, rgba(255, 255, 255, .9) 43px, transparent 45px),
+    radial-gradient(circle at 78% 50%, rgba(255, 255, 255, .9) 3px, transparent 4px),
+    linear-gradient(90deg, transparent calc(78% - 1px), rgba(255, 255, 255, .9) calc(78% - 1px), rgba(255, 255, 255, .9) calc(78% + 1px), transparent calc(78% + 1px));
+}
+[dir="rtl"][data-skin="match"] .kpi-grid > .kpi:first-child::before { transform: scaleX(-1); }
+[data-skin="match"] .kpi-grid > .kpi:first-child .kpi-ico, [data-skin="match"] .kpi.k-ink .kpi-ico { background: rgba(255, 255, 255, .22); color: #fff; }
+[data-skin="match"] .kpi-grid > .kpi:first-child :is(.kpi-label, .kpi-sub), [data-skin="match"] .kpi.k-ink :is(.kpi-label, .kpi-sub) { color: rgba(255, 255, 255, .82); }
+[data-skin="match"] .kpi-grid > .kpi.k-ink:not(:first-child) { background: var(--night-grad); box-shadow: var(--shadow-1); }
+
+/* ---------- Controls ---------- */
+[data-skin="match"] .chip { background: var(--card); border-color: transparent; color: #E9C3BD; }
+[data-skin="match"] .chip:hover { background: var(--card-hi); color: #fff; }
+[data-skin="match"] .chip[aria-pressed="true"], [data-skin="match"] .chip.is-active { background: var(--coral-grad); border-color: transparent; color: #fff; box-shadow: 0 10px 20px -12px rgba(255, 107, 87, .9); }
+[data-skin="match"] .btn-primary, [data-theme="dark"][data-skin="match"] .btn-primary { background: var(--coral-grad); color: #fff; box-shadow: 0 12px 24px -14px rgba(255, 107, 87, .95); }
+[data-skin="match"] .btn-primary:hover { background: linear-gradient(135deg, #FFA083, #FF765F 45%, #E2443F); }
+[data-skin="match"] .btn-primary .btn-disc { background: rgba(255, 255, 255, .22); color: #fff; }
+[data-skin="match"] .btn-outline { background: var(--card); border-color: transparent; color: #FFE3DD; }
+[data-skin="match"] .btn-outline:hover { background: var(--card-hi); border-color: transparent; }
+[data-skin="match"] .btn-ghost:hover { background: rgba(255, 255, 255, .06); }
+[data-skin="match"] .input, [data-skin="match"] .select, [data-skin="match"] .textarea, [data-skin="match"] textarea.input {
+  background: #331216; border-color: rgba(255, 220, 214, .12); color: #FFF1EE; border-radius: 14px;
+}
+[data-skin="match"] .input:focus, [data-skin="match"] .select:focus, [data-skin="match"] .textarea:focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(255, 107, 87, .25); }
+[data-skin="match"] .input::placeholder { color: #A9807C; }
+[data-skin="match"] .tabs { background: #331216; }
+[data-skin="match"] .tab[aria-selected="true"] { background: var(--coral-grad); color: #fff; }
+[data-skin="match"] .seg-opt input:checked + span, [data-skin="match"] .chip-check input:checked + span { background: var(--coral); border-color: var(--coral); color: #fff; }
+
+/* ---------- Tables ---------- */
+[data-skin="match"] .table th { color: var(--ink-3); background: transparent; border-color: var(--line); }
+[data-skin="match"] .table td { border-color: var(--line-2); }
+[data-skin="match"] .table tbody tr:hover td { background: rgba(255, 255, 255, .03); }
+[data-skin="match"] .tr-total td { background: rgba(255, 255, 255, .04); border-top-color: var(--coral); }
+
+/* ---------- Charts in the match colours ---------- */
+[data-skin="match"] .bc-b { background: linear-gradient(180deg, #FF8E6E, #D93B3B); }
+[data-skin="match"] .bc-s { background: #FFC24D; }
+[data-skin="match"] .bc-grid span { border-color: rgba(255, 220, 214, .1); }
+[data-skin="match"] .legend i[style*="turf"] { background: #FF6B57 !important; }
+[data-skin="match"] .hm-c { background: color-mix(in srgb, #FF6B57 calc(var(--a) * 100%), #4A1A20); }
+[data-skin="match"] .hm-c:hover { box-shadow: 0 0 0 2px #fff; }
+[data-skin="match"] .hm-scale { background: linear-gradient(90deg, #4A1A20, #FF6B57); }
+[data-skin="match"] .tb-row:hover { background: rgba(255, 255, 255, .04); }
+[data-skin="match"] .tb-available, [data-skin="match"] i.tb-available { background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(255, 220, 214, .14); }
+[data-skin="match"] .tb-booked, [data-skin="match"] .tb-yours, [data-skin="match"] i.tb-booked, [data-skin="match"] i.tb-yours { background: var(--coral-grad); }
+
+/* ---------- Phones and tablets: the rail becomes the drawer ---------- */
+@media (max-width: 980px) {
+  [data-skin="match"] body.dash-mode .app { padding: 0; }
+  [data-skin="match"] .dash { grid-template-columns: minmax(0, 1fr); border-radius: 0; min-height: 100vh; }
+  [data-skin="match"] .dash-top { top: 0; margin: 0; border-radius: 0 0 24px 24px; background: var(--glass); backdrop-filter: blur(14px); }
+  [data-skin="match"] .dash-body { padding: 14px 14px 24px; }
+  [data-skin="match"] .dash-main { padding: 0; }
+}
+
+/* Rail items keep to the rail's width while it is closed */
+[data-skin="match"] .dash-side > *, [data-skin="match"] .dash-nav a, [data-skin="match"] .dash-foot-link { min-width: 0; max-width: 100%; }
+[data-skin="match"] .dash-nav a, [data-skin="match"] .dash-foot-link, [data-skin="match"] .dash-acct, [data-skin="match"] .dash-brand { overflow: hidden; }
+[data-skin="match"] .dash-nav a[aria-current="page"] { overflow: visible; }
+[data-skin="match"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.85) sepia(.3) hue-rotate(-20deg); }
+
+/* Up/down trends stay readable on the coral hero card */
+[data-skin="match"] .kpi-grid > .kpi:first-child :is(.up, .down, .trend, [class*="trend"], b, span) { color: #fff; }
+
+/* Nothing in the rail shrinks when the menu is long (it scrolls instead) */
+[data-skin="match"] .dash-side > * { flex: none; }
+[data-skin="match"] .dash-side > .dash-side-foot { margin-top: auto; }
+
+/* Dashboard screens without the app frame (sign-in, PIN pad, "coming soon", not found) get the dark panel too */
+[data-skin="match"] body.dash-mode .app:not(:has(.dash)) {
+  min-height: calc(100vh - 28px); border-radius: 34px;
+  background: radial-gradient(90% 60% at 100% 0%, rgba(255, 107, 87, .12), transparent 60%), var(--app);
+}
+@media (max-width: 980px) { [data-skin="match"] body.dash-mode .app:not(:has(.dash)) { min-height: 100vh; border-radius: 0; } }

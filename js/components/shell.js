@@ -215,6 +215,7 @@
     document.getElementById('site-header').innerHTML = header(path);
     document.getElementById('tabbar').innerHTML = tabbar(path);
     document.body.classList.toggle('dash-mode', path.startsWith('/dash') || path.startsWith('/admin') || path.startsWith('/factory') || path.startsWith('/seller') || path.startsWith('/ceo'));
+    SA.core.theme.apply(false);  // dashboards switch to their own skin
     requestAnimationFrame(() => SA.core.motion.syncIndicators());
   };
 
