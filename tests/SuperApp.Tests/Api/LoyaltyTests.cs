@@ -49,7 +49,8 @@ public sealed class LoyaltyTests(AccountsApiFactory api) : IClassFixture<Account
             db.Add(new PointEntry { UserId = playerId, Points = 3000, Kind = PointKind.AdminAdjustment, Reason = "Test", CreatedAt = DateTime.UtcNow });
             await db.SaveChangesAsync();
         }
-        (await player.PostAsync("/api/v1/points/redeem", new { amount = 150 })).Body.Code().ShouldBe("not_multiple");
+        (await player.PostAsync("/api/v1/points/redeem", new { amount = 152 })).Body.Code().ShouldBe("not_multiple");
+        (await player.PostAsync("/api/v1/points/redeem", new { amount = 45 })).Body.Code().ShouldBe("under_minimum");
         (await player.PostAsync("/api/v1/points/redeem", new { amount = 200 })).Body.Code().ShouldBe("not_enough_points");
         var voucher = await player.PostAsync("/api/v1/points/redeem", new { amount = 100 });
         voucher.Status.ShouldBe(HttpStatusCode.Created, voucher.Body.ToString());

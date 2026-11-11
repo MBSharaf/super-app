@@ -188,7 +188,8 @@
     SA.services.legal?.requireWaiver(waiver, 'booking');
     const r = await api.post('/bookings', {
       pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: false, acceptWaiver: !!waiver,
-      promoCode: code || undefined, payFromWallet: false, // deposit: online card payment only
+      promoCode: code || undefined, payFromWallet: false, // deposit: online card payment; a Super Points voucher may pay first
+      voucherCode: payment?.voucher || undefined,
     });
     SA.services.liveMoney?.sync();
     [...days.keys()].filter((k) => k.startsWith(`${pitchId}|`)).forEach((k) => days.delete(k));

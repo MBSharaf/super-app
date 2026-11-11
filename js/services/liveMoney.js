@@ -97,12 +97,13 @@
   const liveVouchers = () => cache.vouchers.map((v) => ({ code: v.code, amount: v.amount, balance: v.status === 'Active' ? v.amount : 0, at: at(v.createdAt), uses: [] }));
   S.loyalty.vouchers = () => (!live() ? demo.loyalty.vouchers() : liveVouchers());
   S.loyalty.usable = () => (!live() ? demo.loyalty.usable() : liveVouchers().filter((v) => v.balance > 0).sort((a, b) => b.balance - a.balance));
-  /** The server makes vouchers in hundreds of EGP: the points are rounded down to the nearest 100 EGP */
+  /** The server makes vouchers in steps of 5 EGP (100 points): the points are rounded down to the nearest step */
   S.loyalty.redeem = async (points) => {
     if (!live()) return demo.loyalty.redeem(points);
     const value = cache.points?.pointValue || 0.05;
-    const amount = Math.floor((+points * value) / 100) * 100;
-    if (amount < 100) throw new ApiError(`The smallest voucher is 100 EGP (${Math.round(100 / value).toLocaleString()} points).`, 'invalid');
+    const min = cache.points?.minRedeem || 1000;
+    const amount = Math.floor((+points * value) / 5) * 5;
+    if (amount / value < min) throw new ApiError(`The smallest voucher is ${Math.round(min * value)} EGP (${min.toLocaleString()} points).`, 'invalid');
     const v = await api.post('/points/redeem', { amount });
     await sync();
     return { points: v.amount / value, amount: v.amount, code: v.code };

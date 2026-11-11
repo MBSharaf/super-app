@@ -97,6 +97,26 @@
   };
 
 
+  /** How Super Points work, in the site's language (whole sentences, so Arabic mode reads naturally) */
+  const howList = (L) => {
+    const ar = !!SA.i18n?.isAr;
+    const n = (x) => Number(x).toLocaleString();
+    const per = Math.round(1 / L.cfg.pointValue), minEgp = Math.round(L.cfg.minRedeem * L.cfg.pointValue);
+    const earn = L.cfg.earnPer === 1 ? '' : `${L.cfg.earnPer} `;
+    const rows = ar ? [
+      ['pitch', `<b>نقطة على كل ${L.cfg.earnPer === 1 ? '' : `${earn}`}جنيه بتدفعه</b> — عربون الحجز، والباقي اللي بتدفعه في الملعب، والماتشات، والمتجر. النقط بتنزل أول ما تدفع. وأول 3 في كل جولة في دوري فانتازي Super App بيكسبوا نقط كمان.`],
+      ['star', '<b>+20 نقطة</b> على كل تقييم بعد الماتش'],
+      ['trophy', `<b>برونزي · فضي · ذهبي</b> — مستواك بيعلى مع مجموع نقاطك (${n(L.lifetime)} لحد دلوقتي)`],
+      ['gift', `<b>${n(per)} نقطة = 1 جنيه</b> كقسيمة، من ${n(L.cfg.minRedeem)} نقطة (${n(minEgp)} جنيه). استخدمها في حجز الملاعب والماتشات والمتجر والتصميمات المطبوعة — النقط مش بتتحول لفلوس كاش.`],
+    ] : [
+      ['pitch', `<b>1 point for every ${earn}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, and the shop. The points land the moment you pay. The top 3 of every gameweek in the Super App fantasy league win points too.`],
+      ['star', '<b>+20 points</b> for each review after a game'],
+      ['trophy', `<b>Bronze · Silver · Gold</b> — your tier rises with lifetime points (${n(L.lifetime)} so far)`],
+      ['gift', `<b>${n(per)} points = 1 EGP</b> as a voucher, from ${n(L.cfg.minRedeem)} points (${n(minEgp)} EGP). Use it on pitch bookings, games, the shop and printed designs — points can’t be turned into cash.`],
+    ];
+    return rows.map(([ic, t]) => `<li>${icon(ic, 18)}<span data-i18n-skip>${t}</span></li>`).join('');
+  };
+
   /** Super Points card + history (wallet page) */
   const pointsSection = () => {
     const L = S.loyalty.summary();
@@ -113,10 +133,7 @@
       <div class="panel panel-pad points-how">
         <h2 class="h4">How you earn</h2>
         <ul class="how-list">
-          <li>${icon('pitch', 18)}<span><b>1 point for every ${L.cfg.earnPer === 1 ? '' : `${L.cfg.earnPer} `}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, and the shop. The points land the moment you pay. The top 3 of every gameweek in the Super App fantasy league win points too.</span></li>
-          <li>${icon('star', 18)}<span><b>+20 points</b> for each review after a game</span></li>
-          <li>${icon('trophy', 18)}<span><b>Bronze · Silver · Gold</b> — your tier rises with lifetime points (${L.lifetime.toLocaleString()} so far)</span></li>
-          <li>${icon('gift', 18)}<span><b>${Math.round(1 / L.cfg.pointValue)} points = 1 EGP</b> as a voucher, from ${L.cfg.minRedeem.toLocaleString()} points (${money(Math.round(L.cfg.minRedeem * L.cfg.pointValue))}). Use it on games, the shop and printed designs — points can’t be turned into cash.</span></li>
+          ${howList(L)}
         </ul>
         ${S.loyalty.vouchers().length ? `<h3 class="small strong" style="margin-top:16px">Your vouchers</h3><ul class="tx-list">${S.loyalty.vouchers().map((v) => `<li><span class="tx-ico credit">${icon('gift', 14, 2.2)}</span><span class="grow"><b class="small num">${esc(v.code)}</b><span class="xs muted" style="display:block">${v.balance ? `${money(v.balance)} left of ${money(v.amount)}` : `Used — ${money(v.amount)}`}</span></span>${v.balance ? '<span class="badge badge-turf">Ready</span>' : '<span class="badge">Used</span>'}</li>`).join('')}</ul>` : ''}
         <h3 class="small strong" style="margin-top:16px">Points history</h3>

@@ -4,7 +4,7 @@
  * rest of a booking paid at the pitch (when the venue scans the QR) and cash-on-delivery orders when delivered.
  * Wallet top-ups earn nothing (the points come when the wallet money is spent), voucher money earns nothing, and a
  * refund takes its points back. Each new earning shows a "Congratulations" pop-up (js/components/pointsPop.js).
- * Activity from before this rule keeps the old rate (1 point per 10 EGP after the game, tiers raise it). Points become vouchers only (never cash): 20 points = 1 EGP, from 2,000 points (a 100 EGP voucher).
+ * Activity from before this rule keeps the old rate (1 point per 10 EGP after the game, tiers raise it). Points become vouchers only (never cash): 20 points = 1 EGP, from 1,000 points (a 50 EGP voucher; owner, 2026-11-11).
  * A voucher is spent at checkout anywhere in the app — pitch bookings, games, the shop, printed designs. Rates come from Platform settings (admin).
  * Earned points are derived from the player's history, so they can never drift out of sync.
  * Future API: GET /me/points, POST /me/points/redeem
@@ -20,7 +20,7 @@
     { key: 'silver', name: 'Silver', min: 1500, mult: 1.25, color: '#9AA5AE' },
     { key: 'gold', name: 'Gold', min: 4000, mult: 1.5, color: '#C9920F' },
   ];
-  const cfg = () => db().settings().loyalty || { earnPer: 10, pointValue: 0.05, minRedeem: 2000 };
+  const cfg = () => db().settings().loyalty || { earnPer: 10, pointValue: 0.05, minRedeem: 1000 };
   const vouchers = () => store.get().vouchers || [];
   const tierFor = (lifetime) => [...TIERS].reverse().find((t) => lifetime >= t.min);
   const stored = () => store.get().loyalty?.entries || [];
@@ -117,7 +117,7 @@
       add({ points: -p, label: `Voucher ${code} — ${amount} EGP`, kind: 'redeem' });
       const v = { code, amount, balance: amount, points: p, at: Date.now(), uses: [] };
       store.set((st) => ({ vouchers: [v, ...(st.vouchers || [])] }), 'voucher');
-      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super App: games, the shop and printed designs. It can’t be exchanged for cash.' });
+      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super App: pitch bookings, games, the shop and printed designs. It can’t be exchanged for cash.' });
       return Promise.resolve({ points: p, amount, code });
     },
     vouchers,

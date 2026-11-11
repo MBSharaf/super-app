@@ -19,7 +19,7 @@
 
   { "key": "loyalty.earnPer", "group": "loyalty", "value": 1 },
   { "key": "loyalty.pointValue", "group": "loyalty", "value": 0.05 },
-  { "key": "loyalty.minRedeem", "group": "loyalty", "value": 2000 },
+  { "key": "loyalty.minRedeem", "group": "loyalty", "value": 1000 },
 
   { "key": "delivery.fees", "group": "delivery", "value": { "standard": 60, "express": 120, "freeOver": 1500 } },
   { "key": "delivery.courier", "group": "delivery", "value": { "provider": "courier.simulated", "auto": true } },

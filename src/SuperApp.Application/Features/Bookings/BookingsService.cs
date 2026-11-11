@@ -169,10 +169,11 @@ public sealed class CreateBookingRequestValidator : AbstractValidator<CreateBook
         RuleFor(x => x.Hour).InclusiveBetween(0, 29);
         RuleFor(x => x.Duration).InclusiveBetween(1, 4).WithMessage("Book 1 to 4 hours in a row.");
         RuleFor(x => x.AcceptWaiver).Equal(true).WithMessage("Please accept the injury waiver to book.");
-        // The deposit is paid online by card only: no wallet, no Super Points voucher, no cash at the venue
+        // The deposit is paid online by card: no wallet, no cash at the venue. A Super Points voucher (SP-…) may be used
+        // (owner, 2026-11-11): it comes off the booking before the deposit is worked out.
         RuleFor(x => x.PayAtVenue).Equal(false).WithMessage("Pitch bookings pay a deposit online by card.");
         RuleFor(x => x.PayFromWallet).Equal(false).WithMessage("Pitch bookings are paid online by card only.");
-        RuleFor(x => x.VoucherCode).Empty().WithMessage("Vouchers can't pay a pitch booking; the deposit is paid by card.");
+        RuleFor(x => x.VoucherCode).MaximumLength(40);
     }
 }
 

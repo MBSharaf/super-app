@@ -84,21 +84,25 @@ public sealed class LoyaltyService(
     public async Task<PointsDto> PointsAsync(CancellationToken ct)
     {
         var me = Me();
-        return new PointsDto(await store.BalanceAsync(me, ct), (int)await settings.DecimalAsync("loyalty.minRedeem", 2000m, ct),
+        return new PointsDto(await store.BalanceAsync(me, ct), (int)await settings.DecimalAsync("loyalty.minRedeem", 1000m, ct),
             await settings.DecimalAsync("loyalty.pointValue", 0.05m, ct), (int)await settings.DecimalAsync("loyalty.earnPer", 1m, ct), await store.HistoryAsync(me, ct));
     }
 
     public Task<IReadOnlyList<VoucherDto>> VouchersAsync(CancellationToken ct) => store.VouchersAsync(Me(), ct);
 
-    /// <summary>Points → a voucher of <c>amount</c> EGP (multiples of 100). 422 not_multiple / under_minimum / not_enough_points.</summary>
+    /// <summary>
+    /// Points → a voucher of <c>amount</c> EGP (multiples of 5 EGP = 100 points; at least loyalty.minRedeem points, 1,000 since
+    /// 2026-11-11). 422 not_multiple / under_minimum / not_enough_points.
+    /// </summary>
     public async Task<VoucherDto> RedeemAsync(RedeemRequest request, CancellationToken ct)
     {
         var me = Me();
-        Rule(request.Amount >= 100 && request.Amount % 100 == 0 && request.Amount <= 10_000, "Choose an amount in hundreds (100, 200…).", "not_multiple");
+        Rule(request.Amount >= 5 && request.Amount % 5 == 0 && request.Amount <= 10_000, "Choose an amount in steps of 5 EGP.", "not_multiple");
         var value = await settings.DecimalAsync("loyalty.pointValue", 0.05m, ct);
         var needed = (int)Math.Ceiling(request.Amount / value);
         var balance = await store.BalanceAsync(me, ct);
-        Rule(balance >= await settings.DecimalAsync("loyalty.minRedeem", 2000m, ct), "You need more points before you can turn them into a voucher.", "under_minimum");
+        var minimum = await settings.DecimalAsync("loyalty.minRedeem", 1000m, ct);
+        Rule(balance >= minimum && needed >= minimum, $"The smallest voucher is {minimum:N0} points.", "under_minimum");
         Rule(balance >= needed, $"That needs {needed:N0} points; you have {balance:N0}.", "not_enough_points");
         var voucher = new Voucher { Code = await store.NewVoucherCodeAsync(ct), UserId = me, Amount = request.Amount, Source = VoucherSource.Points,
             PointsUsed = needed, Status = VoucherStatus.Active, ExpiresAt = clock.UtcNow.AddYears(1) };

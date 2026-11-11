@@ -10,8 +10,11 @@
 
   const visaMark = `<svg width="38" height="24" viewBox="0 0 38 24" aria-hidden="true"><rect width="38" height="24" rx="4" fill="#1A1F71"/><path fill="#fff" d="M15.6 16.4h-2.3l1.4-8.8H17l-1.4 8.8Zm8.3-8.6a5.6 5.6 0 0 0-2-.4c-2.2 0-3.8 1.2-3.8 2.9 0 1.2 1.1 1.9 2 2.3.9.4 1.2.7 1.2 1.1 0 .6-.7.9-1.4.9-.9 0-1.4-.1-2.2-.5l-.3-.1-.3 1.9c.6.3 1.6.5 2.6.5 2.4 0 3.9-1.2 3.9-3 0-1-.6-1.8-1.9-2.4-.8-.4-1.3-.7-1.3-1.1 0-.4.4-.8 1.3-.8.7 0 1.3.1 1.7.3l.2.1.3-1.8Zm5.9-.2h-1.7c-.5 0-.9.2-1.2.7l-3.3 8.1h2.4l.5-1.3h2.9l.3 1.3h2.1l-2-8.8Zm-2.8 5.7.9-2.4.3-.8.2.7.5 2.5h-1.9ZM11.4 7.6l-2.2 6-.2-1.2c-.4-1.4-1.7-2.9-3.2-3.6l2 7.6h2.4l3.6-8.8h-2.4Z"/><path fill="#F7B600" d="M7.1 7.6H3.4l-.1.2c2.9.7 4.8 2.5 5.6 4.6l-.8-4c-.1-.6-.5-.8-1-.8Z"/></svg>`;
 
-  /** onlineOnly: card payment only (no wallet, no voucher, no cash) — used by pitch-booking deposits */
-  const render = ({ amount, allowCash = false, allowCOD = false, onlineOnly = false, name = 'pay' } = {}) => {
+  /**
+   * onlineOnly: card payment only (no wallet, no cash) — used by pitch-booking deposits. allowVoucher: with onlineOnly, a
+   * Super Points voucher may still pay first (single pitch bookings, owner 2026-11-11).
+   */
+  const render = ({ amount, allowCash = false, allowCOD = false, onlineOnly = false, allowVoucher = false, name = 'pay' } = {}) => {
     const bal = SA.services.payment.walletBalance();
     const cards = SA.services.payment.savedCards();
     const short = bal < amount;
@@ -25,7 +28,7 @@
       ${opt('new', `<span class="pay-ico pay-ico-new">${icon('card', 18)}</span><span class="grow"><b>New Visa card</b><span class="xs muted" style="display:block">Debit or credit</span></span>`)}
       ${allowCash ? opt('cash', `<span class="pay-ico pay-ico-new">${icon('pitch', 18)}</span><span class="grow"><b>Pay the host at the pitch</b><span class="xs muted" style="display:block">Cash on arrival</span></span>`) : ''}
       ${allowCOD ? opt('cod', `<span class="pay-ico pay-ico-new">${icon('truck', 18)}</span><span class="grow"><b>Cash on delivery</b><span class="xs muted" style="display:block">Pay the courier</span></span>`) : ''}
-      ${(() => { const vs = onlineOnly ? [] : SA.services.loyalty?.usable() || []; return vs.length ? `<label class="field pay-voucher"><span class="field-label">${icon('gift', 14)} Super Points voucher</span><select class="select" name="${name}-voucher"><option value="">Don’t use a voucher</option>${vs.map((v, i) => `<option value="${v.code}" ${i === 0 ? 'selected' : ''}>${v.code} — ${money(v.balance)} left</option>`).join('')}</select><span class="xs muted">It pays first; the rest is paid with the method above.</span></label>` : ''; })()}
+      ${(() => { const vs = onlineOnly && !allowVoucher ? [] : SA.services.loyalty?.usable() || []; return vs.length ? `<label class="field pay-voucher"><span class="field-label">${icon('gift', 14)} Super Points voucher</span><select class="select" name="${name}-voucher"><option value="">Don’t use a voucher</option>${vs.map((v, i) => `<option value="${v.code}" ${i === 0 ? 'selected' : ''}>${v.code} — ${money(v.balance)} left</option>`).join('')}</select><span class="xs muted">It pays first; the rest is paid with the method above.</span></label>` : ''; })()}
       <div class="card-form" ${defaultMethod === 'new' ? '' : 'hidden'}>
         <div class="form-grid">
           <div class="field span-2"><label for="${name}-num">Card number</label>
