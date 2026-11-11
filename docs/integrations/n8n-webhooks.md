@@ -142,6 +142,14 @@ The demo site has no server, so the page itself posts each event to the links in
 | `chatbot.url` (the support AI agent) | `support.message` | The customer writes in the chatbot or taps a topic | `sessionId`, `message`, `topic`, `lang`, `page`, `history[]`, `customer`, `context`, `knowledgeUrl` (chatbot/knowledge.md). Reply `{ "reply": "..." }`; the site has no template answers |
 | `chatbot.url` | `cancellation.requested` / `.approved` / `.rejected` | A customer asks to cancel a paid booking, package, order or game (and the decision) | `sessionId` (same chat), `cancellation` (`requestId`, `type`, `referenceId`, `item`, `paidOnline`, `refundIfApproved`, `reason`, `replyBy`…), `customer`, `context`, `pitch`/`partner` for bookings. A `{ "reply": "..." }` answer is shown in the chat. Never sent to the orders link (owner, 2026-11-11); `automation.cancellations`, if set, overrides |
 
+| `dashboard` (pitch partner dashboard) | `pitch.added` / `pitch.removed` | An owner adds or removes a pitch (My pitches) → Telegram to the owner | `pitch` (name, format, area, city, address, prices, hours, status, link), `owner` (`name`, `company`, `email`, `phone`, `telegram`, `telegramChatId`), `cancelledBookings` (removed) |
+| `dashboard` | `review.created` | A player reviews a pitch, good or bad → Telegram to the owner | `review` (`stars`, `sentiment` good / neutral / bad, `text`, `by`, `bookingCode`, `replyLink`), `pitch` (+ `rating`, `reviews`), `owner` |
+| `dashboard` | `offer.created` | An owner starts an offer (Forecast & offers) → email to players | `offer` (`title`, `discountPercent`, `days[]`, `hourFrom`, `hourTo`, `from`, `to`, `priceBefore`, `priceAfter`, `link`), `pitch`, `owner`, `audience` (`channel: email`, `recipients[]`) |
+| `dashboard` | `slot.posted` | An owner posts free hours (Free slots) → players following that area / pitch | `slot` (`date`, `startTime`, `endTime`, `discountPercent`, `price`, `priceAfter`, `note`, `bookLink`), `pitch`, `owner`, `audience` (`area`, `city`, `format`, `recipients[]`, `alerts[]`) |
+
+The demo only knows this device's player, so `audience.recipients` holds that player; n8n can add its own list of
+players by `area` / `city`. Owners have no Telegram field yet: match them by `phone` / `email` until one is added.
+
 In n8n, the support workflow switches on `{{ $json.body.event }}`: `support.message` → answer from knowledge.md;
 `cancellation.requested` → the cancellation branch.
 

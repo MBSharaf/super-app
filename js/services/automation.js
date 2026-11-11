@@ -312,5 +312,87 @@
     CX.reject = (...a) => { const r = reject(...a); cxSend('cancellation.rejected', { cancellation: cxOf(r), customer: r.customer, ...extra(r) }); return r; };
   }
 
+  /* ---------- Pitch partner dashboard → `dashboard` link (owner, 2026-11-11) ---------- */
+  // pitch.added / pitch.removed and review.created: n8n sends them to the pitch owner on Telegram (`owner` has the
+  // contact details and `telegramChatId` when the account has one). offer.created: n8n emails the players in `audience`.
+  // slot.posted (free hours): n8n tells the players who follow that area or pitch (`audience`, plus area / city / format).
+  const D = S.dash;
+  if (D) {
+    const dashUrl = () => cfg().dashboard;
+    const ownerOf = (id) => {
+      const a = db().find('accounts', id);
+      return a ? { id: a.id, name: a.name || null, company: a.company || null, email: a.email || null, phone: a.phone || null, telegram: a.telegram || null, telegramChatId: a.telegramChatId || null } : null;
+    };
+    const pitchInfo = (p) => ({ id: p.id, name: p.name, format: p.format, players: p.players, surface: p.surface, indoor: !!p.indoor, area: p.area, city: p.city, address: p.address,
+      pricePerHour: p.price, peakPricePerHour: p.peakPrice ?? null, openFrom: hh(p.open?.[0] ?? 0), openTo: hh(p.open?.[1] ?? 0), status: p.status, approval: p.review || null, link: link(`/pitches/${p.id}`) });
+    /** The players this demo knows (only this device's player is real; the server would list every player) */
+    const players = () => { const c = customer(); return c.email ? [{ id: c.id, name: c.name, email: c.email, phone: c.phone, city: c.city }] : []; };
+    const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const createPitch = D.createPitch;
+    D.createPitch = (...a) => { const p = createPitch(...a); send(dashUrl(), 'pitch.added', { pitch: pitchInfo(p), owner: ownerOf(p.ownerId), at: iso(Date.now()) }); return p; };
+    const deletePitch = D.deletePitch;
+    D.deletePitch = async (id, ...a) => {
+      const p = db().find('pitches', id);
+      const r = await deletePitch(id, ...a);
+      if (p) send(dashUrl(), 'pitch.removed', { pitch: pitchInfo({ ...p, status: 'removed' }), owner: ownerOf(p.ownerId), cancelledBookings: r?.cancelled || 0, at: iso(Date.now()) });
+      return r;
+    };
+
+    // Offers from "Forecast & offers" (the free-hours page sends its own slot.posted with the discount)
+    const createPromo = D.createPromo;
+    D.createPromo = (d, ...a) => {
+      const x = createPromo(d, ...a);
+      const p = db().find('pitches', x.pitchId);
+      if (p && x.label !== 'Last-minute slot') {
+        send(dashUrl(), 'offer.created', {
+          offer: { id: x.id, title: x.label, discountPercent: Math.round(x.pct * 100), days: x.days.map((w) => DAYS[w]), hourFrom: hh(x.hourFrom), hourTo: hh(x.hourTo), from: x.from, to: x.to,
+            priceBefore: p.price, priceAfter: Math.round(p.price * (1 - x.pct)), currency: 'EGP', link: link(`/pitches/${p.id}`) },
+          pitch: pitchInfo(p), owner: ownerOf(p.ownerId), audience: { channel: 'email', who: 'all players', recipients: players() },
+        });
+      }
+      return x;
+    };
+
+    const G = S.games;
+    if (G?.postSlot) {
+      const postSlot = G.postSlot;
+      G.postSlot = (d, ...a) => {
+        const post = postSlot(d, ...a);
+        const p = db().find('pitches', d.pitchId);
+        if (p) {
+          const followers = (G.alerts?.() || []).filter((al) => (al.pitchId ? al.pitchId === p.id : al.area === p.area || al.area === p.city) && d.hour >= al.from && d.hour < (al.to >= 24 ? 99 : al.to));
+          const price = S.pitches.basePrice ? S.pitches.basePrice(d.date, d.hour, p) : p.price;
+          send(dashUrl(), 'slot.posted', {
+            slot: { id: post.id, date: d.date, startTime: hh(d.hour), endTime: hh(d.hour + 1), duration: 1, discountPercent: Math.round((d.pct || 0) * 100), price, priceAfter: Math.round(price * (1 - (d.pct || 0))),
+              currency: 'EGP', note: post.text || null, bookLink: link(`/book/${p.id}?date=${d.date}&hour=${d.hour}&dur=1`) },
+            pitch: pitchInfo(p), owner: ownerOf(p.ownerId),
+            audience: { channel: 'notification', who: 'players following this area or pitch', area: p.area, city: p.city, format: p.format,
+              recipients: followers.length ? players() : [], alerts: followers.map((al) => ({ id: al.id, pitchId: al.pitchId || null, area: al.area || null, from: hh(al.from), to: hh(al.to) })) },
+          });
+        }
+        return post;
+      };
+    }
+
+    // Reviews players leave on a pitch → its owner (good or bad)
+    const B = S.bookings;
+    if (B?.review) {
+      const review = B.review;
+      B.review = async (id, d, ...a) => {
+        const rv = await review(id, d, ...a);
+        const p = rv && db().find('pitches', rv.pitchId);
+        if (p) {
+          send(dashUrl(), 'review.created', {
+            review: { id: rv.id, stars: rv.rating, sentiment: rv.rating >= 4 ? 'good' : rv.rating <= 2 ? 'bad' : 'neutral', text: rv.text, bookingCode: rv.bookingId, by: rv.customer?.name || null,
+              at: iso(rv.createdAt || Date.now()), replyLink: link(`/dash/reviews?id=${rv.id}`) },
+            pitch: { ...pitchInfo(p), rating: p.rating, reviews: p.reviews }, owner: ownerOf(p.ownerId),
+          });
+        }
+        return rv;
+      };
+    }
+  }
+
   S.automation = { send };
 })(window.SA);

@@ -34,6 +34,9 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
     // Cancellation requests (cancellation.requested / .approved / .rejected) go to the chatbot's AI agent (chatbot.url below),
     // never the orders link (owner, 2026-11-11). Set a link here only to send them to a separate workflow instead.
     cancellations: '',
+    // Pitch partner dashboard (owner's link 2026-11-11): pitch.added / pitch.removed and review.created → Telegram to the
+    // pitch owner; offer.created → email to players; slot.posted (free hours) → players following that area / pitch.
+    dashboard: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/Dashboard_lplay',
   },
   // Chatbot support — the AI agent's webhook (n8n, owner's link 2026-11-07). POST JSON with the message, the conversation,
   // the customer's data on this device and knowledgeUrl (chatbot/knowledge.md); replies { reply, action? }.
