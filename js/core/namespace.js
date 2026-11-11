@@ -28,8 +28,8 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
     bookings: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/BOOKING-created',
     // Fantasy (league.created, league.member.joined, gameweek.finished) goes to the orders link too (owner's request, 2026-10-31)
     fantasy: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
-    // Cancellation requests (cancellation.requested / .approved / .rejected) — the AI agent's trigger. Uses the orders link
-    // until the owner sends the cancellation workflow's own link.
+    // Cancellation requests (cancellation.requested / .approved / .rejected) go to the chatbot's AI agent (chatbot.url below),
+    // never the orders link (owner, 2026-11-11). Set a link here only to send them to a separate workflow instead.
     cancellations: '',
   },
   // Chatbot support — the AI agent's webhook (n8n, owner's link 2026-11-07). POST JSON with the message, the conversation,

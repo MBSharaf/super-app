@@ -2,8 +2,12 @@
  * Floating chatbot support button (all pages), styled in Super App brand colours. An AI agent answers customers.
  * - SA.config.chatbot.url set (the AI agent's webhook, e.g. an n8n "AI Agent" workflow): every message is sent there as
  *   POST JSON { sessionId, message, topic, lang, page, user } and the reply is read from { reply } or { output }.
- * - Empty, or the agent doesn't answer: a built-in demo assistant answers from the Help center questions and points to
- *   Contact support when it can't help.
+ * - Link set: the site never answers by itself (no template replies, no "contact support" pointer): every answer comes
+ *   from the agent, which reads chatbot/knowledge.md (owner's request, 2026-11-11). If the agent can't be reached, the chat
+ *   only says so, so the customer can try again.
+ * - Link empty (local development): a built-in demo assistant answers from the Help center questions.
+ * Cancellation requests go to the same agent link (`cancellation.requested`, with this chat's sessionId); the agent's
+ * reply is shown in the chat.
  * The conversation is kept for the browser tab (sessionStorage).
  */
 (function (SA) {
@@ -40,8 +44,7 @@
       return `${L('Here’s what people ask most about this:', 'دي أكتر حاجة الناس بتسأل عنها هنا:')}<br><b>${esc(pool[0].q[lang])}</b><br>${pool[0].a[lang]}`;
     }
     if (scored[0] && scored[0].n >= (asked.size > 2 ? 2 : 1)) return `<b>${esc(scored[0].x.q[lang])}</b><br>${scored[0].x.a[lang]}`;
-    return L('I’m not sure about that one yet. Our team can help: open <a href="#/support">Contact support</a> and we’ll reply soon.',
-      'لسه مش متأكد من الإجابة دي. فريقنا يقدر يساعدك: افتح <a href="#/support">كلّم الدعم</a> وهنرد عليك قريب.');
+    return L('I’m not sure about that one yet. Try asking it another way.', 'لسه مش متأكد من الإجابة دي. جرّب تسأل بطريقة تانية.');
   };
 
   /* ---------- The AI agent (when its link is set) ---------- */
@@ -90,10 +93,23 @@
     };
   };
 
+  const agentUrl = () => SA.config.chatbot?.url || '';
+  const siteUrl = () => new URL(SA.core.router.url('/'), location.href).href;
+  /** The agent's answer → { html, actions } (null when it sent no text) */
+  const readReply = async (res) => {
+    if (!res.ok) throw new Error(`chatbot ${res.status}`);
+    const data = await res.json().catch(() => ({}));
+    const body = Array.isArray(data) ? data[0] : data;
+    const reply = body?.reply ?? body?.output ?? body?.text;
+    if (!reply) return null;
+    const actions = [].concat(body.actions || [], body.action ? [body.action] : []).filter((a) => a && typeof a === 'object' && ['cancel', 'open'].includes(a.type));
+    return { html: esc(String(reply)).replace(/\n/g, '<br>'), actions };
+  };
+
   const askAgent = async (state, message, topic) => {
-    const url = SA.config.chatbot?.url;
+    const url = agentUrl();
     if (!url) return null;
-    const site = new URL(SA.core.router.url('/'), location.href).href;
+    const site = siteUrl();
     const res = await fetch(url, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -105,13 +121,25 @@
         knowledgeUrl: new URL('chatbot/knowledge.md', site).href,
       }),
     });
-    if (!res.ok) throw new Error(`chatbot ${res.status}`);
-    const data = await res.json().catch(() => ({}));
-    const body = Array.isArray(data) ? data[0] : data;
-    const reply = body?.reply ?? body?.output ?? body?.text;
-    if (!reply) return null;
-    const actions = [].concat(body.actions || [], body.action ? [body.action] : []).filter((a) => a && typeof a === 'object' && ['cancel', 'open'].includes(a.type));
-    return { html: esc(String(reply)).replace(/\n/g, '<br>'), actions };
+    return readReply(res);
+  };
+
+  /**
+   * A cancellation event for the agent (js/services/automation.js): POST { event, sessionId, lang, customer context, ...data }
+   * to the agent's link; its reply, if any, is shown in this chat. Returns false when no agent link is set.
+   */
+  const notifyAgent = (event, data) => {
+    const url = agentUrl();
+    if (!url) return false;
+    let st = load();
+    if (!st) { st = { id: sessionId(), msgs: [] }; save(st); }
+    const body = JSON.stringify({ event, source: 'demo-site', site: siteUrl(), sentAt: new Date().toISOString(), sessionId: st.id, lang: ar() ? 'ar' : 'en',
+      ...customerContext(), ...data, knowledgeUrl: new URL('chatbot/knowledge.md', siteUrl()).href });
+    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+      .then(readReply)
+      .then((r) => { if (r) botSays(r.html, r.actions); })
+      .catch((e) => console.warn('[chatbot]', e?.message || e));
+    return true;
   };
 
   /** Buttons for what the agent proposes; nothing happens until the customer presses one */
@@ -140,12 +168,16 @@
     return L(`Cancellation ${code} wasn’t approved: ${esc(rec.note || '')} ${what} stays active. ${link}`,
       `طلب الإلغاء ${code} متوافقش عليه: ${esc(rec.note || '')} ${what} هيفضل شغال. ${link}`);
   };
-  const cancellation = (rec, phase) => {
-    const html = cxText(rec, phase);
-    if (ui) { ui.push('bot', html); if (phase === 'sent') setTimeout(() => ui.open(true), 80); return; }
+  /** A bot message from outside the chat window (works before the chat was opened) */
+  const botSays = (html, acts) => {
+    if (ui) { ui.push('bot', html, acts); return; }
     const st = load() || { id: sessionId(), msgs: [] };
-    st.msgs = [...st.msgs, { from: 'bot', html, at: Date.now() }].slice(-60);
+    st.msgs = [...st.msgs, { from: 'bot', html, at: Date.now(), ...(acts?.length ? { acts } : {}) }].slice(-60);
     save(st);
+  };
+  const cancellation = (rec, phase) => {
+    botSays(cxText(rec, phase));
+    if (ui && phase === 'sent') setTimeout(() => ui.open(true), 80);
   };
 
   const init = () => {
@@ -215,8 +247,14 @@
       log.insertAdjacentHTML('beforeend', '<div class="cb-msg is-bot cb-typing" aria-label="typing"><i></i><i></i><i></i></div>');
       body.scrollTop = body.scrollHeight;
       let reply = null;
-      try { reply = await askAgent(state, t, topic); } catch (e) { console.warn('[chatbot]', e?.message || e); }
-      if (!reply) { await new Promise((r) => setTimeout(r, 450)); reply = { html: demoReply(t, topic, fromTopic), actions: [] }; }
+      if (agentUrl()) {
+        // Only the agent answers: no template reply from the site
+        try { reply = await askAgent(state, t, topic); } catch (e) { console.warn('[chatbot]', e?.message || e); }
+        reply = reply || { html: L('I couldn’t reach the assistant right now. Please try again in a moment.', 'مقدرتش أوصل للمساعد دلوقتي. جرّب تاني بعد شوية.'), actions: [] };
+      } else {
+        await new Promise((r) => setTimeout(r, 450));
+        reply = { html: demoReply(t, topic, fromTopic), actions: [] };
+      }
       busy = false;
       push('bot', reply.html, reply.actions);
     };
@@ -244,5 +282,5 @@
     ui = { push, open };
   };
 
-  SA.ui.chatbot = { init, cancellation, open: () => ui?.open(true) };
+  SA.ui.chatbot = { init, cancellation, notifyAgent, open: () => ui?.open(true) };
 })(window.SA);

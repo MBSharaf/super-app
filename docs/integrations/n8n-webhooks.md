@@ -139,6 +139,12 @@ The demo site has no server, so the page itself posts each event to the links in
 | `fantasy` | `team.created` | A player creates a fantasy team (they are entered into the Grand League with it) | `team` (`teamId`, `teamName`, `captain`, `startGameweek`, `players`), `player` (`userId`, `name`, `email`), `competition`, `leagues[]` (each `league` as above) |
 | `fantasy` | `gameweek.finished` | A gameweek is finished — **one event** for the whole gameweek (an n8n test link takes one request per "Listen"); `leagues[]` holds every league the player is in, each with `league`, `participantsCount`, `partialTable`, `winners[]`, `participants[]`; `player` (`userId`, `name`, `email`, `teamName`, `gameweekPoints`, `totalPoints`), `leaguesCount`; the first league's fields are also at the top level | `gameweek`, `gameweekId`, `competition`, `league`, `winners[]` (top 3 by gameweek points: `place`, `userId`, `name`, `email`, `gameweekPoints`, `totalPoints`), `participants[]` (every member: `userId`, `name`, `email`, `leagueId`, `leagueName`, `gameweekId`, `rank` and `points` = place and points in the league table, `totalPoints`, `gameweekRank`, `gameweekPoints`, `teamName`), `partialTable` (true for the big official leagues: only the top 10 and the player) |
 
+| `chatbot.url` (the support AI agent) | `support.message` | The customer writes in the chatbot or taps a topic | `sessionId`, `message`, `topic`, `lang`, `page`, `history[]`, `customer`, `context`, `knowledgeUrl` (chatbot/knowledge.md). Reply `{ "reply": "..." }`; the site has no template answers |
+| `chatbot.url` | `cancellation.requested` / `.approved` / `.rejected` | A customer asks to cancel a paid booking, package, order or game (and the decision) | `sessionId` (same chat), `cancellation` (`requestId`, `type`, `referenceId`, `item`, `paidOnline`, `refundIfApproved`, `reason`, `replyBy`…), `customer`, `context`, `pitch`/`partner` for bookings. A `{ "reply": "..." }` answer is shown in the chat. Never sent to the orders link (owner, 2026-11-11); `automation.cancellations`, if set, overrides |
+
+In n8n, the support workflow switches on `{{ $json.body.event }}`: `support.message` → answer from knowledge.md;
+`cancellation.requested` → the cancellation branch.
+
 Demo rivals are fictional: their `userId` is `demo-<name>` and their email is `<name>@example.com`.
 
 ## The server address
