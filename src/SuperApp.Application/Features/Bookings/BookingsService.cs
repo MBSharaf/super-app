@@ -147,11 +147,25 @@ public sealed class HoldRequestValidator : AbstractValidator<HoldRequest>
     }
 }
 
+/// <summary>How far ahead a pitch can be booked: today and the coming month (owner, 2026-11-11). The site shows the same window.</summary>
+public static class BookingWindow
+{
+    public const int Days = 31;
+
+    /// <summary>True when the date is from today (Cairo) up to the last day of the window.</summary>
+    public static bool Contains(DateOnly date)
+    {
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, CairoTime.Zone));
+        return date >= today && date < today.AddDays(Days);
+    }
+}
+
 public sealed class CreateBookingRequestValidator : AbstractValidator<CreateBookingRequest>
 {
     public CreateBookingRequestValidator()
     {
         RuleFor(x => x.PitchSlug).NotEmpty().MaximumLength(60);
+        RuleFor(x => x.Date).Must(BookingWindow.Contains).WithMessage($"Choose a date from today up to {BookingWindow.Days} days ahead.");
         RuleFor(x => x.Hour).InclusiveBetween(0, 29);
         RuleFor(x => x.Duration).InclusiveBetween(1, 4).WithMessage("Book 1 to 4 hours in a row.");
         RuleFor(x => x.AcceptWaiver).Equal(true).WithMessage("Please accept the injury waiver to book.");

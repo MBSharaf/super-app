@@ -16,7 +16,7 @@
     return `<div class="loc-bar"><span class="loc-dot ${loc.source === 'gps' ? 'is-live' : ''}"></span><span class="small"><b>${msg}</b></span>${loc.source !== 'gps' ? `<button class="link link-blaze small" data-act="gps">Use my location</button>` : `<button class="link small" data-act="focus-search">Change area</button>`}</div>`;
   };
 
-  const dateStrip = (sel) => `<div class="date-strip" role="tablist" aria-label="Date">${Array.from({ length: 10 }, (_, i) => {
+  const dateStrip = (sel) => `<div class="date-strip" role="tablist" aria-label="Date">${Array.from({ length: SA.config.bookingDays || 31 }, (_, i) => {
     const d = addDays(today(), i), iso = isoDate(d);
     return `<button role="tab" class="date-chip ${iso === sel ? 'is-active' : ''}" aria-selected="${iso === sel}" data-date="${iso}"><span class="xs">${i === 0 ? 'Today' : i === 1 ? 'Tmrw' : DAY[d.getDay()]}</span><b class="num">${d.getDate()}</b></button>`;
   }).join('')}</div>`;

@@ -101,6 +101,11 @@ public sealed class BookingsTests(DemoApiFactory api) : IClassFixture<DemoApiFac
 
         (await client.PostAsync("/api/v1/bookings", Booking(day, 12, duration: 5))).Status.ShouldBe(HttpStatusCode.BadRequest);
         (await client.PostAsync("/api/v1/bookings", new { pitchSlug = "no-such-pitch", date = day, hour = 12, duration = 1, payAtVenue = false, acceptWaiver = true })).Status.ShouldBe(HttpStatusCode.NotFound);
+
+        // Bookable up to the coming month only (BookingWindow.Days)
+        var tooFar = await client.PostAsync("/api/v1/bookings", Booking(Day(40), 12));
+        tooFar.Status.ShouldBe(HttpStatusCode.BadRequest);
+        tooFar.Body.HasFieldError("date").ShouldBeTrue();
     }
 
     [Fact]

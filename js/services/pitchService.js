@@ -64,8 +64,8 @@
     if (h < o || h >= c) return false;
     const d = parseISO(dateISO).getTime();
     if (d < db.raw().platformSince) return false;
-    // New activity is only modelled up to two weeks ahead
-    if (d > addDays(today(), 14).getTime()) return false;
+    // New activity is modelled across the whole booking window (the coming month)
+    if (d > addDays(today(), SA.config.bookingDays || 31).getTime()) return false;
     const r = seeded(`${p.id}|${dateISO}|${h}`);
     let busy = h >= 19 && h <= 23 ? 0.55 : 0.3;
     // People book closer to the date: future days fill up gradually

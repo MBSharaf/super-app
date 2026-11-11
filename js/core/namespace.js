@@ -18,6 +18,9 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // (settings Features:StoreEnabled / Features:PodEnabled), which marks <html data-store="on" data-pod="on">.
   // The demo site (GitHub Pages, no server) shows the store (owner's request, 2026-10-28: test orders there) without
   // print on demand. Everything stays in the code.
+  // How far ahead a pitch can be booked: the whole coming month (owner, 2026-11-11). The server enforces the same window
+  // (BookingWindow.Days in src/SuperApp.Application/Features/Bookings).
+  bookingDays: 31,
   storeEnabled: (document.documentElement.dataset.store || 'on') === 'on',
   podEnabled: document.documentElement.dataset.pod === 'on',
   // The owner's automation (n8n): the demo site sends every new store order to `orders`, and every pitch booking, weekly

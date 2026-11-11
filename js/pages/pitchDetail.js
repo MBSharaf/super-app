@@ -1,5 +1,11 @@
 (function (SA) {
-  const { esc, money, fmtKm, fmtHour, fmtRange, isoDate, addDays, today, fmtDate, DAY, timeAgo } = SA.core.utils;
+  const { esc, money, fmtKm, fmtHour, fmtRange, isoDate, addDays, today, fmtDate, DAY, MON, timeAgo } = SA.core.utils;
+  /** Every bookable day (today + the coming month) as a wrapping grid; a month label starts each new month */
+  const monthDates = () => Array.from({ length: SA.config.bookingDays || 31 }, (_, i) => {
+    const d = addDays(today(), i), iso = isoDate(d);
+    const label = i > 0 && d.getDate() === 1 ? `<span class="date-month">${MON[d.getMonth()]}</span>` : '';
+    return `${label}<button class="date-chip" data-date="${iso}" aria-pressed="false"><span class="xs">${i === 0 ? 'Today' : DAY[d.getDay()]}</span><b class="num">${d.getDate()}</b></button>`;
+  }).join('');
   const DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const daysLabel = (days) => { const k = [...days].sort().join(','); return k === '0,1,2,3,4' ? 'Sun–Thu' : k === '5,6' ? 'Fri–Sat' : k === '0,1,2,3,4,5,6' ? 'every day' : days.map((d) => DN[d]).join(', '); };
   /** Policy as a 3-step timeline: full refund → 50% → none */
@@ -73,7 +79,7 @@
             ${p.status === 'closed' ? `<div class="notice blaze" style="margin-top:14px">${icon('alert', 18)}<span><b>Temporarily closed for booking.</b> Check back soon or pick another pitch nearby.</span></div>` : ''}
             ${S.pitches.activePromos(p).map((x) => `<div class="deal-note">${icon('tag', 16)}<span><b>${Math.round(x.pct * 100)}% off — ${esc(x.label)}</b><span class="xs" style="display:block">${daysLabel(x.days)}, ${fmtHour(x.hourFrom)}–${fmtHour(x.hourTo)} · until ${fmtDate(x.to)}</span></span></div>`).join('')}
             <h2 class="field-label" style="margin-top:18px">1. Pick a date</h2>
-            <div class="date-strip compact" data-dates>${Array.from({ length: 14 }, (_, i) => { const d = addDays(today(), i), iso = isoDate(d); return `<button class="date-chip" data-date="${iso}" aria-pressed="false"><span class="xs">${i === 0 ? 'Today' : DAY[d.getDay()]}</span><b class="num">${d.getDate()}</b></button>`; }).join('')}</div>
+            <div class="date-strip compact date-month-grid" data-dates><span class="date-month">${MON[today().getMonth()]}</span>${monthDates()}</div>
             <h2 class="field-label" style="margin-top:18px">2. How long?</h2>
             <div class="tabs dur-tabs" role="radiogroup" aria-label="Duration">${(S.api?.isLive() ? DURATIONS.filter(([v]) => Number.isInteger(v)) : DURATIONS).map(([v, l]) => `<button class="tab" role="radio" data-dur="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
             <div class="row-between" style="margin-top:18px"><h2 class="field-label">3. Choose a start time</h2><span class="xs muted" data-free></span></div>
@@ -214,7 +220,6 @@
         el.querySelector('[data-summary]').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
       draw(true);
-      el.querySelector('[data-dates] .is-active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
       return () => this._map?.destroy();
     },
   };

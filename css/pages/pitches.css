@@ -46,6 +46,10 @@
 .date-chip.is-active { background: var(--ink-bg); color: #fff; box-shadow: none; transform: translateY(-2px); }
 .date-chip.is-active .xs { color: rgba(255,255,255,.7); }
 .date-strip.compact .date-chip { width: 52px; height: 58px; }
+/* Pitch page: the whole bookable month, wrapping instead of scrolling */
+.date-month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; overflow: visible; }
+.date-month-grid .date-chip { width: auto; }
+.date-month { grid-column: 1 / -1; font-size: .8rem; font-weight: 700; color: var(--ink-3); margin-top: 4px; }
 .filter-row { display: flex; gap: 10px 18px; flex-wrap: wrap; margin-top: 12px; }
 .filter-row .chips { flex-wrap: nowrap; }
 .view-toggle { display: none; margin-top: 16px; }

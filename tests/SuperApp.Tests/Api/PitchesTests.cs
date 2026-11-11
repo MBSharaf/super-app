@@ -103,7 +103,7 @@ public sealed class PitchesTests(DemoApiFactory api) : IClassFixture<DemoApiFact
 
     [Theory]
     [InlineData("days=0")]
-    [InlineData("days=15")]
+    [InlineData("days=32")]
     [InlineData("from=2020-01-01")]
     public async Task The_hour_grid_refuses_bad_ranges(string query)
     {

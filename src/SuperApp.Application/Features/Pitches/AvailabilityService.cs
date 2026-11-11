@@ -75,7 +75,7 @@ public sealed class AvailabilityService(IAvailabilityReader reader, IClock clock
 /// <summary>Booking hours are Cairo local time.</summary>
 public static class CairoTime
 {
-    private static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
+    public static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
 
     public static DateTime Now(IClock clock) => TimeZoneInfo.ConvertTimeFromUtc(clock.UtcNow, Zone);
 
@@ -87,7 +87,7 @@ public sealed class AvailabilityQueryValidator : AbstractValidator<AvailabilityQ
 {
     public AvailabilityQueryValidator()
     {
-        RuleFor(x => x.Days).InclusiveBetween(1, 14).WithMessage("Show 1 to 14 days.");
+        RuleFor(x => x.Days).InclusiveBetween(1, Bookings.BookingWindow.Days).WithMessage($"Show 1 to {Bookings.BookingWindow.Days} days.");
         RuleFor(x => x.From).Must(d => d is null || (d >= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1)) && d <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(90))))
             .WithMessage("Choose a date from today up to 90 days ahead.");
     }

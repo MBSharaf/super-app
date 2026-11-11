@@ -79,7 +79,7 @@
     return { hour: h.hour, status, price: +h.price, base: +h.basePrice, deal: Math.round(+h.offerPercent), peak: h.isPeak, waiting: h.waiting };
   });
 
-  const loadDays = async (id, from = isoDate(today()), n = 14) => {
+  const loadDays = async (id, from = isoDate(today()), n = SA.config.bookingDays || 31) => {
     const r = await api.get(`/pitches/${slugOf(id)}/availability?from=${from}&days=${n}`);
     r.days.forEach((d) => days.set(`${id}|${d.date}`, toSlots(id, d)));
     return r.days;
