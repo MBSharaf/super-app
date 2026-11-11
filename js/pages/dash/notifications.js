@@ -46,6 +46,13 @@
             <label class="nt-toggle"><span class="grow small">${icon('globe', 15)} Browser pop-ups</span><input type="checkbox" class="nt-switch" data-browser ${prefs.browser ? 'checked' : ''} /></label>
             <label class="nt-toggle is-soon"><span class="grow small">${icon('message', 15)} Email · SMS · WhatsApp</span><span class="xs muted">Coming soon</span></label>
           </div>
+          ${a.role === 'owner' ? `<h3 class="small strong" style="margin-top:18px">${icon('send', 15)} Telegram</h3>
+          <p class="xs muted" style="margin-top:4px">We send new pitches, removed pitches and every review of your pitches to your Telegram.</p>
+          <form class="stack" style="--gap:8px;margin-top:8px" data-telegram novalidate>
+            <div class="field"><label for="tg-u">Telegram username</label><input class="input" id="tg-u" name="username" value="${esc(a.telegram || '')}" placeholder="@yourname" autocomplete="off" dir="ltr" /><span class="field-error" data-err="username"></span></div>
+            <div class="field"><label for="tg-c">Chat ID <span class="xs muted">(optional)</span></label><input class="input num" id="tg-c" name="chatId" value="${esc(a.telegramChatId || '')}" placeholder="123456789" inputmode="numeric" autocomplete="off" dir="ltr" /><span class="field-error" data-err="chatId"></span></div>
+            <button class="btn btn-primary btn-sm" type="submit">Save Telegram</button>
+          </form>` : ''}
           <p class="xs muted" style="margin-top:10px">Browser pop-ups show while the dashboard is open in another tab.</p>
         </aside></div>`;
       return C.layout('notifications', { title: 'Notifications', subtitle: unread ? `${unread} unread` : 'All caught up', body });
@@ -61,6 +68,19 @@
       el.querySelector('[data-prefs]')?.addEventListener('change', (e) => {
         N().setPrefs(a.id, { [e.target.name]: e.target.checked });
         SA.ui.overlay.toast(e.target.checked ? 'You’ll be notified about this' : 'Muted — you won’t get these');
+      });
+      el.querySelector('[data-telegram]')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const f = e.target;
+        f.querySelectorAll('[data-err]').forEach((x) => (x.textContent = ''));
+        try {
+          const out = D().setTelegram({ username: f.username.value, chatId: f.chatId.value });
+          SA.ui.overlay.toast(out.telegram ? `Telegram alerts go to ${out.telegram}` : 'Telegram alerts off', { type: 'success' });
+          SA.app.rerender();
+        } catch (err) {
+          Object.entries(err.details || {}).forEach(([k, v]) => { const x = f.querySelector(`[data-err="${k}"]`); if (x) x.textContent = v; });
+          if (!err.details) SA.ui.overlay.toast(err.message, { type: 'error' });
+        }
       });
       el.querySelector('[data-browser]')?.addEventListener('change', async (e) => {
         if (e.target.checked) {

@@ -555,6 +555,21 @@
     myPitches, myStores, ledger, findBooking, summary, daily: series, heatmap, wallet, salesFor, statusOf, bookingMoney, lastSettlement, sourceLabel, saleState, FLOW, renewMemberships,
     commission: () => db.settings().commission,
 
+    // ---- Telegram (owner, 2026-11-11): where n8n sends the owner's pitch and review alerts ----
+    /** Saves the signed-in partner's Telegram username and (optional) chat ID; empty username = turned off */
+    setTelegram({ username = '', chatId = '' } = {}) {
+      const a = me(); assert(a, 'Sign in first.');
+      const u = String(username || '').trim().replace(/^@/, ''), c = String(chatId || '').trim();
+      const e = {};
+      if (u && !/^[A-Za-z0-9_]{5,32}$/.test(u)) e.username = 'Use your Telegram username: 5–32 letters, numbers or _.';
+      if (c && !/^-?\d{5,15}$/.test(c)) e.chatId = 'The chat ID is a number, e.g. 123456789.';
+      if (c && !u) e.username = 'Add your Telegram username too.';
+      if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const out = db.update('accounts', a.id, { telegram: u ? `@${u}` : '', telegramChatId: u ? c : '' });
+      db.log(a.id, 'account.telegram', u ? `Telegram alerts go to @${u}` : 'Turned off Telegram alerts', a.id);
+      return out;
+    },
+
     // ---- Pitches ----
     pitch(id) { const p = db.find('pitches', id); assert(canPitch(p), 'You can only manage your own pitches.'); return p; },
     validatePitch,

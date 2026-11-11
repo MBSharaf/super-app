@@ -148,7 +148,8 @@ The demo site has no server, so the page itself posts each event to the links in
 | `dashboard` | `slot.posted` | An owner posts free hours (Free slots) → players following that area / pitch | `slot` (`date`, `startTime`, `endTime`, `discountPercent`, `price`, `priceAfter`, `note`, `bookLink`), `pitch`, `owner`, `audience` (`area`, `city`, `format`, `recipients[]`, `alerts[]`) |
 
 The demo only knows this device's player, so `audience.recipients` holds that player; n8n can add its own list of
-players by `area` / `city`. Owners have no Telegram field yet: match them by `phone` / `email` until one is added.
+players by `area` / `city`. Owners set their Telegram in the partner dashboard (Notifications → Telegram): `owner.telegram` is the @username and
+`owner.telegramChatId` the chat ID (optional; the Telegram node needs it to send a message).
 
 In n8n, the support workflow switches on `{{ $json.body.event }}`: `support.message` → answer from knowledge.md;
 `cancellation.requested` → the cancellation branch.
