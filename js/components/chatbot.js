@@ -96,13 +96,23 @@
   const agentUrl = () => SA.config.chatbot?.url || '';
   const siteUrl = () => new URL(SA.core.router.url('/'), location.href).href;
   /** The agent's answer → { html, actions } (null when it sent no text) */
+  // Accepts JSON ({ reply } / { output } / { text } / { message }, or an array of those, as n8n's "Respond to Webhook" and
+  // "Last node" modes send it) or plain text (Respond With: Text = {{ $json.output }}).
   const readReply = async (res) => {
     if (!res.ok) throw new Error(`chatbot ${res.status}`);
-    const data = await res.json().catch(() => ({}));
+    const raw = (await res.text().catch(() => '')).trim();
+    let data = raw;
+    try { data = raw ? JSON.parse(raw) : ''; } catch { /* plain text answer */ }
+    if (typeof data === 'string' && data.startsWith('"')) { try { data = JSON.parse(data); } catch { /* keep */ } }
     const body = Array.isArray(data) ? data[0] : data;
-    const reply = body?.reply ?? body?.output ?? body?.text;
-    if (!reply) return null;
-    const actions = [].concat(body.actions || [], body.action ? [body.action] : []).filter((a) => a && typeof a === 'object' && ['cancel', 'open'].includes(a.type));
+    const pick = (o) => (o && typeof o === 'object' ? (o.reply ?? o.output ?? o.text ?? o.answer ?? o.json?.output ?? o.json?.reply ?? null) : o);
+    let reply = pick(body);
+    // n8n's "Respond: Immediately" answer is not the agent's reply
+    if (!reply && body?.message && body.message !== 'Workflow was started') reply = body.message;
+    if (reply && typeof reply === 'object') reply = pick(reply);
+    if (!reply || typeof reply !== 'string') { console.warn('[chatbot] no reply in the agent answer:', raw.slice(0, 300)); return null; }
+    const o = body && typeof body === 'object' ? body : {};
+    const actions = [].concat(o.actions || [], o.action ? [o.action] : []).filter((a) => a && typeof a === 'object' && ['cancel', 'open'].includes(a.type));
     return { html: esc(String(reply)).replace(/\n/g, '<br>'), actions };
   };
 
