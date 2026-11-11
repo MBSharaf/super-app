@@ -203,7 +203,7 @@
           title: 'Top up wallet',
           body: `<form id="tu" class="stack" style="--gap:16px">
             <div class="field"><label for="tu-a">Amount (EGP)</label><input class="input num" id="tu-a" name="amount" type="number" min="50" step="50" value="${preset}" /><div class="chips" style="margin-top:8px">${[200, 500, 1000, 2000].map((a) => `<button type="button" class="chip" data-amt="${a}">${a}</button>`).join('')}</div></div>
-            <div data-pay>${SA.ui.payment.render({ amount: 0, name: 'tupay' }).replace(/<label class="choice pay-choice"[^]*?value="wallet"[^]*?<\/label>/, '')}</div></form>`,
+            <div data-pay>${SA.ui.payment.render({ amount: 0, points: false, name: 'tupay' }).replace(/<label class="choice pay-choice"[^]*?value="wallet"[^]*?<\/label>/, '')}</div></form>`,
           footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" form="tu" type="submit">Top up</button>`,
           onMount(m, close) {
             const form = m.querySelector('#tu');

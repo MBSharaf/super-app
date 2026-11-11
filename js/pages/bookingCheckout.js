@@ -16,31 +16,6 @@
     }
   };
 
-  /**
-   * Super Points → voucher right on the booking (owner, 2026-11-11): the points needed to cover the deposit (at least the
-   * smallest voucher, at most what the player has) become a voucher, which the payment box then uses first.
-   */
-  const swapPoints = (deposit) => {
-    const L = S.loyalty?.summary?.();
-    if (!L?.cfg) return null;
-    const step = 100;
-    const need = Math.ceil(deposit / L.cfg.pointValue / step) * step;
-    const most = Math.floor(L.balance / step) * step;
-    const points = Math.min(Math.max(need, L.cfg.minRedeem), most);
-    return { L, points, amount: Math.floor(points * L.cfg.pointValue), ok: points >= L.cfg.minRedeem };
-  };
-  const pointsSwap = (deposit) => {
-    const s = swapPoints(deposit);
-    if (!s) return '';
-    const ar = !!SA.i18n?.isAr, n = (x) => Number(x).toLocaleString();
-    const text = s.ok
-      ? (ar ? `معاك <b class="num">${n(s.L.balance)}</b> نقطة. حوّل <b class="num">${n(s.points)}</b> نقطة لقسيمة بـ <b class="num">${n(s.amount)} جنيه</b> وادفع بيها العربون دلوقتي.`
-        : `You have <b class="num">${n(s.L.balance)}</b> Super Points. Turn <b class="num">${n(s.points)}</b> of them into a <b class="num">${n(s.amount)} EGP</b> voucher and use it on this deposit now.`)
-      : (ar ? `معاك <b class="num">${n(s.L.balance)}</b> نقطة. من ${n(s.L.cfg.minRedeem)} نقطة تقدر تحوّلهم لقسيمة هنا على طول.`
-        : `You have <b class="num">${n(s.L.balance)}</b> Super Points. From ${n(s.L.cfg.minRedeem)} points you can turn them into a voucher right here.`);
-    return `<div class="notice turf points-swap" style="margin-bottom:16px" data-i18n-skip>${icon('gift', 18)}<span class="grow">${text}</span>${s.ok ? `<button type="button" class="btn btn-sm btn-blaze" data-swap-points>${ar ? 'حوّل النقط' : 'Use my points'}</button>` : ''}</div>`;
-  };
-
   /* -------- Review & pay: #/book/:id?date&hour&dur[&weeks] -------- */
   SA.pages.bookingCheckout = {
     title: 'Review booking — Super App',
@@ -84,7 +59,7 @@
             </section>
             <section class="panel panel-pad">
               <div class="notice turf deposit-note" style="margin-bottom:16px">${icon('wallet', 18)}<span><span>Pay now (deposit):</span> <b class="num">${money(q.deposit)}</b>. <span>Pay at the pitch:</span> <b class="num">${money(q.payAtPitch)}</b>. <span>You pay only a deposit online by card to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.</span></span></div>
-              ${weeks ? '' : pointsSwap(q.deposit)}${SA.ui.payment.render({ amount: q.deposit, onlineOnly: true, allowVoucher: !weeks, name: 'bkpay' })}</section>
+              ${SA.ui.payment.render({ amount: q.deposit, onlineOnly: true, allowVoucher: true, name: 'bkpay' })}</section>
           </form>
           <aside class="panel panel-pad order-summary">
             <h2 class="h4">Price details</h2>
@@ -117,18 +92,6 @@
       if (!form) return;
       SA.ui.payment.bind(form, { name: 'bkpay' });
       const weeks = +ctx.query.weeks || 0;
-      el.querySelector('[data-swap-points]')?.addEventListener('click', async (e) => {
-        const ar = !!SA.i18n?.isAr;
-        const deposit = +el.querySelector('.pay-methods')?.dataset.amount || 0;
-        const s = swapPoints(deposit);
-        if (!s?.ok) return;
-        e.currentTarget.disabled = true;
-        try {
-          const r = await S.loyalty.redeem(s.points);
-          SA.ui.overlay.toast(ar ? `القسيمة ${r.code} بـ ${r.amount} جنيه جاهزة وهتتخصم من العربون` : `Voucher ${r.code} (${money(r.amount)}) is ready and will pay this deposit first`, { type: 'success' });
-          SA.app.rerender();
-        } catch (err) { e.currentTarget.disabled = false; SA.ui.overlay.toast(err.message, { type: 'error' }); }
-      });
       el.querySelector('[data-code-form]')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const v = e.target.code.value.trim();

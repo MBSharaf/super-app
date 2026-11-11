@@ -14,7 +14,41 @@
    * onlineOnly: card payment only (no wallet, no cash) — used by pitch-booking deposits. allowVoucher: with onlineOnly, a
    * Super Points voucher may still pay first (single pitch bookings, owner 2026-11-11).
    */
-  const render = ({ amount, allowCash = false, allowCOD = false, onlineOnly = false, allowVoucher = false, name = 'pay' } = {}) => {
+  const ar = () => !!SA.i18n?.isAr;
+  const L = (en, a) => (ar() ? a : en);
+  const nf = (x) => Number(x).toLocaleString();
+
+  /** Super Points vouchers with value left; `pick` is selected (else the biggest) */
+  const voucherBlock = (name, pick = '') => {
+    const vs = SA.services.loyalty?.usable() || [];
+    if (!vs.length) return '';
+    const sel = vs.some((v) => v.code === pick) ? pick : vs[0].code;
+    return `<label class="field pay-voucher"><span class="field-label">${icon('gift', 14)} Super Points voucher</span><select class="select" name="${name}-voucher"><option value="">Don’t use a voucher</option>${vs.map((v) => `<option value="${v.code}" ${v.code === sel ? 'selected' : ''}>${v.code} — ${money(v.balance)} left</option>`).join('')}</select><span class="xs muted">It pays first; the rest is paid with the method above.</span></label>`;
+  };
+
+  /**
+   * "Use points" (owner, 2026-11-11): on every payment the player types how many Super Points to use and presses the
+   * button; the points become a voucher that pays first. At least the smallest voucher (settings), in 100-point steps.
+   */
+  const pointsBlock = (name, amount) => {
+    const Ls = SA.services.loyalty?.summary?.();
+    if (!Ls?.cfg || !SA.core.store.get().user) return '';
+    const min = Ls.cfg.minRedeem, most = Math.floor(Ls.balance / 100) * 100;
+    const need = amount > 0 ? Math.ceil(amount / Ls.cfg.pointValue / 100) * 100 : most;
+    const val = Math.max(min, Math.min(need, most));
+    const can = most >= min;
+    return `<div class="pay-points" data-points-box data-i18n-skip>
+      <span class="field-label">${icon('sparkle', 14)} ${L('Pay with Super Points', 'ادفع بنقاط Super Points')}</span>
+      <span class="xs muted" style="display:block">${L(`You have <b class="num">${nf(Ls.balance)}</b> points · ${nf(Math.round(1 / Ls.cfg.pointValue))} points = 1 EGP · from ${nf(min)} points`, `معاك <b class="num">${nf(Ls.balance)}</b> نقطة · كل ${nf(Math.round(1 / Ls.cfg.pointValue))} نقطة = 1 جنيه · من ${nf(min)} نقطة`)}</span>
+      ${can ? `<div class="row" style="--gap:8px;margin-top:8px"><label class="sr-only" for="${name}-pts">${L('Points to use', 'عدد النقط')}</label><input class="input num" id="${name}-pts" name="${name}-points" type="number" min="${min}" max="${most}" step="100" value="${val}" inputmode="numeric" style="max-width:150px" />
+        <button type="button" class="btn btn-blaze btn-sm" data-points-use="${name}">${L('Use points', 'اخصم النقط')}</button></div>
+        <span class="xs" data-points-out style="display:block;margin-top:4px">= ${money(Math.floor(val * Ls.cfg.pointValue))}</span>`
+    : `<span class="xs muted" style="display:block;margin-top:6px">${L(`You need ${nf(min - Ls.balance)} more points to use them.`, `محتاج ${nf(min - Ls.balance)} نقطة كمان علشان تقدر تستخدمهم.`)}</span>`}
+      <span class="field-error" data-points-err></span>
+    </div>`;
+  };
+
+  const render = ({ amount, allowCash = false, allowCOD = false, onlineOnly = false, allowVoucher = false, points = true, name = 'pay' } = {}) => {
     const bal = SA.services.payment.walletBalance();
     const cards = SA.services.payment.savedCards();
     const short = bal < amount;
@@ -28,7 +62,7 @@
       ${opt('new', `<span class="pay-ico pay-ico-new">${icon('card', 18)}</span><span class="grow"><b>New Visa card</b><span class="xs muted" style="display:block">Debit or credit</span></span>`)}
       ${allowCash ? opt('cash', `<span class="pay-ico pay-ico-new">${icon('pitch', 18)}</span><span class="grow"><b>Pay the host at the pitch</b><span class="xs muted" style="display:block">Cash on arrival</span></span>`) : ''}
       ${allowCOD ? opt('cod', `<span class="pay-ico pay-ico-new">${icon('truck', 18)}</span><span class="grow"><b>Cash on delivery</b><span class="xs muted" style="display:block">Pay the courier</span></span>`) : ''}
-      ${(() => { const vs = onlineOnly && !allowVoucher ? [] : SA.services.loyalty?.usable() || []; return vs.length ? `<label class="field pay-voucher"><span class="field-label">${icon('gift', 14)} Super Points voucher</span><select class="select" name="${name}-voucher"><option value="">Don’t use a voucher</option>${vs.map((v, i) => `<option value="${v.code}" ${i === 0 ? 'selected' : ''}>${v.code} — ${money(v.balance)} left</option>`).join('')}</select><span class="xs muted">It pays first; the rest is paid with the method above.</span></label>` : ''; })()}
+      ${onlineOnly && !allowVoucher ? '' : `${points ? pointsBlock(name, amount) : ''}<div data-vouchers>${voucherBlock(name)}</div>`}
       <div class="card-form" ${defaultMethod === 'new' ? '' : 'hidden'}>
         <div class="form-grid">
           <div class="field span-2"><label for="${name}-num">Card number</label>
@@ -46,6 +80,23 @@
 
   const bind = (root, { name = 'pay', onChange } = {}) => {
     const form = root.querySelector('.card-form');
+    const ptsIn = root.querySelector(`[name="${name}-points"]`);
+    const ptsOut = () => { const Ls = SA.services.loyalty.summary(); const o = root.querySelector('[data-points-out]'); if (o) o.textContent = `= ${money(Math.floor(Math.floor(+ptsIn.value / 100) * 100 * Ls.cfg.pointValue))}`; };
+    ptsIn?.addEventListener('input', ptsOut);
+    root.querySelector(`[data-points-use="${name}"]`)?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget, err = root.querySelector('[data-points-err]');
+      err.textContent = '';
+      btn.disabled = true;
+      try {
+        const r = await SA.services.loyalty.redeem(+ptsIn.value);
+        const box = root.querySelector('[data-vouchers]');
+        if (box) box.innerHTML = voucherBlock(name, r.code);
+        const amt = +root.querySelector('.pay-methods')?.dataset.amount || 0;
+        const rest = Math.max(0, amt - r.amount);
+        root.querySelector('[data-points-box]').outerHTML = `<div class="notice turf pay-points-done" data-i18n-skip>${icon('check', 16)}<span>${L(`${nf(r.points)} points used: <b>${money(r.amount)}</b> comes off this payment${amt ? (rest ? `, pay the remaining <b>${money(rest)}</b> with the method above` : ' — nothing left to pay') : ''}.`, `اتخصم ${nf(r.points)} نقطة: <b>${money(r.amount)}</b> هتتخصم من الدفع ده${amt ? (rest ? `، والباقي <b>${money(rest)}</b> تدفعه بالطريقة اللي فوق` : ' — مفيش حاجة تانية تدفعها') : ''}.`)}</span></div>`;
+        SA.ui.overlay.toast(L(`${money(r.amount)} from your points will pay first`, `${money(r.amount)} من نقاطك هتتدفع الأول`), { type: 'success' });
+      } catch (ex) { err.textContent = ex.message; btn.disabled = false; }
+    });
     root.querySelectorAll(`input[name="${name}"]`).forEach((r) => r.addEventListener('change', () => {
       form.hidden = r.value !== 'new' || !r.checked;
       if (r.checked && r.value === 'new') form.querySelector('input')?.focus();
