@@ -277,7 +277,7 @@
       <div class="container fx-body">
         <div class="stat-filters">
           <div class="tabs">${[['', 'All'], ['GK', 'GK'], ['DEF', 'DEF'], ['MID', 'MID'], ['FWD', 'FWD']].map(([v, l]) => `<button class="tab" data-pos="${v}" aria-selected="${st.pos === v}">${l}</button>`).join('')}</div>
-          <select class="select" id="st-team" style="width:auto"><option value="">All clubs</option>${f.D.teams.map((t) => `<option value="${t.id}" ${st.team === t.id ? 'selected' : ''}>${t.name}</option>`).join('')}</select>
+          <select class="select" id="st-team" style="width:auto"><option value="">All clubs</option>${f.D.teams.map((t) => `<option value="${t.id}" ${st.team === t.id ? 'selected' : ''}>${SA.core.utils.esc(t.name)}</option>`).join('')}</select>
           <select class="select" id="st-sort" style="width:auto">${[['total', 'Total points'], ['form', 'Form'], ['price', 'Price'], ['selected', 'Selected by'], ['goals', 'Goals'], ['value', 'Points per million']].map(([v, l]) => `<option value="${v}" ${st.sort === v ? 'selected' : ''}>Sort: ${l}</option>`).join('')}</select>
           <div class="input-icon grow" style="min-width:200px">${icon('search', 18)}<input class="input" id="st-q" placeholder="Search players or clubs" value="${esc(st.q)}" /></div>
         </div>

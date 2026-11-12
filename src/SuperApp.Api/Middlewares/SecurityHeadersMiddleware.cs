@@ -15,7 +15,7 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
         "connect-src 'self' https:; " +
         "media-src 'self' blob: data:; " +
         "worker-src 'self' blob:; " +
-        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+        "object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests";
 
     public Task InvokeAsync(HttpContext context)
     {
@@ -23,7 +23,10 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
         headers["X-Content-Type-Options"] = "nosniff";
         headers["X-Frame-Options"] = "DENY";
         headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-        headers["Permissions-Policy"] = "camera=(self), geolocation=(self), microphone=()";
+        headers["Permissions-Policy"] = "camera=(self), geolocation=(self), microphone=(), payment=(), usb=(), interest-cohort=()";
+        headers["Cross-Origin-Opener-Policy"] = "same-origin";
+        headers["Cross-Origin-Resource-Policy"] = "same-origin";
+        headers["X-Permitted-Cross-Domain-Policies"] = "none";
         if (!context.Request.Path.StartsWithSegments("/docs") && !context.Request.Path.StartsWithSegments("/openapi"))
         {
             headers["Content-Security-Policy"] = ContentSecurityPolicy;

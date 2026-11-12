@@ -69,7 +69,7 @@
     const host = document.getElementById('toast-root');
     const el = document.createElement('div');
     el.className = `toast ${type}`;
-    el.innerHTML = `<span class="toast-ico">${icon(type === 'error' ? 'alert' : type === 'info' ? 'info' : 'check', 16, 2.4)}</span><span>${message}</span>${action ? `<button class="toast-action">${action}</button>` : ''}`;
+    el.innerHTML = `<span class="toast-ico">${icon(type === 'error' ? 'alert' : type === 'info' ? 'info' : 'check', 16, 2.4)}</span><span>${SA.core.utils.esc(message)}</span>${action ? `<button class="toast-action">${SA.core.utils.esc(action)}</button>` : ''}`;
     host.appendChild(el);
     const remove = () => { el.classList.add('is-leaving'); setTimeout(() => el.remove(), 220); };
     el.querySelector('.toast-action')?.addEventListener('click', () => { onAction?.(); remove(); });

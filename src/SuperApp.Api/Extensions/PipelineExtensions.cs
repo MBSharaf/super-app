@@ -17,6 +17,7 @@ public static class PipelineExtensions
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseSerilogRequestLogging();
         app.UseMiddleware<SecurityHeadersMiddleware>();
+        app.UseMiddleware<SecurityEventsMiddleware>();
         if (!app.Environment.IsDevelopment())
         {
             app.UseHsts();
@@ -24,6 +25,7 @@ public static class PipelineExtensions
         app.UseHttpsRedirection();
 
         // Site files first, then routing — so the page fallback route never hides a real css/js file
+        app.UseResponseCompression();
         app.UseSuperAppSite();
         app.UseRouting();
 

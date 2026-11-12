@@ -39,6 +39,14 @@ public sealed partial class ArtworkStore(AppDbContext db, IConfiguration configu
             EnsureSafeSvg(bytes, field);
             return (await StoreAsync(bytes, "image/svg+xml", ".svg", null, null, ownerUserId, file.FileName, ct), 0, 0, true);
         }
+        // The size comes from the header before decoding, so a small file cannot claim a picture that fills the memory
+        using (var codec = Sniff(bytes) is { } ? SKCodec.Create(new SKMemoryStream(bytes)) : null)
+        {
+            if (codec is not null && Math.Max(codec.Info.Width, codec.Info.Height) > MaxSide)
+            {
+                throw Invalid(field, $"The image is too big. Keep it under {MaxSide} pixels on each side.");
+            }
+        }
         using var bitmap = Sniff(bytes) is { } ? SKBitmap.Decode(bytes) : null;
         if (bitmap is null)
         {

@@ -104,7 +104,7 @@
     return `<div class="tabs" style="width:100%">${[['', 'All'], ['GK', 'GK'], ['DEF', 'DEF'], ['MID', 'MID'], ['FWD', 'FWD']].map(([v, l]) => `<button class="tab" data-pos="${v}" aria-selected="${filt.pos === v}" style="flex:1">${l}</button>`).join('')}</div>
       <div class="row wrap" style="margin-top:10px;--gap:8px">
         <div class="input-icon grow" style="min-width:160px">${icon('search', 18)}<input class="input" id="sq-q" placeholder="Search player or club" value="${esc(filt.q)}" /></div>
-        <select class="select" id="sq-team" style="width:auto;flex:1"><option value="">All clubs</option>${f.D.teams.map((t) => `<option value="${t.id}" ${filt.team === t.id ? 'selected' : ''}>${t.name}</option>`).join('')}</select>
+        <select class="select" id="sq-team" style="width:auto;flex:1"><option value="">All clubs</option>${f.D.teams.map((t) => `<option value="${t.id}" ${filt.team === t.id ? 'selected' : ''}>${SA.core.utils.esc(t.name)}</option>`).join('')}</select>
         <select class="select" id="sq-max" style="width:auto;flex:1"><option value="">Any price</option>${[5, 6, 7, 8, 9].map((v) => `<option value="${v}" ${+filt.maxPrice === v ? 'selected' : ''}>Up to ${v}.0M</option>`).join('')}</select>
         <select class="select" id="sq-sort" style="width:auto;flex:1">${[['total', 'Points'], ['form', 'Form'], ['price', 'Price'], ['selected', 'Popular'], ['value', 'Value']].map(([v, l]) => `<option value="${v}" ${filt.sort === v ? 'selected' : ''}>Sort: ${l}</option>`).join('')}</select>
       </div>`;

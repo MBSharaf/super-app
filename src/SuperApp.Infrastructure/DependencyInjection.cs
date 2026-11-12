@@ -60,7 +60,7 @@ public static class DependencyInjection
             .AddTokenProvider<InviteTokenProvider>(StaffStore.InviteProvider)
             .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>();
         services.AddSessionRules();
-        services.AddAccountServices();
+        services.AddAccountServices(configuration);
         Shop.ShopInfrastructure.AddShopInfrastructure(services);
 
         services.AddSeed(configuration);
@@ -71,7 +71,7 @@ public static class DependencyInjection
     }
 
     /// <summary>Identity, email, audit and repositories behind the Application interfaces.</summary>
-    private static IServiceCollection AddAccountServices(this IServiceCollection services)
+    private static IServiceCollection AddAccountServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<PermissionReader>();
         services.AddScoped<IIdentityService, IdentityService>();
@@ -79,7 +79,15 @@ public static class DependencyInjection
         services.AddScoped<ITwoFactorService, TwoFactorService>();
         services.AddScoped<IStaffStore, StaffStore>();
         services.AddScoped<IEmailService, EmailService>();
-        services.AddSingleton<IEmailTransport, FileEmailTransport>();
+        // EMAIL__MODE=Smtp sends real email; anything else saves each email as a file (development)
+        if (SmtpEmailTransport.IsOn(configuration))
+        {
+            services.AddSingleton<IEmailTransport, SmtpEmailTransport>();
+        }
+        else
+        {
+            services.AddSingleton<IEmailTransport, FileEmailTransport>();
+        }
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<ICustomerContacts, CustomerContacts>();
         services.AddScoped<ILegalRepository, LegalRepository>();

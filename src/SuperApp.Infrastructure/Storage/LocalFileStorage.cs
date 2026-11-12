@@ -18,6 +18,7 @@ namespace SuperApp.Infrastructure.Storage;
 public sealed class LocalFileStorage(AppDbContext db, IConfiguration configuration) : IFileStorage
 {
     private const int MaxSide = 2000;
+    private const long MaxPixels = 40_000_000;
 
     public async Task<long> SaveAsync(UploadedFile file, UploadKind kind, Guid ownerUserId, string field, CancellationToken ct)
     {
@@ -76,6 +77,14 @@ public sealed class LocalFileStorage(AppDbContext db, IConfiguration configurati
 
     private static (byte[] Data, string ContentType, int? Width, int? Height) Reencode(byte[] bytes, string field)
     {
+        // Read the size from the header first: a tiny file can claim a huge picture that would fill the server's memory
+        using (var codec = SKCodec.Create(new SKMemoryStream(bytes)))
+        {
+            if (codec is null || (long)codec.Info.Width * codec.Info.Height > MaxPixels)
+            {
+                throw Invalid(field, codec is null ? "This image could not be read. Try another photo." : "This photo is too large. Use one under 40 megapixels.");
+            }
+        }
         using var original = SKBitmap.Decode(bytes) ?? throw Invalid(field, "This image could not be read. Try another photo.");
         var scale = Math.Min(1f, (float)MaxSide / Math.Max(original.Width, original.Height));
         using var resized = scale < 1f

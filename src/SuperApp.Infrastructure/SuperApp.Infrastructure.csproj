@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
-    <PackageReference Include="HtmlSanitizer" />
     <PackageReference Include="MailKit" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
@@ -25,7 +24,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="QRCoder" />
     <PackageReference Include="QuestPDF" />
     <PackageReference Include="SkiaSharp" />
