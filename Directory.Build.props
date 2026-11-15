@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Package advisories and compatibility notices stay warnings so a new advisory does not block the build -->
-    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904;NU1608;NU1701</WarningsNotAsErrors>
+    <!-- Package advisories, an offline advisory check (NU1900) and compatibility notices stay warnings so they do not block the build -->
+    <WarningsNotAsErrors>NU1900;NU1901;NU1902;NU1903;NU1904;NU1608;NU1701</WarningsNotAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
