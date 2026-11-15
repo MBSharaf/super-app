@@ -18,6 +18,8 @@
     'Coming soon · registration opens soon': 'قريباً · التسجيل هيفتح قريب',
     'The Ramadan tournament is coming soon. Registration opens soon.': 'بطولة رمضان جاية قريب. التسجيل هيفتح قريب.',
     'Tournaments are coming soon — registration isn’t open yet.': 'البطولات جاية قريب — التسجيل لسه مفتحش.',
+    'Ramadan tournament: coming soon': 'بطولة رمضان: قريباً',
+    'Venues are preparing cups and leagues with prizes and offers. Registration opens soon.': 'الملاعب بتجهّز كاسات ودوريات بجوايز وعروض. التسجيل هيفتح قريب.',
     'Tournaments are coming soon — registration is not open yet.': 'البطولات جاية قريب — التسجيل لسه مفتحش.',
     "Tournaments are coming soon — registration isn't open yet.": 'البطولات جاية قريب — التسجيل لسه مفتحش.',
     'How do I enter a tournament?': 'أدخل بطولة إزاي؟',

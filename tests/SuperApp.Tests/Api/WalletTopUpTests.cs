@@ -50,22 +50,16 @@ public sealed class WalletTopUpTests(AccountsApiFactory api) : IClassFixture<Acc
         ledger.EnumerateArray().Single().GetProperty("kind").GetString().ShouldBe("WalletTopUp");
     }
 
+    /// <summary>Owner's rule (2026-11-11): the booking deposit is paid online by card only, so the wallet is refused.</summary>
     [Fact]
-    public async Task A_booking_paid_from_the_wallet_takes_the_money_and_a_cancel_gives_it_back()
+    public async Task A_booking_cannot_be_paid_from_the_wallet()
     {
         var (_, _, _, pitch) = await kit.PartnerWithPitchAsync(live: true);
         var (player, _) = await kit.PersonAsync(partner: false);
-        var booking = new { pitchSlug = pitch.GetProperty("slug").GetString(), date = PartnerKit.Day(4), hour = 19, duration = 1, payAtVenue = false, acceptWaiver = true, payFromWallet = true };
-        (await player.PostAsync("/api/v1/bookings", booking)).Body.Code().ShouldBe("insufficient_funds");
-
         (await TopUpAsync(player, 2000, Guid.NewGuid().ToString("N"))).Status.ShouldBe(HttpStatusCode.OK);
-        var made = await player.PostAsync("/api/v1/bookings", booking);
-        made.Status.ShouldBe(HttpStatusCode.Created, made.Body.ToString());
-        var deposit = made.Body.Data().GetProperty("deposit").GetDecimal();
-        made.Body.Data().GetProperty("status").GetString().ShouldBe("Confirmed");
-        (await BalanceAsync(player)).ShouldBe(2000 - deposit);
+        var booking = new { pitchSlug = pitch.GetProperty("slug").GetString(), date = PartnerKit.Day(4), hour = 19, duration = 1, payAtVenue = false, acceptWaiver = true, payFromWallet = true };
 
-        await api.CancelThroughRequestAsync(player, "booking", made.Body.Data().GetProperty("code").GetString()!);
+        (await player.PostAsync("/api/v1/bookings", booking)).Status.ShouldBe(HttpStatusCode.BadRequest);
         (await BalanceAsync(player)).ShouldBe(2000);
     }
 }

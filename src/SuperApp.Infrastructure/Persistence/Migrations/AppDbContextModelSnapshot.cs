@@ -5050,7 +5050,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("PointEntries", "money", t =>
                         {
-                            t.HasCheckConstraint("CK_PointEntries_Kind", "[Kind] BETWEEN 0 AND 7");
+                            t.HasCheckConstraint("CK_PointEntries_Kind", "[Kind] BETWEEN 0 AND 8");
 
                             t.HasCheckConstraint("CK_PointEntries_Points", "[Points] <> 0");
                         });

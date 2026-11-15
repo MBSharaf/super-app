@@ -334,7 +334,7 @@
       "order": 1
     },
     {
-      "titleEn": "Play Egyptian League fantasy",
+      "titleEn": "Play Premier League fantasy",
       "titleAr": "العب فانتازي الدوري المصري",
       "textEn": "Pick your 15, join a league with your friends and win prizes every gameweek.",
       "textAr": "اختار الـ 15 بتوعك، ادخل دوري مع صحابك واكسب جوايز كل جولة.",
@@ -412,6 +412,22 @@
       "hideFromSellers": false,
       "active": true,
       "order": 6
+    },
+    {
+      "titleEn": "Ramadan tournament: coming soon",
+      "titleAr": "بطولة رمضان: قريباً",
+      "textEn": "Venues are preparing cups and leagues with prizes and offers. Registration opens soon.",
+      "textAr": "الملاعب بتجهّز كاسات ودوريات بجوايز وعروض. التسجيل هيفتح قريب.",
+      "ctaEn": "See tournaments",
+      "ctaAr": "شوف البطولات",
+      "link": "#/tournaments",
+      "badge": "Coming soon",
+      "color": "#B45309",
+      "shape": "Cube",
+      "icons": "trophy,users,calendar,star",
+      "hideFromSellers": false,
+      "active": true,
+      "order": 7
     },
     {
       "titleEn": "Fill your squad in minutes",

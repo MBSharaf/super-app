@@ -171,7 +171,7 @@ public sealed class CreateBookingRequestValidator : AbstractValidator<CreateBook
         RuleFor(x => x.AcceptWaiver).Equal(true).WithMessage("Please accept the injury waiver to book.");
         // The deposit is paid online by card: no wallet, no cash at the venue. A Super Points voucher (SP-…) may be used
         // (owner, 2026-11-11): it comes off the booking before the deposit is worked out.
-        RuleFor(x => x.PayAtVenue).Equal(false).WithMessage("Pitch bookings pay a deposit online by card.");
+        // Cash at the venue is refused by CreateAsync with 422 deposit_required (a clearer code for the site than "invalid").
         RuleFor(x => x.PayFromWallet).Equal(false).WithMessage("Pitch bookings are paid online by card only.");
         RuleFor(x => x.VoucherCode).MaximumLength(40);
     }

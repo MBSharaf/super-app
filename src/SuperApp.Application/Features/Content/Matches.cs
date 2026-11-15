@@ -36,3 +36,37 @@ public interface IMatchesReader
 
     Task<IReadOnlyList<MatchCompetitionDto>> CompetitionsAsync(CancellationToken ct);
 }
+
+/// <summary>Matches for the site (API §6.2): fixtures and results of every followed competition, from the cache the sync job refreshes.</summary>
+public interface IMatchesService
+{
+    /// <summary>Matches of <paramref name="days"/> Cairo days (1–14) from <paramref name="date"/> (default today).</summary>
+    Task<IReadOnlyList<MatchDto>> MatchesAsync(DateOnly? date, int days, string? competition, CancellationToken ct);
+
+    Task<IReadOnlyList<MatchCompetitionDto>> CompetitionsAsync(CancellationToken ct);
+
+    Task<MatchDetailDto> MatchAsync(long id, CancellationToken ct);
+}
+
+public sealed class MatchesService(IMatchesReader matches, IClock clock) : IMatchesService
+{
+    private static readonly TimeZoneInfo Cairo = TimeZoneInfo.FindSystemTimeZoneById("Africa/Cairo");
+
+    /// <summary>The Cairo calendar days (default today, 1–14 days) as a UTC range.</summary>
+    public Task<IReadOnlyList<MatchDto>> MatchesAsync(DateOnly? date, int days, string? competition, CancellationToken ct)
+    {
+        if (days is < 1 or > 14)
+        {
+            throw new BadRequestException("Ask for 1 to 14 days.", "days");
+        }
+        var day = date ?? DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(clock.UtcNow, Cairo));
+        var from = TimeZoneInfo.ConvertTimeToUtc(day.ToDateTime(TimeOnly.MinValue), Cairo);
+        var to = TimeZoneInfo.ConvertTimeToUtc(day.AddDays(days).ToDateTime(TimeOnly.MinValue), Cairo);
+        return matches.BetweenAsync(from, to, competition, ct);
+    }
+
+    public Task<IReadOnlyList<MatchCompetitionDto>> CompetitionsAsync(CancellationToken ct) => matches.CompetitionsAsync(ct);
+
+    public async Task<MatchDetailDto> MatchAsync(long id, CancellationToken ct) =>
+        await matches.DetailAsync(id, ct) ?? throw new NotFoundException("Match not found.");
+}
