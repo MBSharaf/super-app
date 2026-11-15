@@ -56,7 +56,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                 sql: "[Deposit] >= 0 AND [BalanceDue] >= 0 AND [Deposit] + [BalanceDue] <= [Total]");
 
             // Owner's rule (2026-11-01): 1 Super Point per 1 EGP paid (was 1 per 10). The seed never overwrites a setting.
-            migrationBuilder.Sql("UPDATE [ops].[Settings] SET [Value] = '1', [UpdatedAt] = SYSUTCDATETIME() WHERE [Key] = 'loyalty.earnPer';");
+            migrationBuilder.Sql("UPDATE [ops].[Settings] SET [Value] = N'{"value":1}', [UpdatedAt] = SYSUTCDATETIME() WHERE [Key] = 'loyalty.earnPer';");
         }
 
         /// <inheritdoc />
@@ -93,7 +93,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                 table: "PointEntries",
                 sql: "[Kind] BETWEEN 0 AND 5");
 
-            migrationBuilder.Sql("UPDATE [ops].[Settings] SET [Value] = '10', [UpdatedAt] = SYSUTCDATETIME() WHERE [Key] = 'loyalty.earnPer';");
+            migrationBuilder.Sql("UPDATE [ops].[Settings] SET [Value] = N'{"value":10}', [UpdatedAt] = SYSUTCDATETIME() WHERE [Key] = 'loyalty.earnPer';");
         }
     }
 }
