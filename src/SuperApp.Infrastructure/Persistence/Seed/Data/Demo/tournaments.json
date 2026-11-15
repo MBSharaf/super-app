@@ -1,0 +1,125 @@
+[
+  {
+    "name": "Gezira Summer Cup",
+    "partner": "acc-o2",
+    "pitch": "gezira-fives",
+    "type": "KnockoutCup",
+    "teamCount": 4,
+    "fee": 800,
+    "prize": "3,000 EGP for the winners",
+    "startsOn": "2026-09-03",
+    "endsOn": "2026-09-10",
+    "hours": "19,20",
+    "rules": "Single elimination. 2 × 15 minutes, penalties if level.",
+    "status": "Finished",
+    "teams": [
+      {
+        "name": "Nasr City Lions",
+        "captain": "cap-youssef-mahmoud",
+        "phone": "+20 100 100 4000"
+      },
+      {
+        "name": "New Cairo Rangers",
+        "captain": "cap-ziad-khaled",
+        "phone": "+20 101 137 4211"
+      },
+      {
+        "name": "Zamalek Street FC",
+        "captain": "cap-nour-el-din",
+        "phone": "+20 102 174 4422"
+      },
+      {
+        "name": "October Eagles",
+        "captain": "cap-belal-ehab",
+        "phone": "+20 103 211 4633"
+      }
+    ]
+  },
+  {
+    "name": "Maadi Weekday League",
+    "partner": "acc-o3",
+    "pitch": "maadi-cage",
+    "type": "League",
+    "teamCount": 6,
+    "fee": 900,
+    "prize": "4,500 EGP for the champions",
+    "startsOn": "2026-09-21",
+    "endsOn": "2026-10-19",
+    "hours": "20,21,22",
+    "rules": "Round robin, 3 points for a win. Ties broken by goal difference, then goals scored. Kick-offs are on time — 10 minutes late is a forfeit.",
+    "status": "Running",
+    "teams": [
+      {
+        "name": "Zayed United",
+        "captain": "cap-seif-ashraf",
+        "phone": "+20 100 100 4000"
+      },
+      {
+        "name": "Rehab Rockets",
+        "captain": "cap-islam-magdy",
+        "phone": "+20 101 137 4211"
+      },
+      {
+        "name": "Heliopolis Hawks",
+        "captain": "cap-habiba-osama",
+        "phone": "+20 102 174 4422"
+      },
+      {
+        "name": "Mokattam Wolves",
+        "captain": "cap-ahmed-samir",
+        "phone": "+20 103 211 4633"
+      },
+      {
+        "name": "Nasr City Lions",
+        "captain": "cap-tamer-nabil",
+        "phone": "+20 104 248 4844"
+      },
+      {
+        "name": "New Cairo Rangers",
+        "captain": "cap-mariam-fathy",
+        "phone": "+20 105 285 5055"
+      }
+    ]
+  },
+  {
+    "name": "Turf 22 Autumn Cup",
+    "partner": "acc-o1",
+    "pitch": "zayed-22",
+    "type": "KnockoutCup",
+    "teamCount": 8,
+    "fee": 1200,
+    "prize": "6,000 EGP + trophy for the winners, 2,000 EGP for the runners-up",
+    "startsOn": "2026-10-30",
+    "endsOn": "2026-11-13",
+    "hours": "16,17,18,19",
+    "rules": "5-a-side, 2 × 20 minutes, rolling subs. Draws go straight to penalties. Shin pads required. Arrive 20 minutes before your kick-off.",
+    "status": "Registration",
+    "teams": [
+      {
+        "name": "Dokki Dynamos",
+        "captain": "cap-ahmed-samir",
+        "phone": "+20 100 100 4000"
+      },
+      {
+        "name": "Giza Pharaohs",
+        "captain": "cap-tamer-nabil",
+        "phone": "+20 101 137 4211"
+      },
+      {
+        "name": "Maadi Falcons",
+        "captain": "cap-mariam-fathy",
+        "phone": "+20 102 174 4422"
+      },
+      {
+        "name": "Zayed United",
+        "captain": "cap-karim-adel",
+        "phone": "+20 103 211 4633"
+      },
+      {
+        "name": "Rehab Rockets",
+        "captain": "cap-ali-reda",
+        "phone": "+20 104 248 4844"
+      }
+    ]
+  }
+]

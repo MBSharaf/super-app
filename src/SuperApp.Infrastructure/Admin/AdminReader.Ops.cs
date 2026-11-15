@@ -4,6 +4,7 @@ using SuperApp.Application.Features.AdminConsole;
 using SuperApp.Domain.Entities.Ai;
 using SuperApp.Domain.Entities.Auth;
 using SuperApp.Domain.Entities.Bookings;
+using SuperApp.Domain.Entities.Communities;
 using SuperApp.Domain.Entities.Ops;
 using SuperApp.Domain.Entities.Pitches;
 using SuperApp.Domain.Entities.Pod;
@@ -117,7 +118,7 @@ public sealed partial class AdminReader
             await db.Set<Ticket>().CountAsync(t => open.Contains(t.Status), ct),
             await db.Set<Ticket>().CountAsync(t => open.Contains(t.Status) && t.Priority == TicketPriority.Urgent, ct),
             await db.Set<PartnerApplication>().CountAsync(a => a.Status == ApplicationStatus.Pending, ct),
-            0,   // communities were removed (2026-11-03): no content reports
+            await db.Set<ContentReport>().CountAsync(r => r.Status == ContentReportStatus.Open, ct),
             await db.Set<Agent>().CountAsync(a => a.Status == AgentStatus.Active, ct),
             latest);
     }

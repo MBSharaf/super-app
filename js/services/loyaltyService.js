@@ -1,6 +1,6 @@
 /**
  * Super Points — loyalty for players. Owner's rule (2026-11-01): every 1 EGP the player pays earns 1 point, the
- * moment it is paid: any payment in the app (booking deposits, games, the shop), the
+ * moment it is paid: any payment in the app (booking deposits, games, the shop, tournaments, the Fantasy Pass), the
  * rest of a booking paid at the pitch (when the venue scans the QR) and cash-on-delivery orders when delivered.
  * Wallet top-ups earn nothing (the points come when the wallet money is spent), voucher money earns nothing, and a
  * refund takes its points back. Each new earning shows a "Congratulations" pop-up (js/components/pointsPop.js).
@@ -53,6 +53,10 @@
         out.push({ id: `or-${o.id}-${g.storeId}`, at: g.at?.delivered || o.createdAt + 48 * 36e5, base: value, label: `Order ${o.id} delivered (${g.storeName})${cod ? ' — cash on delivery' : ''}`, kind: 'earn', legacy: !cod || (o.createdAt || 0) < cut });
       });
     });
+    (db().all('tournaments') || []).forEach((t) => t.teams?.forEach((tm) => {
+      if ((tm.createdAt || 0) >= cut) return; // paid online: earned at payment
+      if (tm.userId === (store.get().user?.id || 'u-001') && tm.paid && t.status !== 'cancelled') out.push({ id: `tr-${t.id}-${tm.id}`, at: tm.createdAt, base: t.fee, label: `Tournament entry — ${t.name}`, kind: 'earn', legacy: true });
+    }));
     return out;
   };
 

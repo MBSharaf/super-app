@@ -18,6 +18,11 @@ public static class KillSwitches
     public const string Payouts = "kill.payouts";
     public const string Applications = "kill.applications";
     public const string Fantasy = "kill.fantasy";
+    public const string Community = "kill.community";
     public const string Games = "kill.games";
     public const string Agents = "kill.agents";
+
+    /// <summary>Not seeded: players can register teams only once the setting <c>Features:TournamentsOpen</c> is true
+    /// (tournaments are "coming soon" until then).</summary>
+    public const string TournamentRegistration = "tournaments.registration";
 }

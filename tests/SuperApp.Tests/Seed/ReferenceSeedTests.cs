@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using SuperApp.Application.Security;
 using SuperApp.Domain.Entities.Auth;
+using SuperApp.Domain.Entities.Communities;
 using SuperApp.Domain.Entities.Content;
 using SuperApp.Domain.Entities.Fantasy;
 using SuperApp.Domain.Entities.Geo;
@@ -50,9 +51,11 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         first["legal"].ShouldBe(7);
         first["legalVersions"].ShouldBe(7);
         first["helpTopics"].ShouldBe(12);
-        first["helpArticles"].ShouldBe(19);
+        first["helpArticles"].ShouldBe(20);
         first["banners"].ShouldBe(3);
-        first["popups"].ShouldBe(9);
+        first["popups"].ShouldBe(10);
+        first["communities"].ShouldBe(5);
+        first["bannedWords"].ShouldBe(4);
         first["competitions"].ShouldBe(13);   // EPL (fantasy) + the Egyptian league and eleven more for the matches page
     }
 
@@ -112,6 +115,8 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         ["helpArticles"] = await fixture.CountAsync<HelpArticle>(),
         ["banners"] = await fixture.CountAsync<Banner>(),
         ["popups"] = await fixture.CountAsync<PopupAd>(),
+        ["communities"] = await fixture.CountAsync<Community>(),
+        ["bannedWords"] = await fixture.CountAsync<BannedWord>(),
         ["competitions"] = await fixture.CountAsync<Competition>(),
     };
 }

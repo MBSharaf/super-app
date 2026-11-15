@@ -39,6 +39,7 @@ public class AccountsApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("Testing");
         builder.UseSetting("Features:StoreEnabled", "true");   // the store is paused on the site; its tests keep running
         builder.UseSetting("Features:PodEnabled", "true");     // print on demand is off on the site; its tests keep running
+        builder.UseSetting("Features:TournamentsOpen", "true"); // tournaments are "coming soon" on the site; their tests keep running
         builder.UseSetting("Football:Offline", "true");   // no calls to FPL / TheSportsDB: the simulated data answers for the EPL
         // LocalDB on Windows; elsewhere set SUPERAPP_TEST_SQL to a server's connection string without the database (e.g. a Docker SQL Server)
         var server = Environment.GetEnvironmentVariable("SUPERAPP_TEST_SQL") ?? "Server=(localdb)\\MSSQLLocalDB;Trusted_Connection=True";

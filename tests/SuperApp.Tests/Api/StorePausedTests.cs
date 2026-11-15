@@ -33,4 +33,14 @@ public sealed class StorePausedTests(AccountsApiFactory api) : IClassFixture<Acc
         products.StatusCode.ShouldBe(HttpStatusCode.OK);
         (await products.Content.ReadAsStringAsync()).ShouldNotContain("\"kind\":\"design\"");
     }
+
+    /// <summary>Tournaments are "coming soon" (Features:TournamentsOpen false): players see them but can't register a team.</summary>
+    [Fact]
+    public async Task Tournament_registration_answers_coming_soon()
+    {
+        using var soon = api.WithWebHostBuilder(b => b.UseSetting("Features:TournamentsOpen", "false"));
+        var http = soon.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { BaseAddress = new Uri("https://localhost") });
+
+        (await http.GetAsync("/api/v1/tournaments")).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
 }

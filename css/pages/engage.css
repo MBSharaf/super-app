@@ -165,3 +165,10 @@
 .wl-row.is-free { border-color: var(--turf); box-shadow: inset 4px 0 0 var(--turf); }
 .wl-tag { font-size: 10px; padding: 2px 6px; }
 .home-tours h2 svg { vertical-align: -3px; color: #B07D06; }
+
+/* Tournaments "coming soon" (2026-11-15) */
+.tour-perks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tour-perk { display: grid; gap: 6px; padding: 18px; }
+.tour-perk svg { color: var(--blaze, #E8590C); }
+.tour-soon-lg { font-size: var(--fs-sm); padding: 8px 14px; align-self: center; }
+@media (max-width: 720px) { .tour-perks { grid-template-columns: 1fr; } }

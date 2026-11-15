@@ -23,6 +23,10 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   bookingDays: 31,
   storeEnabled: (document.documentElement.dataset.store || 'on') === 'on',
   podEnabled: document.documentElement.dataset.pod === 'on',
+  // Tournaments are back as "coming soon" (owner, 2026-11-15: the Ramadan tournament). Venues and the admin can already
+  // prepare tournaments and offers; players see them but can't register until the server setting
+  // Features:TournamentsOpen marks <html data-tournaments="open"> (the server refuses registrations until then too).
+  tournamentsSoon: document.documentElement.dataset.tournaments !== 'open',
   // The owner's automation (n8n): the demo site sends every new store order to `orders`, and every pitch booking, weekly
   // package, published game and request to join a game to `bookings`, and fantasy events to `fantasy` (js/services/automation.js).
   // The server sends its own.

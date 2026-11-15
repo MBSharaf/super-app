@@ -111,8 +111,8 @@
     {
       "key": "games",
       "icon": "users",
-      "en": "Games",
-      "ar": "الماتشات"
+      "en": "Games & tournaments",
+      "ar": "الماتشات والبطولات"
     },
     {
       "key": "fantasy",
@@ -278,6 +278,13 @@
       "qAr": "أمسح حسابي أو بياناتي إزاي؟",
       "aEn": "Contact support and we’ll do it within 30 days, as the <a href=\"#/legal/privacy\">privacy policy</a> explains.",
       "aAr": "كلّم الدعم وهنعملها في خلال 30 يوم، زي ما <a href=\"#/legal/privacy\">سياسة الخصوصية</a> بتوضح."
+    },
+    {
+      "topic": "games",
+      "qEn": "How do I enter a tournament?",
+      "qAr": "أدخل بطولة إزاي؟",
+      "aEn": "Tournaments are coming soon, starting with the Ramadan tournament. When registration opens, choose a tournament on <a href=\"#/tournaments\">Tournaments</a> and register your team. Entry fees are refunded only if the venue cancels.",
+      "aAr": "البطولات جاية قريب، وأولها بطولة رمضان. لما التسجيل يفتح، اختار بطولة من <a href=\"#/tournaments\">البطولات</a> وسجّل فريقك. رسوم الدخول بترجع بس لو الملعب لغى."
     }
   ],
   "banners": [
@@ -453,6 +460,106 @@
       "hideFromSellers": false,
       "active": true,
       "order": 10
+    }
+  ],
+  "communities": [
+    {
+      "slug": "pitches",
+      "name": "Pitches & free slots",
+      "about": "Free hours posted by verified venues — book them in one tap — and games looking for players. Filter by area and time.",
+      "audience": "everyone",
+      "rules": [
+        "Slot cards come only from verified venues on Super App.",
+        "Share your game as a card so players can ask to join and pay safely.",
+        "No phone numbers or outside links — book and pay on Super App.",
+        "Be on time: hosts rate players after every game."
+      ],
+      "slowMode": 0,
+      "color": "#0A3D2D",
+      "icon": "pitch",
+      "order": 0
+    },
+    {
+      "slug": "creators",
+      "name": "Super App Creators",
+      "about": "Print-on-demand sellers helping each other: design feedback, what sells, printing tips and news from the Super App team.",
+      "audience": "sellers",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 0,
+      "color": "#FF5B14",
+      "icon": "shirt",
+      "order": 1
+    },
+    {
+      "slug": "pro-lounge",
+      "name": "Pro & Elite Lounge",
+      "about": "For Pro and Elite sellers: early news on new products, bigger campaigns and talking shop with the top sellers.",
+      "audience": "sellers-pro",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 0,
+      "color": "#C9920F",
+      "icon": "crown",
+      "order": 2
+    },
+    {
+      "slug": "players",
+      "name": "Super App Players",
+      "about": "Players across Egypt: find teammates, share pitch tips, ask anything about booking and playing.",
+      "audience": "everyone",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 2,
+      "color": "#0B6E4F",
+      "icon": "users",
+      "order": 3
+    },
+    {
+      "slug": "fantasy",
+      "name": "Fantasy Talk",
+      "about": "Captain picks, transfers and gameweek banter for the Egyptian league and the Premier League.",
+      "audience": "everyone",
+      "rules": [
+        "Be respectful — no insults, no fan fights.",
+        "No phone numbers or outside links: keep deals on Super App.",
+        "Only share work you made or have the rights to.",
+        "Report anything that breaks the rules — the Super App team checks every report."
+      ],
+      "slowMode": 1,
+      "color": "#2459D6",
+      "icon": "trophy",
+      "order": 4
+    }
+  ],
+  "bannedWords": [
+    {
+      "word": "scam",
+      "language": "en"
+    },
+    {
+      "word": "fake",
+      "language": "en"
+    },
+    {
+      "word": "نصاب",
+      "language": "ar"
+    },
+    {
+      "word": "حرامي",
+      "language": "ar"
     }
   ]
 }

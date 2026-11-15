@@ -120,6 +120,7 @@
     ensure('promos', () => []);
     ensure('saleOverrides', () => ({}));
     ensure('waitlist', () => []);
+    ensure('tournaments', () => []);
     ensure('codes', () => {
       const t = Date.now(), d = (n) => SA.core.utils.isoDate(new Date(t + n * DAY));
       const base = { status: 'active', usedBy: [], perCustomer: 1, createdAt: t - 9 * DAY, updatedAt: t - 9 * DAY, note: '' };

@@ -96,8 +96,8 @@ public interface IContentRepository
 
     void AddConsent(CookieConsent consent);
 
-    /// <summary>Live pitch slugs (sitemap).</summary>
-    Task<IReadOnlyList<string>> SitemapAsync(DateTime now, CancellationToken ct);
+    /// <summary>Live pitch slugs and public community slugs (sitemap).</summary>
+    Task<(IReadOnlyList<string> Pitches, IReadOnlyList<string> Communities)> SitemapAsync(DateTime now, CancellationToken ct);
 }
 
 /// <summary>Legal documents and versions, and the help center.</summary>

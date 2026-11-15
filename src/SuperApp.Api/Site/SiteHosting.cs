@@ -74,13 +74,15 @@ public static class SiteHosting
         return Results.Content(WithFeatures(html, http.RequestServices.GetRequiredService<IConfiguration>()), "text/html; charset=utf-8");
     }
 
-    /// <summary>Marks the &lt;html&gt; tag with the store and print-on-demand switches.</summary>
+    /// <summary>Marks the &lt;html&gt; tag with the store, print-on-demand and tournament-registration switches.</summary>
     public static string WithFeatures(string html, IConfiguration configuration)
     {
         static string OnOff(bool on) => on ? "on" : "off";
         var store = OnOff(configuration.GetValue("Features:StoreEnabled", false));
         var pod = OnOff(configuration.GetValue("Features:PodEnabled", false));
-        return html.Replace("<html lang=\"en\">", $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\">", StringComparison.Ordinal);
+        var tournaments = configuration.GetValue("Features:TournamentsOpen", false) ? "open" : "soon";
+        return html.Replace("<html lang=\"en\">",
+            $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\" data-tournaments=\"{tournaments}\">", StringComparison.Ordinal);
     }
 
     private static string ContentType(string name) => Path.GetExtension(name).ToLowerInvariant() switch

@@ -101,6 +101,7 @@
     "monthlyBudget": 2000,
     "permissions": [
       "bookings.read",
+      "community.moderate",
       "credits.issue",
       "customers.manage",
       "customers.read",
@@ -144,10 +145,10 @@
     "moneyLimit": 0,
     "monthlyBudget": 1300,
     "permissions": [
+      "community.moderate",
       "designs.reports",
       "designs.review",
       "partners.manage",
-      "reviews.moderate",
       "sellers.manage",
       "sellers.read"
     ]
@@ -273,6 +274,7 @@
     "moneyLimit": 0,
     "monthlyBudget": 1700,
     "permissions": [
+      "community.moderate",
       "content.banners",
       "content.popups"
     ]
@@ -290,6 +292,7 @@
     "moneyLimit": 0,
     "monthlyBudget": 900,
     "permissions": [
+      "community.moderate",
       "fantasy.manage",
       "games.moderate"
     ]

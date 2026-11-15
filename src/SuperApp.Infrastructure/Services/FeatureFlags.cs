@@ -19,6 +19,10 @@ public sealed class FeatureFlags(AppDbContext db, IConfiguration configuration) 
         {
             return false;
         }
+        if (key == KillSwitches.TournamentRegistration)
+        {
+            return configuration.GetValue("Features:TournamentsOpen", false);
+        }
         return await db.Set<FeatureFlag>().Where(f => f.Key == key).Select(f => (bool?)f.IsEnabled).FirstOrDefaultAsync(ct) ?? true;
     }
 
@@ -26,7 +30,12 @@ public sealed class FeatureFlags(AppDbContext db, IConfiguration configuration) 
     {
         if (!await IsOnAsync(key, ct))
         {
-            throw key == KillSwitches.Pod ? new FeatureDisabledException("Print on demand is paused for now. Sellers can sell their own products.", "pod_paused") : new FeatureDisabledException();
+            throw key switch
+            {
+                KillSwitches.Pod => new FeatureDisabledException("Print on demand is paused for now. Sellers can sell their own products.", "pod_paused"),
+                KillSwitches.TournamentRegistration => new FeatureDisabledException("Tournaments are coming soon — registration isn't open yet.", "tournaments_soon"),
+                _ => new FeatureDisabledException(),
+            };
         }
     }
 }

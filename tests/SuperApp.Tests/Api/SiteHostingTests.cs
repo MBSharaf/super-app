@@ -38,6 +38,6 @@ public sealed class SiteHostingTests(AccountsApiFactory api) : IClassFixture<Acc
         var settings = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?> { ["Features:StoreEnabled"] = "true" }).Build();
         SuperApp.Api.Site.SiteHosting.WithFeatures("<!doctype html>\n<html lang=\"en\">\n<head>", settings)
-            .ShouldContain("<html lang=\"en\" data-store=\"on\" data-pod=\"off\">");
+            .ShouldContain("<html lang=\"en\" data-store=\"on\" data-pod=\"off\" data-tournaments=\"soon\">");
     }
 }
