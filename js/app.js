@@ -6,7 +6,7 @@
   let cleanup = null;
   let renderToken = 0;
   /** An old address that moved: open the new one in its place (keeps the query string) */
-  P.moved = (to) => ({ title: 'Super App', render(ctx) { const t = typeof to === 'function' ? to(ctx) : to; const q = SA.core.router.location().split('?')[1]; setTimeout(() => router.go(`${t}${q ? `?${q}` : ''}`, { replace: true })); return ''; } });
+  P.moved = (to) => ({ title: 'Super Malaab', render(ctx) { const t = typeof to === 'function' ? to(ctx) : to; const q = SA.core.router.location().split('?')[1]; setTimeout(() => router.go(`${t}${q ? `?${q}` : ''}`, { replace: true })); return ''; } });
 
   /* ---------- Paused parts: their pages show "Coming soon", their links are hidden ----------
      Store paused (SA.config.storeEnabled = false): shop, cart, orders, sellers, factory.
@@ -15,7 +15,7 @@
   const STORE_PATHS = /^\/(shop|cart|checkout|orders?|wishlist|sell|s|seller|factory)(\/|$)|^\/dash\/(orders|pod-catalog|pod-review|print|store|seller)(\/|$)|^\/admin\/(returns|designs|catalog|store|store-orders|sellers|orders)(\/|$)/;
   const POD_PATHS = /^\/(sell\/studio|sell\/bulk|seller\/designs|factory)(\/|$)|^\/dash\/(pod-catalog|pod-review|print)(\/|$)|^\/admin\/(designs|catalog|print|samples)(\/|$)/;
   const soon = (title, text) => ({
-    title: `${title} — Super App`,
+    title: `${title} — Super Malaab`,
     render: () => `<div class="container section-tight"><section class="panel panel-pad" style="text-align:center;max-width:560px;margin:48px auto">
       <span class="service-ico" style="margin:0 auto">${SA.ui.icon('bag', 26)}</span>
       <h1 class="h2" style="margin-top:16px">${title}</h1>
@@ -29,7 +29,7 @@
     document.head.insertAdjacentHTML('beforeend', `<style>${css}${extra}{display:none!important}</style>`);
   };
   if (!SA.config.storeEnabled) {
-    P.comingSoon = soon('The Super App store is coming soon', 'We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.');
+    P.comingSoon = soon('The Super Malaab store is coming soon', 'We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.');
     pause(STORE_PATHS, P.comingSoon, ['shop', 'cart', 'checkout', 'order', 'orders', 'wishlist', 'sell', 's/', 'seller', 'factory', 'dash/orders', 'dash/pod-catalog', 'dash/pod-review', 'dash/print', 'dash/store', 'dash/seller', 'admin/returns', 'admin/designs', 'admin/catalog', 'admin/store', 'admin/sellers', 'admin/orders'],
       ',[data-cart-target],.fc-product');
   } else if (!SA.config.podEnabled) {
@@ -134,7 +134,7 @@
     .add('/dash/partners', P.dashPartners)
     .add('/dash/settings', P.dashSettings)
     .add('/dash/activity', P.dashActivity)
-    // Admin console (separate system for the Super App team)
+    // Admin console (separate system for the Super Malaab team)
     .add('/admin', P.adminOverview)
     .add('/admin/audit', P.adminAudit)
     .add('/admin/payouts', P.adminPayouts)
@@ -236,7 +236,7 @@
       view.className = 'view';
       view.innerHTML = html;
       appEl.replaceChildren(view);
-      document.title = (page.title || 'Super App').replace(/Super App Partner$/, match.path.startsWith('/admin') ? 'Super App Admin' : 'Super App Partner');
+      document.title = (page.title || 'Super Malaab').replace(/Super Malaab Partner$/, match.path.startsWith('/admin') ? 'Super Malaab Admin' : 'Super Malaab Partner');
       if (keepScroll) window.scrollTo(0, scroll);
       else window.scrollTo(0, 0);
       cleanup = page.mount ? page.mount(view, ctx) : null;

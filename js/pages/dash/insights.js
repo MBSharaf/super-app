@@ -89,11 +89,11 @@
   };
 
   SA.pages.dashInsights = C.guard({
-    title: 'Forecast & offers — Super App Partner',
+    title: 'Forecast & offers — Super Malaab Partner',
     render(ctx) {
       const sc = C.scope();
       const pitches = D().myPitches(sc);
-      if (!pitches.length) return C.layout('insights', { title: 'Forecast & offers', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'trend', title: 'Add a pitch first', text: 'Forecasts and quiet-hour suggestions start once you have a pitch on Super App.', action: '<a class="btn btn-primary" href="#/dash/pitches/new">Add a pitch</a>' })}</div>` });
+      if (!pitches.length) return C.layout('insights', { title: 'Forecast & offers', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'trend', title: 'Add a pitch first', text: 'Forecasts and quiet-hour suggestions start once you have a pitch on Super Malaab.', action: '<a class="btn btn-primary" href="#/dash/pitches/new">Add a pitch</a>' })}</div>` });
       const sel = ctx.query.pitch && pitches.some((p) => p.id === ctx.query.pitch) ? [ctx.query.pitch] : null;
       const ids = sel || pitches.map((p) => p.id);
       const fc = D().forecast({ pitchIds: ids, days: 30 });

@@ -45,7 +45,7 @@
     </form></details>`;
 
   SA.pages.ceoTeam = C.guard({
-    title: 'Team — Super App',
+    title: 'Team — Super Malaab',
     async render() {
       const sub = 'Admins, their roles, permissions and money limits';
       if (!api().isLive()) return C.layout('team', { title: 'Team', subtitle: sub, body: serverOnly('The team accounts') });
@@ -95,7 +95,7 @@
     ${box('second', 'yes', l.canSecondApprove, 'May give the second approval on big money actions')}</form>`;
 
   SA.pages.ceoTeamMember = C.guard({
-    title: 'Admin — Super App',
+    title: 'Admin — Super Malaab',
     async render(ctx) {
       if (!api().isLive()) return C.layout('team', { title: 'Admin', body: serverOnly('The team accounts') });
       const [a, roles, catalogue] = await Promise.all([api().get(`/ceo/admins/${ctx.params.id}`), api().get('/ceo/roles'), api().get('/ceo/permissions')]);
@@ -156,7 +156,7 @@
     <details><summary class="small">Permissions</summary>${permGrid(catalogue, 'perm', r.permissions)}</details></form>`;
 
   SA.pages.ceoRoles = C.guard({
-    title: 'Roles & permissions — Super App',
+    title: 'Roles & permissions — Super Malaab',
     async render() {
       const sub = 'What each admin role may do — changes reach everyone with the role within a minute';
       if (!api().isLive()) return C.layout('roles', { title: 'Roles & permissions', subtitle: sub, body: serverOnly('Roles and permissions') });

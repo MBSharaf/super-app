@@ -96,16 +96,16 @@
     return `<a href="${n.href}" style="--i:${i}" ${n.key === active ? 'aria-current="page"' : ''}>${icon(n.icon, 18)}<span class="grow">${n.label}</span><span class="nav-badge ${b ? `nb-${b.tone}` : ''}" data-badge="${n.badge || ''}" ${b ? '' : 'hidden'}>${b ? b.count : ''}</span></a>`;
   };
   const sideNav = (active, a, al = alertsNow()) => { const adm = isAdminUI(), sel = isSellerUI(), home = adm ? '#/admin' : sel ? '#/seller' : '#/dash'; return `
-    <a class="dash-brand" href="${home}"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">${adm ? 'Admin console' : sel ? 'Seller dashboard' : 'Pitch partner dashboard'}</span></span></a>
+    <a class="dash-brand" href="${home}"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER MALAAB</b><span class="xs">${adm ? 'Admin console' : sel ? 'Seller dashboard' : 'Pitch partner dashboard'}</span></span></a>
     <div class="dash-acct">${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b class="small truncate">${esc(a.name)}</b><span class="xs truncate">${esc(a.company)}</span></span><span class="badge ${(ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${(ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span></div>
     <nav class="dash-nav" aria-label="Dashboard">
       ${navFor(a).map((n, i) => (n.group !== undefined ? (n.group ? `<span class="dash-nav-label xs">${n.group}</span>` : '<span class="dash-nav-sep"></span>') : navLink(n, i, active, al))).join('')}
     </nav>
     ${(() => { const u = unreadNow(); return `<nav class="dash-nav dash-nav-notes" aria-label="Notifications"><a href="${home}/notifications" ${active === 'notifications' ? 'aria-current="page"' : ''}>${icon('bell', 18)}<span class="grow">Notifications</span><span class="nav-badge ${u ? 'nb-blaze' : ''}" data-badge="notifications" ${u ? '' : 'hidden'}>${u || ''}</span></a>${adm ? '' : `<a href="#/dash/support" ${active === 'support' ? 'aria-current="page"' : ''}>${icon('help', 18)}<span class="grow">Help & support</span></a>`}</nav>`; })()}
     <div class="dash-side-foot">
-      <a href="#/" class="dash-foot-link dash-site-link">${icon('home', 16)} <span class="grow">Back to Super App</span>${icon('arrowUpRight', 14)}</a>
+      <a href="#/" class="dash-foot-link dash-site-link">${icon('home', 16)} <span class="grow">Back to Super Malaab</span>${icon('arrowUpRight', 14)}</a>
       ${adm ? '' : sel ? (a.baseRole === 'owner' ? `<button class="dash-foot-link" data-switch="owner">${icon('pitch', 16)} Pitch partner dashboard</button>` : '')
-        : D().sellsOn(a) ? `<button class="dash-foot-link" data-switch="seller">${icon('bag', 16)} Seller dashboard</button>` : `<a href="#/dash/sell" class="dash-foot-link">${icon('bag', 16)} Sell on Super App</a>`}
+        : D().sellsOn(a) ? `<button class="dash-foot-link" data-switch="seller">${icon('bag', 16)} Seller dashboard</button>` : `<a href="#/dash/sell" class="dash-foot-link">${icon('bag', 16)} Sell on Super Malaab</a>`}
       <button class="dash-foot-link" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button>
       <button class="dash-foot-link" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button>
       <button class="dash-foot-link" data-dash-signout>${icon('logout', 16)} Sign out</button>
@@ -130,9 +130,9 @@
       <div class="bell-pop" data-bell-pop hidden>${bellPop(al)}</div></div>`;
   /** One line at the top of shared pages in the admin console: what the page is and what the admin can do there */
   const ADMIN_HELP = {
-    store: 'Super App’s own official store — products Super App buys and sells itself (not a seller’s). You have full control: add and edit products, prices, stock, photos and sales, and handle every order.',
-    orders: 'Orders from Super App’s official store. Mark them packed and shipped, print the packing slip, or cancel and refund.',
-    tournaments: 'Every tournament pitch partners run on Super App. You have the same powers as the organiser: teams and registrations, the schedule, scores and tables — and you can cancel a tournament, which refunds every team.',
+    store: 'Super Malaab’s own official store — products Super Malaab buys and sells itself (not a seller’s). You have full control: add and edit products, prices, stock, photos and sales, and handle every order.',
+    orders: 'Orders from Super Malaab’s official store. Mark them packed and shipped, print the packing slip, or cancel and refund.',
+    tournaments: 'Every tournament pitch partners run on Super Malaab. You have the same powers as the organiser: teams and registrations, the schedule, scores and tables — and you can cancel a tournament, which refunds every team.',
     'pod-catalog': 'The blank products sellers can print their designs on (tee, oversized tee, hoodie, cap). For each one you set the colours, sizes, the lowest shop price, the factory’s price and the extra for a back print. Pause a product and its designs leave the shop.',
   };
   const layout = (active, { title, subtitle = '', actions = '', body }) => {
@@ -223,7 +223,7 @@
   /** Wrap a dashboard page so it requires a signed-in partner */
   const guard = (page) => ({
     ...page,
-    title: page.title || 'Partner dashboard — Super App',
+    title: page.title || 'Partner dashboard — Super Malaab',
     async render(ctx) {
       // API mode: the admin console needs a real team account (a demo session left in the browser does not count)
       if (isAdminUI() && D().me()) {
@@ -244,7 +244,7 @@
       }
       // API mode: the seller dashboard opens the signed-in seller from the server (backend Phase 4)
       if (isSellerUI()) await SA.services.liveShop?.sellerReady?.(true);
-      // API mode: the admin console's store pages open Super App's official store from the server
+      // API mode: the admin console's store pages open Super Malaab's official store from the server
       if (isAdminUI()) await SA.services.liveStore?.adminReady?.();
       if (!D().me()) return (isAdminUI() ? SA.pages.adminLogin : isSellerUI() ? SA.pages.sellerLogin : SA.pages.dashLogin).render(ctx);
       // Admin team roles: a section outside this admin's role
@@ -385,7 +385,7 @@
           <span class="pm-tools">${i > 0 ? `<button type="button" class="pm-btn" data-left="${i}" aria-label="Move left">${icon('chevronLeft', 14)}</button>` : ''}<button type="button" class="pm-btn" data-del="${i}" aria-label="Remove photo">${icon('trash', 14)}</button></span></figure>`).join('')}
         ${list.length < max ? `<label class="pm-add" style="aspect-ratio:${aspect}">${icon('plus', 22)}<span class="xs">Upload photo</span><input type="file" accept="image/*" multiple hidden data-upload /></label>` : ''}
       </div>
-      ${library.length && list.length < max ? `<details class="pm-lib"><summary class="small strong">${icon('grid', 15)} Or choose from the Super App photo library</summary><div class="pm-lib-grid">${library.map((id) => `<button type="button" class="pm-lib-item ${list.includes(id) ? 'is-on' : ''}" data-lib="${id}"><img src="${media.u(id, 240, 180)}" alt="" loading="lazy" /></button>`).join('')}</div></details>` : ''}
+      ${library.length && list.length < max ? `<details class="pm-lib"><summary class="small strong">${icon('grid', 15)} Or choose from the Super Malaab photo library</summary><div class="pm-lib-grid">${library.map((id) => `<button type="button" class="pm-lib-item ${list.includes(id) ? 'is-on' : ''}" data-lib="${id}"><img src="${media.u(id, 240, 180)}" alt="" loading="lazy" /></button>`).join('')}</div></details>` : ''}
       <p class="field-error" data-err="${name}"></p>`;
     };
     host.addEventListener('click', (e) => {
@@ -411,12 +411,12 @@
 
   /* ---------- Sign-in screen ---------- */
   SA.pages.dashLogin = {
-    title: 'Partner dashboard — Super App',
+    title: 'Partner dashboard — Super Malaab',
     render() {
       const accs = SA.services.db.all('accounts').filter((a) => SIGNIN_ROLES.includes(a.role));
       return `<div class="dash-login">
         <section class="dl-copy">
-          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Partner dashboard</span></span></a>
+          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER MALAAB</b><span class="xs">Partner dashboard</span></span></a>
           <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
           <span class="badge badge-turf">${icon('pitch', 13)} Pitch partners</span>
           <h1 class="display dl-title">Run your pitches. Fill every hour. Get paid.</h1>
@@ -451,12 +451,12 @@
   };
 
   SA.pages.sellerLogin = {
-    title: 'Seller dashboard — Super App',
+    title: 'Seller dashboard — Super Malaab',
     render() {
       const accs = SA.services.db.all('accounts').filter((a) => a.role !== 'admin' && a.role !== 'printer' && D().sellsOn(a));
       return `<div class="dash-login">
         <section class="dl-copy">
-          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Partner dashboard</span></span></a>
+          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER MALAAB</b><span class="xs">Partner dashboard</span></span></a>
           <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
           <span class="badge badge-blaze">${icon('bag', 13)} Sellers</span>
           <h1 class="display dl-title">Your designs. Your store. Your money.</h1>

@@ -32,7 +32,7 @@
   Object.assign(A, { revChart, bindRevChart, TONE });
 
   SA.pages.adminOverview = A.guard({
-    title: 'Overview — Super App Admin',
+    title: 'Overview — Super Malaab Admin',
     render() {
       const to = isoDate(today()), from = isoDate(addDays(today(), -29));
       const pfrom = isoDate(addDays(today(), -59)), pto = isoDate(addDays(today(), -30));
@@ -51,7 +51,7 @@
       const recent = AD().audit().slice(0, 7);
       const body = `
         <div class="kpi-grid">
-          ${C.kpi({ label: 'Money through Super App (30 days)', value: money(t.gmv), count: t.gmv, suffix: ' EGP', ic: 'trend', sub: delta(t.gmv, prev.total.gmv) })}
+          ${C.kpi({ label: 'Money through Super Malaab (30 days)', value: money(t.gmv), count: t.gmv, suffix: ' EGP', ic: 'trend', sub: delta(t.gmv, prev.total.gmv) })}
           ${C.kpi({ label: 'Platform revenue (30 days)', value: money(t.net), count: t.net, suffix: ' EGP', ic: 'percent', tone: 'k-turf', sub: delta(t.net, prev.total.net) })}
           ${C.kpi({ label: 'Withdrawals to approve', value: pending.length, count: pending.length, ic: 'wallet', tone: pending.length ? 'k-blaze' : '', sub: pending.length ? money(Math.round(pending.reduce((s, p) => s + p.amount, 0))) : 'Nothing waiting' })}
           ${C.kpi({ label: 'Open to-dos', value: al.reduce((s, x) => s + x.count, 0), count: al.reduce((s, x) => s + x.count, 0), ic: 'bell', sub: al.length ? `${al.length} queue${al.length > 1 ? 's' : ''}` : 'All clear' })}
@@ -64,14 +64,14 @@
               : `<div class="adm-clear">${icon('check', 22, 2.4)}<b>All clear</b><span class="small muted">No withdrawals, reviews or reports waiting.</span></div>`}</section>
         </div>
         <div class="dash-grid g-1-1">
-          <section class="dash-card"><h2 class="h4">Where revenue comes from</h2><p class="xs muted" style="margin-top:4px">Last 30 days · costs: ${money(t.cost)} (refused print deliveries, refunds and promo codes paid by Super App)</p>
+          <section class="dash-card"><h2 class="h4">Where revenue comes from</h2><p class="xs muted" style="margin-top:4px">Last 30 days · costs: ${money(t.cost)} (refused print deliveries, refunds and promo codes paid by Super Malaab)</p>
             <ul class="adm-mix">${mix.map((x) => `<li><span class="row-between small"><span><i class="adm-dot" style="background:${TONE[x.tone]}"></i>${x.l}</span><b class="num">${money(x.v)}</b></span><span class="meter"><span style="width:${Math.max(2, (x.v / t.income) * 100)}%;background:${TONE[x.tone]}"></span></span></li>`).join('')}</ul></section>
           <section class="dash-card"><h2 class="h4">On the platform now</h2>
             <div class="adm-counts">${[['pitch', counts.pitches, 'Live pitches', '#/admin/partners'], ['users', counts.partners, 'Pitch owners', '#/admin/partners'], ['shirt', counts.sellers, 'Active sellers', '#/admin/sellers'], ['image', counts.designs, 'Live designs', '#/admin/designs'], ['bag', counts.stores, 'Live stores', '#/admin/partners'], ['package', counts.products, 'Products for sale', '#/shop']].map(([ic, n, l, h]) => `<a href="${h}"><span class="kpi-ico">${icon(ic, 18)}</span><b class="h3 num">${n}</b><span class="xs muted">${l}</span></a>`).join('')}</div></section>
         </div>
         <section class="dash-card"><div class="row-between"><h2 class="h4">Latest activity</h2><a class="btn btn-ghost btn-sm" href="#/admin/audit">Audit log ${icon('arrowRight', 14)}</a></div>
           <ol class="activity" style="margin-top:10px">${recent.map((x, i) => `<li style="--i:${i}"><span class="ac-ico">${icon(x.kind === 'admin' ? 'shield' : x.kind === 'seller' ? 'shirt' : x.kind === 'customer' ? 'user' : 'clock', 15)}</span><span class="grow"><b class="small">${esc(x.text)}</b><span class="xs muted" style="display:block">${esc(x.actorName)} · ${timeAgo(x.at)}</span></span></li>`).join('')}</ol></section>`;
-      return C.layout('overview', { title: 'Overview', subtitle: `Super App platform · ${fmtDate(from)} – ${fmtDate(to)}`, body });
+      return C.layout('overview', { title: 'Overview', subtitle: `Super Malaab platform · ${fmtDate(from)} – ${fmtDate(to)}`, body });
     },
     mount(el) { bindRevChart(el); },
   });
@@ -79,7 +79,7 @@
   /* ======================= Audit log ======================= */
   const WHO = [['', 'Everyone'], ['admin', 'Admins'], ['partner', 'Pitch owners'], ['seller', 'Sellers'], ['printer', 'Factory'], ['customer', 'Customers'], ['system', 'System']];
   SA.pages.adminAudit = A.guard({
-    title: 'Audit log — Super App Admin',
+    title: 'Audit log — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const r = q.from || q.range ? C.range(q, '30') : null;

@@ -39,7 +39,7 @@
 
   /* ---------- Sign-in: pick your name, type your PIN ---------- */
   const login = {
-    title: 'Factory — Super App',
+    title: 'Factory — Super Malaab',
     render() {
       const fs = F().list();
       return `<div class="dash-login fac-login">
@@ -48,11 +48,11 @@
           <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
           <span class="badge badge-gold">${icon('package', 13)} Production floor</span>
           <h1 class="display dl-title">Print it. Check it. Ship it.</h1>
-          <p class="lead">Every printed order from Super App in one queue — job tickets with a QR code, quality checks, and the courier booked for you when an order is packed.</p>
+          <p class="lead">Every printed order from Super Malaab in one queue — job tickets with a QR code, quality checks, and the courier booked for you when an order is packed.</p>
           ${fs.map((f) => `<h2 class="h4" style="margin-top:26px">${esc(f.name)} <span class="xs muted">· ${esc(f.city)}</span></h2>
             <div class="dl-accounts fac-people">${F().staff(f.id).filter((x) => x.active).map((x, i) => `<button class="dl-acc" data-who="${x.id}" style="--i:${i}">${c.avatar({ name: x.name, avatar: x.avatar })}<span class="grow"><b>${esc(x.name)}</b><span class="xs muted" style="display:block">${F().ROLES[x.role].label}</span></span>${icon('lock', 15)}</button>`).join('')}</div>`).join('')}
           <p class="xs muted" style="margin-top:14px">${icon('info', 12)} Demo PINs: owner 1111 · supervisor 2222 · printers 3333 / 3344 · quality 4444 · packing 5555</p>
-          <p class="small muted" style="margin-top:18px">Pitch owner or seller? <a class="link" href="#/dash">Partner dashboard</a> · Super App team? <a class="link" href="#/admin">Admin console</a></p>
+          <p class="small muted" style="margin-top:18px">Pitch owner or seller? <a class="link" href="#/dash">Partner dashboard</a> · Super Malaab team? <a class="link" href="#/admin">Admin console</a></p>
         </section>
         <section class="dl-visual fac-visual" aria-hidden="true">
           <div class="fac-belt">
@@ -66,10 +66,10 @@
     },
     mount(el) {
       el.querySelectorAll('[data-who]').forEach((b) => b.addEventListener('click', () => pinPad(b.dataset.who)));
-      // The Super App mark printed on a tee that turns in 3D (drag it); the belt tilts with the pointer
+      // The Super Malaab mark printed on a tee that turns in 3D (drag it); the belt tilts with the pointer
       const brandArt = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><rect x="20" y="0" width="80" height="80" rx="22" fill="#FF5B14"/><path d="M80 23C75 17 68 15 60 15c-12 0-20 6-20 15 0 20 40 11 40 31 0 9-8 15-21 15-9 0-17-3-23-9" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/><text x="60" y="118" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="20" fill="#fff">SUPER</text><text x="60" y="142" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="20" fill="#fff">APP</text></svg>')}`;
       const tee = el.querySelector('[data-tee]');
-      const g = tee && SA.ui.garment3d?.mount(tee, { kind: 'tee', hex: '#0D1411', art: brandArt, artRatio: 1.25, place: { front: { x: 0.5, y: 0.4, w: 0.34 }, back: { x: 0.5, y: 0.3, w: 0.22 } }, label: 'Super App tee' });
+      const g = tee && SA.ui.garment3d?.mount(tee, { kind: 'tee', hex: '#0D1411', art: brandArt, artRatio: 1.25, place: { front: { x: 0.5, y: 0.4, w: 0.34 }, back: { x: 0.5, y: 0.3, w: 0.22 } }, label: 'Super Malaab tee' });
       const off = SA.core.motion.tilt(el.querySelector('.fac-belt'), { max: 8 });
       return () => { g?.destroy(); off?.(); };
     },
@@ -104,7 +104,7 @@
   };
 
   /* ---------- Layout ---------- */
-  const brand = (sub) => `<a class="dash-brand" href="#/factory"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">${sub}</span></span></a>`;
+  const brand = (sub) => `<a class="dash-brand" href="#/factory"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER MALAAB</b><span class="xs">${sub}</span></span></a>`;
   const sideNav = (active, s) => {
     const b = badges(s);
     const list = NAV.filter((n) => allowed(n, s));
@@ -112,7 +112,7 @@
       <div class="dash-acct">${c.avatar({ name: s.name, avatar: s.avatar })}<span class="grow"><b class="small truncate">${esc(s.name)}</b><span class="xs truncate">${esc(s.factory.name)}</span></span><span class="badge ${ROLE_TONE[s.role]}">${F().ROLES[s.role].label}</span></div>
       <nav class="dash-nav" aria-label="Factory">${list.map((n, i) => (n.group ? `<span class="dash-nav-label xs">${n.group}</span>` : `<a href="${n.href}" style="--i:${i}" ${n.key === active ? 'aria-current="page"' : ''}>${icon(n.icon, 18)}<span class="grow">${n.label}</span><span class="nav-badge ${b[n.badge] ? 'nb-blaze' : ''}" ${b[n.badge] ? '' : 'hidden'}>${b[n.badge] || ''}</span></a>`)).join('')}</nav>
       <div class="dash-side-foot">
-        <a href="#/" class="dash-foot-link dash-site-link">${icon('home', 16)} <span class="grow">Back to Super App</span>${icon('arrowUpRight', 14)}</a>
+        <a href="#/" class="dash-foot-link dash-site-link">${icon('home', 16)} <span class="grow">Back to Super Malaab</span>${icon('arrowUpRight', 14)}</a>
         <button class="dash-foot-link" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button>
         <button class="dash-foot-link" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button>
         <button class="dash-foot-link" data-fac-signout>${icon('logout', 16)} Switch user</button>
@@ -128,7 +128,7 @@
   const layout = (active, { title, subtitle = '', actions = '', body }) => {
     const s = F().me();
     const f = s.factory;
-    const banner = f.status === 'paused' ? `<div class="fac-banner is-danger">${icon('alert', 16)} <span><span>Super App paused this factory</span>${f.statusReason ? `: ${esc(f.statusReason)}` : ''}. <span>No new jobs arrive until it is active again.</span></span></div>`
+    const banner = f.status === 'paused' ? `<div class="fac-banner is-danger">${icon('alert', 16)} <span><span>Super Malaab paused this factory</span>${f.statusReason ? `: ${esc(f.statusReason)}` : ''}. <span>No new jobs arrive until it is active again.</span></span></div>`
       : !f.intake ? `<div class="fac-banner is-gold">${icon('alert', 16)} <span><span>New orders are paused</span>${f.intakeNote ? ` — ${esc(f.intakeNote)}` : ''}. <span>Printed products are hidden from the shop.</span>${F().can('intake', s) ? ' <a class="link" href="#/factory/settings">Resume</a>' : ''}</span></div>` : '';
     return `<div class="dash is-factory" data-dash-active="${active}">
       <aside class="dash-side">${sideNav(active, s)}</aside>
@@ -170,7 +170,7 @@
   /** Wrap a factory page: sign-in first, then the role check */
   const guard = (page) => ({
     ...page,
-    title: page.title || 'Factory — Super App',
+    title: page.title || 'Factory — Super Malaab',
     async render(ctx) {
       await SA.services.liveShop?.factoryReady?.();
       const s = F().me();
@@ -214,7 +214,7 @@
         <p class="xs muted">“${esc(o.title)}” · <span class="num">${esc(o.orderId)}</span>${sameOrder.length > 1 ? ` · <span>${sameOrder.length} items</span>` : ''} · <span>${esc(o.customer?.city || '')}</span>${o.reprints ? ` · <span>reprinted ${o.reprints}×</span>` : ''}</p>
         <div class="row wrap" style="--gap:6px;margin-top:4px">${dueChip(o)}${o.assignee ? `<span class="fj-who">${icon('user', 12)} ${esc(o.assignee.name)}</span>` : ''}</div>
         ${o.issue && !o.issue.resolved ? `<p class="fj-issue xs">${icon('alert', 12)} <b>${esc(o.issue.type)}</b>${o.issue.note ? ` — ${esc(o.issue.note)}` : ''} <span class="muted">· ${esc(o.issue.by)}</span></p>` : ''}
-        ${o.status === 'cancelled' ? `<p class="fj-issue xs">${icon('x', 12)} Cancelled by Super App — stop work on it.</p>` : ''}
+        ${o.status === 'cancelled' ? `<p class="fj-issue xs">${icon('x', 12)} Cancelled by Super Malaab — stop work on it.</p>` : ''}
         ${compact ? '' : `<div class="pr-actions">${actions(o, s)}${o.design ? `<button class="btn btn-ghost btn-sm" data-file="${o.id}">${icon('file', 13)} Print file</button>` : ''}<button class="btn btn-ghost btn-sm" data-ticket="${o.id}">${icon('qr', 13)} Ticket</button></div>`}
       </div></article>`;
   };
@@ -243,8 +243,8 @@
       const o = F().job(id); const p = doc.page();
       p.rect(0, 0, p.W, 70, { fill: INK });
       p.logo(40, 18, 34);
-      p.text('SUPER APP', 84, 36, { size: 15, weight: 800, color: '#fff', spacing: 1 });
-      p.text('Job ticket · made for Super App', 84, 52, { size: 9, color: '#9FB3A9' });
+      p.text('SUPER MALAAB', 84, 36, { size: 15, weight: 800, color: '#fff', spacing: 1 });
+      p.text('Job ticket · made for Super Malaab', 84, 52, { size: 9, color: '#9FB3A9' });
       p.text(`${o.product?.name || ''} · DTF`, p.W - 40, 40, { size: 11, color: '#9FB3A9', align: 'right' });
       p.text(o.id, 40, 130, { size: 40, weight: 800 });
       p.qr(o.id, p.W - 40 - 150, 92, 150);
@@ -256,7 +256,7 @@
       p.rect(40, 460, p.W - 80, 150, { stroke: INK, lw: 1, r: 8 });
       ['Printed by', 'Quality check', 'Packed by'].forEach((k, i) => { p.text(k, 56 + i * ((p.W - 112) / 3), 486, { size: 9, color: SOFT }); p.line(56 + i * ((p.W - 112) / 3), 590, 40 + (i + 1) * ((p.W - 112) / 3), 590); });
       p.text('Scan the QR code on the factory tablet to move this job to the next step.', 40, 650, { size: 9, color: SOFT });
-      p.logo(p.W - 40 - 26, p.H - 60, 26); p.text('SUPER APP', p.W - 74, p.H - 42, { size: 9, weight: 800, align: 'right' });
+      p.logo(p.W - 40 - 26, p.H - 60, 26); p.text('SUPER MALAAB', p.W - 74, p.H - 42, { size: 9, weight: 800, align: 'right' });
     });
     await doc.save(`job-tickets-${ids[0]}${ids.length > 1 ? `-and-${ids.length - 1}-more` : ''}.pdf`);
     SA.ui.overlay.toast(`Downloaded ${ids.length} ticket${ids.length > 1 ? 's' : ''}`, { type: 'success' });
@@ -268,11 +268,11 @@
     const doc = SA.core.pdf.create({ title: `Label ${sh.awb}` });
     const p = doc.page();
     p.rect(30, 30, p.W - 60, p.H - 60, { stroke: INK, lw: 2, r: 10 });
-    // Super App brand band: confirms the parcel comes from Super App
+    // Super Malaab brand band: confirms the parcel comes from Super Malaab
     p.rect(30, 30, p.W - 60, 64, { fill: INK, r: 10 });
     p.logo(50, 46, 32);
-    p.text('SUPER APP', 92, 62, { size: 16, weight: 800, color: '#fff', spacing: 1 });
-    p.text('superapp.eg · Order from Super App', 92, 78, { size: 8.5, color: '#9FB3A9' });
+    p.text('SUPER MALAAB', 92, 62, { size: 16, weight: 800, color: '#fff', spacing: 1 });
+    p.text('supermalaab.eg · Order from Super Malaab', 92, 78, { size: 8.5, color: '#9FB3A9' });
     p.text(sh.providerName.toUpperCase(), p.W - 50, 70, { size: 18, weight: 800, color: '#fff', align: 'right' });
     const Y = 50; // everything below moves down under the band
     if (sh.mode === 'test') p.text('TEST SHIPMENT', p.W - 50, 116, { size: 11, weight: 800, color: BLAZE, align: 'right' });
@@ -288,10 +288,10 @@
     p.text(`${sh.customer?.city || ''}${sh.customer?.phone ? ` · ${sh.customer.phone}` : ''}`, 50, 378 + Y, { size: 13, color: SOFT });
     p.line(50, 410 + Y, p.W - 50, 410 + Y);
     p.text('FROM', 50, 440 + Y, { size: 8, weight: 700, color: TURF, spacing: 1 });
-    p.text(`Super App — made by ${f?.name || ''}`, 50, 462 + Y, { size: 12, weight: 700 });
+    p.text(`Super Malaab — made by ${f?.name || ''}`, 50, 462 + Y, { size: 12, weight: 700 });
     p.text(`${f?.address || ''} · ${f?.phone || ''}`, 50, 480 + Y, { size: 10, color: SOFT, maxWidth: p.W - 100 });
     items.forEach((o, i) => p.text(`☐ ${o.id} — ${o.qty} × ${o.title} (${o.color}, ${o.size})`, 50, 530 + Y + i * 18, { size: 10 }));
-    p.text('Thank you for ordering from Super App · superapp.eg', p.W / 2, p.H - 46, { size: 9, color: SOFT, align: 'center' });
+    p.text('Thank you for ordering from Super Malaab · supermalaab.eg', p.W / 2, p.H - 46, { size: 9, color: SOFT, align: 'center' });
     await doc.save(`label-${sh.awb}.pdf`);
     SA.ui.overlay.toast(`Downloaded the label ${sh.awb}`, { type: 'success' });
   };

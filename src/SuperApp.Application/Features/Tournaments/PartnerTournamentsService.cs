@@ -174,7 +174,7 @@ public sealed class PartnerTournamentsService(
     public async Task CancelAsync(Tournament t, Guid by, AuditSystem system, CancellationToken ct)
     {
         TournamentsService.Check(t.Status is TournamentStatus.Registration or TournamentStatus.Running, "This tournament is already over.", "already_over");
-        await TellCaptainsAsync(t, $"{t.Name} was cancelled", t.EntryFee > 0 ? "Your entry fee is back in your Super App wallet." : "Sorry for the change of plans.", ct);
+        await TellCaptainsAsync(t, $"{t.Name} was cancelled", t.EntryFee > 0 ? "Your entry fee is back in your Super Malaab wallet." : "Sorry for the change of plans.", ct);
         foreach (var team in TournamentRules.Active(t).ToList())
         {
             await money.RefundAsync(team, t, by, "Tournament cancelled", ct);

@@ -5,7 +5,7 @@
   const D = () => SA.services.dash;
 
   SA.pages.dashOverview = C.guard({
-    title: 'Overview — Super App Partner',
+    title: 'Overview — Super Malaab Partner',
     render(ctx) {
       const r = C.range(ctx.query, '30');
       const sc = C.scope();
@@ -33,7 +33,7 @@
         </div>
 
         ${s.pitches.length === 0 && !store ? `<div class="dash-card onboard">
-          <div><h2 class="h3">Welcome to Super App, ${esc(a.name.split(' ')[0])}.</h2><p class="soft" style="margin-top:6px">Add your first pitch to start taking bookings, or open your store to sell products on Super App.</p></div>
+          <div><h2 class="h3">Welcome to Super Malaab, ${esc(a.name.split(' ')[0])}.</h2><p class="soft" style="margin-top:6px">Add your first pitch to start taking bookings, or open your store to sell products on Super Malaab.</p></div>
           <div class="row wrap"><a class="btn btn-primary" href="#/dash/pitches/new">${icon('plus', 16)} Add a pitch</a><a class="btn btn-outline" href="#/dash/store">${icon('bag', 16)} Open my store</a></div></div>` : ''}
 
         <div class="dash-grid g-2-1">

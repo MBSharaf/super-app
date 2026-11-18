@@ -16,7 +16,7 @@
     const list = S.pod.list({ sellerId: s.id, status: ['review', 'draft', 'rejected', 'paused'] });
     if (!list.length) return '';
     return `<section class="panel panel-pad sf-pending">
-      <div class="row-between"><div><h2 class="h4">${icon('eye', 16)} Only you can see this</h2><p class="xs muted">These designs aren’t in your store yet. A design shows here for customers once the Super App team approves it (usually within 24 hours).</p></div>
+      <div class="row-between"><div><h2 class="h4">${icon('eye', 16)} Only you can see this</h2><p class="xs muted">These designs aren’t in your store yet. A design shows here for customers once the Super Malaab team approves it (usually within 24 hours).</p></div>
         <a class="btn btn-ghost btn-sm" href="#/seller/designs">All my designs</a></div>
       <div class="sf-pending-list">${list.map((d) => {
         const side = d.placement?.front ? 'front' : 'back';
@@ -29,14 +29,14 @@
   };
 
   SA.pages.sellerStore = {
-    title: 'Store — Super App',
+    title: 'Store — Super Malaab',
     async render(ctx) {
       const s = S.sellers.byHandle(ctx.params.handle);
       if (!s || s.status !== 'active') {
-        this.title = 'Store not found — Super App';
+        this.title = 'Store not found — Super Malaab';
         return `${c.pageHead({ crumbs: [['Shop', '#/shop'], ['Store']], title: 'Store not found' })}<div class="container"><div class="panel">${c.empty({ icon: 'bag', title: s ? 'This store is closed for now' : 'We couldn’t find that store', text: 'Browse designs from other creators instead.', action: c.cta('Browse designs', { href: '#/shop?cat=designs' }) })}</div></div>`;
       }
-      this.title = `${s.name} — Super App`;
+      this.title = `${s.name} — Super Malaab`;
       const tab = ctx.query.tab === 'products' ? 'products' : 'designs';
       const all = await S.shop.list({ seller: s.id, sort: ctx.query.sort || 'featured' });
       // The pinned design goes first
@@ -54,7 +54,7 @@
         <div class="sf-info">
           <span class="sf-logo ${mine ? 'is-mine' : ''}">${s.logo ? `<img src="${esc(s.logo)}" alt="" />` : `<span class="sf-initials">${esc(SA.core.utils.initials(s.name))}</span>`}${mine ? `<button class="sf-logo-edit" data-quick="logo" aria-label="Change logo">${icon('camera', 14)}</button>` : ''}</span>
           <div class="grow">
-            <span class="xs muted">${(s.tags || []).length ? '' : 'Creator on Super App · '}<span class="lvl-chip lvl-${lvl.id}">${esc(lvl.name)}</span></span>${(s.tags || []).length ? `<span class="tag-row">${s.tags.map((t) => `<a class="tag-chip" href="#/shop?tag=${encodeURIComponent(t)}" data-tag="${esc(t)}">#${esc(t)}</a>`).join('')}</span>` : ''}
+            <span class="xs muted">${(s.tags || []).length ? '' : 'Creator on Super Malaab · '}<span class="lvl-chip lvl-${lvl.id}">${esc(lvl.name)}</span></span>${(s.tags || []).length ? `<span class="tag-row">${s.tags.map((t) => `<a class="tag-chip" href="#/shop?tag=${encodeURIComponent(t)}" data-tag="${esc(t)}">#${esc(t)}</a>`).join('')}</span>` : ''}
             <h1 class="h1">${esc(s.name)}</h1>
             <p class="soft">${esc(s.bio || '')}</p>
             <div class="sf-stats small"><span><b class="num">${fmtNum(lvl.stats.sales)}</b> sold</span>${lvl.stats.rating ? `<span>${icon('star', 13)} <b class="num">${lvl.stats.rating.toFixed(1)}</b></span>` : ''}<span><b class="num" data-followers>${fmtNum(s.followers || 0)}</b> followers</span></div>

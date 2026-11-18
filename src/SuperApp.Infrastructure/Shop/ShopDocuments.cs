@@ -33,14 +33,14 @@ public sealed partial class ShopDocuments : IShopDocuments
             col.Item().AlignRight().Width(200).Element(e => Totals(e, order));
             col.Item().Text($"Payment: {PaymentLabel(order.PaymentMethod)}").SemiBold();
         });
-        page.Footer().AlignCenter().Text("Thank you for shopping with Super App. Prices include VAT.").FontSize(8).FontColor(Colors.Grey.Darken1);
+        page.Footer().AlignCenter().Text("Thank you for shopping with Super Malaab. Prices include VAT.").FontSize(8).FontColor(Colors.Grey.Darken1);
     })).GeneratePdf();
 
     private static void Header(IContainer container, string title, string code, DateTime at) => container.Row(row =>
     {
         row.RelativeItem().Column(c =>
         {
-            c.Item().Text("Super App").FontSize(16).Bold().FontColor(Green);
+            c.Item().Text("Super Malaab").FontSize(16).Bold().FontColor(Green);
             c.Item().Text(title).FontSize(11).SemiBold();
         });
         row.RelativeItem().AlignRight().Column(c =>
@@ -99,7 +99,7 @@ public sealed partial class ShopDocuments : IShopDocuments
     private static string PaymentLabel(string method) => method switch
     {
         "CashOnDelivery" => "Cash on delivery",
-        "Wallet" => "Super App wallet (simulated until payments go live)",
+        "Wallet" => "Super Malaab wallet (simulated until payments go live)",
         _ => "Card / wallet app (simulated until payments go live)",
     };
 

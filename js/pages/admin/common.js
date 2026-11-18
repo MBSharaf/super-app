@@ -1,5 +1,5 @@
 /**
- * Admin console (#/admin): a separate system for the Super App team, with its own sign-in and session.
+ * Admin console (#/admin): a separate system for the Super Malaab team, with its own sign-in and session.
  * It reuses the dashboard shell (layout, bell, charts, forms) from SA.pages.dashCommon; in admin mode the shell shows
  * this navigation, the admin to-do list and admin links.
  */
@@ -26,7 +26,7 @@
     { key: 'returns', page: 'adminReturns', label: 'Returns & exchanges', href: '#/admin/returns', icon: 'refresh', badge: 'returns' },
     { key: 'tournaments', page: 'dashTournaments', label: 'Tournaments', href: '#/admin/tournaments', icon: 'trophy' },
     { key: 'support', page: 'adminSupport', label: 'Support & disputes', href: '#/admin/support', icon: 'message', badge: 'support' },
-    { key: 'store', page: 'dashStore', label: 'Super App Store', href: '#/admin/store', icon: 'bag', badge: 'stock' },
+    { key: 'store', page: 'dashStore', label: 'Super Malaab Store', href: '#/admin/store', icon: 'bag', badge: 'stock' },
     { key: 'reviews', page: 'dashReviews', label: 'Reviews', href: '#/admin/reviews', icon: 'star', badge: 'reviews' },
     { group: 'Print on demand' },
     { key: 'pod-review', page: 'dashPodReview', label: 'Design review', href: '#/admin/designs', icon: 'image', badge: 'designs' },
@@ -58,7 +58,7 @@
   /** API mode: a verified team account opens the console (the console itself still runs on demo data until Phase 7) */
   const openAdmin = () => { D().auth.signIn('acc-admin'); SA.ui.overlay.toast('Welcome back'); const h = SA.core.router.location(); SA.core.router.go(h.startsWith('/admin/') ? h : '/admin', { replace: true }); SA.app.rerender(); };
   SA.pages.adminLogin = {
-    title: 'Admin console — Super App',
+    title: 'Admin console — Super Malaab',
     async render() {
       await SA.services.api.ready;
       const live = SA.services.api.isLive();
@@ -70,9 +70,9 @@
       const people = accs.filter((a) => !a.agent), agents = accs.filter((a) => a.agent);
       return `<div class="dash-login adm-login">
         <section class="dl-copy">
-          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER APP</b><span class="xs">Admin console</span></span></a>
+          <a class="dash-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span><b>SUPER MALAAB</b><span class="xs">Admin console</span></span></a>
           <div class="dl-prefs">${SA.ui.shell.prefButtons()}</div>
-          <span class="badge badge-blaze adm-tag">${icon('lock', 13)} Super App team only</span>
+          <span class="badge badge-blaze adm-tag">${icon('lock', 13)} Super Malaab team only</span>
           <h1 class="display dl-title">Run the whole platform from one place.</h1>
           <p class="lead">Money and withdrawals, customers, partners and sellers, every order and booking, support, content, fantasy and promotions — with a full audit log.</p>
           ${live ? SA.ui.teamSignIn.html('admin') : `<h2 class="h4" style="margin-top:28px">Sign in as</h2>
@@ -106,7 +106,7 @@
   };
 
   /** Admin pages: the dashboard guard shows the admin sign-in when there is no admin session */
-  const guard = (page) => C.guard({ ...page, title: page.title || 'Admin console — Super App' });
+  const guard = (page) => C.guard({ ...page, title: page.title || 'Admin console — Super Malaab' });
 
   /** Small helpers shared by admin pages */
   const tabs = (base, list, cur, extra = {}) => `<div class="chips" role="tablist" aria-label="Sections">${list.map(([k, l, n]) => `<a class="chip" role="tab" href="${SA.core.router.href(base, { ...extra, tab: k || undefined })}" aria-pressed="${cur === k}" aria-selected="${cur === k}">${l}${n != null ? ` <span class="chip-count">${n}</span>` : ''}</a>`).join('')}</div>`;

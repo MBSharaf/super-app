@@ -23,7 +23,7 @@
     'Tournaments are coming soon — registration is not open yet.': 'البطولات جاية قريب — التسجيل لسه مفتحش.',
     "Tournaments are coming soon — registration isn't open yet.": 'البطولات جاية قريب — التسجيل لسه مفتحش.',
     'How do I enter a tournament?': 'أدخل بطولة إزاي؟',
-    '5-a-side tournaments and leagues are coming soon to Super App — starting with the Ramadan tournament.': 'بطولات ودوريات الخماسي جاية قريب على Super App — وأولها بطولة رمضان.',
-    'The rules for using Super App: accounts, bookings, the shop, fantasy and communities.': 'قواعد استخدام Super App: الحسابات والحجوزات والمتجر والفانتازي والمجتمعات.',
+    '5-a-side tournaments and leagues are coming soon to Super Malaab — starting with the Ramadan tournament.': 'بطولات ودوريات الخماسي جاية قريب على سوبر ملعب — وأولها بطولة رمضان.',
+    'The rules for using Super Malaab: accounts, bookings, the shop, fantasy and communities.': 'قواعد استخدام سوبر ملعب: الحسابات والحجوزات والمتجر والفانتازي والمجتمعات.',
   });
 })(window.SA);

@@ -7,7 +7,7 @@
   const HOURS = Array.from({ length: 25 }, (_, h) => h);
 
   SA.pages.alerts = {
-    title: 'Free-slot alerts — Super App',
+    title: 'Free-slot alerts — Super Malaab',
     render(ctx) {
       const alerts = S.games.alerts();
       const pitches = S.db.all('pitches').filter((p) => !p.deleted && p.status === 'active');

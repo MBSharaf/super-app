@@ -13,7 +13,7 @@ namespace SuperApp.Application.Features.Shop.Orders;
 /// <summary>
 /// An order's money (owner's decisions, 2026-10-27: online payment only, 5% commission, returns within 24 hours): when the
 /// payment is confirmed the order becomes Paid, the ledger holds each store's earning and everyone concerned is told;
-/// cancelled or returned items give the customer their money back to the Super App wallet; the store bears a return.
+/// cancelled or returned items give the customer their money back to the Super Malaab wallet; the store bears a return.
 /// </summary>
 public sealed class OrderPayments(IOrderRepository orders, ILedger ledger, IShopSettings settings, IUnitOfWork unitOfWork, IClock clock, OrderNotices notices)
 {
@@ -48,7 +48,7 @@ public sealed class OrderPayments(IOrderRepository orders, ILedger ledger, IShop
     /// <summary>
     /// A received return: refund lines give the customer the return's refund, paid by the store (its earning on those pieces,
     /// the rest and the return delivery — one courier trip, two for an exchange); what the store still holds on these items is
-    /// released. Printed items and the official store: Super App pays.
+    /// released. Printed items and the official store: Super Malaab pays.
     /// </summary>
     public async Task ReturnedAsync(ReturnRequest ret, CancellationToken ct)
     {

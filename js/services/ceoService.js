@@ -30,7 +30,7 @@
   const LIMITS = { payout: 10000, refund: 1000, dual: 50000 };
   const SWITCHES = [
     ['bookings', 'Pitch bookings', 'New bookings and weekly packages', 'pitch'],
-    ['shop', 'Shop checkout', 'Buying from stores and the Super App Store', 'bag'],
+    ['shop', 'Shop checkout', 'Buying from stores and the Super Malaab Store', 'bag'],
     ['pod', 'Printed designs', 'Print-on-demand products in the shop', 'shirt'],
     ['payouts', 'Withdrawals', 'Partners and sellers asking for money, and sending it', 'wallet'],
     ['applications', 'New applications', 'New pitch partners and sellers', 'users'],
@@ -44,10 +44,10 @@
   const GOALS = [
     { id: 'g-1', objective: 'Grow the business', dept: 'ops', quarter: 'Q4', krs: [
       { text: 'Platform revenue in the last 30 days', metric: 'revenue30', target: 600000 },
-      { text: 'Money through Super App in the last 30 days', metric: 'gmv30', target: 3000000 },
+      { text: 'Money through Super Malaab in the last 30 days', metric: 'gmv30', target: 3000000 },
       { text: 'Active pitches', metric: 'pitches', target: 40 },
     ] },
-    { id: 'g-2', objective: 'Customers love Super App', dept: 'support', quarter: 'Q4', krs: [
+    { id: 'g-2', objective: 'Customers love Super Malaab', dept: 'support', quarter: 'Q4', krs: [
       { text: 'Open support tickets (lower is better)', metric: 'ticketsOpen', target: 5, lower: true },
       { text: 'Average pitch rating', metric: 'rating', target: 4.6 },
     ] },
@@ -83,9 +83,9 @@
     const now = Date.now();
     const since = d.platformSince || now - 200 * DAY;
     const addAcc = (a) => { if (!d.accounts.some((x) => x.id === a.id)) { d.accounts.push({ joinedAt: since, createdAt: since, updatedAt: now, ...a }); changed = true; } };
-    addAcc({ id: CEO_ID, role: 'admin', teamRole: 'ceo', name: 'Sharaf', company: 'Super App Egypt', email: 'ceo@superapp.example', phone: '+20 2 2735 0001', avatar: 4 });
-    addAcc({ id: 'acc-cfo', role: 'admin', teamRole: 'cfo', name: 'Laila Mansour', company: 'Super App Egypt', email: 'finance@superapp.example', phone: '+20 2 2735 0002', avatar: 9 });
-    ORG().ROLES.filter((r) => r.holder === 'ai').forEach((r, i) => addAcc({ id: agentAcc(r.id), role: 'admin', teamRole: r.id, agent: true, name: `${r.name} (AI)`, company: 'Super App Egypt', email: `${r.id}@agents.superapp.example`, avatar: (i * 3) % 12 }));
+    addAcc({ id: CEO_ID, role: 'admin', teamRole: 'ceo', name: 'Sharaf', company: 'Super Malaab Egypt', email: 'ceo@superapp.example', phone: '+20 2 2735 0001', avatar: 4 });
+    addAcc({ id: 'acc-cfo', role: 'admin', teamRole: 'cfo', name: 'Laila Mansour', company: 'Super Malaab Egypt', email: 'finance@superapp.example', phone: '+20 2 2735 0002', avatar: 9 });
+    ORG().ROLES.filter((r) => r.holder === 'ai').forEach((r, i) => addAcc({ id: agentAcc(r.id), role: 'admin', teamRole: r.id, agent: true, name: `${r.name} (AI)`, company: 'Super Malaab Egypt', email: `${r.id}@agents.superapp.example`, avatar: (i * 3) % 12 }));
     const hq = d.accounts.find((a) => a.id === 'acc-admin');
     if (hq && !hq.teamRole) { hq.teamRole = 'hq'; changed = true; }
     if (!d.settings.ceo) {
@@ -392,7 +392,7 @@
       daily: r?.daily || [],
     };
   };
-  const METRICS = { revenue30: ['Platform revenue (30 days)', 'money'], gmv30: ['Money through Super App (30 days)', 'money'], bookings30: ['Bookings (30 days)', 'n'], pitches: ['Active pitches', 'n'], partners: ['Pitch partners', 'n'], sellers: ['Active sellers', 'n'], designs: ['Live designs', 'n'], customers: ['Customers', 'n'], ticketsOpen: ['Open tickets', 'n'], rating: ['Average rating', 'n'], agentCost: ['AI agents cost / month', 'money'], agentsActive: ['Agents working', 'n'], manual: ['Entered by hand', 'n'] };
+  const METRICS = { revenue30: ['Platform revenue (30 days)', 'money'], gmv30: ['Money through Super Malaab (30 days)', 'money'], bookings30: ['Bookings (30 days)', 'n'], pitches: ['Active pitches', 'n'], partners: ['Pitch partners', 'n'], sellers: ['Active sellers', 'n'], designs: ['Live designs', 'n'], customers: ['Customers', 'n'], ticketsOpen: ['Open tickets', 'n'], rating: ['Average rating', 'n'], agentCost: ['AI agents cost / month', 'money'], agentsActive: ['Agents working', 'n'], manual: ['Entered by hand', 'n'] };
   const metric = (k, K = kpis()) => ({ revenue30: K.revenue, gmv30: K.gmv, bookings30: K.bookings, pitches: K.pitches, partners: K.partners, sellers: K.sellers, designs: K.designs, customers: K.customers, ticketsOpen: K.ticketsOpen, rating: K.rating, agentCost: K.agentCost, agentsActive: K.agentsActive }[k] ?? 0);
 
   /** Department health: a score out of 100 and the reasons */
@@ -516,7 +516,7 @@
     const lines = [];
     const pct = avg ? Math.round(((yt.net - avg) / avg) * 100) : 0;
     lines.push({ tone: pct >= 0 ? 'turf' : 'danger', icon: 'percent', text: `Yesterday’s platform revenue was ${Math.round(yt.net || 0).toLocaleString()} EGP — ${pct >= 0 ? `${pct}% above` : `${Math.abs(pct)}% below`} the 7-day average.` });
-    lines.push({ tone: 'info', icon: 'trend', text: `${Math.round(yt.gmv || 0).toLocaleString()} EGP went through Super App, with ${(r?.summary?.ledger || []).filter((b) => b.status !== 'cancelled').length} bookings and ${(r?.summary?.sales || []).length} store orders.` });
+    lines.push({ tone: 'info', icon: 'trend', text: `${Math.round(yt.gmv || 0).toLocaleString()} EGP went through Super Malaab, with ${(r?.summary?.ledger || []).filter((b) => b.status !== 'cancelled').length} bookings and ${(r?.summary?.sales || []).length} store orders.` });
     if (K.approvals) lines.push({ tone: 'blaze', icon: 'check', text: `${K.approvals} request(s) wait for your approval.`, href: '#/ceo/approvals' });
     if (K.payoutsWaiting) lines.push({ tone: 'gold', icon: 'wallet', text: `${K.payoutsWaiting} withdrawal(s) are waiting in the admin console.` });
     const weak = H.filter((d) => d.score < 80);
@@ -563,7 +563,7 @@
   };
 
   /* ---------- Open as (every system) ---------- */
-  const SYSTEMS = { site: 'Super App (the site)', partner: 'Partner dashboard', seller: 'Seller dashboard', factory: 'Factory system', admin: 'Admin console' };
+  const SYSTEMS = { site: 'Super Malaab (the site)', partner: 'Partner dashboard', seller: 'Seller dashboard', factory: 'Factory system', admin: 'Admin console' };
   const openAs = (kind, id = '') => {
     me();
     let url = '/', who = '';
@@ -594,8 +594,8 @@
     const r = (cols, rows, extra = {}) => ({ columns: cols, rows, ...extra });
     if (kind === 'finance') {
       const R = AD().revenue({ from, to });
-      const cols = [['date', 'Date', 'date'], ...AD().STREAMS.map(([k, l]) => [k, l, 'money']), ['income', 'Income', 'money'], ['refusals', 'Refused deliveries', 'money'], ['refunds', 'Refunds', 'money'], ['promos', 'Promo codes', 'money'], ['cost', 'Costs', 'money'], ['net', 'Net', 'money'], ['gmv', 'Money through Super App', 'money']];
-      return r(cols, R.daily.map((d) => ({ ...d, date: d.date })), { kpis: [['Income', R.total.income, 'money'], ['Costs', R.total.cost, 'money'], ['Net', R.total.net, 'money'], ['Money through Super App', R.total.gmv, 'money']], sumCols: ['income', 'cost', 'net', 'gmv'], chart: 'net' });
+      const cols = [['date', 'Date', 'date'], ...AD().STREAMS.map(([k, l]) => [k, l, 'money']), ['income', 'Income', 'money'], ['refusals', 'Refused deliveries', 'money'], ['refunds', 'Refunds', 'money'], ['promos', 'Promo codes', 'money'], ['cost', 'Costs', 'money'], ['net', 'Net', 'money'], ['gmv', 'Money through Super Malaab', 'money']];
+      return r(cols, R.daily.map((d) => ({ ...d, date: d.date })), { kpis: [['Income', R.total.income, 'money'], ['Costs', R.total.cost, 'money'], ['Net', R.total.net, 'money'], ['Money through Super Malaab', R.total.gmv, 'money']], sumCols: ['income', 'cost', 'net', 'gmv'], chart: 'net' });
     }
     if (kind === 'operations') {
       const s = D().summary({ from, to });

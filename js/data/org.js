@@ -34,7 +34,7 @@
   const ROLES = [
     { id: 'ceo', title: 'Chief executive (CEO)', dept: null, holder: 'human', name: 'Sharaf', sections: ['*'], can: ALL, limit: Infinity,
       duties: ['Sets goals and budgets', 'Approves big payments and refunds', 'Hires, pauses and stops AI agents', 'Owns every kill switch'] },
-    { id: 'hq', title: 'Admin manager (HQ)', dept: 'ops', reportsTo: 'ceo', holder: 'human', name: 'Super App HQ', account: 'acc-admin', sections: ['*'], can: ALL.filter((k) => k !== 'payout.prepare'), limit: 10000,
+    { id: 'hq', title: 'Admin manager (HQ)', dept: 'ops', reportsTo: 'ceo', holder: 'human', name: 'Super Malaab HQ', account: 'acc-admin', sections: ['*'], can: ALL.filter((k) => k !== 'payout.prepare'), limit: 10000,
       duties: ['Runs the admin console day to day', 'Steps in when an agent is unsure', 'Second pair of eyes on agents’ work'] },
     { id: 'cfo', title: 'Finance director (CFO)', dept: 'finance', reportsTo: 'ceo', holder: 'human', name: 'Laila Mansour', account: 'acc-cfo', pin: '7777', sections: ['overview', 'payouts', 'finance-approvals', 'revenue', 'customers', 'partners', 'sellers', 'analytics', 'audit'], can: ['payout.approve', 'settle', 'refund', 'credit', 'adjust', 'audit'], limit: 50000,
       duties: ['Approves withdrawals the payables agent prepared', 'Second approval on anything over the two-person limit', 'Monthly close and reconciliation', 'Taxes with the legal counsel'], watch: ['admin.payout', 'admin.printer', 'admin.balance'] },
@@ -44,7 +44,7 @@
     { id: 'bookings-ops', title: 'Pitch & bookings agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Kick', cost: 1500, sections: ['overview', 'orders', 'tournaments', 'games'], can: ['orders'], limit: 0,
       duties: ['Checks double bookings and no-shows', 'Weekly packages and make-up games', 'Tournaments and free-slot games'], watch: ['admin.booking', 'admin.package', 'admin.games', 'admin.slot', 'booking.', 'checkin.'] },
     { id: 'orders-ops', title: 'Orders & factory agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Loom', cost: 1500, sections: ['overview', 'orders', 'returns', 'store', 'factories', 'samples'], can: ['orders', 'factory'], limit: 0,
-      duties: ['Sends printed orders to the factory', 'Chases late jobs and quality problems', 'Keeps the Super App Store stocked'], watch: ['admin.factory', 'admin.sample', 'admin.store', 'factory.job', 'pod.'] },
+      duties: ['Sends printed orders to the factory', 'Chases late jobs and quality problems', 'Keeps the Super Malaab Store stocked'], watch: ['admin.factory', 'admin.sample', 'admin.store', 'factory.job', 'pod.'] },
     { id: 'logistics', title: 'Courier & delivery agent', dept: 'ops', reportsTo: 'coo', holder: 'ai', name: 'Route', cost: 1100, sections: ['overview', 'factories', 'orders'], can: ['factory'], limit: 0,
       duties: ['Books the courier when an order is packed', 'Follows every parcel to delivery', 'Handles refused parcels'], watch: ['factory.shipment', 'admin.shipping'] },
 

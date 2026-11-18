@@ -76,7 +76,7 @@ public sealed partial class PostsService
             request.Reason, "#/admin/communities?tab=reports", NotificationTone.Warning), ct);
     }
 
-    /// <summary>A rich card for a Super App link; outside links → 422 outside_link.</summary>
+    /// <summary>A rich card for a Super Malaab link; outside links → 422 outside_link.</summary>
     public async Task<LinkCardDto> PreviewAsync(string url, CancellationToken ct)
     {
         var text = url?.Trim() ?? string.Empty;
@@ -88,7 +88,7 @@ public sealed partial class PostsService
         var links = TextGuard.Links(text);
         if (links.Count == 0)
         {
-            throw new BusinessRuleException("Only Super App links become cards.", "outside_link");
+            throw new BusinessRuleException("Only Super Malaab links become cards.", "outside_link");
         }
         var cards = await repository.CardsAsync([links[0]], ct);
         return cards.Count > 0 ? cards[0] : throw new NotFoundException("Nothing found at this link.");

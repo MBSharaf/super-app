@@ -26,7 +26,7 @@ public static class CartPricing
     }
 
     /// <summary>
-    /// Checks a code for this cart. Super App codes discount the whole cart; a store's code only that store's items.
+    /// Checks a code for this cart. Super Malaab codes discount the whole cart; a store's code only that store's items.
     /// Invalid → 422 with code invalid_code, code_expired, code_used_up, min_spend or code_not_for_cart.
     /// </summary>
     public static PromoResult Evaluate(PromoCode? code, int usesByCustomer, IReadOnlyList<CartLine> lines, DateOnly today, string? storeHandle)

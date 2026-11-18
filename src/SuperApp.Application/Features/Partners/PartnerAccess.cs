@@ -50,6 +50,6 @@ public sealed class PartnerAccess(IPartnerRepository partners, ICurrentUser curr
     }
 
     private static PartnerScope NotSuspended(PartnerScope s) => s.Status == PartnerStatus.Suspended
-        ? throw new FeatureDisabledException("Your partner account is suspended. Contact Super App support.", "partner_suspended")
+        ? throw new FeatureDisabledException("Your partner account is suspended. Contact Super Malaab support.", "partner_suspended")
         : s;
 }

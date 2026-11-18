@@ -55,7 +55,7 @@
   };
 
   SA.pages.dashCodes = C.guard({
-    title: 'Discount codes — Super App Partner',
+    title: 'Discount codes — Super Malaab Partner',
     render() {
       const sc = C.scope();
       const list = K().list(sc);

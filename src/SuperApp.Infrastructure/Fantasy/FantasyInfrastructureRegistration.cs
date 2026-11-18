@@ -66,13 +66,13 @@ public static class FantasyInfrastructureRegistration
     /// <summary>Support emails in Arabic and English: the auto-reply when a ticket opens, and the team's replies.</summary>
     private static void RegisterEmails()
     {
-        Email.EmailTemplates.Register("ticket-opened", "en", "We got your message ({code}) — Super App",
-            ["Hi {name},", "Thanks for contacting Super App about \"{subject}\".", "Our team replies within 24 hours. You can add details or photos in the chat of ticket {code}."], null);
-        Email.EmailTemplates.Register("ticket-opened", "ar", "وصلتنا رسالتك ({code}) — Super App",
-            ["أهلاً {name}،", "شكراً إنك كلمت Super App بخصوص \"{subject}\".", "فريقنا هيرد خلال 24 ساعة. تقدر تضيف تفاصيل أو صور في محادثة التذكرة {code}."], null);
-        Email.EmailTemplates.Register("ticket-reply", "en", "{title} — Super App",
-            ["Hi {name},", "{body}", "Open ticket {code} in Super App to reply."], null);
-        Email.EmailTemplates.Register("ticket-reply", "ar", "رد على تذكرتك {code} — Super App",
-            ["أهلاً {name}،", "{body}", "افتح التذكرة {code} في Super App عشان ترد."], null);
+        Email.EmailTemplates.Register("ticket-opened", "en", "We got your message ({code}) — Super Malaab",
+            ["Hi {name},", "Thanks for contacting Super Malaab about \"{subject}\".", "Our team replies within 24 hours. You can add details or photos in the chat of ticket {code}."], null);
+        Email.EmailTemplates.Register("ticket-opened", "ar", "وصلتنا رسالتك ({code}) — سوبر ملعب",
+            ["أهلاً {name}،", "شكراً إنك كلمت سوبر ملعب بخصوص \"{subject}\".", "فريقنا هيرد خلال 24 ساعة. تقدر تضيف تفاصيل أو صور في محادثة التذكرة {code}."], null);
+        Email.EmailTemplates.Register("ticket-reply", "en", "{title} — Super Malaab",
+            ["Hi {name},", "{body}", "Open ticket {code} in Super Malaab to reply."], null);
+        Email.EmailTemplates.Register("ticket-reply", "ar", "رد على تذكرتك {code} — سوبر ملعب",
+            ["أهلاً {name}،", "{body}", "افتح التذكرة {code} في سوبر ملعب عشان ترد."], null);
     }
 }

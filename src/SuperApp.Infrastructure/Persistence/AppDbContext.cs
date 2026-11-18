@@ -6,7 +6,7 @@ using SuperApp.Domain.Entities.Auth;
 namespace SuperApp.Infrastructure.Persistence;
 
 /// <summary>
-/// The Super App database (SQL Server, code-first). Identity tables live in the <c>auth</c> schema; every other table
+/// The Super Malaab database (SQL Server, code-first). Identity tables live in the <c>auth</c> schema; every other table
 /// is configured by its own <c>IEntityTypeConfiguration</c> class in <c>Persistence/Configurations</c>.
 /// Shared rules (timestamps, soft delete, row versions, authors) are applied by <see cref="ModelConventions"/>.
 /// </summary>

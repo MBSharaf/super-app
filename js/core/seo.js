@@ -16,14 +16,14 @@
     '/players': 'Need players for tonight? Join football games near you or post yours and fill the squad in minutes.',
     '/players/new': 'Post your football game and find the players you need.',
     '/matches': 'Today’s football: Egyptian Premier League, CAF, Premier League and more — fixtures, live scores and results.',
-    '/tournaments': '5-a-side tournaments and leagues are coming soon to Super App — starting with the Ramadan tournament.',
+    '/tournaments': '5-a-side tournaments and leagues are coming soon to Super Malaab — starting with the Ramadan tournament.',
     '/fantasy': 'Play Premier League fantasy: pick your squad, join leagues and win prizes.',
     '/shop': 'Football boots, jerseys, balls and original printed designs from Egyptian creators — delivered across Egypt.',
-    '/sell': 'Sell your football designs on Super App: we print, ship and pay you — or list your own products.',
-    '/partner/apply': 'List your football pitch on Super App: online bookings, payments and a free partner dashboard.',
+    '/sell': 'Sell your football designs on Super Malaab: we print, ship and pay you — or list your own products.',
+    '/partner/apply': 'List your football pitch on Super Malaab: online bookings, payments and a free partner dashboard.',
     '/community': 'Football communities: players, fantasy managers, creators and venues talking football.',
-    '/help': 'Answers about bookings, payments, delivery, returns, fantasy and selling on Super App.',
-    '/legal': 'Super App terms, privacy policy, refunds and returns, and agreements.',
+    '/help': 'Answers about bookings, payments, delivery, returns, fantasy and selling on Super Malaab.',
+    '/legal': 'Super Malaab terms, privacy policy, refunds and returns, and agreements.',
   };
   const meta = (attr, key, value) => {
     let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -46,7 +46,7 @@
     try {
       if (a === 'pitches' && b) {
         const p = S.pitches.getSync(b); if (!p) return {};
-        return { desc: clip(`${p.name} in ${p.area}, ${p.city}: ${p.format || 'football pitch'}${p.price ? ` from ${p.price} EGP an hour` : ''}. See free hours and book online on Super App.`), image: p.images?.[0] ? SA.data.media.photo(p.images[0], 1200, 630) : IMAGE,
+        return { desc: clip(`${p.name} in ${p.area}, ${p.city}: ${p.format || 'football pitch'}${p.price ? ` from ${p.price} EGP an hour` : ''}. See free hours and book online on Super Malaab.`), image: p.images?.[0] ? SA.data.media.photo(p.images[0], 1200, 630) : IMAGE,
           ld: { '@context': 'https://schema.org', '@type': 'SportsActivityLocation', name: p.name, url: `${SITE}/pitches/${p.id}`, image: p.images?.[0] ? SA.data.media.photo(p.images[0], 1200, 800) : IMAGE,
             address: { '@type': 'PostalAddress', streetAddress: p.address || '', addressLocality: p.area || '', addressRegion: p.city || '', addressCountry: 'EG' }, ...(p.lat ? { geo: { '@type': 'GeoCoordinates', latitude: p.lat, longitude: p.lng } } : {}),
             ...(p.price ? { priceRange: `${p.price} EGP / hour` } : {}), ...(p.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.reviews || 1 } } : {}) } };
@@ -54,17 +54,17 @@
       if (a === 'shop' && b) {
         const p = S.shop.getSync(b); if (!p) return {};
         const img = p.pod ? IMAGE : (p.images?.[0] ? SA.data.media.u(p.images[0], 1200, 1200) : IMAGE);
-        return { desc: clip(`${p.name}${p.brand ? ` by ${p.brand}` : ''} — ${p.price} EGP on Super App. ${p.desc || ''}`), image: img,
+        return { desc: clip(`${p.name}${p.brand ? ` by ${p.brand}` : ''} — ${p.price} EGP on Super Malaab. ${p.desc || ''}`), image: img,
           ld: { '@context': 'https://schema.org', '@type': 'Product', name: p.name, image: img, description: clip(p.desc || p.name, 300), ...(p.brand ? { brand: { '@type': 'Brand', name: p.brand } } : {}),
             offers: { '@type': 'Offer', priceCurrency: 'EGP', price: p.price, availability: (p.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', url: `${SITE}/shop/${p.id}` },
             ...(p.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.reviewCount || p.reviews || 1 } } : {}) } };
       }
       if (a === 'tournaments' && b) {
         const t = S.tournaments.getSync(b); if (!t) return {};
-        return { desc: clip(`${t.name}: ${t.format || ''} tournament${t.fee ? `, entry ${t.fee} EGP` : ''}. Register your team on Super App.`),
+        return { desc: clip(`${t.name}: ${t.format || ''} tournament${t.fee ? `, entry ${t.fee} EGP` : ''}. Register your team on Super Malaab.`),
           ld: { '@context': 'https://schema.org', '@type': 'SportsEvent', name: t.name, sport: 'Football', url: `${SITE}/tournaments/${t.id}`, ...(t.startDate ? { startDate: t.startDate } : {}) } };
       }
-      if (a === 's' && b) { const s = S.sellers?.byHandle?.(b); return s ? { desc: clip(`${s.name} on Super App — ${s.bio || 'original football designs, printed and delivered across Egypt.'}`) } : {}; }
+      if (a === 's' && b) { const s = S.sellers?.byHandle?.(b); return s ? { desc: clip(`${s.name} on Super Malaab — ${s.bio || 'original football designs, printed and delivered across Egypt.'}`) } : {}; }
       if (a === 'legal' && b) { const d = SA.data.legal.DOCS.find((x) => x.key === b); return d ? { desc: clip(d.summary.en) } : {}; }
       if (a === 'community' && b) { const c = (S.db.all('communities') || []).find((x) => x.slug === b); return c ? { desc: clip(c.about || c.name) } : {}; }
     } catch (e) { console.warn('seo', e); }
@@ -77,14 +77,14 @@
     const d = describe(path);
     const desc = d.desc || PAGES[clean] || DEFAULT;
     const url = `${SITE}${clean === '/' ? '/' : clean}`;
-    const title = document.title || 'Super App';
+    const title = document.title || 'Super Malaab';
     meta('name', 'description', desc);
     meta('name', 'robots', PRIVATE.test(clean) ? 'noindex, nofollow' : 'index, follow');
     meta('property', 'og:title', title); meta('property', 'og:description', desc); meta('property', 'og:url', url); meta('property', 'og:image', d.image || IMAGE);
     meta('property', 'og:locale', SA.i18n?.isAr ? 'ar_EG' : 'en_US');
     meta('name', 'twitter:title', title); meta('name', 'twitter:description', desc); meta('name', 'twitter:image', d.image || IMAGE);
     link('canonical', url);
-    ld(d.ld || (clean === '/' ? { '@context': 'https://schema.org', '@type': 'Organization', name: 'Super App', url: `${SITE}/`, logo: IMAGE, areaServed: 'EG' } : null));
+    ld(d.ld || (clean === '/' ? { '@context': 'https://schema.org', '@type': 'Organization', name: 'Super Malaab', url: `${SITE}/`, logo: IMAGE, areaServed: 'EG' } : null));
   };
   let t = 0;
   SA.core.seo = { apply, SITE, describe };

@@ -49,7 +49,7 @@
 
   /* ---------- Departments ---------- */
   SA.pages.ceoDepartments = C.guard({
-    title: 'Departments — Super App',
+    title: 'Departments — Super Malaab',
     render(ctx) {
       const view = ctx.query.view || 'cards';
       const H = CE().health();
@@ -80,7 +80,7 @@
   });
 
   SA.pages.ceoDepartment = C.guard({
-    title: 'Department — Super App',
+    title: 'Department — Super Malaab',
     render(ctx) {
       const d = CE().health().find((x) => x.key === ctx.params.key);
       if (!d) throw new SA.services.http.ApiError('Department not found.', 'not_found');
@@ -109,7 +109,7 @@
 
   /* ---------- AI workforce ---------- */
   SA.pages.ceoAgents = C.guard({
-    title: 'AI workforce — Super App',
+    title: 'AI workforce — Super Malaab',
     render(ctx) {
       const f = ctx.query.dept || '';
       const all = CE().roles().filter((r) => r.id !== 'ceo');
@@ -147,7 +147,7 @@
   });
 
   SA.pages.ceoAgent = C.guard({
-    title: 'Agent — Super App',
+    title: 'Agent — Super Malaab',
     render(ctx) {
       const r = CE().getRole(ctx.params.id);
       const s = CE().agentStats(r.id);

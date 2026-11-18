@@ -51,7 +51,7 @@ public sealed class WalletTopUpService(
         {
             return await ToDtoAsync(me, repeated, null, ct);
         }
-        var started = await payments.StartAsync(new PaymentRequest(PaymentPurpose.WalletTopUp, request.Amount, me, "Super App wallet top-up", "#/wallet",
+        var started = await payments.StartAsync(new PaymentRequest(PaymentPurpose.WalletTopUp, request.Amount, me, "Super Malaab wallet top-up", "#/wallet",
             IdempotencyKey: key), ct);
         await unitOfWork.SaveChangesAsync(ct);
         if (started.RedirectUrl is null)

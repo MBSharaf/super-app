@@ -24,7 +24,7 @@
   };
 
   SA.pages.myGames = {
-    title: 'My games — Super App',
+    title: 'My games — Super Malaab',
     async render() {
       const { joined, hosting } = await S.matches.mine();
       const asked = S.db.all('gameRequests').filter((r) => r.player.id === S.user.me().id).map((r) => r.matchId);

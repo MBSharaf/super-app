@@ -26,7 +26,7 @@ public sealed record CartLineDto(
     bool CanBuy,
     string? Problem);
 
-/// <summary>An applied promo code. Funding: SuperApp (Super App pays) or Store (the store pays, only its items).</summary>
+/// <summary>An applied promo code. Funding: SuperApp (Super Malaab pays) or Store (the store pays, only its items).</summary>
 public sealed record PromoDto(string Code, string? Label, string Funding, decimal Discount, bool FreeDelivery, string? StoreHandle);
 
 /// <summary>

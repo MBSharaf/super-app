@@ -13,7 +13,7 @@
     copyright: 'Uses artwork, characters or photos you don’t have the rights to.',
     trademark: 'Shows a club crest, brand logo or trademarked name.',
     quality: 'The file is too small or blurry to print well.',
-    offensive: 'Content isn’t allowed on Super App.',
+    offensive: 'Content isn’t allowed on Super Malaab.',
     details: 'Title, category or tags don’t match the design.',
   };
   const REPORT = { copyright: 'Copyright', trademark: 'Trademark', offensive: 'Offensive', other: 'Other' };
@@ -98,9 +98,9 @@
   });
 
   SA.pages.dashPodReview = C.guard({
-    title: 'Design review — Super App Admin',
+    title: 'Design review — Super Malaab Admin',
     render(ctx) {
-      if (!D().isAdmin()) return C.layout('pod-review', { title: 'Design review', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Super App admins only', text: 'This section is only available to the Super App team.' })}</div>` });
+      if (!D().isAdmin()) return C.layout('pod-review', { title: 'Design review', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Super Malaab admins only', text: 'This section is only available to the Super Malaab team.' })}</div>` });
       const tab = TABS.some(([k]) => k === ctx.query.tab) ? ctx.query.tab : 'queue';
       const queue = P().queue();
       const reports = P().reports().sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || b.createdAt - a.createdAt);

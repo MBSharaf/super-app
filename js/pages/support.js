@@ -1,6 +1,6 @@
 /**
  * Help & support: customers open requests from the site (#/support), partners, sellers and the print partner from their
- * dashboard (#/dash/support). The Super App team answers in the admin console.
+ * dashboard (#/dash/support). The Super Malaab team answers in the admin console.
  */
 (function (SA) {
   const { esc, timeAgo, fmtDate } = SA.core.utils;
@@ -9,11 +9,11 @@
   const store = SA.core.store;
   const toast = (m, type = 'success') => SA.ui.overlay.toast(m, { type });
 
-  const STATUS = { open: ['badge-info', 'Waiting for Super App'], pending: ['badge-blaze', 'Super App replied'], resolved: ['badge-turf', 'Resolved'] };
+  const STATUS = { open: ['badge-info', 'Waiting for Super Malaab'], pending: ['badge-blaze', 'Super Malaab replied'], resolved: ['badge-turf', 'Resolved'] };
   const list = (tickets, base) => tickets.length ? `<ul class="adm-tickets sup-list">${tickets.map((t) => { const [c, l] = STATUS[t.status]; return `<li><a href="${base}/${t.id}"><span class="bp-ico t-info">${icon(SUP().CATS[t.category]?.icon || 'message', 16)}</span><span class="grow"><b class="small">${esc(t.subject)}</b><span class="xs muted" style="display:block">${esc(t.id)} · ${timeAgo(t.updatedAt)}${t.refund ? ` · refunded ${t.refund.amount.toLocaleString()} EGP` : ''}</span></span><span class="badge ${c}">${l}</span></a></li>`; }).join('')}</ul>`
     : `<div class="panel">${SA.ui.c.empty({ icon: 'message', title: 'No requests yet', text: 'Questions, problems with a booking or an order — we usually reply within a few hours.' })}</div>`;
 
-  const thread = (t, viewer = 'customer') => `<ol class="adm-thread">${t.messages.filter((m) => viewer !== 'customer' || !m.private).map((m) => `<li class="by-${m.by === 'admin' || m.by === 'system' ? 'admin' : 'me'}"><div class="adm-bubble"><span class="xs strong">${m.by === 'admin' || m.by === 'system' ? 'Super App support' : viewer === 'party' && m.by === 'customer' ? `Customer · ${esc(m.name)}` : 'You'}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>`;
+  const thread = (t, viewer = 'customer') => `<ol class="adm-thread">${t.messages.filter((m) => viewer !== 'customer' || !m.private).map((m) => `<li class="by-${m.by === 'admin' || m.by === 'system' ? 'admin' : 'me'}"><div class="adm-bubble"><span class="xs strong">${m.by === 'admin' || m.by === 'system' ? 'Super Malaab support' : viewer === 'party' && m.by === 'customer' ? `Customer · ${esc(m.name)}` : 'You'}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>`;
 
   /** Choices the shopper can attach to a request */
   const refOptions = () => {
@@ -32,7 +32,7 @@
       ${withRef ? `<div class="field"><label for="sp-r">Which one? (optional)</label><select class="select" id="sp-r" name="ref"><option value="">—</option>${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === preset ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>` : ''}
       <div class="field span-2"><label for="sp-s">Subject</label><input class="input" id="sp-s" name="subject" maxlength="120" placeholder="e.g. The pitch was closed when we arrived" /><p class="field-error" data-err="subject"></p></div>
       <div class="field span-2"><label for="sp-t">Message</label><textarea class="input" id="sp-t" name="text" rows="5" maxlength="2000" placeholder="Tell us what happened. Include the time and anything the team should know."></textarea><p class="field-error" data-err="text"></p></div>
-      <div class="span-2 row-between wrap" style="--gap:10px"><span class="xs muted">${icon('shield', 12)} Only the Super App team sees this.</span><button class="btn btn-primary" type="submit">${icon('message', 15)} Send request</button></div>
+      <div class="span-2 row-between wrap" style="--gap:10px"><span class="xs muted">${icon('shield', 12)} Only the Super Malaab team sees this.</span><button class="btn btn-primary" type="submit">${icon('message', 15)} Send request</button></div>
     </form>`;
   };
   const bindForm = (el, { withRef, from, after }) => el.querySelector('[data-new]')?.addEventListener('submit', (e) => {
@@ -48,13 +48,13 @@
 
   /* ======================= Site ======================= */
   SA.pages.support = {
-    title: 'Help & support — Super App',
+    title: 'Help & support — Super Malaab',
     render(ctx) {
       const mine = SUP().mine();
       const preset = ctx.query.ref || '';
       const category = preset ? preset.split(':')[0] : '';
       return `<div class="container section-tight sup-page">
-        <div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Help & support</h1><p class="lead">Questions about a booking, an order, a printed item or your wallet — the Super App team answers here.</p></div>
+        <div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Help & support</h1><p class="lead">Questions about a booking, an order, a printed item or your wallet — the Super Malaab team answers here.</p></div>
         <a class="notice turf" href="#/help" style="margin-bottom:16px;display:flex">${icon('help', 18)}<span class="grow"><b>Most answers are in the Help center</b> — cancellations, refunds, delivery, packages, points and more.</span>${icon('arrowRight', 16)}</a>
         <div class="sup-grid">
           <section class="panel panel-pad"><h2 class="h3">${preset ? 'Report a problem' : 'New request'}</h2>${form({ withRef: true, preset, category })}</section>
@@ -64,7 +64,7 @@
     mount(el) { bindForm(el, { withRef: true, after: (t) => SA.core.router.go(`/support/${t.id}`) }); },
   };
   SA.pages.supportTicket = {
-    title: 'Request — Super App',
+    title: 'Request — Super Malaab',
     render(ctx) {
       const t = SUP().get(ctx.params.id);
       if (!t || t.from?.kind !== 'customer' || t.from.id !== store.get().user?.id) return `<div class="container section">${SA.ui.c.empty({ icon: 'message', title: 'Request not found', action: '<a class="btn btn-primary" href="#/support">Help & support</a>' })}</div>`;
@@ -90,27 +90,27 @@
   const fromMe = () => { const a = D().me(); return { kind: KIND[a.role] || 'partner', id: a.id, name: a.name }; };
   const dashSupport = {
     roles: () => true,
-    title: 'Help & support — Super App Partner',
+    title: 'Help & support — Super Malaab Partner',
     render() {
       const mine = SUP().forAccount(D().me().id);
       const about = SUP().about(D().me().id);
-      const body = `${about.length ? `<section class="dash-card"><h2 class="h4">${icon('alert', 16)} Customer disputes about you</h2><p class="small soft" style="margin-top:4px">Super App may ask you for details. Your answers go to the Super App team, who update the customer.</p><div style="margin-top:12px">${list(about, '#/dash/support')}</div></section>` : ''}
-        <div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">New request</h2><p class="small soft" style="margin-top:4px">Payouts, your account, the shop, the print queue — anything you need from the Super App team.</p>${form({ withRef: false })}</section>
+      const body = `${about.length ? `<section class="dash-card"><h2 class="h4">${icon('alert', 16)} Customer disputes about you</h2><p class="small soft" style="margin-top:4px">Super Malaab may ask you for details. Your answers go to the Super Malaab team, who update the customer.</p><div style="margin-top:12px">${list(about, '#/dash/support')}</div></section>` : ''}
+        <div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">New request</h2><p class="small soft" style="margin-top:4px">Payouts, your account, the shop, the print queue — anything you need from the Super Malaab team.</p>${form({ withRef: false })}</section>
         <section class="dash-card"><h2 class="h4" style="margin-bottom:12px">Your requests</h2>${list(mine, '#/dash/support')}</section></div>`;
-      return C().layout('support', { title: 'Help & support', subtitle: 'Talk to the Super App team', body });
+      return C().layout('support', { title: 'Help & support', subtitle: 'Talk to the Super Malaab team', body });
     },
     mount(el) { bindForm(el, { withRef: false, from: fromMe(), after: (t) => SA.core.router.go(`/dash/support/${t.id}`) }); },
   };
   const dashTicket = {
     roles: () => true,
-    title: 'Request — Super App Partner',
+    title: 'Request — Super Malaab Partner',
     render(ctx) {
       const t = SUP().get(ctx.params.id);
       const party = t && t.against === D().me().id && t.from?.id !== D().me().id;
       if (!t || (t.from?.id !== D().me().id && !party)) return C().layout('support', { title: 'Not found', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'message', title: 'Request not found', action: '<a class="btn btn-primary" href="#/dash/support">Help & support</a>' })}</div>` });
       const [c, l] = STATUS[t.status];
       const body = `<section class="dash-card"><p class="small muted">${esc(t.id)} · ${esc(SUP().CATS[t.category]?.label || '')} · <span class="badge ${c}">${l}</span></p>
-        ${party ? `<div class="notice gold" style="margin:10px 0">${icon('info', 16)}<span>A customer opened this about you. Only Super App sees your answers — they update the customer.</span></div>` : ''}${thread(t, party ? 'party' : 'customer')}
+        ${party ? `<div class="notice gold" style="margin:10px 0">${icon('info', 16)}<span>A customer opened this about you. Only Super Malaab sees your answers — they update the customer.</span></div>` : ''}${thread(t, party ? 'party' : 'customer')}
         ${t.status !== 'resolved' ? `<form class="stack" style="--gap:10px;margin-top:16px" data-reply novalidate><label class="field-label" for="ds-rp">Reply</label><textarea class="input" id="ds-rp" name="text" rows="3" maxlength="2000"></textarea><p class="field-error" data-err="text"></p><div class="row" style="justify-content:flex-end"><button class="btn btn-primary" type="submit">Send</button></div></form>` : `<p class="small muted" style="margin-top:14px">${icon('check', 14, 2.4)} Resolved.</p>`}</section>`;
       return C().layout('support', { title: esc(t.subject), actions: '<a class="btn btn-ghost btn-sm" href="#/dash/support">All requests</a>', body });
     },

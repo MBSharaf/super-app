@@ -6,7 +6,7 @@
   const S = SA.services;
 
   SA.pages.publishMatch = {
-    title: 'Post your match — Super App',
+    title: 'Post your match — Super Malaab',
     render(ctx) {
       const bookings = S.bookings.upcomingSync().filter((b) => !b.publishedMatchId);
       const head = c.pageHead({ crumbs: [['Find players', '#/players'], ['Post your match']], title: 'Post your match', text: 'Tell players what kind of game it is and how many you need. We’ll show it to players near the pitch.' });
@@ -44,7 +44,7 @@
             </section>
             <section class="panel panel-pad">
               <h2 class="h4">4. Who gets in?</h2>
-              <p class="small soft" style="margin-top:6px">Players pay their share online when they ask to join. Super App holds it until they’re in — declined players get it back.</p>
+              <p class="small soft" style="margin-top:6px">Players pay their share online when they ask to join. Super Malaab holds it until they’re in — declined players get it back.</p>
               <div class="stack" style="--gap:10px;margin-top:14px">
                 <label class="choice"><input type="radio" name="accept" value="manual" checked /><span class="radio-dot"></span><span class="grow"><b>I decide each request</b><span class="xs muted" style="display:block">See each player’s level, position, attendance and rating, then accept or decline.</span></span></label>
                 <label class="choice"><input type="radio" name="accept" value="auto" /><span class="radio-dot"></span><span class="grow"><b>Accept automatically</b><span class="xs muted" style="display:block">The first players to ask get the spots. You can still remove someone.</span></span></label>

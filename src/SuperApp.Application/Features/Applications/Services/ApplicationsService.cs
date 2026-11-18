@@ -69,7 +69,7 @@ public sealed class ApplicationsService(
         await EnsureAreaAsync(answers.AreaId, ct);
         if (await applications.FactoryNameTakenAsync(answers.FactoryName.Trim(), ct))
         {
-            throw Field("factoryName", "A factory with this name is already on Super App.");
+            throw Field("factoryName", "A factory with this name is already on Super Malaab.");
         }
         return await SubmitAsync(ApplicationType.Factory, answers.NationalId, answers with { NationalId = ApplicationJson.Mask(answers.NationalId) }, upload, ct);
     }
@@ -207,7 +207,7 @@ public sealed class ApplicationsService(
         var applicant = await applications.ApplicantAsync(app.ApplicantId, ct);
         var verb = resent ? "sent again" : "received";
         await notifier.NotifyUserAsync(app.ApplicantId, new NotificationMessage(NotificationCategory.Account,
-            $"We {verb} your {label} application", $"Application {app.Code} — the Super App team reviews it within 2 working days.", "#/account", NotificationTone.Info), ct);
+            $"We {verb} your {label} application", $"Application {app.Code} — the Super Malaab team reviews it within 2 working days.", "#/account", NotificationTone.Info), ct);
         await notifier.NotifyStaffAsync(permission, new NotificationMessage(NotificationCategory.Store,
             $"New {label} application", $"{applicant.FullName} · {app.Code}", "#/admin/approvals", NotificationTone.Warning), ct);
         await audit.LogAsync(AuditSystem.Site, resent ? "application.resent" : "application.submitted", $"{label} application {app.Code}", "Application", app.Code, ct: ct);

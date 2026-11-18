@@ -20,8 +20,8 @@
         <div class="grow"><b class="small">${esc(r.customer.name)}</b><span class="xs muted" style="display:block">${esc(r.pitchName)} · ${timeAgo(r.createdAt)}${r.bookingId ? ' · verified booking' : ''}</span></div>
         ${c.stars(r.rating, 14)}</div>
       <p class="rv-text">${esc(r.text)}</p>
-      ${r.hidden ? `<p class="xs" style="color:var(--danger)">${icon('eye', 12)} Hidden from the site by Super App</p>` : ''}
-      ${r.reported && !r.reported.resolved ? `<p class="xs rv-flag">${icon('flag', 12)} Reported to Super App — ${esc(r.reported.reason)}</p>` : ''}
+      ${r.hidden ? `<p class="xs" style="color:var(--danger)">${icon('eye', 12)} Hidden from the site by Super Malaab</p>` : ''}
+      ${r.reported && !r.reported.resolved ? `<p class="xs rv-flag">${icon('flag', 12)} Reported to Super Malaab — ${esc(r.reported.reason)}</p>` : ''}
       ${r.reply ? `<div class="rv-reply"><div class="row-between"><b class="xs">${icon('message', 13)} Your reply${r.reply.edited ? ' (edited)' : ''}</b><span class="xs muted">${timeAgo(r.reply.at)}</span></div>
           <p class="small" data-reply-text>${esc(r.reply.text)}</p>
           <div class="row" style="--gap:4px"><button class="link xs" data-edit>Edit</button><span class="muted xs">·</span><button class="link xs" data-del-reply style="color:var(--danger)">Delete</button></div></div>`
@@ -32,13 +32,13 @@
           <div class="row-between"><span class="xs muted">Shown under the review on your pitch page.</span><button class="btn btn-primary btn-sm" type="submit">${icon('message', 14)} Post reply</button></div></form>`}
       <div class="rv-foot">
         ${admin ? (r.hidden ? `<button class="btn btn-outline btn-sm" data-mod="show">Restore on site</button>` : `<button class="btn btn-ghost btn-sm" data-mod="hide" style="color:var(--danger)">${icon('eye', 14)} Hide from site</button>${r.reported && !r.reported.resolved ? '<button class="btn btn-outline btn-sm" data-mod="dismiss">Keep review</button>' : ''}`)
-          : !r.reported ? `<button class="link xs" data-report>${icon('flag', 12)} Report to Super App</button>` : ''}
+          : !r.reported ? `<button class="link xs" data-report>${icon('flag', 12)} Report to Super Malaab</button>` : ''}
       </div>
     </article>`;
   };
 
   SA.pages.dashReviews = C.guard({
-    title: 'Reviews — Super App Partner',
+    title: 'Reviews — Super Malaab Partner',
     render(ctx) {
       const q = ctx.query;
       const sc = C.scope();
@@ -77,7 +77,7 @@
           <div class="tabs" role="tablist">${tabs.map(([v, l]) => `<a class="tab" role="tab" href="${SA.core.router.href('/dash/reviews', { ...q, filter: v })}" aria-selected="${filter === v}">${l}</a>`).join('')}</div>
           <select class="select" data-pitch aria-label="Pitch"><option value="">All pitches</option>${pitches.map((p) => `<option value="${p.id}" ${q.pitch === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
         </div>
-        <div class="rv-list">${list.map((r, i) => card(r, admin, i)).join('') || `<div class="dash-card">${c.empty({ icon: 'star', title: filter === 'unreplied' ? 'All caught up' : 'No reviews here', text: filter === 'unreplied' ? 'You’ve replied to every review.' : 'Players can review a pitch after a game they booked on Super App.' })}</div>`}</div>`;
+        <div class="rv-list">${list.map((r, i) => card(r, admin, i)).join('') || `<div class="dash-card">${c.empty({ icon: 'star', title: filter === 'unreplied' ? 'All caught up' : 'No reviews here', text: filter === 'unreplied' ? 'You’ve replied to every review.' : 'Players can review a pitch after a game they booked on Super Malaab.' })}</div>`}</div>`;
       return C.layout('reviews', { title: 'Reviews', subtitle: 'What players say about your pitches — reply publicly from here', body });
     },
     mount(el, ctx) {
@@ -105,10 +105,10 @@
         if (mod) { D().moderateReview(id, mod.dataset.mod); SA.ui.overlay.toast({ hide: 'Review hidden from the site', show: 'Review restored', dismiss: 'Report closed — review kept' }[mod.dataset.mod]); SA.app.rerender(); return; }
         if (e.target.closest('[data-report]')) {
           SA.ui.overlay.open({
-            title: 'Report this review', subtitle: 'Super App checks reported reviews and removes ones that break the rules. Bad ratings alone aren’t removed.',
+            title: 'Report this review', subtitle: 'Super Malaab checks reported reviews and removes ones that break the rules. Bad ratings alone aren’t removed.',
             body: `<form id="rep" class="stack" style="--gap:10px" novalidate>${REASONS.map((x, k) => `<label class="choice"><input type="radio" name="reason" value="${esc(x)}" ${k === 0 ? 'checked' : ''} /><span>${esc(x)}</span></label>`).join('')}</form>`,
             footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" form="rep" type="submit">${icon('flag', 15)} Send report</button>`,
-            onMount(m, close) { m.querySelector('#rep').addEventListener('submit', (ev) => { ev.preventDefault(); D().reportReview(id, ev.target.reason.value); close(); SA.ui.overlay.toast('Reported — Super App will review it'); SA.app.rerender(); }); },
+            onMount(m, close) { m.querySelector('#rep').addEventListener('submit', (ev) => { ev.preventDefault(); D().reportReview(id, ev.target.reason.value); close(); SA.ui.overlay.toast('Reported — Super Malaab will review it'); SA.app.rerender(); }); },
           });
         }
       });

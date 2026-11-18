@@ -66,7 +66,7 @@ public sealed class MyBookingsService(
         var booking = await OwnAsync(code, ct);
         if (booking.Status == BookingStatus.Confirmed && Deposits.PaidOnline(booking) > 0)
         {
-            throw new ConflictException("Paid bookings are cancelled through a cancellation request — the Super App team replies within 2 hours.", "request_required");
+            throw new ConflictException("Paid bookings are cancelled through a cancellation request — the Super Malaab team replies within 2 hours.", "request_required");
         }
         await CancelCoreAsync(booking, "Cancelled by the customer", ct);
         return await ToResponseAsync(booking, withQr: false, ct);

@@ -1,7 +1,7 @@
 /**
  * Seed data for the seller layer: the print-on-demand catalogue (made and shipped by the print partner),
  * design categories, seller levels, and demo sellers with original artwork.
- * Prices are in EGP. `base` already includes Super App's margin; `partnerCost` is what the print partner charges us
+ * Prices are in EGP. `base` already includes Super Malaab's margin; `partnerCost` is what the print partner charges us
  * and is never shown to sellers. All values are copied into the platform DB once and the admin can edit them.
  */
 (function (SA) {

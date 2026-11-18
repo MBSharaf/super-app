@@ -104,7 +104,7 @@ public sealed class ApprovalsService(
     {
         var (_, _, label) = ApplicationJson.RulesOf(app.Type);
         var applicant = await identity.FindByIdAsync(app.ApplicantId, ct) ?? throw new NotFoundException();
-        var title = approved ? $"You are now a Super App {label}!" : $"Your {label} application needs changes";
+        var title = approved ? $"You are now a Super Malaab {label}!" : $"Your {label} application needs changes";
         var body = approved ? "Open your dashboard from your profile to get started." : $"Reason: {app.RejectReason}. Fix it and send it again from your profile.";
         await notifier.NotifyUserAsync(app.ApplicantId, new NotificationMessage(NotificationCategory.Account, title, body, "#/account",
             approved ? NotificationTone.Success : NotificationTone.Warning), ct);

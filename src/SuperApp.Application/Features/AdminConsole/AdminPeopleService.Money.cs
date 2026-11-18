@@ -88,12 +88,12 @@ public sealed partial class AdminPeopleService
         var (from, to) = close ? (PitchStatus.Live, PitchStatus.ClosedByAdmin) : (PitchStatus.ClosedByAdmin, PitchStatus.Live);
         if (pitch.Status != from)
         {
-            throw new BusinessRuleException(close ? "Only a live pitch can be closed." : "Only a pitch Super App closed can be reopened here.", "wrong_status");
+            throw new BusinessRuleException(close ? "Only a live pitch can be closed." : "Only a pitch Super Malaab closed can be reopened here.", "wrong_status");
         }
         pitch.Status = to;
         await unitOfWork.SaveChangesAsync(ct);
         var partner = pitch.Venue.Partner;
-        var (title, body) = close ? ($"{pitch.Name} was closed by Super App", reason!.Trim()) : ($"{pitch.Name} is open again", "Players can book it again.");
+        var (title, body) = close ? ($"{pitch.Name} was closed by Super Malaab", reason!.Trim()) : ($"{pitch.Name} is open again", "Players can book it again.");
         await notifier.NotifyUserAsync(partner.UserId, new NotificationMessage(NotificationCategory.Bookings, title, body, "#/dash/pitches",
             close ? NotificationTone.Danger : NotificationTone.Success), ct);
         await audit.LogAsync(AuditSystem.Admin, close ? "pitch.closed_by_admin" : "pitch.reopened_by_admin", $"{title}{(close ? $": {body}" : "")}", "Pitch", pitch.Slug, ct: ct);

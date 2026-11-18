@@ -17,7 +17,7 @@ public interface IStoreScopes
     /// <summary>The seller's store; <paramref name="products"/> = own products, which need the "store" or "both" mode (422 own_products_off).</summary>
     Task<StoreScope> SellerAsync(bool products, CancellationToken ct);
 
-    /// <summary>The Super App Store, for staff with store.official (checked on the endpoint).</summary>
+    /// <summary>The Super Malaab Store, for staff with store.official (checked on the endpoint).</summary>
     Task<StoreScope> OfficialAsync(CancellationToken ct);
 }
 
@@ -53,6 +53,6 @@ public sealed class StoreScopes(IPartnerAccess partners, ISellerAccess sellers, 
     public async Task<StoreScope> OfficialAsync(CancellationToken ct)
     {
         var store = await stores.OfficialStoreAsync(ct) ?? throw new NotFoundException("The official store is not set up yet.");
-        return new StoreScope(store.Id, store.Type, null, store.Handle, store.Name, AuditSystem.Admin, "Super App");
+        return new StoreScope(store.Id, store.Type, null, store.Handle, store.Name, AuditSystem.Admin, "Super Malaab");
     }
 }

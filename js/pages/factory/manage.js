@@ -43,7 +43,7 @@
     const p = SH().current();
     const tabs = [['pickup', 'Waiting for pickup', lists.pickup.length], ['partial', 'Partly packed', partial.length], ['transit', 'On the way', lists.transit.length], ['done', 'Delivered & refused', lists.done.length]];
     const body = `
-      <section class="dash-card fac-courier"><span class="fac-courier-ico">${icon('truck', 22)}</span><div class="grow"><b>${esc(p.name)}</b>${SH().cfg().mode === 'test' ? ' <span class="badge badge-gold">Test</span>' : ''}<p class="xs muted">Super App’s courier. When every item of an order is packed, the parcel is booked and a pickup is requested automatically — print the label and stick it on.</p></div></section>
+      <section class="dash-card fac-courier"><span class="fac-courier-ico">${icon('truck', 22)}</span><div class="grow"><b>${esc(p.name)}</b>${SH().cfg().mode === 'test' ? ' <span class="badge badge-gold">Test</span>' : ''}<p class="xs muted">Super Malaab’s courier. When every item of an order is packed, the parcel is booked and a pickup is requested automatically — print the label and stick it on.</p></div></section>
       <div class="chips" role="tablist" aria-label="Shipments">${tabs.map(([k, l, n]) => `<a class="chip" role="tab" href="#/factory/shipping?tab=${k}" aria-pressed="${tab === k}">${l}${n ? ` <span class="chip-count">${n}</span>` : ''}</a>`).join('')}</div>
       ${tab === 'partial' ? (partial.length ? `<div class="pr-list">${partial.map(([oid, os]) => `<article class="dash-card"><div class="row-between"><b class="num">${esc(oid)}</b><span class="xs muted">${os.filter((o) => o.stage === 'ready').length} of ${os.length} packed</span></div><ul class="fac-list">${os.map((o) => `<li><a class="row-between" href="#/factory/job/${o.id}"><span class="small num">${o.id} · ${o.qty} × ${esc(o.color)} ${esc(o.size)}</span>${FC().stageBadge(o.stage)}</a></li>`).join('')}</ul><p class="xs muted">The courier is booked when the last item is packed.</p></article>`).join('')}</div>` : `<div class="dash-card">${c.empty({ icon: 'package', title: 'No half-packed orders', text: 'Orders with several items wait here until every item is packed.' })}</div>`)
         : lists[tab].length ? `<div class="pr-list">${lists[tab].slice(0, 60).map(shipCard).join('')}</div>` : `<div class="dash-card">${c.empty({ icon: 'truck', title: tab === 'pickup' ? 'Nothing waiting for the courier' : 'Nothing here', text: 'Packed orders appear here with their airway bill and label.' })}</div>`}`;
@@ -101,32 +101,32 @@
     const rows = [
       ...m.orders.slice(0, 200).map((o) => ({ at: F().stepAt(o, 'ready') || o.placedAt, text: `${o.id} · ${o.qty} × ${o.title} (${o.color}, ${o.size})`, amount: o.partnerCost * o.qty })),
       ...m.ledger.map((l) => ({ at: l.createdAt, text: `${l.type === 'deduction' ? 'Deduction' : 'Bonus'} — ${l.reason}`, amount: l.type === 'deduction' ? -l.amount : l.amount, tone: l.type })),
-      ...m.payouts.map((p) => ({ at: p.paidAt || p.createdAt, text: `Payment from Super App · ${p.ref || p.method}`, amount: -p.amount, tone: 'payout' })),
+      ...m.payouts.map((p) => ({ at: p.paidAt || p.createdAt, text: `Payment from Super Malaab · ${p.ref || p.method}`, amount: -p.amount, tone: 'payout' })),
     ].sort((a, b) => b.at - a.at);
     const body = `
       <div class="kpi-grid">
-        ${K().kpi({ label: 'Super App owes you', value: money(m.owed), sub: 'paid every week by bank transfer', ic: 'wallet', tone: 'k-turf' })}
+        ${K().kpi({ label: 'Super Malaab owes you', value: money(m.owed), sub: 'paid every week by bank transfer', ic: 'wallet', tone: 'k-turf' })}
         ${K().kpi({ label: 'Earned (not settled yet)', value: money(m.earned), sub: `${fmtNum(m.items)} jobs packed`, ic: 'package' })}
         ${K().kpi({ label: 'Deductions', value: money(m.deductions), sub: 'quality complaints', ic: 'alert', tone: m.deductions ? 'k-danger' : '' })}
         ${K().kpi({ label: 'Paid to you', value: money(m.paid), ic: 'check' })}
       </div>
-      <section class="dash-card"><h2 class="h4">How you are paid</h2><p class="small muted">You earn your agreed price for every item you pack and hand to the courier — including parcels the customer refuses (Super App covers those). Reprints after a failed quality check are on the factory. A quality complaint from a customer can be deducted. Prices: <a class="link" href="#/factory/settings">Settings → Prices</a>.</p></section>
+      <section class="dash-card"><h2 class="h4">How you are paid</h2><p class="small muted">You earn your agreed price for every item you pack and hand to the courier — including parcels the customer refuses (Super Malaab covers those). Reprints after a failed quality check are on the factory. A quality complaint from a customer can be deducted. Prices: <a class="link" href="#/factory/settings">Settings → Prices</a>.</p></section>
       <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Statement</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Item</th><th class="r">Amount</th></tr></thead><tbody>
         ${rows.slice(0, 120).map((r) => `<tr><td class="xs muted">${fmtDate(new Date(r.at))}</td><td class="small">${esc(r.text)}</td><td class="r num ${r.amount < 0 ? 'neg' : ''}" style="${r.tone === 'deduction' ? 'color:var(--danger)' : ''}">${r.amount < 0 ? '−' : ''}${money(Math.abs(r.amount))}</td></tr>`).join('') || '<tr><td colspan="3" class="small muted">Nothing yet.</td></tr>'}
       </tbody></table></div></section>`;
-    return FC().layout('money', { title: 'Money', subtitle: 'Between your factory and Super App', actions: `<button class="btn btn-outline btn-sm" data-xls>${icon('file', 14)} Export Excel</button>`, body });
+    return FC().layout('money', { title: 'Money', subtitle: 'Between your factory and Super Malaab', actions: `<button class="btn btn-outline btn-sm" data-xls>${icon('file', 14)} Export Excel</button>`, body });
   }, mount(el, ctx, s) {
     el.querySelector('[data-xls]')?.addEventListener('click', () => {
       const m = F().money(s.factoryId);
       const rows = [
         ...m.orders.map((o) => [new Date(F().stepAt(o, 'ready') || o.placedAt).toISOString().slice(0, 10), 'Job packed', o.id, `${o.qty} × ${o.title} (${o.color}, ${o.size})`, o.product?.name || o.catalogId, o.partnerCost * o.qty]),
         ...m.ledger.map((l) => [new Date(l.createdAt).toISOString().slice(0, 10), l.type === 'deduction' ? 'Deduction' : 'Bonus', l.jobId || '', l.reason, '', l.type === 'deduction' ? -l.amount : l.amount]),
-        ...m.payouts.map((p) => [new Date(p.paidAt || p.createdAt).toISOString().slice(0, 10), 'Payment from Super App', p.ref || p.id, p.method || '', '', -p.amount]),
+        ...m.payouts.map((p) => [new Date(p.paidAt || p.createdAt).toISOString().slice(0, 10), 'Payment from Super Malaab', p.ref || p.id, p.method || '', '', -p.amount]),
       ];
       SA.pages.dashCommon.xlsx(`factory-money-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
-        title: `${s.factory.name} — Money with Super App`, subtitle: `Owed now ${m.owed.toLocaleString()} EGP`,
+        title: `${s.factory.name} — Money with Super Malaab`, subtitle: `Owed now ${m.owed.toLocaleString()} EGP`,
         data: { name: 'Statement', columns: [{ header: 'Date', width: 12 }, { header: 'Type', width: 22 }, { header: 'Reference', width: 14 }, { header: 'Details', width: 40 }, { header: 'Product', width: 18 }, { header: 'Amount', width: 14, type: 'money' }], rows },
-        kpis: [{ label: 'Balance (earned − deductions − paid)', col: 'Amount', type: 'money' }, { label: 'Earned from jobs', f: 'SUMIF', col: 'Type', match: 'Job packed', sum: 'Amount', type: 'money' }, { label: 'Deductions', f: 'SUMIF', col: 'Type', match: 'Deduction', sum: 'Amount', type: 'money' }, { label: 'Paid by Super App', f: 'SUMIF', col: 'Type', match: 'Payment from Super App', sum: 'Amount', type: 'money' }, { label: 'Jobs', f: 'COUNTIF', col: 'Type', match: 'Job packed' }],
+        kpis: [{ label: 'Balance (earned − deductions − paid)', col: 'Amount', type: 'money' }, { label: 'Earned from jobs', f: 'SUMIF', col: 'Type', match: 'Job packed', sum: 'Amount', type: 'money' }, { label: 'Deductions', f: 'SUMIF', col: 'Type', match: 'Deduction', sum: 'Amount', type: 'money' }, { label: 'Paid by Super Malaab', f: 'SUMIF', col: 'Type', match: 'Payment from Super Malaab', sum: 'Amount', type: 'money' }, { label: 'Jobs', f: 'COUNTIF', col: 'Type', match: 'Job packed' }],
         groups: [{ title: 'Earned by product', by: 'Product', sum: 'Amount', chart: 'bar', type: 'money' }, { title: 'By day', by: 'Date', sum: 'Amount', chart: 'line', type: 'money', limit: 62 }],
       }));
     });
@@ -193,14 +193,14 @@
           <div class="field"><label for="fc-sla">Hours to pack and hand over</label><input class="input" id="fc-sla" name="slaHours" type="number" min="12" max="120" value="${f.slaHours}" /><p class="field-error" data-err="slaHours"></p></div>
           <div class="span-2"><button class="btn btn-primary btn-sm" type="submit">Save</button></div>
         </form></section>
-      <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Products & prices</h2><p class="xs muted" style="padding:4px 18px 0">Your price per piece (DTF, front print; a back print adds a little). Pause a product you can’t make for now — its designs leave the shop until you turn it back on. Price changes need Super App’s approval.</p>
+      <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Products & prices</h2><p class="xs muted" style="padding:4px 18px 0">Your price per piece (DTF, front print; a back print adds a little). Pause a product you can’t make for now — its designs leave the shop until you turn it back on. Price changes need Super Malaab’s approval.</p>
         <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Product</th><th class="r">Your price</th><th>Status</th><th></th></tr></thead><tbody>
         ${list.map((p) => { const paused = (f.pausedProducts || []).includes(p.id); return `<tr class="${paused ? 'is-dim' : ''}"><td class="small"><b>${esc(p.name)}</b><span class="xs muted" style="display:block"><span>${p.colors.length} colours</span> · ${p.sizes.join(', ')}</span></td>
           <td class="r num">${money(p.partnerCost)}${p.pending ? `<span class="xs" style="display:block;color:var(--gold-ink, #8a6100)"><span>Waiting for approval:</span> ${money(p.pending.to)}</span>` : ''}</td>
           <td>${p.status !== 'active' ? '<span class="badge">Off in catalogue</span>' : paused ? '<span class="badge badge-danger">Paused</span>' : '<span class="badge badge-turf">Making</span>'}</td>
           <td class="r"><button class="btn btn-ghost btn-sm" data-pause="${p.id}" data-on="${paused ? '' : '1'}">${paused ? 'Resume' : 'Pause'}</button><button class="btn btn-ghost btn-sm" data-price="${p.id}">Change price</button></td></tr>`; }).join('')}
         </tbody></table></div></section>
-      <section class="dash-card"><h2 class="h4">Factory</h2><dl class="fac-dl"><dt>Name</dt><dd>${esc(f.name)}</dd><dt>Address</dt><dd>${esc(f.address)}</dd><dt>Phone</dt><dd>${esc(f.phone)}</dd><dt>Printing</dt><dd>${f.techniques.join(', ')}</dd></dl><p class="xs muted">To change these, contact Super App.</p></section>` : ''}`;
+      <section class="dash-card"><h2 class="h4">Factory</h2><dl class="fac-dl"><dt>Name</dt><dd>${esc(f.name)}</dd><dt>Address</dt><dd>${esc(f.address)}</dd><dt>Phone</dt><dd>${esc(f.phone)}</dd><dt>Printing</dt><dd>${f.techniques.join(', ')}</dd></dl><p class="xs muted">To change these, contact Super Malaab.</p></section>` : ''}`;
     return FC().layout('settings', { title: 'Settings', subtitle: esc(f.name), body });
   }, mount(el, ctx, s) {
     el.querySelector('[data-cap]')?.addEventListener('submit', (e) => {
@@ -219,9 +219,9 @@
       const pr = e.target.closest('[data-price]');
       if (pr) {
         const p = db().find('podCatalog', pr.dataset.price);
-        const r = await SA.pages.adminCommon.reason({ title: `Change the price · ${esc(p.name)}`, text: `Now ${p.partnerCost} EGP per piece. Super App reviews the request.`, label: 'Why? (optional)', required: false, confirmLabel: 'Send request',
+        const r = await SA.pages.adminCommon.reason({ title: `Change the price · ${esc(p.name)}`, text: `Now ${p.partnerCost} EGP per piece. Super Malaab reviews the request.`, label: 'Why? (optional)', required: false, confirmLabel: 'Send request',
           extra: `<div class="field"><label for="pr-v">New price per piece (EGP)</label><input class="input" id="pr-v" name="cost" type="number" min="1" value="${p.partnerCost}" /></div>` });
-        if (r) run(() => F().requestPrice(p.id, r.cost, r.reason), 'Request sent to Super App');
+        if (r) run(() => F().requestPrice(p.id, r.cost, r.reason), 'Request sent to Super Malaab');
       }
     });
   } };

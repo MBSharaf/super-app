@@ -4,18 +4,18 @@
   Object.assign(D.strings, {
     /* ---------- R6.8 browser pass ---------- */
     'A problem with the item? Return it within 24 hours of delivery': 'فيه مشكلة في المنتج؟ رجّعه خلال 24 ساعة من التوصيل',
-    'Checked by Super App before it went on sale': 'سوبر آب راجعه قبل ما يتعرض للبيع',
+    'Checked by Super Malaab before it went on sale': 'سوبر ملعب راجعه قبل ما يتعرض للبيع',
     'No reviews yet': 'مفيش تقييمات لسه',
     'On hold (until 24 hours after delivery)': 'محجوز (لحد 24 ساعة بعد التوصيل)',
     'Your store': 'متجرك',
     'Orders (30 days)': 'الأوردرات (30 يوم)',
     'You can add products once you’re approved.': 'تقدر تضيف منتجات أول ما تتقبل.',
     /* ---------- Paused parts ---------- */
-    'The Super App store is coming soon': 'متجر سوبر آب جاي قريب',
+    'The Super Malaab store is coming soon': 'متجر سوبر ملعب جاي قريب',
     'We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.': 'بنجهّز المتجر وتصميمات البايعين والتوصيل. لحد ما يجهز، احجز ملعب أو انضم لماتش.',
     'Print on demand is coming soon': 'الطباعة حسب الطلب جاية قريب',
     'Sellers sell their own products for now. Printing your designs on tees and hoodies comes later.': 'البايعين بيبيعوا منتجاتهم بس دلوقتي. طباعة تصميماتك على التيشيرتات والهوديز جاية بعدين.',
-    /* ---------- Sell on Super App (own products only) ---------- */
+    /* ---------- Sell on Super Malaab (own products only) ---------- */
     'Sell products you already have. You keep the stock, our courier delivers every order, and we take 5% of each sale.': 'بيع منتجات عندك. المخزون عندك، والمندوب بتاعنا بيوصّل كل أوردر، وبناخد 5% من كل عملية بيع.',
     'Sell your products': 'بيع منتجاتك',
     'Open a store for the sports gear you already have. Customers pay online, our courier delivers, and your money lands in your wallet.': 'افتح متجر للأدوات الرياضية اللي عندك. العملاء بيدفعوا أونلاين، والمندوب بتاعنا بيوصّل، وفلوسك بتنزل في محفظتك.',
@@ -25,7 +25,7 @@
     'Your money becomes available 24 hours after delivery (the return window).': 'فلوسك بتبقى متاحة بعد 24 ساعة من التسليم (مدة المرتجعات).',
     'Only sell genuine products you own and can hand to our courier.': 'بيع بس منتجات أصلية بتاعتك وتقدر تسلّمها للمندوب بتاعنا.',
     'No fakes or copies of other brands. Every product is reviewed before it goes on sale.': 'ممنوع التقليد أو نسخ الماركات التانية. كل منتج بيتراجع قبل ما يتعرض للبيع.',
-    'Customers pay online. Our courier collects from you and delivers. Super App takes 5% of each sale.': 'العملاء بيدفعوا أونلاين. المندوب بتاعنا بيستلم منك ويوصّل. سوبر آب بياخد 5% من كل عملية بيع.',
+    'Customers pay online. Our courier collects from you and delivers. Super Malaab takes 5% of each sale.': 'العملاء بيدفعوا أونلاين. المندوب بتاعنا بيستلم منك ويوصّل. سوبر ملعب بياخد 5% من كل عملية بيع.',
     'A product with a problem can be returned within 24 hours of delivery — the refund and the return delivery are on you.': 'المنتج اللي فيه مشكلة ممكن يرجع خلال 24 ساعة من التسليم — والاسترجاع وشحن الرجوع عليك.',
     'We review your store within one working day.': 'بنراجع متجرك خلال يوم عمل واحد.',
     'Each product is checked before it goes on sale.': 'كل منتج بيتراجع قبل ما يتعرض للبيع.',
@@ -38,23 +38,23 @@
     'This order was cancelled.': 'الطلب ده اتلغى.',
     /* ---------- Returns (an item with a problem, 24 hours) ---------- */
     'Within {0} hours of delivery — {1} hour(s) left.': 'خلال {0} ساعة من التسليم — فاضل {1} ساعة.',
-    'Returns are for an item with a problem, within 24 hours of delivery. Our courier collects it and the refund goes to your Super App wallet.': 'المرتجعات للمنتج اللي فيه مشكلة بس، خلال 24 ساعة من التسليم. المندوب بتاعنا بيستلمه والفلوس بترجع على محفظة سوبر آب بتاعتك.',
+    'Returns are for an item with a problem, within 24 hours of delivery. Our courier collects it and the refund goes to your Super Malaab wallet.': 'المرتجعات للمنتج اللي فيه مشكلة بس، خلال 24 ساعة من التسليم. المندوب بتاعنا بيستلمه والفلوس بترجع على محفظة سوبر ملعب بتاعتك.',
     'Choose what is wrong with the item.': 'اختار إيه المشكلة في المنتج.',
     'e.g. The seam came apart on the first day': 'مثلًا: الخياطة فكّت من أول يوم',
-    'Super App courier': 'مندوب سوبر آب',
+    'Super Malaab courier': 'مندوب سوبر ملعب',
     'The 24-hour window closed or it is already being returned': 'مدة الـ 24 ساعة خلصت أو المنتج بيرجع بالفعل',
     /* ---------- Seller store products (each one reviewed) ---------- */
     'Waiting for review': 'مستني المراجعة',
     'Fix and send again': 'عدّله وابعته تاني',
-    'Super App checks every product before it goes on sale': 'سوبر آب بيراجع كل منتج قبل ما يتعرض للبيع',
-    'Super App checks each product before it goes on sale — usually within one working day.': 'سوبر آب بيراجع كل منتج قبل ما يتعرض للبيع — غالبًا خلال يوم عمل واحد.',
-    'Sent to Super App — it goes on sale once approved': 'اتبعت لسوبر آب — هيتعرض للبيع أول ما يتوافق عليه',
-    /* ---------- Store orders and returns (Super App courier) ---------- */
-    'Super App decides returns for its own store (and printed designs). Each seller decides returns of their products.': 'سوبر آب بيقرر في مرتجعات متجره (والتصميمات المطبوعة). وكل بايع بيقرر في مرتجعات منتجاته.',
-    'Hand to Super App courier': 'سلّمه لمندوب سوبر آب',
-    'Handed to Super App’s courier — the customer has the tracking number': 'اتسلّم لمندوب سوبر آب — العميل معاه رقم التتبع',
+    'Super Malaab checks every product before it goes on sale': 'سوبر ملعب بيراجع كل منتج قبل ما يتعرض للبيع',
+    'Super Malaab checks each product before it goes on sale — usually within one working day.': 'سوبر ملعب بيراجع كل منتج قبل ما يتعرض للبيع — غالبًا خلال يوم عمل واحد.',
+    'Sent to Super Malaab — it goes on sale once approved': 'اتبعت لسوبر ملعب — هيتعرض للبيع أول ما يتوافق عليه',
+    /* ---------- Store orders and returns (Super Malaab courier) ---------- */
+    'Super Malaab decides returns for its own store (and printed designs). Each seller decides returns of their products.': 'سوبر ملعب بيقرر في مرتجعات متجره (والتصميمات المطبوعة). وكل بايع بيقرر في مرتجعات منتجاته.',
+    'Hand to Super Malaab courier': 'سلّمه لمندوب سوبر ملعب',
+    'Handed to Super Malaab’s courier — the customer has the tracking number': 'اتسلّم لمندوب سوبر ملعب — العميل معاه رقم التتبع',
     'Available in your wallet 24 hours after delivery (the return window).': 'هتبقى متاحة في محفظتك بعد 24 ساعة من التسليم (مدة المرتجعات).',
-    'Super App’s courier marks the order delivered when it reaches the customer.': 'مندوب سوبر آب هو اللي بيعلّم إن الطلب اتسلّم لما يوصل للعميل.',
+    'Super Malaab’s courier marks the order delivered when it reaches the customer.': 'مندوب سوبر ملعب هو اللي بيعلّم إن الطلب اتسلّم لما يوصل للعميل.',
     'Customers can return a product with a problem within 24 hours of delivery. You pay the refund and the return delivery.': 'العملاء يقدروا يرجّعوا المنتج اللي فيه مشكلة خلال 24 ساعة من التسليم. الاسترجاع وشحن الرجوع عليك.',
     'Answer within 2 working days · {0}-hour return window': 'رد خلال يومين عمل · مدة المرتجعات {0} ساعة',
     /* ---------- Seller wallet ---------- */
@@ -72,6 +72,6 @@
     'e.g. The photos don’t show the product clearly': 'مثلًا: الصور مش موضحة المنتج كويس',
     'Approved — it is on sale': 'اتوافق عليه — معروض للبيع دلوقتي',
     'Sent back to the store': 'رجع للمتجر',
-    'Check new pitches, sellers and products before they go live on Super App': 'راجع الملاعب والبايعين والمنتجات الجديدة قبل ما تظهر على سوبر آب',
+    'Check new pitches, sellers and products before they go live on Super Malaab': 'راجع الملاعب والبايعين والمنتجات الجديدة قبل ما تظهر على سوبر ملعب',
   });
 })(window.SA);

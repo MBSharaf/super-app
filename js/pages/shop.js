@@ -19,7 +19,7 @@
   };
 
   SA.pages.shop = {
-    title: 'Shop — Super App',
+    title: 'Shop — Super Malaab',
     async render(ctx) {
       const f = { ...ctx.query };
       const items = await S.shop.list(f);
@@ -43,7 +43,7 @@
         <div class="shop-hero-art"><img src="${media.u('photo-1579952363873-27f3bade9f55', 1000, 1000)}" alt="Football boot resting on a match ball" /><span class="badge badge-glass shop-hero-tag">${icon('truck', 13)} Next-day delivery in Cairo</span></div>
       </section>
       <section class="container"><div class="cat-strip">${S.shop.categories().map((cc) => `<a class="cat-tile" href="#/shop?cat=${cc.id}"><span class="media"><img src="${media.u(catImg[cc.id], 300, 300)}" alt="" loading="lazy" /></span><span class="small strong">${esc(cc.name)}</span></a>`).join('')}</div></section>`
-      : shopStore ? `<section class="container storefront"><div class="sf-cover" style="background-image:url('${media.u(shopStore.cover, 1600, 560)}')"></div><div class="sf-info"><span class="sf-logo">${shopStore.logo ? `<img src="${shopStore.logo}" alt="" />` : icon('bag', 26)}</span><div class="grow"><span class="xs muted">Store on Super App${shopStore.official ? ' · Official' : ''}</span><h1 class="h1">${esc(shopStore.name)}</h1><p class="soft">${esc(shopStore.description)}</p></div></div></section>`
+      : shopStore ? `<section class="container storefront"><div class="sf-cover" style="background-image:url('${media.u(shopStore.cover, 1600, 560)}')"></div><div class="sf-info"><span class="sf-logo">${shopStore.logo ? `<img src="${shopStore.logo}" alt="" />` : icon('bag', 26)}</span><div class="grow"><span class="xs muted">Store on Super Malaab${shopStore.official ? ' · Official' : ''}</span><h1 class="h1">${esc(shopStore.name)}</h1><p class="soft">${esc(shopStore.description)}</p></div></div></section>`
       : c.pageHead({ crumbs: [['Shop', '#/shop'], [cat ? cat.name : f.tag ? `#${f.tag}` : f.q ? `Search “${f.q}”` : f.sale ? 'Sale' : 'All products']], title: cat ? esc(cat.name) : f.tag ? `#${esc(f.tag)}` : f.q ? `Results for “${esc(f.q)}”` : f.sale ? 'Sale' : 'All products' })}
       ${designStrip}${dcatBar}
 

@@ -6,7 +6,7 @@ namespace SuperApp.Domain.Entities.Support;
 
 /// <summary>
 /// A customer's request to cancel something they paid for (owner's rule, 2026-11-07): the customer can't cancel a paid
-/// booking, package, order or game place directly — the request gets its own number (CX-…), the Super App team (or the
+/// booking, package, order or game place directly — the request gets its own number (CX-…), the Super Malaab team (or the
 /// AI agent) answers within 2 hours, and only an approval cancels it and refunds. Table <c>support.CancellationRequests</c>.
 /// </summary>
 public class CancellationRequest : BaseEntity, IHasRowVersion

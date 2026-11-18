@@ -61,10 +61,10 @@ public sealed class SupportRepository(AppDbContext db) : ISupportRepository
                 m.Id, m.SenderId, Sender = m.Sender.FullName, FromTeam = m.SenderId != m.Ticket.OpenedById, m.Body, m.IsInternalNote, m.CreatedAt, m.ReadAt,
                 Files = db.Set<TicketAttachment>().Where(a => a.MessageId == m.Id).Select(a => a.FileId).ToList(),
             }).ToListAsync(ct);
-        var messages = rows.Select(m => new TicketMessageDto(m.Id, m.FromTeam ? (team ? m.Sender : "Super App") : m.Sender, m.FromTeam, m.SenderId == viewer, m.Body,
+        var messages = rows.Select(m => new TicketMessageDto(m.Id, m.FromTeam ? (team ? m.Sender : "Super Malaab") : m.Sender, m.FromTeam, m.SenderId == viewer, m.Body,
             m.IsInternalNote, m.CreatedAt, m.ReadAt, m.Files.Select(f => new AttachmentDto(f, $"/api/v1/files/{f}")).ToList())).ToList();
         // The auto-reply ("we reply within 24 hours") stands right after the first message (FR-SUP-04)
-        messages.Insert(Math.Min(1, messages.Count), new TicketMessageDto(0, "Super App", true, false, SupportService.AutoReply, false, ticket.CreatedAt, null, []));
+        messages.Insert(Math.Min(1, messages.Count), new TicketMessageDto(0, "Super Malaab", true, false, SupportService.AutoReply, false, ticket.CreatedAt, null, []));
         return ticket with { Messages = messages };
     }
 

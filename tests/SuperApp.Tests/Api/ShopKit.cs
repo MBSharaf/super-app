@@ -101,8 +101,8 @@ public sealed class ShopKit(AccountsApiFactory api)
     }
 
     /// <summary>
-    /// A store packs and ships its part, then Super App's courier carries the parcel to the customer (shipping is through
-    /// Super App, so the courier — here the admin's simulate tool — marks it delivered, not the store).
+    /// A store packs and ships its part, then Super Malaab's courier carries the parcel to the customer (shipping is through
+    /// Super Malaab, so the courier — here the admin's simulate tool — marks it delivered, not the store).
     /// </summary>
     public async Task DeliverAsync(ApiClient store, string order, string area = "partner")
     {
@@ -124,7 +124,7 @@ public sealed class ShopKit(AccountsApiFactory api)
         (await db.Set<ProductVariant>().Where(v => v.Product.Slug == slug).OrderBy(v => v.Id).Select(v => new { v.Id, v.Stock }).ToListAsync())
             .Select(v => (v.Id, v.Stock)).ToList());
 
-    /// <summary>Super App approves a product a store asked to sell (it goes on sale).</summary>
+    /// <summary>Super Malaab approves a product a store asked to sell (it goes on sale).</summary>
     public async Task ApproveAsync(long productId)
     {
         var approved = await (await api.CeoAsync()).PostAsync($"/api/v1/admin/products/{productId}/approve");

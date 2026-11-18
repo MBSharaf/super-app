@@ -10,7 +10,7 @@
   const liveHold = async (p, { date, hour, dur }, weeks = 0) => {
     if (!S.session.loaded()) await S.session.load();
     const back = `<a class="btn btn-outline" href="#/pitches/${p.id}?date=${date}">Back to ${esc(p.name)}</a>`;
-    if (!S.session.me()) return c.empty({ icon: 'lock', title: 'Sign in to book', text: 'Bookings are linked to your Super App account.', action: `<a class="btn btn-primary" href="#/auth/sign-in?next=${encodeURIComponent(SA.core.router.location())}">Sign in</a> ${back}` });
+    if (!S.session.me()) return c.empty({ icon: 'lock', title: 'Sign in to book', text: 'Bookings are linked to your Super Malaab account.', action: `<a class="btn btn-primary" href="#/auth/sign-in?next=${encodeURIComponent(SA.core.router.location())}">Sign in</a> ${back}` });
     try { return weeks ? await S.bookings.quoteSeriesExact({ pitchId: p.id, date, hour: +hour, duration: +dur || 1, weeks }) : await S.bookings.hold({ pitchId: p.id, date, hour: +hour, duration: +dur || 1 }); } catch (err) {
       return c.empty({ icon: 'calendar', title: 'This time isn’t available', text: err.message, action: back });
     }
@@ -18,7 +18,7 @@
 
   /* -------- Review & pay: #/book/:id?date&hour&dur[&weeks] -------- */
   SA.pages.bookingCheckout = {
-    title: 'Review booking — Super App',
+    title: 'Review booking — Super Malaab',
     async render(ctx) {
       const p = await S.pitches.get(ctx.params.id);
       const { date, hour, dur } = ctx.query;
@@ -127,7 +127,7 @@
       <button class="btn btn-primary" type="submit">${icon('star', 16)} Post review</button></form>`;
 
   SA.pages.bookingDetail = {
-    title: 'Booking — Super App',
+    title: 'Booking — Super Malaab',
     async render(ctx) {
       const b = await S.bookings.get(ctx.params.id);
       await S.cancellations.ready?.();
@@ -191,7 +191,7 @@
         ${pk ? `<section class="panel panel-pad pkg-panel">
           <div class="row-between wrap" style="--gap:8px"><h2 class="h4">${icon('repeat', 18)} Your weekly package</h2><span class="xs muted num">${esc(b.seriesId)}</span></div>
           <div class="pkg-stats"><span><b class="num">${pk.played}</b><span class="xs">Played</span></span><span class="is-bad"><b class="num">${pk.missed}</b><span class="xs">Missed</span></span><span><b class="num">${pk.left}</b><span class="xs">Left</span></span><span><b class="num">${pk.total}</b><span class="xs">In the package</span></span></div>
-          <p class="xs muted">${icon('info', 12)} A game you don’t come to counts as used. Can’t make it? Cancel it before kick-off from its page.${pk.exception ? ' One missed game was excused by Super App — a make-up game was added.' : ''}</p>
+          <p class="xs muted">${icon('info', 12)} A game you don’t come to counts as used. Can’t make it? Cancel it before kick-off from its page.${pk.exception ? ' One missed game was excused by Super Malaab — a make-up game was added.' : ''}</p>
           <ul class="pkg-list">${pk.sessions.map((x) => { const bk = series.find((y) => y.id === x.id); return `<li class="${x.id === b.id ? 'is-me' : ''}"><a href="#/booking/${x.id}" class="row-between" style="--gap:8px"><span class="small"><b class="num">${x.no ? `#${x.no}` : '—'}</b> · ${fmtDate(x.date)} · ${fmtRange(x.hour, x.duration)}${x.makeup ? ' <span class="badge badge-gold">Make-up</span>' : ''}</span><span class="badge ${ST[x.state][0]}">${ST[x.state][1]}</span></a></li>`; }).join('')}</ul>
           ${SA.ui.cancelRequest.notice('package', b.seriesId)}
           ${live.length > 1 && !S.cancellations.openFor('package', b.seriesId) ? `<button class="btn btn-ghost btn-sm" data-cancel-series style="color:var(--danger);margin-top:10px">Cancel all ${live.length} remaining games</button>` : ''}
@@ -230,7 +230,7 @@
         const d = parseISO(b.date); d.setHours(0, 0, 0, 0);
         const start = new Date(d.getTime() + b.hour * 36e5), end = new Date(start.getTime() + b.duration * 36e5);
         const f = (x) => x.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-        const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Super App//EN\nBEGIN:VEVENT\nUID:${b.id}@superapp\nDTSTAMP:${f(new Date())}\nDTSTART:${f(start)}\nDTEND:${f(end)}\nSUMMARY:Football at ${b.pitchName}\nLOCATION:${b.area}\\, ${b.city}\nDESCRIPTION:Booking ${b.id}\nEND:VEVENT\nEND:VCALENDAR`;
+        const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Super Malaab//EN\nBEGIN:VEVENT\nUID:${b.id}@superapp\nDTSTAMP:${f(new Date())}\nDTSTART:${f(start)}\nDTEND:${f(end)}\nSUMMARY:Football at ${b.pitchName}\nLOCATION:${b.area}\\, ${b.city}\nDESCRIPTION:Booking ${b.id}\nEND:VEVENT\nEND:VCALENDAR`;
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = `super-app-${b.id}.ics`; a.click();
         SA.ui.overlay.toast('Calendar event downloaded');
       });

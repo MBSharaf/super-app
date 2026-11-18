@@ -127,7 +127,7 @@ public sealed class BannerRequestValidator : AbstractValidator<BannerRequest>
         RuleFor(x => x.Title).NotEmpty().Length(5, 70);
         RuleFor(x => x.Badge).MaximumLength(22);
         RuleFor(x => x.CtaText).MaximumLength(22);
-        RuleFor(x => x.Link).NotEmpty().MaximumLength(300).Must(l => l.StartsWith("#/", StringComparison.Ordinal)).WithMessage("Links stay inside Super App (start with #/).");
+        RuleFor(x => x.Link).NotEmpty().MaximumLength(300).Must(l => l.StartsWith("#/", StringComparison.Ordinal)).WithMessage("Links stay inside Super Malaab (start with #/).");
         RuleFor(x => x.ImageKey).NotEmpty().MaximumLength(300);
         RuleFor(x => x.ShowUntil).GreaterThanOrEqualTo(x => x.ShowFrom).When(x => x.ShowFrom is not null && x.ShowUntil is not null);
     }
@@ -139,7 +139,7 @@ public sealed class AnnouncementValidator : AbstractValidator<AnnouncementDto>
     {
         RuleFor(x => x.Text).NotNull().MaximumLength(160);
         RuleFor(x => x.Text).NotEmpty().When(x => x.On).WithMessage("Write the announcement.");
-        RuleFor(x => x.Link).MaximumLength(300).Must(l => string.IsNullOrEmpty(l) || l.StartsWith("#/", StringComparison.Ordinal)).WithMessage("Links stay inside Super App (start with #/).");
+        RuleFor(x => x.Link).MaximumLength(300).Must(l => string.IsNullOrEmpty(l) || l.StartsWith("#/", StringComparison.Ordinal)).WithMessage("Links stay inside Super Malaab (start with #/).");
         RuleFor(x => x.Cta).MaximumLength(24);
         RuleFor(x => x.Tone).Must(t => t is "info" or "success" or "warning" or "danger").WithMessage("Tone: info, success, warning or danger.");
     }
@@ -155,7 +155,7 @@ public sealed class PopupRequestValidator : AbstractValidator<PopupRequest>
         RuleFor(x => x.TextAr).NotEmpty().MaximumLength(140);
         RuleFor(x => x.CtaEn).NotEmpty().MaximumLength(24);
         RuleFor(x => x.CtaAr).NotEmpty().MaximumLength(24);
-        RuleFor(x => x.Link).NotEmpty().MaximumLength(300).Must(l => l.StartsWith("#/", StringComparison.Ordinal)).WithMessage("Links stay inside Super App (start with #/).");
+        RuleFor(x => x.Link).NotEmpty().MaximumLength(300).Must(l => l.StartsWith("#/", StringComparison.Ordinal)).WithMessage("Links stay inside Super Malaab (start with #/).");
         RuleFor(x => x.Badge).MaximumLength(24);
         RuleFor(x => x.Color).Matches("^#[0-9A-Fa-f]{6}$").WithMessage("A colour like #0B6E4F.");
         RuleFor(x => x.Shape).Must(s => ContentAdminService.ShapeOf(s) is not null).WithMessage("Shape: cube, coin or tee.");

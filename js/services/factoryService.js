@@ -5,13 +5,13 @@
  *   orders — there is one today, the code is ready for more). The job is due within the factory's SLA hours.
  * - Inside the factory a job moves through stages: new → printing → qc → packing → ready. A failed quality check
  *   sends it back to printing (a reprint at the factory's cost, counted in its defect rate).
- * - When every item of a customer order is packed, a shipment is created with Super App's courier automatically
+ * - When every item of a customer order is packed, a shipment is created with Super Malaab's courier automatically
  *   (SA.services.shipping); the courier's updates move the item to shipped → delivered / refused.
  * - `podOrders.status` keeps its meaning for customers, sellers and the admin (received / printing / shipped /
  *   delivered / refused / cancelled); the factory's own steps live in `stage` and `steps`.
  * - Staff sign in with their name and a 4-digit PIN (a shared tablet on the floor works). Every step is signed
  *   with the staff member's name. Roles: owner, supervisor, printer, qc, packer.
- * - The factory owns its materials and stock. Super App only checks quality and delivery: deadlines, defects,
+ * - The factory owns its materials and stock. Super Malaab only checks quality and delivery: deadlines, defects,
  *   complaints, prices and payments.
  */
 (function (SA) {
@@ -129,7 +129,7 @@
       if (!s || !s.active) throw new ApiError('This account is not active.', 'forbidden');
       if (String(pin) !== String(s.pin)) throw new ApiError('Wrong PIN. Try again.', 'invalid');
       const f = db().find('factories', s.factoryId);
-      if (f?.status === 'suspended') throw new ApiError('This factory is suspended. Contact Super App.', 'forbidden');
+      if (f?.status === 'suspended') throw new ApiError('This factory is suspended. Contact Super Malaab.', 'forbidden');
       try { localStorage.setItem(SESSION, s.id); } catch { /* ignore */ }
       db().update('factoryStaff', s.id, { lastSeen: Date.now() });
       return auth.current();
@@ -160,7 +160,7 @@
       .sort((a, b) => (ACTIVE.includes(a.stage) && ACTIVE.includes(b.stage) ? a.dueAt - b.dueAt : (b.updatedAt || b.placedAt) - (a.updatedAt || a.placedAt)));
   };
   const job = (id) => { const o = db().find('podOrders', String(id || '').trim().toUpperCase()); if (!o || !o.stage) throw new ApiError('No job with that code.', 'not_found'); return enrich(o); };
-  const addStep = (o, stage, s, note = '') => [...(o.steps || []), { stage, at: Date.now(), by: s?.id || 'admin', name: s?.name || 'Super App', ...(note ? { note } : {}) }];
+  const addStep = (o, stage, s, note = '') => [...(o.steps || []), { stage, at: Date.now(), by: s?.id || 'admin', name: s?.name || 'Super Malaab', ...(note ? { note } : {}) }];
 
   const factory = {
     ROLES, STAGES, ACTIVE, STAGE_LABEL, NEXT, ISSUES, migrate, factoryMode, auth, me: () => auth.current(), can, isLate, stepAt,
@@ -245,7 +245,7 @@
       db().update('podOrders', id, { issue, steps: addStep(o, 'issue', s, `${type}${note ? ` — ${note.trim()}` : ''}`) });
       flog(s.factory, 'issue', `${s.name} reported a problem on ${o.id}: ${type}`, id);
       // The seller and the customer know a delay is possible
-      N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'gold', title: `Possible delay: ${o.title}`, body: `The factory reported: ${type}. Super App is on it — nothing to do on your side.`, link: '#/dash/seller/orders' });
+      N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'gold', title: `Possible delay: ${o.title}`, body: `The factory reported: ${type}. Super Malaab is on it — nothing to do on your side.`, link: '#/dash/seller/orders' });
       tellCustomer(o, 'Your printed item may take a little longer', `We hit a small problem making “${o.title}”. We’re fixing it and will keep you posted.`);
       N()?.toAdmins({ cat: 'orders', tone: 'danger', title: `Factory problem: ${o.id}`, body: `${s.factory.name} — ${type}${note ? `: ${note.trim()}` : ''}`, link: '#/admin/factories?tab=jobs' });
     },
@@ -253,9 +253,9 @@
       const admin = isAdmin() && !factoryMode();
       const s = admin ? null : need('assign');
       const o = db().find('podOrders', id); if (!o?.issue) throw new ApiError('No open problem.', 'invalid');
-      db().update('podOrders', id, { issue: { ...o.issue, resolved: true, resolvedAt: Date.now(), resolvedBy: s?.name || 'Super App', resolution: note.trim() }, steps: addStep(o, 'resolved', s, note.trim()) });
-      flog(factory.get(o.factoryId), 'resolved', `${s?.name || 'Super App'} resolved the problem on ${o.id}${note ? `: ${note.trim()}` : ''}`, id);
-      N()?.toAdmins({ cat: 'orders', tone: 'turf', title: `Factory problem resolved: ${o.id}`, body: `${s?.name || 'Super App'}${note ? ` — ${note.trim()}` : ''}`, link: '#/admin/factories?tab=jobs' });
+      db().update('podOrders', id, { issue: { ...o.issue, resolved: true, resolvedAt: Date.now(), resolvedBy: s?.name || 'Super Malaab', resolution: note.trim() }, steps: addStep(o, 'resolved', s, note.trim()) });
+      flog(factory.get(o.factoryId), 'resolved', `${s?.name || 'Super Malaab'} resolved the problem on ${o.id}${note ? `: ${note.trim()}` : ''}`, id);
+      N()?.toAdmins({ cat: 'orders', tone: 'turf', title: `Factory problem resolved: ${o.id}`, body: `${s?.name || 'Super Malaab'}${note ? ` — ${note.trim()}` : ''}`, link: '#/admin/factories?tab=jobs' });
       tellCustomer(o, 'Your printed item is back on track', `“${o.title}” is moving again.`);
     },
 
@@ -286,7 +286,7 @@
       if (!['active', 'paused', 'suspended'].includes(status)) throw new ApiError('Unknown status.', 'invalid');
       db().update('factories', f.id, { status, statusReason: reason.trim() });
       SA.services.admin.log?.('factory.status', `${f.name} is now ${status}${reason ? `: ${reason.trim()}` : ''}`, f.id);
-      N()?.toAccount(f.accountId, { cat: 'account', tone: status === 'active' ? 'turf' : 'danger', title: status === 'active' ? 'Your factory is active again' : `Your factory was ${status} by Super App`, body: reason.trim() || 'Contact Super App for details.', link: '#/factory' });
+      N()?.toAccount(f.accountId, { cat: 'account', tone: status === 'active' ? 'turf' : 'danger', title: status === 'active' ? 'Your factory is active again' : `Your factory was ${status} by Super Malaab`, body: reason.trim() || 'Contact Super Malaab for details.', link: '#/factory' });
     },
     addStrike(factoryId, reason) {
       needAdmin();
@@ -294,7 +294,7 @@
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
       db().update('factories', f.id, { strikes: [...(f.strikes || []), { reason: reason.trim(), at: Date.now() }] });
       SA.services.admin.log?.('factory.strike', `Warning to ${f.name}: ${reason.trim()}`, f.id);
-      N()?.toAccount(f.accountId, { cat: 'account', tone: 'danger', title: 'Warning from Super App', body: reason.trim(), link: '#/factory' });
+      N()?.toAccount(f.accountId, { cat: 'account', tone: 'danger', title: 'Warning from Super Malaab', body: reason.trim(), link: '#/factory' });
     },
 
     /* ---------- Settings (owner) ---------- */
@@ -308,7 +308,7 @@
     },
     setIntake(on, note = '') {
       const s = need('intake');
-      if (!on && note.trim().length < 3) throw new ApiError('Write why (Super App and the team will see it).', 'invalid');
+      if (!on && note.trim().length < 3) throw new ApiError('Write why (Super Malaab and the team will see it).', 'invalid');
       db().update('factories', s.factoryId, { intake: !!on, intakeNote: on ? '' : note.trim(), intakeAt: Date.now() });
       flog(s.factory, 'intake', `${s.name} ${on ? 'resumed' : 'paused'} new orders${on ? '' : `: ${note.trim()}`}`, s.factoryId);
       N()?.toAdmins({ cat: 'orders', tone: on ? 'turf' : 'danger', title: `${s.factory.name} ${on ? 'is taking orders again' : 'paused new orders'}`, body: on ? 'Printed products are back in the shop.' : `${note.trim()} — printed products are hidden from the shop until it resumes.`, link: '#/admin/factories' });
@@ -324,7 +324,7 @@
       N()?.toAdmins({ cat: 'orders', tone: paused ? 'gold' : 'turf', title: `${f.name} ${paused ? 'can’t make' : 'can make again'}: ${c?.name || catalogId}`, body: paused ? 'Designs on it are hidden from the shop for now.' : 'Designs on it are back in the shop.', link: '#/admin/factories' });
     },
 
-    /* ---------- Prices (what the factory charges Super App per piece) ---------- */
+    /* ---------- Prices (what the factory charges Super Malaab per piece) ---------- */
     priceList(factoryId = auth.current()?.factoryId) {
       return P().catalog({ all: true }).map((c) => ({ ...c, pending: db().all('priceRequests').find((r) => r.factoryId === factoryId && r.catalogId === c.id && r.status === 'pending') || null }));
     },
@@ -347,7 +347,7 @@
       db().update('priceRequests', id, { status: approve ? 'approved' : 'rejected', reason: reason.trim(), decidedAt: Date.now() });
       if (approve) { db().update('podCatalog', c.id, { partnerCost: r.to }); }
       SA.services.admin.log?.('factory.price', `${approve ? 'Approved' : 'Rejected'} ${f.name}'s price for ${c.name}: ${r.from} → ${r.to} EGP`, id);
-      N()?.toAccount(f.accountId, { cat: 'money', tone: approve ? 'turf' : 'danger', title: `${approve ? 'Price approved' : 'Price not approved'}: ${c.name}`, body: approve ? `${r.to} EGP per piece from new orders.` : reason.trim() || 'Contact Super App.', link: '#/factory/settings' });
+      N()?.toAccount(f.accountId, { cat: 'money', tone: approve ? 'turf' : 'danger', title: `${approve ? 'Price approved' : 'Price not approved'}: ${c.name}`, body: approve ? `${r.to} EGP per piece from new orders.` : reason.trim() || 'Contact Super Malaab.', link: '#/factory/settings' });
     },
     priceRequests: (status = 'pending') => db().all('priceRequests').filter((r) => !status || r.status === status),
 
@@ -401,7 +401,7 @@
       return { factory: f, inToday: sum(all.filter((o) => o.placedAt >= d0.getTime()), (o) => o.qty), readyToday: sum(all.filter((o) => stepAt(o, 'ready') >= d0.getTime()), (o) => o.qty),
         open: sum(all.filter((o) => ACTIVE.includes(o.stage)), (o) => o.qty), capacity: f.capacity, pipe, late: all.filter(isLate).length, issues: all.filter((o) => o.issue && !o.issue.resolved).length };
     },
-    /** Money between Super App and the factory: per-piece price of everything handed to the courier, minus deductions and payments */
+    /** Money between Super Malaab and the factory: per-piece price of everything handed to the courier, minus deductions and payments */
     money(factoryId = auth.current()?.factoryId) {
       const f = factory.get(factoryId);
       // Demo history: older seeded items count as already settled; the last two weeks are still owed

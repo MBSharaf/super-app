@@ -6,7 +6,7 @@ using SuperApp.Domain.Entities.Ops;
 
 namespace SuperApp.Infrastructure.Persistence.Configurations.Auth;
 
-/// <summary>Table <c>auth.Users</c> (Identity) with the Super App columns — see ERD A4.</summary>
+/// <summary>Table <c>auth.Users</c> (Identity) with the Super Malaab columns — see ERD A4.</summary>
 internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)

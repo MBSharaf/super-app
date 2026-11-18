@@ -64,7 +64,7 @@
   });
 
   SA.pages.dashTournaments = C.guard({
-    title: 'Tournaments — Super App Partner',
+    title: 'Tournaments — Super Malaab Partner',
     render() {
       const sc = C.scope();
       const list = T().mine(sc);
@@ -90,7 +90,7 @@
   });
 
   SA.pages.dashTournament = C.guard({
-    title: 'Tournament — Super App Partner',
+    title: 'Tournament — Super Malaab Partner',
     render(ctx) {
       const t = T().manage(ctx.params.id);
       const todayISO = isoDate(today());

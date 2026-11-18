@@ -1,5 +1,5 @@
 /**
- * Shipping: Super App's contract with a courier, connected to the factory automatically.
+ * Shipping: Super Malaab's contract with a courier, connected to the factory automatically.
  *
  * - The courier is one adapter in PROVIDERS. Today Bosta is used as a trial; switching courier is one setting in the
  *   admin console (settings.courier.provider) and only affects new shipments. With the backend, each adapter calls

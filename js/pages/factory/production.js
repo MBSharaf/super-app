@@ -11,7 +11,7 @@
   const H = 36e5;
 
   /* ---------- Overview ---------- */
-  SA.pages.factoryOverview = { title: 'Factory — Super App', render: (ctx, s) => {
+  SA.pages.factoryOverview = { title: 'Factory — Super Malaab', render: (ctx, s) => {
     const t = F().today(s.factoryId);
     const st = F().stats(s.factoryId, 7);
     const pct = Math.min(100, Math.round((t.inToday / Math.max(1, t.capacity)) * 100));
@@ -46,8 +46,8 @@
         <section class="dash-card"><div class="row-between"><h2 class="h4">Needs attention</h2><a class="link xs" href="#/factory/jobs?tab=late">All late</a></div>
           ${attention.length ? `<ul class="fac-list">${attention.map((o) => `<li><a href="#/factory/job/${o.id}" class="row-between" style="--gap:10px"><span><b class="num small">${o.id}</b> <span class="xs muted">${o.qty} × ${esc(o.product?.name || '')} · ${esc(o.color)} · ${esc(o.size)}</span>${o.issue && !o.issue.resolved ? `<span class="xs fj-issue-inline">${icon('alert', 11)} ${esc(o.issue.type)}</span>` : ''}</span><span class="row" style="--gap:6px">${FC().dueChip(o)}${FC().stageBadge(o.stage)}</span></a></li>`).join('')}</ul>` : c.empty({ icon: 'check', title: 'All on time', text: 'No late jobs and no open problems.' })}
         </section>
-        <section class="dash-card"><div class="row-between"><h2 class="h4">Messages from Super App</h2></div>
-          ${notes.length ? `<ul class="fac-list">${notes.map((n) => `<li><a href="${esc(n.link || '#/factory')}"><b class="small">${esc(n.title)}</b><span class="xs muted" style="display:block">${esc(n.body)} · ${timeAgo(n.at)}</span></a></li>`).join('')}</ul>` : c.empty({ icon: 'bell', title: 'No messages', text: 'New jobs, courier bookings and notes from Super App show up here.' })}
+        <section class="dash-card"><div class="row-between"><h2 class="h4">Messages from Super Malaab</h2></div>
+          ${notes.length ? `<ul class="fac-list">${notes.map((n) => `<li><a href="${esc(n.link || '#/factory')}"><b class="small">${esc(n.title)}</b><span class="xs muted" style="display:block">${esc(n.body)} · ${timeAgo(n.at)}</span></a></li>`).join('')}</ul>` : c.empty({ icon: 'bell', title: 'No messages', text: 'New jobs, courier bookings and notes from Super Malaab show up here.' })}
         </section>
       </div>
       ${F().can('reports', s) ? `<section class="dash-card"><div class="row-between"><h2 class="h4">Last 7 days</h2><a class="link xs" href="#/factory/reports">Reports</a></div>
@@ -112,7 +112,7 @@
             <p class="lead" style="margin:0"><span>${esc(o.color)}</span> · <span>Size</span> <b>${esc(o.size)}</b> · DTF <span>${{ front: 'Front', back: 'Back', 'front+back': 'Front + back' }[FC().sides(o).join('+')] || ''}</span></p>
             <p class="small muted">“${esc(o.title)}”</p>
             ${o.issue && !o.issue.resolved ? `<div class="fac-banner is-danger">${icon('alert', 16)} <span class="grow"><b>${esc(o.issue.type)}</b>${o.issue.note ? ` — ${esc(o.issue.note)}` : ''} <span class="xs">· ${esc(o.issue.by)}, ${timeAgo(o.issue.at)}</span></span>${F().can('assign', s) ? '<button class="btn btn-outline btn-sm" data-resolve>Resolved</button>' : ''}</div>` : ''}
-            ${o.status === 'cancelled' ? `<div class="fac-banner is-danger">${icon('x', 16)} Cancelled by Super App${o.reason ? ` — ${esc(o.reason)}` : ''}. Stop work on it.</div>` : ''}
+            ${o.status === 'cancelled' ? `<div class="fac-banner is-danger">${icon('x', 16)} Cancelled by Super Malaab${o.reason ? ` — ${esc(o.reason)}` : ''}. Stop work on it.</div>` : ''}
             <div class="row wrap fac-big-actions" style="--gap:8px">${FC().actions(o, s, { big: true })}</div>
             <div class="row wrap" style="--gap:8px">
               ${o.design ? `<button class="btn btn-ghost btn-sm" data-file="${o.id}">${icon('file', 14)} Print file</button>` : ''}
@@ -152,7 +152,7 @@
         if (r) { try { F().resolveIssue(id, r.reason); SA.ui.overlay.toast('Marked resolved'); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } }
       });
       el.querySelector('[data-issue]')?.addEventListener('click', async () => {
-        const r = await SA.pages.adminCommon.reason({ title: `Report a problem · ${id}`, text: 'Your supervisor and Super App are told straight away.', label: 'More detail (optional)', required: false, confirmLabel: 'Report', danger: true,
+        const r = await SA.pages.adminCommon.reason({ title: `Report a problem · ${id}`, text: 'Your supervisor and Super Malaab are told straight away.', label: 'More detail (optional)', required: false, confirmLabel: 'Report', danger: true,
           extra: `<div class="field"><label for="fi-type">What is the problem?</label><select class="select" id="fi-type" name="type">${F().ISSUES.map((x) => `<option>${x}</option>`).join('')}</select></div>` });
         if (r) { try { F().reportIssue(id, { type: r.type, note: r.reason }); SA.ui.overlay.toast('Problem reported'); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } }
       });

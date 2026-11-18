@@ -17,7 +17,7 @@
   };
 
   SA.pages.help = {
-    title: 'Help center — Super App',
+    title: 'Help center — Super Malaab',
     render(ctx) {
       const topic = ctx.query.topic || '';
       const s = (ctx.query.q || '').trim().toLowerCase();

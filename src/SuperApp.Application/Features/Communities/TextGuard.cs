@@ -2,11 +2,11 @@ using System.Text.RegularExpressions;
 
 namespace SuperApp.Application.Features.Communities;
 
-/// <summary>A Super App address found in a post: kind (pitch, slot, game, product, design, store, tournament, post, community, news) and id.</summary>
+/// <summary>A Super Malaab address found in a post: kind (pitch, slot, game, product, design, store, tournament, post, community, news) and id.</summary>
 public sealed record SuperAppLink(string Kind, string Id, string Link);
 
 /// <summary>
-/// Checks community text (FR-COM-03): no outside links, no phone numbers, no banned words. Super App links ("#/pitches/p-…",
+/// Checks community text (FR-COM-03): no outside links, no phone numbers, no banned words. Super Malaab links ("#/pitches/p-…",
 /// or the site's own address) are allowed and become rich cards. Pure, so it is unit-tested on its own.
 /// </summary>
 public static partial class TextGuard
@@ -23,7 +23,7 @@ public static partial class TextGuard
         var withoutOurs = OurLinks(siteHost).Replace(text, " ");
         if (OutsideLink().IsMatch(withoutOurs))
         {
-            return ("Links to other websites are not allowed. Share Super App links instead.", "outside_link");
+            return ("Links to other websites are not allowed. Share Super Malaab links instead.", "outside_link");
         }
         if (Phone().IsMatch(Digits(withoutOurs)))
         {
@@ -38,7 +38,7 @@ public static partial class TextGuard
         return null;
     }
 
-    /// <summary>The Super App links in a text, in order, each once (at most 3 cards per post).</summary>
+    /// <summary>The Super Malaab links in a text, in order, each once (at most 3 cards per post).</summary>
     public static IReadOnlyList<SuperAppLink> Links(string text) =>
         HashLink().Matches(text).Select(m => m.Groups[1].Value.TrimEnd('.', ',', ')', '!', '?'))
             .Select(path => Kinds.FirstOrDefault(k => path.StartsWith(k.Prefix, StringComparison.OrdinalIgnoreCase)) is { Kind: not null } k

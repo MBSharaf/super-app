@@ -47,7 +47,7 @@ public sealed partial class ShopDocuments : IFactoryDocuments
             col.Spacing(6);
             col.Item().Row(r =>
             {
-                r.RelativeItem().Text("Super App").FontSize(16).Bold().FontColor(Green);
+                r.RelativeItem().Text("Super Malaab").FontSize(16).Bold().FontColor(Green);
                 r.RelativeItem().AlignRight().Text(label.Provider == "courier.simulated" ? "Simulated courier" : label.Provider).FontSize(8);
             });
             col.Item().AlignCenter().Width(130).Image(Qr(label.TrackingNumber));

@@ -73,7 +73,7 @@ public sealed class FactoryAccess(IFactoryRepository factories, IFactoryTokens t
             scope = await OwnerAsync(ct);
         }
         return scope.Status == FactoryStatus.Suspended
-            ? throw new FeatureDisabledException("This factory is suspended. Contact Super App.", "factory_suspended")
+            ? throw new FeatureDisabledException("This factory is suspended. Contact Super Malaab.", "factory_suspended")
             : scope;
     }
 

@@ -26,7 +26,7 @@ public sealed record SellerCatalogDto(
     IReadOnlyList<PrintAreaDto> PrintAreas);
 
 /// <summary>
-/// A design in the studio. <c>Base</c> = what Super App keeps per piece for this design (back print included when there is
+/// A design in the studio. <c>Base</c> = what Super Malaab keeps per piece for this design (back print included when there is
 /// back art, after the level discount); <c>Profit</c> = price − base. Send <c>RowVersion</c> back when saving (409 stale).
 /// </summary>
 public sealed record SellerDesignDto(

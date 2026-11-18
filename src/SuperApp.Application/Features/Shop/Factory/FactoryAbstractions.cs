@@ -114,7 +114,7 @@ public interface IFactoryAdminRepository
 public sealed record ShipmentLabel(string TrackingNumber, string Provider, string OrderCode, string ReceiverName, string Phone, string AddressJson, decimal CodAmount, int Pieces,
     string SenderName, string SenderAddress, DateTime CreatedAt);
 
-/// <summary>Factory PDFs: the job ticket with its QR, and the courier label with the Super App logo.</summary>
+/// <summary>Factory PDFs: the job ticket with its QR, and the courier label with the Super Malaab logo.</summary>
 public interface IFactoryDocuments
 {
     byte[] JobTicket(FactoryJobDto job, string factoryName);

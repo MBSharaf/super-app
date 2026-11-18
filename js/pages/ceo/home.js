@@ -15,7 +15,7 @@
 
   /* ---------- Command overview ---------- */
   SA.pages.ceoOverview = C.guard({
-    title: 'Command overview — Super App',
+    title: 'Command overview — Super Malaab',
     render() {
       const K = CE().kpis();
       const H = CE().health(K);
@@ -26,7 +26,7 @@
       const body = `
         <div class="kpi-grid">
           ${D.kpi({ label: 'Platform revenue (30 days)', value: C.egp(K.revenue), count: K.revenue, suffix: ' EGP', ic: 'percent', tone: 'k-turf', sub: delta(K.revenue, K.revenuePrev) })}
-          ${D.kpi({ label: 'Money through Super App (30 days)', value: C.egp(K.gmv), count: K.gmv, suffix: ' EGP', ic: 'trend', sub: delta(K.gmv, K.gmvPrev) })}
+          ${D.kpi({ label: 'Money through Super Malaab (30 days)', value: C.egp(K.gmv), count: K.gmv, suffix: ' EGP', ic: 'trend', sub: delta(K.gmv, K.gmvPrev) })}
           ${D.kpi({ label: 'Waiting for your decision', value: pend.length, count: pend.length, ic: 'check', tone: pend.length ? 'k-blaze' : '', sub: pend.length ? C.egp(pend.reduce((t, x) => t + x.amount, 0)) : 'Nothing waiting' })}
           ${D.kpi({ label: 'AI agents working', value: `${K.agentsActive}/${K.agents}`, ic: 'bolt', sub: `${C.egp(K.agentCost)} a month` })}
         </div>
@@ -55,14 +55,14 @@
         <section class="dash-card"><div class="row-between"><h2 class="h4">Smart alerts from every system</h2><a class="btn btn-ghost btn-sm" href="#/ceo/systems">All systems ${icon('arrowRight', 14)}</a></div>
           <ul class="ceo-alerts">${al.map((x) => `<li><span class="bp-ico t-${x.tone}">${icon(x.icon, 16)}</span><span class="grow"><b class="small">${esc(x.title)}</b><span class="xs muted" style="display:block">${esc(x.text || '')}</span></span><a class="btn btn-ghost btn-sm" href="${x.href}" target="_blank" rel="noopener">Open ${icon('arrowUpRight', 13)}</a></li>`).join('') || `<li class="small muted">${icon('check', 14)} The admin team has nothing waiting.</li>`}</ul>
         </section>`;
-      return C.layout('overview', { title: 'Good to see you, Sharaf', subtitle: `${fmtDate(SA.core.utils.isoDate(SA.core.utils.today()), 'long')} — everything happening in Super App`, actions: '<a class="btn btn-primary btn-sm" href="#/ceo/briefing">Today’s briefing</a>', body });
+      return C.layout('overview', { title: 'Good to see you, Sharaf', subtitle: `${fmtDate(SA.core.utils.isoDate(SA.core.utils.today()), 'long')} — everything happening in Super Malaab`, actions: '<a class="btn btn-primary btn-sm" href="#/ceo/briefing">Today’s briefing</a>', body });
     },
     mount(el) { SA.core.motion?.countUp?.(el); },
   });
 
   /* ---------- Morning briefing ---------- */
   SA.pages.ceoBriefing = C.guard({
-    title: 'Morning briefing — Super App',
+    title: 'Morning briefing — Super Malaab',
     render() {
       const b = CE().briefing();
       const H = b.health;
@@ -90,7 +90,7 @@
 
   /* ---------- Approvals inbox ---------- */
   SA.pages.ceoApprovals = C.guard({
-    title: 'Approvals — Super App',
+    title: 'Approvals — Super Malaab',
     render(ctx) {
       const tab = ctx.query.tab || 'pending';
       const all = CE().approvals();

@@ -37,7 +37,7 @@
   };
 
   SA.pages.ceoIntegrations = C.guard({
-    title: 'Integrations — Super App',
+    title: 'Integrations — Super Malaab',
     async render() {
       const head = `<p class="small muted">${icon('lock', 12)} Keys and passwords live only in the server’s .env file — the owner puts them there. Here you choose the mode and see whether each one works. Live and Test need their key first.</p>`;
       if (!api().isLive()) return C.layout('integrations', { title: 'Integrations', subtitle: 'Payments, email, SMS, maps, football data and the other outside services', body: head + serverOnly('Integrations') });
@@ -64,7 +64,7 @@
 
   /* ---------- API catalogue ---------- */
   SA.pages.ceoApis = C.guard({
-    title: 'API catalogue — Super App',
+    title: 'API catalogue — Super Malaab',
     async render() {
       const sub = 'Every part of the API: what it does, who uses it and the AI agents’ traffic';
       if (!api().isLive()) return C.layout('apis', { title: 'API catalogue', subtitle: sub, body: serverOnly('The API groups') });

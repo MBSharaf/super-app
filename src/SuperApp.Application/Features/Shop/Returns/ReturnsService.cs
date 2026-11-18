@@ -13,9 +13,9 @@ namespace SuperApp.Application.Features.Shop.Returns;
 
 /// <summary>
 /// Returns for customers (owner's decisions, 2026-10-27): only an item with a problem (damaged, wrong item, not as described),
-/// within 24 hours of delivery; store products can be refunded or exchanged, printed items reprinted or refunded. Super App's
+/// within 24 hours of delivery; store products can be refunded or exchanged, printed items reprinted or refunded. Super Malaab's
 /// courier collects it and the store bears the cost; the store's earning on the items stays held while the return is open.
-/// One return is decided by one side: a store for its products, Super App for the official store and printed items.
+/// One return is decided by one side: a store for its products, Super Malaab for the official store and printed items.
 /// </summary>
 public interface IReturnsService
 {
@@ -63,7 +63,7 @@ public sealed class ReturnsService(
         var items = request.Items.Select(r => Check(r, order, allowed, reason)).ToList();
         if (items.Select(i => DeciderOf(i.Item)).Distinct().Count() > 1)
         {
-            throw new BusinessRuleException("Return items from one store at a time (printed items and Super App Store items go together).", "one_store_per_return");
+            throw new BusinessRuleException("Return items from one store at a time (printed items and Super Malaab Store items go together).", "one_store_per_return");
         }
         var share = order.Subtotal <= 0 ? 0 : (order.Subtotal - order.DiscountAmount) / order.Subtotal;
         var ret = new ReturnRequest
@@ -115,7 +115,7 @@ public sealed class ReturnsService(
         return (item, new ReturnItem { OrderItemId = item.Id, Qty = r.Qty, Action = action, NewSize = r.NewSize?.Trim(), NewColor = r.NewColor?.Trim() });
     }
 
-    /// <summary>null = Super App decides (printed items and the official store), else the store id.</summary>
+    /// <summary>null = Super Malaab decides (printed items and the official store), else the store id.</summary>
     public static long? DeciderOf(OrderItem item) => item.Kind == OrderItemKind.PrintedDesign || item.Store?.Type == StoreType.Official ? null : item.StoreId;
 
     private async Task TellDeciderAsync(ReturnRequest ret, OrderItem first, CancellationToken ct)

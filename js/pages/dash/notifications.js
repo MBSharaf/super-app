@@ -12,7 +12,7 @@
 
   SA.pages.dashNotifications = C.guard({
     roles: () => true,
-    title: 'Notifications — Super App',
+    title: 'Notifications — Super Malaab',
     render(ctx) {
       const a = D().me();
       const f = ctx.query.f || '';

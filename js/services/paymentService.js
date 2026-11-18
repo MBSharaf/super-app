@@ -65,7 +65,7 @@
         if (bal < amount) throw new ApiError(`Your wallet has ${bal.toLocaleString()} EGP. Top up ${(amount - bal).toLocaleString()} EGP or pay by card.`, 'insufficient_funds');
         store.set((s) => ({ wallet: { ...s.wallet, balance: s.wallet.balance - amount } }));
         addTx({ type: 'debit', label: p.label, amount });
-        const out = { id: uid('PAY'), method: 'wallet', label: via('Super App Wallet'), amount: total, status: 'paid' };
+        const out = { id: uid('PAY'), method: 'wallet', label: via('Super Malaab Wallet'), amount: total, status: 'paid' };
         record({ id: out.id, kind: 'payment', label: p.label, amount: total, method: out.label });
         return earn(out, p, fromVoucher);
       }
@@ -93,7 +93,7 @@
     refund: (amount, label, { points = true } = {}) => request(() => {
       store.set((s) => ({ wallet: { ...s.wallet, balance: s.wallet.balance + amount } }));
       addTx({ type: 'credit', label, amount });
-      const rec = record({ kind: 'refund', label, amount, method: 'Super App Wallet' });
+      const rec = record({ kind: 'refund', label, amount, method: 'Super Malaab Wallet' });
       if (points) SA.services.loyalty?.reverse(amount, label, rec.id);
       return { ok: true };
     }),

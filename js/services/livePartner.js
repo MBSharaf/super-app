@@ -59,7 +59,7 @@
       indoor: d.isIndoor, price: +d.pricePerHour, peakPrice: +(d.peakPricePerHour ?? d.pricePerHour), open: today0 ? [today0.openHour, today0.closeHour] : [9, 24],
       openingHours: d.openingHours, images: d.photos.map(photoSrc), photoIds: Object.fromEntries(d.photos.map((ph) => [photoSrc(ph), ph.id])),
       facilities: d.facilities, about: d.descriptionEn || '', tags: prev.tags || [], cancelPolicy: d.policyKey, allowCash: d.allowCash,
-      weekly: prev.weekly || { enabled: false, discount: 0.1 }, status: STATUS[d.status] || 'active', closedReason: d.status === 'ClosedByAdmin' ? 'Closed by Super App' : prev.closedReason || '',
+      weekly: prev.weekly || { enabled: false, discount: 0.1 }, status: STATUS[d.status] || 'active', closedReason: d.status === 'ClosedByAdmin' ? 'Closed by Super Malaab' : prev.closedReason || '',
       review: REVIEW[d.status] || 'approved', reviewReason: d.rejectReason || '', rating: +(card?.rating || 0), reviews: card?.reviewsCount || 0,
       rowVersion: d.rowVersion, seed: false, deleted: false,
     };

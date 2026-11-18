@@ -1,7 +1,7 @@
 /**
  * Partner dashboard: post free slots (#/dash/slots). The owner picks a pitch, a day and free hours, optionally a
  * last-minute discount (an offer for that hour), and each hour becomes a live free-slot card (on #/alerts).
- * Players with a matching alert are notified. Limited per day (set by the Super App team); posted vs booked stats.
+ * Players with a matching alert are notified. Limited per day (set by the Super Malaab team); posted vs booked stats.
  */
 (function (SA) {
   const { esc, money, fmtHour, fmtDate, isoDate, addDays, today, relDay, parseISO } = SA.core.utils;
@@ -17,7 +17,7 @@
 
   SA.pages.dashSlots = C.guard({
     roles: ['owner', 'admin'],
-    title: 'Free slots — Super App Partner',
+    title: 'Free slots — Super Malaab Partner',
     render(ctx) {
       const a = D().me();
       const owner = D().isAdmin() ? (C.scope().ownerId || a.id) : a.id;
@@ -40,7 +40,7 @@
           ${C.kpi({ label: 'Still free', value: st.filter((s) => s === 'free').length, ic: 'clock' })}
           ${C.kpi({ label: 'Left to post today', value: `${left} / ${limit()}`, ic: 'calendar', tone: left ? '' : 'k-blaze' })}
         </div>
-        ${blocked ? `<div class="notice blaze">${icon('ban', 18)}<span><b>Posting is paused by Super App.</b> ${esc(blocked)} Contact Help & support.</span></div>` : ''}
+        ${blocked ? `<div class="notice blaze">${icon('ban', 18)}<span><b>Posting is paused by Super Malaab.</b> ${esc(blocked)} Contact Help & support.</span></div>` : ''}
         ${!pitches.length ? `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No live pitches yet', text: 'Once a pitch is approved and open, you can post its free hours here.' })}</div>` : `
         <section class="dash-card"><h2 class="h4">Post a free hour</h2><p class="small soft" style="margin-top:4px">It shows as a live card on the free-slot alerts page with a Book now button, and players with alerts for this pitch or area are notified.</p>
           <div class="form-grid" style="margin-top:14px"><label class="field"><span class="field-label">Pitch</span><select class="select" data-pitch>${pitches.map((p) => `<option value="${p.id}" ${p.id === pitch.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label></div>
@@ -56,7 +56,7 @@
           </form></section>`}
         <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Your posted slots</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Pitch</th><th>When</th><th>Discount</th><th>Posted</th><th>Status</th><th></th></tr></thead><tbody>
           ${posted.slice(0, 30).map((p, i) => { const pt = db().find('pitches', p.card.pitchId); const s = st[i]; return `<tr><td class="small"><b>${esc(pt?.name || '')}</b></td><td class="small nowrap">${fmtDate(p.card.date)} · ${fmtHour(p.card.hour)}</td><td class="small">${p.card.pct ? `${Math.round(p.card.pct * 100)}%` : '—'}</td><td class="xs muted">${SA.core.utils.timeAgo(p.at)}</td>
-            <td><span class="badge ${s === 'free' ? 'badge-info' : s === 'booked' ? 'badge-turf' : ''}">${s === 'free' ? 'Still free' : s === 'booked' ? 'Booked' : 'Expired'}</span>${p.hidden ? ' <span class="badge badge-danger">Hidden by Super App</span>' : ''}</td><td class="r"><a class="btn btn-ghost btn-sm" href="#/alerts" target="_blank" rel="noopener">View</a></td></tr>`; }).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">Nothing posted yet.</td></tr>'}
+            <td><span class="badge ${s === 'free' ? 'badge-info' : s === 'booked' ? 'badge-turf' : ''}">${s === 'free' ? 'Still free' : s === 'booked' ? 'Booked' : 'Expired'}</span>${p.hidden ? ' <span class="badge badge-danger">Hidden by Super Malaab</span>' : ''}</td><td class="r"><a class="btn btn-ghost btn-sm" href="#/alerts" target="_blank" rel="noopener">View</a></td></tr>`; }).join('') || '<tr><td colspan="6" class="small muted" style="padding:18px">Nothing posted yet.</td></tr>'}
         </tbody></table></div></section>`;
       return C.layout('slots', { title: 'Free slots', subtitle: 'Fill empty hours: post them to players as free slots', body });
     },

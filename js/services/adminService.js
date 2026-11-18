@@ -1,5 +1,5 @@
 /**
- * Admin console service — the "backend" for the Super App team (#/admin).
+ * Admin console service — the "backend" for the Super Malaab team (#/admin).
  * Every method requires an admin session (separate from the partner dashboard session) and every change is written
  * to the audit log with the admin as the actor.
  *
@@ -45,7 +45,7 @@
     ['bookings', 'Booking commission', 'turf'], ['fees', 'Booking service fees', 'info'], ['store', 'Store commission', 'blaze'],
     ['official', 'Official store sales', 'ink'], ['pod', 'Print-on-demand margin', 'gold'], ['passes', 'Fantasy Pass', 'violet'],
   ];
-  const COSTS = [['refusals', 'Refused print deliveries'], ['refunds', 'Refunds paid by Super App'], ['promos', 'Super App promo codes']];
+  const COSTS = [['refusals', 'Refused print deliveries'], ['refunds', 'Refunds paid by Super Malaab'], ['promos', 'Super Malaab promo codes']];
   /**
    * Platform revenue between two ISO dates (inclusive), by stream and by day.
    * Accrual view: bookings by match date, store and print orders by order date (refused print items count as a cost).
@@ -98,7 +98,7 @@
     const kyc = db().all('sellers').filter((s) => s.kyc === 'pending').length;
     add('kyc', 'shield', 'info', kyc, `${kyc} seller ID check${kyc > 1 ? 's' : ''}`, 'Verify before their first withdrawal.', '#/admin/designs?tab=sellers');
     const rv = db().all('reviews').filter((r) => r.reported && !r.reported.resolved && !r.hidden).length;
-    add('reviews', 'star', 'danger', rv, `${rv} reported review${rv > 1 ? 's' : ''}`, 'Partners asked Super App to check these.', '#/admin/reviews?filter=reported');
+    add('reviews', 'star', 'danger', rv, `${rv} reported review${rv > 1 ? 's' : ''}`, 'Partners asked Super Malaab to check these.', '#/admin/reviews?filter=reported');
     const cx = SA.services.cancellations?.pending() || [];
     const cxLate = cx.filter((r) => r.dueAt < Date.now()).length;
     add('cancellations', 'x', 'blaze', cx.length, `${cx.length} cancellation request${cx.length > 1 ? 's' : ''} waiting`, cxLate ? `${cxLate} past the 2-hour reply time.` : 'Reply within 2 hours of each request.', '#/admin/cancellations');
@@ -109,8 +109,8 @@
     const cr = admin.communityReports ? admin.communityReports().length : 0;
     add('community', 'flag', 'danger', cr, `${cr} community report${cr > 1 ? 's' : ''}`, 'Posts and comments people reported.', '#/admin/community');
     const ap = admin.pendingPitches ? admin.pendingPitches().filter((p) => p.review === 'pending').length + admin.pendingSellers().filter((s) => s.status === 'pending').length : 0;
-    add('approvals', 'check', 'blaze', ap, `${ap} new pitch${ap > 1 ? 'es and sellers' : ' or seller'} to approve`, 'They go live on Super App once you approve them.', '#/admin/approvals');
-    try { const low = D().lowStock(); add('stock', 'alert', 'gold', low.length, `${low.length} Super App Store product${low.length > 1 ? 's' : ''} low on stock`, low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), '#/admin/store?low=1'); } catch { /* no official store */ }
+    add('approvals', 'check', 'blaze', ap, `${ap} new pitch${ap > 1 ? 'es and sellers' : ' or seller'} to approve`, 'They go live on Super Malaab once you approve them.', '#/admin/approvals');
+    try { const low = D().lowStock(); add('stock', 'alert', 'gold', low.length, `${low.length} Super Malaab Store product${low.length > 1 ? 's' : ''} low on stock`, low.slice(0, 3).map((p) => `${p.name} (${p.stock})`).join(', '), '#/admin/store?low=1'); } catch { /* no official store */ }
     if (SA.services.factory) {
       const fa = SA.services.factory.alerts();
       add('factories', 'truck', fa.late || fa.issues ? 'danger' : 'gold', fa.total, `${fa.total} factory item${fa.total > 1 ? 's' : ''} to check`, [fa.late && `${fa.late} late`, fa.issues && `${fa.issues} problem${fa.issues > 1 ? 's' : ''}`, fa.prices && `${fa.prices} price request${fa.prices > 1 ? 's' : ''}`, fa.stopped && 'new orders paused'].filter(Boolean).join(' · '), fa.prices && !fa.late && !fa.issues ? '#/admin/factories?tab=prices' : '#/admin/factories?tab=jobs');
@@ -159,7 +159,7 @@
   const setPayout = (p, patch) => (p.kind === 'seller' ? db().update('sellerPayouts', p.id, patch) : db().update('payouts', p.id, patch));
   const findPayout = (id) => { const p = allPayouts().find((x) => x.id === id); if (!p) throw new ApiError('Withdrawal not found.', 'not_found'); return p; };
 
-  /** What Super App owes the print partner: partner cost of every item it printed, minus settlements already paid */
+  /** What Super Malaab owes the print partner: partner cost of every item it printed, minus settlements already paid */
   const printerAccount = () => db().all('accounts').find((a) => a.role === 'printer');
   const printerOwed = () => {
     if (SA.services.factory) { const m = SA.services.factory.money(SA.services.factory.list()[0]?.id); return { ...m, account: m.account || printerAccount() }; }
@@ -221,7 +221,7 @@
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
       saveRec(id, { blocked: true, blockedReason: reason.trim(), blockedAt: Date.now() });
       log('customer.blocked', `Blocked customer ${c.name}: ${reason.trim()}`, id);
-      if (c.device) SA.services.user.notify({ kind: 'shop', title: 'Your account is on hold', body: 'You can’t book or order for now. Contact Super App support if you think this is a mistake.', link: '/profile' });
+      if (c.device) SA.services.user.notify({ kind: 'shop', title: 'Your account is on hold', body: 'You can’t book or order for now. Contact Super Malaab support if you think this is a mistake.', link: '/profile' });
     },
     unblockCustomer(id) {
       me(); const c = customer(id);
@@ -245,14 +245,14 @@
       saveRec(id, { notes: [{ text: t.slice(0, 400), at: Date.now(), by: me().name }, ...(rec(id).notes || [])] });
       log('customer.note', `Note on ${c.name}: ${t.slice(0, 80)}`, id);
     },
-    /** Goodwill credit to the customer's Super App wallet (paid by Super App) */
+    /** Goodwill credit to the customer's Super Malaab wallet (paid by Super Malaab) */
     async creditCustomer(id, amount, reason) {
       me(); const c = customer(id);
       const amt = Math.round(+amount);
       if (!(amt >= 5 && amt <= 5000)) throw new ApiError('Credit between 5 and 5,000 EGP.', 'invalid');
       if (!reason || reason.trim().length < 3) throw new ApiError('Write the reason.', 'invalid');
       SA.services.ceo?.gate({ kind: 'credit', amount: amt, fn: 'creditCustomer', args: [id, amt, reason], title: `${c.name} — ${reason.trim()}`, ref: id });
-      if (c.device) await SA.services.payment.refund(amt, `Credit from Super App — ${reason.trim()}`, { points: false });
+      if (c.device) await SA.services.payment.refund(amt, `Credit from Super Malaab — ${reason.trim()}`, { points: false });
       saveRec(id, { credits: [{ amount: amt, reason: reason.trim(), at: Date.now() }, ...(rec(id).credits || [])] });
       db().insert('refunds', { customerId: id, amount: amt, bearer: 'platform', kind: 'credit', reason: reason.trim(), at: Date.now() }, 'rf');
       log('customer.credit', `Credited ${amt.toLocaleString()} EGP to ${c.name}’s wallet: ${reason.trim()}`, id);
@@ -281,7 +281,7 @@
       db().all('stores').filter((s) => s.ownerId === accountId && !s.official).forEach((s) => db().update('stores', s.id, { status: status === 'active' ? 'active' : 'suspended' }));
       log(`partner.${status}`, `${status === 'active' ? 'Reactivated' : 'Suspended'} ${a.company} (${a.name})${reason ? `: ${reason.trim()}` : ''}`, accountId);
       N()?.toAccount(accountId, status === 'active'
-        ? { cat: 'account', tone: 'turf', title: 'Your account is active again', body: 'Your pitches and store are back on Super App.', link: '#/dash' }
+        ? { cat: 'account', tone: 'turf', title: 'Your account is active again', body: 'Your pitches and store are back on Super Malaab.', link: '#/dash' }
         : { cat: 'account', tone: 'danger', title: 'Your account is suspended', body: `${reason.trim()} Your pitches and store are hidden until this is resolved.`, link: '#/dash' });
     },
     /** Commission deal for one partner (percent values; empty = platform rate) */
@@ -323,8 +323,8 @@
       const st = db().find('stores', p.storeId);
       log(hidden ? 'product.hidden' : 'product.restored', `${hidden ? 'Hid' : 'Restored'} “${p.name}” (${st?.name || ''})${hidden ? `: ${reason.trim()}` : ''}`, productId);
       if (st && !st.official) N()?.toAccount(st.ownerId, hidden
-        ? { cat: 'store', tone: 'danger', title: `Hidden by Super App: ${p.name}`, body: `${reason.trim()} Fix the listing, then contact Help & support to bring it back.`, link: '#/dash/store' }
-        : { cat: 'store', tone: 'turf', title: `Back in the shop: ${p.name}`, body: 'Super App restored this product.', link: '#/dash/store' });
+        ? { cat: 'store', tone: 'danger', title: `Hidden by Super Malaab: ${p.name}`, body: `${reason.trim()} Fix the listing, then contact Help & support to bring it back.`, link: '#/dash/store' }
+        : { cat: 'store', tone: 'turf', title: `Back in the shop: ${p.name}`, body: 'Super Malaab restored this product.', link: '#/dash/store' });
     },
     /** Save the whole shop category list (order = array order) */
     saveCategories(list) {
@@ -344,9 +344,9 @@
     setPitchStatus(pitchId, status, reason = '') {
       me();
       const p = db().find('pitches', pitchId); if (!p) throw new ApiError('Pitch not found.', 'not_found');
-      db().update('pitches', pitchId, { status, closedReason: status === 'closed' ? (reason.trim() || 'Closed by Super App') : '' });
+      db().update('pitches', pitchId, { status, closedReason: status === 'closed' ? (reason.trim() || 'Closed by Super Malaab') : '' });
       log(`pitch.${status}`, `${status === 'active' ? 'Reopened' : 'Closed'} ${p.name}${reason ? `: ${reason.trim()}` : ''}`, pitchId);
-      N()?.toAccount(p.ownerId, { cat: 'account', tone: status === 'active' ? 'turf' : 'danger', title: `${p.name} ${status === 'active' ? 'is open again' : 'was closed by Super App'}`, body: status === 'active' ? 'Players can book it again.' : reason.trim(), link: '#/dash/pitches' });
+      N()?.toAccount(p.ownerId, { cat: 'account', tone: status === 'active' ? 'turf' : 'danger', title: `${p.name} ${status === 'active' ? 'is open again' : 'was closed by Super Malaab'}`, body: status === 'active' ? 'Players can book it again.' : reason.trim(), link: '#/dash/pitches' });
     },
     setSellerStatus(sellerId, status, reason = '') {
       me();
@@ -376,9 +376,9 @@
       if (t.length < 2) throw new ApiError('Write a reply first.', 'invalid');
       db().update('tickets', id, { messages: [...tk.messages, { by: 'admin', name: me().name, text: t.slice(0, 2000), at: Date.now() }], status: resolve ? 'resolved' : 'pending', resolvedAt: resolve ? Date.now() : tk.resolvedAt || 0 });
       log('support.replied', `Replied to ${tk.id}${resolve ? ' and resolved it' : ''}: ${t.slice(0, 80)}`, id);
-      admin._tellTicket(tk, 'Super App replied', t.slice(0, 140));
+      admin._tellTicket(tk, 'Super Malaab replied', t.slice(0, 140));
     },
-    /** Ask the pitch owner / seller a dispute is about (private: the customer doesn't see it; Super App passes on the answer) */
+    /** Ask the pitch owner / seller a dispute is about (private: the customer doesn't see it; Super Malaab passes on the answer) */
     askParty(id, text) {
       me();
       const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');
@@ -386,8 +386,8 @@
       const t = String(text || '').trim(); if (t.length < 2) throw new ApiError('Write your question first.', 'invalid');
       db().update('tickets', id, { messages: [...tk.messages, { by: 'admin', name: me().name, text: t.slice(0, 2000), at: Date.now(), private: true, to: 'party' }], waitingParty: Date.now() });
       log('support.asked', `Asked ${db().find('accounts', tk.against)?.company || 'the partner'} about ${tk.id}: ${t.slice(0, 80)}`, id);
-      N()?.toAccount(tk.against, { cat: 'account', tone: 'gold', title: `Super App needs your answer · ${tk.id}`, body: t.slice(0, 140), link: `#/dash/support/${tk.id}` });
-      // The customer knows Super App is checking with the venue or seller
+      N()?.toAccount(tk.against, { cat: 'account', tone: 'gold', title: `Super Malaab needs your answer · ${tk.id}`, body: t.slice(0, 140), link: `#/dash/support/${tk.id}` });
+      // The customer knows Super Malaab is checking with the venue or seller
       admin._tellTicket(tk, 'We’re checking with them', `We asked ${db().find('accounts', tk.against)?.company || 'the partner'} about your request and will update you.`);
     },
     setTicket(id, patch) {
@@ -397,7 +397,7 @@
       log('support.updated', `${tk.id}: ${Object.entries(patch).map(([k, v]) => `${k} → ${v}`).join(', ')}`, id);
       if (patch.status === 'resolved') admin._tellTicket(tk, 'Your request was resolved', tk.subject);
     },
-    /** Refund a dispute: the customer gets the money; Super App, the partner or the seller pays for it */
+    /** Refund a dispute: the customer gets the money; Super Malaab, the partner or the seller pays for it */
     async refundTicket(id, { amount, bearer, note = '' }) {
       me();
       const tk = db().find('tickets', id); if (!tk) throw new ApiError('Ticket not found.', 'not_found');
@@ -412,10 +412,10 @@
       if (tk.from?.kind === 'customer' && u && tk.from.id === u.id) await SA.services.payment.refund(amt, `Refund — ${tk.id} ${tk.subject}`);
       const rf = db().insert('refunds', { ticketId: id, customerId: tk.from?.id, amount: amt, bearer: bearer === 'partner' ? 'partner' : 'platform', against: tk.against, ref: tk.ref, note: note.trim(), at: Date.now() }, 'rf');
       if (bearer === 'partner') admin.adjust({ accountId: tk.against, amount: -amt, reason: `Refund to a customer for ${tk.id}: ${tk.subject}`, kind: 'refund', ref: id });
-      const who = bearer === 'partner' ? (db().find('accounts', tk.against)?.company || 'the partner') : 'Super App';
-      db().update('tickets', id, { refund: { amount: amt, bearer, at: Date.now(), id: rf.id }, messages: [...tk.messages, { by: 'system', name: 'Super App', text: `Refund of ${amt.toLocaleString()} EGP sent to the customer${note.trim() ? ` — ${note.trim()}` : ''}.`, at: Date.now() }] });
+      const who = bearer === 'partner' ? (db().find('accounts', tk.against)?.company || 'the partner') : 'Super Malaab';
+      db().update('tickets', id, { refund: { amount: amt, bearer, at: Date.now(), id: rf.id }, messages: [...tk.messages, { by: 'system', name: 'Super Malaab', text: `Refund of ${amt.toLocaleString()} EGP sent to the customer${note.trim() ? ` — ${note.trim()}` : ''}.`, at: Date.now() }] });
       log('support.refunded', `Refunded ${amt.toLocaleString()} EGP for ${tk.id} (paid by ${who})`, id);
-      admin._tellTicket(tk, `${amt.toLocaleString()} EGP refund sent`, tk.from?.kind === 'customer' ? 'It’s in your Super App wallet.' : tk.subject);
+      admin._tellTicket(tk, `${amt.toLocaleString()} EGP refund sent`, tk.from?.kind === 'customer' ? 'It’s in your Super Malaab wallet.' : tk.subject);
     },
     /** Notify whoever opened the ticket */
     _tellTicket(tk, title, body) {
@@ -465,7 +465,7 @@
       log('package.exception', `Excused a missed game in ${seriesId} (${fmtDate(b.date)}); make-up on ${date}: ${note.trim()}`, seriesId);
       return { makeupId: id, date };
     },
-    /** Cancel a printed item before it ships (refund the customer; a started print is a cost for Super App) */
+    /** Cancel a printed item before it ships (refund the customer; a started print is a cost for Super Malaab) */
     async cancelPrint(id, reason) {
       me();
       const o = db().find('podOrders', id); if (!o) throw new ApiError('Item not found.', 'not_found');
@@ -482,7 +482,7 @@
       N()?.toSeller(o.sellerId, { cat: 'orders', tone: 'danger', title: `Cancelled: ${o.title}`, body: `${reason.trim()} No profit is counted for this item.`, link: '#/dash/seller/orders' });
       log('print.cancelled', `Cancelled printed item ${o.id} “${o.title}”: ${reason.trim()}`, id);
     },
-    /* ---------- Super App promo codes ---------- */
+    /* ---------- Super Malaab promo codes ---------- */
     promos: () => db().all('codes').filter((c) => c.kind === 'platform' && !c.deleted).sort((a, b) => b.createdAt - a.createdAt),
     partnerCodes: () => db().all('codes').filter((c) => c.kind !== 'platform' && !c.deleted).map((c) => ({ ...c, owner: db().find('accounts', c.ownerId) })).sort((a, b) => b.createdAt - a.createdAt),
     savePromo(d, id = null) {
@@ -503,7 +503,7 @@
       const rec = { code, kind: 'platform', ownerId: me().id, storeId: null, pitchIds: [], scope: d.scope, type: d.type, value: d.type === 'shipping' ? 0 : Math.round(v), min: Math.round(+d.min || 0), maxUses: Math.round(+d.maxUses || 0),
         perCustomer: d.perCustomer ? 1 : 0, from: d.from || isoDate(today()), to: d.to || '', label: (d.label || '').trim(), note: (d.note || '').trim(), status: d.status === 'paused' ? 'paused' : 'active' };
       const out = id ? db().update('codes', id, rec) : db().insert('codes', { ...rec, uses: 0, discountGiven: 0, revenue: 0, usedBy: [] }, 'cd');
-      log(id ? 'promo.updated' : 'promo.created', `${id ? 'Updated' : 'Created'} Super App code ${code} (${SA.services.codes.label(out)}, ${d.scope})`, out.id);
+      log(id ? 'promo.updated' : 'promo.created', `${id ? 'Updated' : 'Created'} Super Malaab code ${code} (${SA.services.codes.label(out)}, ${d.scope})`, out.id);
       return out;
     },
     setCodeStatus(id, status) { me(); const c = db().find('codes', id); db().update('codes', id, { status }); log('promo.status', `${status === 'active' ? 'Resumed' : 'Paused'} code ${c.code}${c.kind !== 'platform' ? ` (${db().find('accounts', c.ownerId)?.company || 'partner'})` : ''}`, id); },
@@ -526,7 +526,7 @@
       if (!admin.AUDIENCES[audience]) e.audience = 'Choose who gets it.';
       if (!title || title.trim().length < 3) e.title = 'Write a title (3+ characters).';
       if (!body || body.trim().length < 5) e.body = 'Write the message.';
-      if (link && !/^#\/|^\//.test(link)) e.link = 'Use a link inside Super App, like #/shop or #/fantasy.';
+      if (link && !/^#\/|^\//.test(link)) e.link = 'Use a link inside Super Malaab, like #/shop or #/fantasy.';
       const at = when ? new Date(when).getTime() : 0;
       if (when && !(at > Date.now())) e.when = 'Pick a time in the future, or leave it empty to send now.';
       if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
@@ -551,7 +551,7 @@
       me();
       const e = {};
       if (!d.title || d.title.trim().length < 5) e.title = 'Write a headline (5+ characters).';
-      if (!d.link || !/^#\//.test(d.link.trim())) e.link = 'Use a link inside Super App, like #/shop?cat=boots.';
+      if (!d.link || !/^#\//.test(d.link.trim())) e.link = 'Use a link inside Super Malaab, like #/shop?cat=boots.';
       if (!d.image) e.image = 'Choose a photo.';
       if (d.to && d.from && d.to < d.from) e.to = 'End on or after the start date.';
       if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
@@ -577,7 +577,7 @@
       me();
       const on = !!d.on && d.on !== 'off';
       if (on && (!d.text || d.text.trim().length < 5)) throw new ApiError('Write the announcement (5+ characters).', 'invalid', { text: 'Write the announcement' });
-      if (d.link && !/^#\//.test(d.link.trim())) throw new ApiError('Use a link inside Super App.', 'invalid', { link: 'Use a link like #/fantasy' });
+      if (d.link && !/^#\//.test(d.link.trim())) throw new ApiError('Use a link inside Super Malaab.', 'invalid', { link: 'Use a link like #/fantasy' });
       const prev = db().settings().announcement || {};
       const a = { on, text: (d.text || '').trim().slice(0, 160), link: (d.link || '').trim(), cta: (d.cta || '').trim().slice(0, 24), tone: ['info', 'promo', 'alert'].includes(d.tone) ? d.tone : 'info', until: d.until || '', v: (prev.v || 0) + 1 };
       db().setSettings({ announcement: a });
@@ -598,7 +598,7 @@
       const e = {};
       if (!d.title || d.title.trim().length < 4) e.title = 'Write a title (4+ characters).';
       if (!d.text || d.text.trim().length < 10) e.text = 'Write a line about the offer (10+ characters).';
-      if (!/^#\//.test(String(d.link || '').trim())) e.link = 'Use a link inside Super App, like #/fantasy';
+      if (!/^#\//.test(String(d.link || '').trim())) e.link = 'Use a link inside Super Malaab, like #/fantasy';
       if (!/^#[0-9a-f]{6}$/i.test(d.color || '')) e.color = 'Pick a colour.';
       if (Object.keys(e).length) throw new ApiError(Object.values(e)[0], 'invalid', e);
       const cur = SA.services.content.promoPops();
@@ -663,7 +663,7 @@
       }
       return null;
     },
-    /** Close a round: winners from the league table get their prize; vouchers become single-use Super App codes */
+    /** Close a round: winners from the league table get their prize; vouchers become single-use Super Malaab codes */
     announceWinners(leagueId, lg) {
       me();
       const F = SA.services.fantasy;
@@ -690,7 +690,7 @@
         if (!rows.length) throw new ApiError('No prize matches the top of the table.', 'invalid');
         const w = db().insert('fantasyWinners', { leagueId, league: l.name, lg: lg || prev, gw: Math.max(1, meta.gw - 1), at: Date.now(), sponsor: l.sponsor?.name || '', rows, by: me().name }, 'fw');
         const mine = rows.find((r) => r.isMe);
-        if (mine) SA.services.user.notify({ kind: 'fantasy', title: `You won in ${l.name}!`, body: `Rank ${mine.rank}: ${mine.prize}.${mine.code ? ` Your code: ${mine.code}` : ' The Super App team will contact you to deliver it.'}`, link: '/fantasy/leagues' });
+        if (mine) SA.services.user.notify({ kind: 'fantasy', title: `You won in ${l.name}!`, body: `Rank ${mine.rank}: ${mine.prize}.${mine.code ? ` Your code: ${mine.code}` : ' The Super Malaab team will contact you to deliver it.'}`, link: '/fantasy/leagues' });
         log('fantasy.winners', `Announced ${rows.length} winner${rows.length > 1 ? 's' : ''} in ${l.name} (GW${w.gw})`, w.id);
         return w;
       } finally { if (lg && lg !== prev) F.use(prev); }
@@ -760,7 +760,7 @@
       const p = db().find('pitches', id); if (!p) throw new ApiError('Pitch not found.', 'not_found');
       db().update('pitches', id, { review: 'approved', reviewReason: '', reviewedAt: Date.now() });
       log('pitch.approved', `Approved new pitch ${p.name} (${db().find('accounts', p.ownerId)?.company || ''})`, id);
-      N()?.toAccount(p.ownerId, { cat: 'store', tone: 'turf', title: `${p.name} is live on Super App`, body: 'Players can find and book it now.', link: '#/dash/pitches' });
+      N()?.toAccount(p.ownerId, { cat: 'store', tone: 'turf', title: `${p.name} is live on Super Malaab`, body: 'Players can find and book it now.', link: '#/dash/pitches' });
     },
     rejectPitch(id, reason) {
       me();
@@ -812,7 +812,7 @@
       db().update('communityPosts', postId, patch);
       log(`community.report-${action}`, `${action === 'hide' ? 'Removed' : 'Kept'} a reported ${r.commentId ? 'comment' : 'post'} (${r.reason}) in ${db().find('communities', p.communityId)?.name || ''}`, postId);
     },
-    /** Post in a community as "Super App Admin" */
+    /** Post in a community as "Super Malaab Admin" */
     communityPost(communityId, { text, poll = [], image = null, pinned = false, announcement = true }) {
       me();
       const CS = SA.services.community;
@@ -822,12 +822,12 @@
       const opts = (poll || []).map((o) => String(o).trim()).filter(Boolean);
       if (opts.length === 1 || opts.length > 6) throw new ApiError('A poll needs 2 to 6 options.', 'invalid', { poll: 'Add options' });
       const p = db().insert('communityPosts', { communityId, author: { ...CS.ADMIN }, text: t.slice(0, 3000), image, poll: opts.length ? { options: opts.map((o) => ({ text: o, votes: [] })) } : null, reactions: {}, comments: [], pinned: !!pinned, announcement: !!announcement, at: Date.now() }, 'cp');
-      log('community.post', `Posted in ${c.name} as Super App Admin: “${t.slice(0, 70)}”`, p.id);
+      log('community.post', `Posted in ${c.name} as Super Malaab Admin: “${t.slice(0, 70)}”`, p.id);
       const u = deviceUser();
-      if (u && (SA.core.store.get().communities || []).includes(communityId)) SA.services.user.notify({ kind: 'shop', title: `Super App Admin posted in ${c.name}`, body: t.slice(0, 120), link: `/community/${c.slug}/${p.id}` });
+      if (u && (SA.core.store.get().communities || []).includes(communityId)) SA.services.user.notify({ kind: 'shop', title: `Super Malaab Admin posted in ${c.name}`, body: t.slice(0, 120), link: `/community/${c.slug}/${p.id}` });
       return p;
     },
-    /** Reply to a post (or to one comment) as "Super App Admin" */
+    /** Reply to a post (or to one comment) as "Super Malaab Admin" */
     communityReply(postId, text, replyTo = null) {
       me();
       const p = db().find('communityPosts', postId); if (!p) throw new ApiError('Post not found.', 'not_found');
@@ -836,10 +836,10 @@
       const cm = { id: `cm-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`, author: { ...SA.services.community.ADMIN }, text: t.slice(0, 1500), at: Date.now(), replyTo: replyTo || null };
       db().update('communityPosts', postId, { comments: [...(p.comments || []), cm] });
       const c = db().find('communities', p.communityId);
-      log('community.reply', `Replied as Super App Admin in ${c?.name || ''}: “${t.slice(0, 70)}”`, postId);
+      log('community.reply', `Replied as Super Malaab Admin in ${c?.name || ''}: “${t.slice(0, 70)}”`, postId);
       const u = deviceUser();
       const target = replyTo ? (p.comments || []).find((x) => x.id === replyTo)?.author : p.author;
-      if (u && target?.id === u.id) SA.services.user.notify({ kind: 'shop', title: 'Super App Admin replied to you', body: t.slice(0, 120), link: `/community/${c?.slug}/${p.id}` });
+      if (u && target?.id === u.id) SA.services.user.notify({ kind: 'shop', title: 'Super Malaab Admin replied to you', body: t.slice(0, 120), link: `/community/${c?.slug}/${p.id}` });
       return cm;
     },
     setPost(postId, patch, what) {

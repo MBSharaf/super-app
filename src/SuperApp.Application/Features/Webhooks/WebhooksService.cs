@@ -111,7 +111,7 @@ public sealed class WebhooksService(
     public async Task<WebhookTestDto> TestAsync(int id, CancellationToken ct)
     {
         var sub = await store.FindAsync(id, ct) ?? throw new NotFoundException("Webhook not found.");
-        var payload = System.Text.Json.JsonSerializer.Serialize(new { message = "Test from Super App — your webhook works." });
+        var payload = System.Text.Json.JsonSerializer.Serialize(new { message = "Test from Super Malaab — your webhook works." });
         return await sender.SendAsync(sub, Guid.NewGuid(), "webhook.test", clock.UtcNow, payload, ct);
     }
 

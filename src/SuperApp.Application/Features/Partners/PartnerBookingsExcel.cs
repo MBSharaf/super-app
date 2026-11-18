@@ -24,7 +24,7 @@ public static class PartnerBookingsExcel
             new("Walk-ins", rows.Count(r => r.Source == "WalkIn")),
             new("Hours booked", active.Sum(r => r.Duration)),
             new("Pitch revenue", active.Sum(r => r.PitchAmount), IsMoney: true),
-            new("Super App commission", active.Sum(r => Math.Round(r.PitchAmount * r.CommissionRate / 100, 2)), IsMoney: true),
+            new("Super Malaab commission", active.Sum(r => Math.Round(r.PitchAmount * r.CommissionRate / 100, 2)), IsMoney: true),
             new("Refunded", rows.Sum(r => r.RefundAmount), IsMoney: true),
             new("Deposits paid in the app", active.Sum(r => r.Deposit), IsMoney: true),
             new("Due at the pitch (not collected yet)", active.Where(r => r.BalancePaidAt is null).Sum(r => r.BalanceDue), IsMoney: true),

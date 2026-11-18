@@ -164,7 +164,7 @@ html.reduce-motion .wa-fab::before { display: none; }
 .footer-grid .brand { display: inline-flex; padding: 0; color: #fff; }
 .site-footer .brand-mark svg { stroke: var(--ink); }
 
-/* Announcement bar (set by the Super App team in the admin console) */
+/* Announcement bar (set by the Super Malaab team in the admin console) */
 .announce { background: var(--ink-bg); color: #fff; }
 .announce.t-promo { background: linear-gradient(90deg, var(--blaze-2), var(--blaze)); }
 .announce.t-alert { background: var(--danger-fill); }

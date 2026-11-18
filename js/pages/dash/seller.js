@@ -34,7 +34,7 @@
   /* ---------- Overview ---------- */
   SA.pages.dashSeller = C.guard({
     roles: ['seller'],
-    title: 'Seller dashboard — Super App',
+    title: 'Seller dashboard — Super Malaab',
     render() {
       const s = seller(); if (!s) return noSeller('seller', 'Overview');
       const l = SL().levelOf(s);
@@ -84,8 +84,8 @@
             ${orders.length ? `<ul class="sl-orders">${orders.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.title)}</b><span class="xs muted" style="display:block">${esc(o.color)} · ${esc(o.size)} · ${timeAgo(o.placedAt)} · ${esc(o.customer.city || '')}</span></span><span class="sl-o-r">${status(o.status)}<b class="num xs">${o.status === 'refused' ? '—' : `+${money(o.profit)}`}</b></span></li>`).join('')}</ul>` : `<p class="small soft" style="margin-top:10px">No orders yet. Share your store link to get the first one.</p>`}</section>
         </div>
         <section class="dash-card"><h2 class="h4">Seller levels</h2><div style="margin-top:12px">${SA.ui.seller.ladder(l.index)}</div></section>`; }
-      const gate = s.status === 'pending' ? `<div class="notice gold">${icon('clock', 18)}<span><b>Waiting for approval.</b> The Super App team checks new sellers within one working day. ${pod ? 'Your designs and products go live once you’re approved.' : 'You can add products once you’re approved.'}</span></div>` : s.status === 'rejected' ? `<div class="notice blaze">${icon('alert', 18)}<span><b>Not approved.</b> ${esc(s.reviewReason || '')} Contact Help & support to appeal.</span></div>` : '';
-      return C.layout('seller', { title: `Hi, ${esc(D().me().name.split(' ')[0])}`, subtitle: `${esc(s.name)} · superapp.eg/s/${esc(s.handle)}`, actions: `<a class="btn btn-outline" href="#/s/${esc(s.handle)}" target="_blank" rel="noopener">${icon('eye', 15)} View store</a>`, body: gate + body });
+      const gate = s.status === 'pending' ? `<div class="notice gold">${icon('clock', 18)}<span><b>Waiting for approval.</b> The Super Malaab team checks new sellers within one working day. ${pod ? 'Your designs and products go live once you’re approved.' : 'You can add products once you’re approved.'}</span></div>` : s.status === 'rejected' ? `<div class="notice blaze">${icon('alert', 18)}<span><b>Not approved.</b> ${esc(s.reviewReason || '')} Contact Help & support to appeal.</span></div>` : '';
+      return C.layout('seller', { title: `Hi, ${esc(D().me().name.split(' ')[0])}`, subtitle: `${esc(s.name)} · supermalaab.eg/s/${esc(s.handle)}`, actions: `<a class="btn btn-outline" href="#/s/${esc(s.handle)}" target="_blank" rel="noopener">${icon('eye', 15)} View store</a>`, body: gate + body });
     },
     mount(el) {
       const bars = el.querySelector('.sl-bars'), tip = el.querySelector('.sl-tip');
@@ -101,7 +101,7 @@
   /* ---------- Designs ---------- */
   SA.pages.dashSellerDesigns = C.guard({
     roles: ['seller'],
-    title: 'My designs — Super App',
+    title: 'My designs — Super Malaab',
     render(ctx) {
       const s = seller(); if (!s) return noSeller('seller-designs', 'Designs');
       const st = ctx.query.status || '';
@@ -150,7 +150,7 @@
         f.size.addEventListener('change', () => { m.querySelector('[data-sm-price]').innerHTML = priceLine(f.size.value); });
         f.addEventListener('submit', (e) => {
           e.preventDefault();
-          try { P().requestSample(designId, SA.core.utils.formData(f)); close(); SA.ui.overlay.toast('Sample requested — the Super App team approves it shortly'); SA.app.rerender(); }
+          try { P().requestSample(designId, SA.core.utils.formData(f)); close(); SA.ui.overlay.toast('Sample requested — the Super Malaab team approves it shortly'); SA.app.rerender(); }
           catch (err) { m.querySelector('[data-err="form"]').textContent = err.message; }
         });
       },
@@ -160,7 +160,7 @@
   /* ---------- Print orders ---------- */
   SA.pages.dashSellerOrders = C.guard({
     roles: ['seller'],
-    title: 'Orders — Super App',
+    title: 'Orders — Super Malaab',
     render(ctx) {
       const s = seller(); if (!s) return noSeller('seller-orders', 'Orders');
       const kind = s.mode === 'store' ? 'store' : s.mode === 'pod' ? 'pod' : (ctx.query.kind || 'pod');
@@ -196,7 +196,7 @@
   /* ---------- Wallet ---------- */
   SA.pages.dashSellerWallet = C.guard({
     roles: ['seller'],
-    title: 'Seller wallet — Super App',
+    title: 'Seller wallet — Super Malaab',
     render() {
       const s = seller(); if (!s) return noSeller('seller-wallet', 'Wallet');
       const e = P().earnings(s.id);
@@ -234,7 +234,7 @@
         <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Withdrawals</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Requested</th><th>To</th><th>Status</th><th class="r">Amount</th></tr></thead><tbody>
           ${payouts.map((p) => `<tr><td class="small">${fmtDate(new Date(p.createdAt))}</td><td class="small">${esc(p.method)} ${esc(p.detail)}</td><td><span class="badge ${p.status === 'paid' ? 'badge-turf' : p.status === 'rejected' ? 'badge-danger' : 'badge-gold'}">${p.status === 'paid' ? 'Paid' : p.status === 'rejected' ? 'Rejected' : 'Processing'}</span>${p.status === 'paid' ? ` <button class="btn btn-ghost btn-sm" data-payout-pdf="${p.id}">${icon('file', 13)} PDF</button>` : ''}${p.status === 'rejected' && p.reason ? `<span class="xs muted" style="display:block">${esc(p.reason)}</span>` : ''}${p.status === 'paid' && p.ref ? `<span class="xs muted" style="display:block">Ref ${esc(p.ref)}</span>` : ''}</td><td class="r num">${money(p.amount)}</td></tr>`).join('') || '<tr><td colspan="4" class="small soft">No withdrawals yet.</td></tr>'}
         </tbody></table></div></section>
-        ${e.adjustments?.length ? `<section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Balance adjustments</h2><p class="xs muted" style="padding:4px 18px 0">Made by the Super App team — refund shares, sample charges and corrections.</p><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Reason</th><th class="r">Amount</th></tr></thead><tbody>
+        ${e.adjustments?.length ? `<section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Balance adjustments</h2><p class="xs muted" style="padding:4px 18px 0">Made by the Super Malaab team — refund shares, sample charges and corrections.</p><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Reason</th><th class="r">Amount</th></tr></thead><tbody>
           ${e.adjustments.slice().sort((x, y) => y.at - x.at).map((x) => `<tr><td class="small">${fmtDate(new Date(x.at))}</td><td class="small">${esc(x.reason)}</td><td class="r num strong" style="color:${x.amount > 0 ? 'var(--turf)' : 'var(--danger)'}">${x.amount > 0 ? '+' : '−'}${money(Math.abs(x.amount))}</td></tr>`).join('')}
         </tbody></table></div></section>` : ''}`;
       return C.layout('seller-wallet', { title: 'Wallet', subtitle: `Minimum withdrawal ${money(e.minWithdraw)} · ${s.live ? 'money released 24 hours after delivery' : `profit released ${P().cfg().holdDays} days after delivery`}`, body });
@@ -269,13 +269,13 @@
         <div class="ss-cover-tools"><button type="button" class="btn btn-sm ss-glass" data-pick="cover">${icon('camera', 14)} ${cover ? 'Change cover' : 'Upload cover'}</button>${cover ? `<button type="button" class="btn btn-sm ss-glass" data-remove="cover" aria-label="Remove cover">${icon('trash', 14)}</button>` : ''}</div></div>
       <div class="ss-head">
         <button type="button" class="ss-logo" data-pick="logo" aria-label="${s.logo ? 'Change logo' : 'Upload logo'}" style="--accent:${s.accent || '#17795A'}">${s.logo ? `<img src="${esc(s.logo)}" alt="" />` : `<span>${esc(SA.core.utils.initials(s.name))}</span>`}<i>${icon('camera', 14)}</i></button>
-        <div class="grow"><b class="h3">${esc(s.name)}</b><span class="small soft" style="display:block">${(s.tags || []).length ? s.tags.map((t) => `#${esc(t)}`).join(' ') : 'Creator on Super App'}</span></div>
+        <div class="grow"><b class="h3">${esc(s.name)}</b><span class="small soft" style="display:block">${(s.tags || []).length ? s.tags.map((t) => `#${esc(t)}`).join(' ') : 'Creator on Super Malaab'}</span></div>
       </div>`;
   };
 
   SA.pages.dashSellerStore = C.guard({
     roles: ['seller'],
-    title: 'Store settings — Super App',
+    title: 'Store settings — Super Malaab',
     render() {
       const s = seller(); if (!s) return noSeller('seller-store', 'Store settings');
       const acc = D().me();
@@ -291,7 +291,7 @@
                 <div class="field"><label for="ss-name">Store name</label><input class="input" id="ss-name" name="name" maxlength="40" value="${esc(s.name)}" required /></div>
                 <div class="field"><label for="ss-tag">Tags <span class="muted">(up to 5, comma between them)</span></label><input class="input" id="ss-tag" name="tags" maxlength="120" value="${esc((s.tags || []).join(', '))}" placeholder="e.g. streetwear, ahly, retro" /><span class="field-hint">Shoppers find you when they search or tap these tags in the shop. You see how many found you in Analytics.</span></div>
                 <div class="field span-2"><label for="ss-handle">Store link</label>
-                  <div class="input-affix"><span class="affix" data-i18n-skip>superapp.eg/s/</span><input class="input" id="ss-handle" name="handle" maxlength="30" value="${esc(s.handle)}" dir="ltr" autocomplete="off" spellcheck="false" /></div>
+                  <div class="input-affix"><span class="affix" data-i18n-skip>supermalaab.eg/s/</span><input class="input" id="ss-handle" name="handle" maxlength="30" value="${esc(s.handle)}" dir="ltr" autocomplete="off" spellcheck="false" /></div>
                   <div class="row wrap" style="--gap:8px;margin-top:8px"><code class="ss-url num" data-store-url dir="ltr">${esc(SA.core.router.url(`/s/${s.handle}`))}</code><button type="button" class="btn btn-outline btn-sm" data-copy-link>${icon('copy', 14)} Copy link</button></div>
                   <span class="field-hint" data-handle-hint>Changing it breaks links you already shared.</span></div>
                 <div class="field span-2"><label for="ss-bio">About the store</label><textarea class="textarea" id="ss-bio" name="bio" maxlength="280" placeholder="What do you make? Who is it for?">${esc(s.bio || '')}</textarea><span class="field-hint" data-count>${(s.bio || '').length} / 280</span></div>
@@ -328,7 +328,7 @@
           <aside class="ss-aside">
             <div class="dash-card">
               <b class="small">Your store page</b>
-              <p class="xs muted" style="margin-top:4px">superapp.eg/s/<span data-handle-view>${esc(s.handle)}</span></p>
+              <p class="xs muted" style="margin-top:4px">supermalaab.eg/s/<span data-handle-view>${esc(s.handle)}</span></p>
               <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">${icon('check', 15, 2.6)} Save changes</button>
               <a class="btn btn-outline btn-block" href="#/s/${esc(s.handle)}" style="margin-top:8px">${icon('eye', 15)} View store</a>
             </div>
@@ -414,7 +414,7 @@
     : `<section class="dash-card"><h2 class="h4">${icon('tag', 16)} Tags</h2><p class="small soft">Add tags to your store so shoppers find you when they search or tap a tag. <a class="link" href="#/dash/seller/store">Add tags</a></p></section>`;
   SA.pages.dashSellerAnalytics = C.guard({
     roles: ['seller'],
-    title: 'Analytics — Super App',
+    title: 'Analytics — Super Malaab',
     render(ctx) {
       const s = seller(); if (!s) return noSeller('seller-analytics', 'Analytics');
       const lv = SL().levelOf(s);

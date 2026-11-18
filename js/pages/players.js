@@ -33,7 +33,7 @@
         <form id="join-form" class="stack" style="--gap:14px;margin-top:16px">
           <div class="form-grid"><div class="field"><label for="jn-pos">Your position</label><select class="select" id="jn-pos" name="position">${S.games.POSITIONS.map((p) => `<option ${p === (m.needsGK ? 'Goalkeeper' : S.user.me().position) ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
             <div class="field"><label for="jn-msg">Message to the host <span class="muted">(optional)</span></label><input class="input" id="jn-msg" name="message" maxlength="200" placeholder="e.g. I can be there 15 minutes early" /></div></div>
-          <div class="notice ${hs.autoAccept ? 'turf' : ''}">${icon(hs.autoAccept ? 'bolt' : 'shield', 18)}<span>${hs.autoAccept ? '<b>Instant:</b> this host accepts automatically — you’re in as soon as you pay.' : `<b>${esc(m.hostName)} decides.</b> Your share is held by Super App and comes back in full if you’re not accepted.`} The host sees your record: ${rec.games} games${rec.attendance != null ? `, ${Math.round(rec.attendance * 100)}% attendance` : ''}${rec.rating ? `, ${rec.rating.toFixed(1)}★` : ''}.</span></div>
+          <div class="notice ${hs.autoAccept ? 'turf' : ''}">${icon(hs.autoAccept ? 'bolt' : 'shield', 18)}<span>${hs.autoAccept ? '<b>Instant:</b> this host accepts automatically — you’re in as soon as you pay.' : `<b>${esc(m.hostName)} decides.</b> Your share is held by Super Malaab and comes back in full if you’re not accepted.`} The host sees your record: ${rec.games} games${rec.attendance != null ? `, ${Math.round(rec.attendance * 100)}% attendance` : ''}${rec.rating ? `, ${rec.rating.toFixed(1)}★` : ''}.</span></div>
           ${SA.ui.payment.render({ amount: m.pricePerPlayer, allowCash: false, name: 'joinpay' })}
           ${SA.ui.legal.field()}
           <p class="xs muted">${icon('clock', 12)} Tip: arrive 10 minutes early, and tell the host if you can’t make it.</p>
@@ -59,7 +59,7 @@
   };
 
   SA.pages.players = {
-    title: 'Find players — Super App',
+    title: 'Find players — Super Malaab',
     openJoin,
     async render() {
       const mine = await S.matches.mine();

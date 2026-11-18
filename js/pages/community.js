@@ -1,7 +1,7 @@
 /**
  * Communities on the site: #/community (your feed + all communities), #/community/:slug (one community) and
  * #/community/:slug/:postId (one post). The post card and its actions are shared with the admin console, where the
- * Super App team also replies and posts as "Super App Admin" and moderates.
+ * Super Malaab team also replies and posts as "Super Malaab Admin" and moderates.
  */
 (function (SA) {
   const { esc, timeAgo } = SA.core.utils;
@@ -43,7 +43,7 @@
         <button class="btn btn-ghost btn-sm" data-toggle-comments="${p.id}">${icon('message', 14)} ${(comments || []).length} comment${(comments || []).length === 1 ? '' : 's'}</button>
       </footer>
       ${opts.admin ? `<div class="cm-admin-bar">
-          <button class="btn btn-primary btn-sm" data-admin-reply>${icon('shield', 13)} Reply as Super App Admin</button>
+          <button class="btn btn-primary btn-sm" data-admin-reply>${icon('shield', 13)} Reply as Super Malaab Admin</button>
           <button class="btn btn-ghost btn-sm" data-admin="${p.pinned ? 'unpin' : 'pin'}">${icon('pin', 13)} ${p.pinned ? 'Unpin' : 'Pin'}</button>
           <button class="btn btn-ghost btn-sm" data-admin="${p.locked ? 'unlock' : 'lock'}">${icon('lock', 13)} ${p.locked ? 'Open comments' : 'Close comments'}</button>
           <button class="btn btn-ghost btn-sm" data-admin="${p.hidden ? 'show' : 'hide'}">${icon(p.hidden ? 'eye' : 'ban', 13)} ${p.hidden ? 'Show' : 'Hide'}</button>
@@ -56,7 +56,7 @@
               <p class="small">${text(x.text)}</p>${(() => { const h = LC().fromText(x.text); return h ? `<div class="lk-list lk-sm">${h}</div>` : ''; })()}</div>
               <span class="xs muted cm-cmeta">${timeAgo(x.at)} · ${opts.admin ? `<button class="link xs" data-admin-reply="${x.id}">Reply as admin</button> · <button class="link xs" data-admin-c="${x.hidden ? 'show' : 'hide'}">${x.hidden ? 'Show' : 'Hide'}</button>${x.author.kind === 'user' ? ' · <button class="link xs" data-admin-c="mute">Mute</button>' : ''}`
                 : `${p.locked ? '' : `<button class="link xs" data-reply="${x.id}">Reply</button> · `}${x.author.id === SA.core.store.get().user?.id ? `<button class="link xs" data-del-c="${x.id}">Delete</button>` : `<button class="link xs" data-report-c="${x.id}">Report</button>`}`}</span></div></div>`).join('') || '<p class="xs muted">No comments yet.</p>'}
-          ${opts.admin ? `<form class="cm-reply-form" data-admin-form>${replyTarget.get(p.id) && byId[replyTarget.get(p.id)] ? `<span class="xs cm-replying">↪ Replying to ${esc(byId[replyTarget.get(p.id)].author.name)} <button type="button" class="link xs" data-cancel-reply>cancel</button></span>` : ''}<input class="input" name="text" placeholder="Reply as Super App Admin…" maxlength="1500" /><button class="btn btn-primary btn-sm" type="submit">Send</button></form>`
+          ${opts.admin ? `<form class="cm-reply-form" data-admin-form>${replyTarget.get(p.id) && byId[replyTarget.get(p.id)] ? `<span class="xs cm-replying">↪ Replying to ${esc(byId[replyTarget.get(p.id)].author.name)} <button type="button" class="link xs" data-cancel-reply>cancel</button></span>` : ''}<input class="input" name="text" placeholder="Reply as Super Malaab Admin…" maxlength="1500" /><button class="btn btn-primary btn-sm" type="submit">Send</button></form>`
             : p.locked ? '' : `<form class="cm-reply-form" data-comment-form>${replyTarget.get(p.id) && byId[replyTarget.get(p.id)] ? `<span class="xs cm-replying">↪ Replying to ${esc(byId[replyTarget.get(p.id)].author.name)} <button type="button" class="link xs" data-cancel-reply>cancel</button></span>` : ''}<input class="input" name="text" placeholder="Write a comment…" maxlength="800" /><button class="btn btn-primary btn-sm" type="submit">Send</button></form>`}
         </div>` : ''}
     </article>`;
@@ -89,15 +89,15 @@
       const id = card.dataset.post;
       try {
         if (f.matches('[data-comment-form]')) { CS().comment(id, f.text.value, replyTarget.get(id)); replyTarget.delete(id); open.add(id); rerender(); }
-        if (f.matches('[data-admin-form]')) { SA.services.admin.communityReply(id, f.text.value, replyTarget.get(id)); replyTarget.delete(id); open.add(id); toast('Reply posted as Super App Admin'); rerender(); }
+        if (f.matches('[data-admin-form]')) { SA.services.admin.communityReply(id, f.text.value, replyTarget.get(id)); replyTarget.delete(id); open.add(id); toast('Reply posted as Super Malaab Admin'); rerender(); }
       } catch (err) { toast(err.message, 'error'); }
     });
   };
   const report = (postId, commentId = null) => SA.ui.overlay.open({
-    title: commentId ? 'Report this comment' : 'Report this post', subtitle: 'The Super App team checks every report. The person won’t know who reported it.',
+    title: commentId ? 'Report this comment' : 'Report this post', subtitle: 'The Super Malaab team checks every report. The person won’t know who reported it.',
     body: `<form class="stack" style="--gap:8px" data-rep>${REASONS.map(([k, l], i) => `<label class="choice"><input type="radio" name="reason" value="${k}" ${i ? '' : 'checked'} /><span class="radio-dot"></span><span class="grow">${l}</span></label>`).join('')}
       <div class="row" style="--gap:8px;justify-content:flex-end;margin-top:6px"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">Send report</button></div></form>`,
-    onMount(m, close) { m.querySelector('[data-rep]').addEventListener('submit', (e) => { e.preventDefault(); try { CS().report(postId, { commentId, reason: e.target.reason.value }); close(); toast('Thanks — the Super App team will check it'); } catch (err) { toast(err.message, 'error'); } }); },
+    onMount(m, close) { m.querySelector('[data-rep]').addEventListener('submit', (e) => { e.preventDefault(); try { CS().report(postId, { commentId, reason: e.target.reason.value }); close(); toast('Thanks — the Super Malaab team will check it'); } catch (err) { toast(err.message, 'error'); } }); },
   });
   const menu = (postId) => {
     const p = CS().post(postId);
@@ -127,23 +127,23 @@
     ${c.joined ? '<span class="badge badge-turf">Joined</span>' : c.access.ok ? '<span class="badge">Open</span>' : `<span class="badge">${icon('lock', 11)} ${esc(c.access.reason)}</span>`}</span></a>`;
 
   SA.pages.communities = {
-    title: 'Communities — Super App',
+    title: 'Communities — Super Malaab',
     render() {
       const list = CS().list();
       const feed = CS().myFeed();
       return `<div class="container section-tight cm-page">
-        <div class="page-head"><h1 class="h1">Communities</h1><p class="lead">Talk to players, sellers and fans — tips, polls and news from the Super App team.</p></div>
+        <div class="page-head"><h1 class="h1">Communities</h1><p class="lead">Talk to players, sellers and fans — tips, polls and news from the Super Malaab team.</p></div>
         <div class="cm-grid">${list.map(card).join('')}</div>
         <section class="section-tight"><div class="sec-head"><h2 class="h3">Latest from your communities</h2></div>
           ${feed.length ? `<div class="cm-feed">${feed.map((p) => postCard(p, { showCommunity: true })).join('')}</div>` : `<div class="panel">${SA.ui.c.empty({ icon: 'users', title: 'Join a community', text: 'Posts from the communities you join show up here.' })}</div>`}</section>
-        <p class="xs muted" style="margin-top:12px">${icon('shield', 12)} Communities are run by the Super App team. No phone numbers or outside links — keep deals safe on Super App.</p>
+        <p class="xs muted" style="margin-top:12px">${icon('shield', 12)} Communities are run by the Super Malaab team. No phone numbers or outside links — keep deals safe on Super Malaab.</p>
       </div>`;
     },
     mount(el) { bindPosts(el); },
   };
 
   SA.pages.community = {
-    title: 'Community — Super App',
+    title: 'Community — Super Malaab',
     render(ctx) {
       let c; try { c = CS().get(ctx.params.slug); } catch (e) { return `<div class="container section">${SA.ui.c.empty({ icon: 'users', title: 'Community not found', action: '<a class="btn btn-primary" href="#/community">All communities</a>' })}</div>`; }
       const sort = ctx.query.sort === 'top' ? 'top' : 'new';
@@ -194,7 +194,7 @@
   };
 
   SA.pages.communityPost = {
-    title: 'Post — Super App Communities',
+    title: 'Post — Super Malaab Communities',
     render(ctx) {
       let p, c;
       try { c = CS().get(ctx.params.slug); p = CS().post(ctx.params.postId); } catch (e) { return `<div class="container section">${SA.ui.c.empty({ icon: 'message', title: 'Post not found', text: esc(e.message), action: '<a class="btn btn-primary" href="#/community">Communities</a>' })}</div>`; }

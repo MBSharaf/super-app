@@ -12,8 +12,8 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Shop.Returns;
 
 /// <summary>
-/// Deciding returns (API §4.3, FR-RET-04/05): the store (or Super App for the official store and printed items) approves —
-/// Super App's courier pickup is booked — or rejects with a reason (the store's held earning is released); when the items
+/// Deciding returns (API §4.3, FR-RET-04/05): the store (or Super Malaab for the official store and printed items) approves —
+/// Super Malaab's courier pickup is booked — or rejects with a reason (the store's held earning is released); when the items
 /// are back: refund (to the customer's wallet, paid by the store with the return delivery), exchange (stock back, the new
 /// size sent, the store pays both trips), or reprint (the factory prints it again).
 /// </summary>
@@ -119,7 +119,7 @@ public sealed class ReturnDecisionsService(
             if (sibling is { } s) { await returns.TakeStockAsync(s, line.Qty, ct); }
         }
         var parcel = ret.Order.Fulfilments.FirstOrDefault(f => f.StoreId == ret.Order.Items.Single(i => i.Id == lines[0].OrderItemId).StoreId);
-        await courier.BookAsync(ret.Order, parcel?.Id, null, 0, lines.Sum(l => l.Qty), await orders.CustomerNameAsync(ret.CustomerId, ct), ("Super App returns", "Returns desk"), ct);
+        await courier.BookAsync(ret.Order, parcel?.Id, null, 0, lines.Sum(l => l.Qty), await orders.CustomerNameAsync(ret.CustomerId, ct), ("Super Malaab returns", "Returns desk"), ct);
         return true;
     }
 

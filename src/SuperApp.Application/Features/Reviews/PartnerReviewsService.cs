@@ -10,7 +10,7 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Reviews;
 
-/// <summary>A review in the partner dashboard. <c>Reported</c>: an open report is waiting for Super App.</summary>
+/// <summary>A review in the partner dashboard. <c>Reported</c>: an open report is waiting for Super Malaab.</summary>
 public sealed record PartnerReviewDto(long Id, long PitchId, string PitchName, int Stars, string? Text, string CustomerName, string? BookingCode,
     string? Reply, DateTime? RepliedAt, bool IsHidden, bool Reported, DateTime CreatedAt);
 
@@ -83,7 +83,7 @@ public sealed class PartnerReviewsService(
         var review = await OwnAsync(id, ct);
         if (await reviews.OpenReportExistsAsync(id, ct))
         {
-            throw new ConflictException("This review is already reported. Super App will decide soon.", "already_reported");
+            throw new ConflictException("This review is already reported. Super Malaab will decide soon.", "already_reported");
         }
         reviews.AddReport(new ReviewReport { ReviewId = review.Id, ReporterId = currentUser.UserId!.Value, Reason = request.Reason.Trim(), Status = ReviewReportStatus.Open });
         await unitOfWork.SaveChangesAsync(ct);
@@ -126,5 +126,5 @@ public sealed class ReplyRequestValidator : AbstractValidator<ReplyRequest>
 
 public sealed class ReportRequestValidator : AbstractValidator<ReportRequest>
 {
-    public ReportRequestValidator() => RuleFor(x => x.Reason).NotEmpty().WithMessage("Tell Super App what’s wrong with this review.").Length(5, 300);
+    public ReportRequestValidator() => RuleFor(x => x.Reason).NotEmpty().WithMessage("Tell Super Malaab what’s wrong with this review.").Length(5, 300);
 }

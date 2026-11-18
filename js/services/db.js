@@ -115,6 +115,12 @@
     const { seeded } = SA.core.utils;
     let changed = false;
     const ensure = (k, make) => { if (data[k] === undefined) { data[k] = make(); changed = true; } };
+    // The app was renamed (2026-11-18): demo data saved on this device before that still says "Super App"
+    if (!data.renamedMalaab) {
+      data = JSON.parse(JSON.stringify(data).replace(/Super App/g, 'Super Malaab').replace(/SUPER APP/g, 'SUPER MALAAB').replace(/سوبر آب/g, 'سوبر ملعب'));
+      data.renamedMalaab = true;
+      changed = true;
+    }
     ensure('reviews', () => seedReviews(data.pitches, data.accounts));
     ensure('series', () => []);
     ensure('promos', () => []);
@@ -145,7 +151,7 @@
         { ...base, id: 'cd-kickoff10', code: 'KICKOFF10', scope: 'shop', type: 'percent', value: 10, label: '10% off your order', note: 'Welcome code', uses: 412, discountGiven: 51870, revenue: 466830 },
         { ...base, id: 'cd-pitch50', code: 'PITCH50', scope: 'shop', type: 'fixed', value: 50, min: 500, label: '50 EGP off', note: '', uses: 188, discountGiven: 9400, revenue: 151200 },
         { ...base, id: 'cd-freeship', code: 'FREESHIP', scope: 'shop', type: 'shipping', value: 0, label: 'Free delivery', note: '', uses: 265, discountGiven: 15900, revenue: 198750 },
-        { ...base, id: 'cd-firstgame', code: 'FIRSTGAME', scope: 'bookings', type: 'percent', value: 15, label: '15% off your first booking', perCustomer: 1, note: 'New players — Super App pays, venues get the full price', uses: 96, discountGiven: 9120, revenue: 51680, from: d(-20) },
+        { ...base, id: 'cd-firstgame', code: 'FIRSTGAME', scope: 'bookings', type: 'percent', value: 15, label: '15% off your first booking', perCustomer: 1, note: 'New players — Super Malaab pays, venues get the full price', uses: 96, discountGiven: 9120, revenue: 51680, from: d(-20) },
       );
       changed = true;
     }
@@ -175,7 +181,7 @@
       data.settings.adminSeed = 1; changed = true;
     }
     if (!data.settings.fantasySubs) { data.settings.fantasySubs = { one: 50, both: 80 }; changed = true; }
-    // Rule (2026-11-03, owner): every fantasy league is free; the Super App League's top 3 of each gameweek win Super Points
+    // Rule (2026-11-03, owner): every fantasy league is free; the Super Malaab League's top 3 of each gameweek win Super Points
     if (!Array.isArray(data.settings.fantasyWeekly)) { data.settings.fantasyWeekly = [1500, 1000, 500]; changed = true; }
     if (!Array.isArray(data.fantasyWeekly)) { data.fantasyWeekly = []; changed = true; }
     if (!data.settings.loyalty) { data.settings.loyalty = { earnPer: 10, pointValue: 0.05, minRedeem: 1000 }; changed = true; }
@@ -221,7 +227,7 @@
     const now = Date.now();
     const since = now - 120 * DAY; // the platform has history for ~4 months
     const accounts = [
-      { id: 'acc-admin', role: 'admin', name: 'Super App HQ', company: 'Super App Egypt', email: 'admin@superapp.example', phone: '+20 2 2735 0000', avatar: 7, joinedAt: since, payout: { method: 'Bank transfer', detail: 'CIB •••• 0042' } },
+      { id: 'acc-admin', role: 'admin', name: 'Super Malaab HQ', company: 'Super Malaab Egypt', email: 'admin@superapp.example', phone: '+20 2 2735 0000', avatar: 7, joinedAt: since, payout: { method: 'Bank transfer', detail: 'CIB •••• 0042' } },
       { id: 'acc-o1', role: 'owner', name: 'Karim Adel', company: 'Turf 22 Group', email: 'karim@turf22.example', phone: '+20 100 555 2201', avatar: 0, joinedAt: since, payout: { method: 'Bank transfer', detail: 'NBE •••• 7731' } },
       { id: 'acc-o2', role: 'owner', name: 'Hazem Tarek', company: 'Gezira Sports Co.', email: 'hazem@gezira.example', phone: '+20 111 444 9020', avatar: 5, joinedAt: since, payout: { method: 'InstaPay', detail: 'hazem.tarek@instapay' } },
       { id: 'acc-o3', role: 'owner', name: 'Mariam Fathy', company: 'Maadi Sports Ventures', email: 'mariam@maadisports.example', phone: '+20 122 310 4488', avatar: 10, joinedAt: since, payout: { method: 'Bank transfer', detail: 'QNB •••• 1180' } },
@@ -233,7 +239,7 @@
       seedSnapshot: { price: p.price, peakPrice: p.peakPrice, open: p.open.slice() },
     }));
     const stores = [
-      { id: 'st-official', ownerId: 'acc-admin', name: 'Super App Store', slug: 'super-app-store', tagline: 'Official gear, delivered across Egypt', description: 'The official Super App shop: original boots, balls, kits and training gear.', logo: null, cover: 'photo-1579952363873-27f3bade9f55', phone: '+20 2 2735 0000', status: 'active', official: true, createdAt: since },
+      { id: 'st-official', ownerId: 'acc-admin', name: 'Super Malaab Store', slug: 'super-app-store', tagline: 'Official gear, delivered across Egypt', description: 'The official Super Malaab shop: original boots, balls, kits and training gear.', logo: null, cover: 'photo-1579952363873-27f3bade9f55', phone: '+20 2 2735 0000', status: 'active', official: true, createdAt: since },
       { id: 'st-turf22', ownerId: 'acc-o1', name: 'Turf 22 Pro Shop', slug: 'turf-22-pro-shop', tagline: 'Matchday kit from the Turf 22 team', description: 'Bibs, balls and grip socks we use on our own pitches every night.', logo: null, cover: 'photo-1551958219-acbc608c6377', phone: '+20 100 555 2201', status: 'active', createdAt: since + 20 * DAY },
     ];
     const products = [
@@ -247,7 +253,7 @@
       settings: { commission: { bookings: 0.10, store: 0.12 }, serviceFee: 0.03, settlementDay: 1 },
       accounts, stores, pitches, products,
       bookings: [], bookingOverrides: {}, closures: [], sales: [], payouts: [],
-      activity: [{ id: 'act-seed', at: since, actor: 'acc-admin', action: 'platform.launch', text: 'Super App partner platform launched' }],
+      activity: [{ id: 'act-seed', at: since, actor: 'acc-admin', action: 'platform.launch', text: 'Super Malaab partner platform launched' }],
     };
   };
 

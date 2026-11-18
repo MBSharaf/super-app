@@ -36,7 +36,7 @@ public sealed class SellerAccess(ISellerScopes sellers, ICurrentUser currentUser
         var me = currentUser.UserId ?? throw new UnauthorizedException();
         scope ??= await sellers.ScopeAsync(me, ct) ?? throw new ForbiddenException("This page is for sellers. Apply to open your store first.", "not_seller");
         return scope.Status == SellerStatus.Suspended
-            ? throw new FeatureDisabledException("Your seller account is suspended. Contact Super App support.", "seller_suspended")
+            ? throw new FeatureDisabledException("Your seller account is suspended. Contact Super Malaab support.", "seller_suspended")
             : scope;
     }
 }

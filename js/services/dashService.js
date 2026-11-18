@@ -43,7 +43,7 @@
     signIn(id, { as = '' } = {}) {
       const a = db.find('accounts', id);
       if (!a) throw new ApiError('Account not found.', 'not_found');
-      if (a.status === 'suspended') throw new ApiError('This account is suspended. Contact the Super App team.', 'suspended');
+      if (a.status === 'suspended') throw new ApiError('This account is suspended. Contact the Super Malaab team.', 'suspended');
       const paused = SA.services.ceo?.blockedAccount(a); if (paused) throw new ApiError(`This agent is paused by the CEO: ${paused}`, 'suspended');
       const key = a.role === 'admin' ? ADMIN_SESSION : (as === 'seller' || a.role === 'seller' || (sellerMode() && sellsOn(a))) ? SELLER_SESSION : SESSION;
       localStorage.setItem(key, id);
@@ -112,12 +112,12 @@
   };
 
   const commissionRate = () => db.settings().commission.bookings;
-  // A partner can have its own commission deal (set by the Super App team); otherwise the platform rate applies
+  // A partner can have its own commission deal (set by the Super Malaab team); otherwise the platform rate applies
   const dealOf = (ownerId) => db.find('accounts', ownerId)?.commission || null;
   const bookingRate = (ownerId) => (dealOf(ownerId)?.bookings ?? commissionRate());
-  const SOURCES = { app: 'Super App', 'walk-in': 'Walk-in', team: 'Team booking' };
-  const sourceLabel = (b) => (b.source === 'app' && b.seriesId ? 'Super App · weekly' : SOURCES[b.source] || 'Super App');
-  /** The part of an app deposit that pays for the pitch (the service fee is Super App's) */
+  const SOURCES = { app: 'Super Malaab', 'walk-in': 'Walk-in', team: 'Team booking' };
+  const sourceLabel = (b) => (b.source === 'app' && b.seriesId ? 'Super Malaab · weekly' : SOURCES[b.source] || 'Super Malaab');
+  /** The part of an app deposit that pays for the pitch (the service fee is Super Malaab's) */
   const depositPart = (b) => Math.min(b.amount, Math.max(0, (b.deposit || 0) - (b.fee || 0)));
   /** Money for one booking, from the partner's point of view */
   const bookingMoney = (b, status = statusOf(b)) => {
@@ -199,7 +199,7 @@
   };
   /**
    * Fulfilment of one order line. Partner stores move their own orders (packed → shipped →
-   * delivered); the official store and historical orders follow Super App logistics' timeline.
+   * delivered); the official store and historical orders follow Super Malaab logistics' timeline.
    */
   const FLOW = ['confirmed', 'packed', 'shipped', 'delivered'];
   const saleState = (s) => {
@@ -207,7 +207,7 @@
     if (f?.status) return { status: f.status, at: f.at || {}, courier: f.courier || '', tracking: f.tracking || '', deliveredAt: f.at?.delivered || null, manual: true };
     const st = db.find('stores', s.storeId);
     const h = (Date.now() - s.createdAt) / 36e5;
-    if (st?.official) { const status = SA.services.shop.orderStatus(s.createdAt); return { status, at: {}, auto: true, courier: 'Super App Delivery', tracking: '', deliveredAt: status === 'delivered' ? s.createdAt + 48 * 36e5 : null }; }
+    if (st?.official) { const status = SA.services.shop.orderStatus(s.createdAt); return { status, at: {}, auto: true, courier: 'Super Malaab Delivery', tracking: '', deliveredAt: status === 'delivered' ? s.createdAt + 48 * 36e5 : null }; }
     if (s.synthetic) {
       if (h > 72) return { status: 'delivered', at: {}, deliveredAt: s.createdAt + 60 * 36e5 };
       const r = seeded(`${s.id}|ful`);
@@ -318,7 +318,7 @@
       if (deliveredAt < cut) { s.settled += x.money.net; const k = weekKey(deliveredAt); weekly.set(k, (weekly.get(k) || 0) + x.money.net); }
       else s.available += x.money.net;
     });
-    // Withdrawals stay "processing" until the Super App team approves them in the admin console
+    // Withdrawals stay "processing" until the Super Malaab team approves them in the admin console
     const requested = db.all('payouts').filter((p) => (scopeOwner ? p.accountId === scopeOwner : isAdmin(a) ? true : p.accountId === a.id));
     const adjust = (db.all('adjustments') || []).filter((x) => x.accountId === (scopeOwner || a.id) && x.wallet !== 'pod');
     const autoPayouts = [...weekly.entries()].filter(([, amt]) => amt > 0).map(([t, amt]) => ({ id: `PO-AUTO-${t}`, createdAt: t, amount: Math.round(amt), method: acct?.payout?.method || 'Bank transfer', detail: acct?.payout?.detail || '—', status: 'paid', auto: true }));
@@ -586,10 +586,10 @@
     createPitch(d, ownerId) {
       const a = me(); const e = validatePitch(d); if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
       const owner = isAdmin(a) && ownerId ? ownerId : a.id;
-      // New pitches go live after the Super App team checks them (admins' own pitches are live straight away)
+      // New pitches go live after the Super Malaab team checks them (admins' own pitches are live straight away)
       const review = isAdmin(a) ? 'approved' : 'pending';
       const p = db.insert('pitches', { id: `p-${d.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${Math.random().toString(36).slice(2, 5)}`, ...cleanPitch(d), ownerId: owner, status: d.status === 'closed' ? 'closed' : 'active', closedReason: '', rating: 0, reviews: 0, seed: false, review, submittedAt: Date.now() });
-      db.log(a.id, 'pitch.created', `Added pitch “${p.name}”${review === 'pending' ? ' — waiting for Super App review' : ''}`, p.id);
+      db.log(a.id, 'pitch.created', `Added pitch “${p.name}”${review === 'pending' ? ' — waiting for Super Malaab review' : ''}`, p.id);
       if (review === 'pending') SA.services.notify?.toAdmins({ cat: 'store', title: `New pitch to approve: ${p.name}`, body: `${a.company} · ${p.area}, ${p.city}`, link: '#/admin/approvals' });
       return p;
     },
@@ -611,7 +611,7 @@
     async deletePitch(id) {
       const p = dash.pitch(id);
       const up = dash.upcomingFor(id);
-      for (const b of up) await cancelBooking(b.id, { reason: 'Pitch removed from Super App' });
+      for (const b of up) await cancelBooking(b.id, { reason: 'Pitch removed from Super Malaab' });
       db.update('pitches', id, { deleted: true, status: 'closed', deletedAt: Date.now() });
       db.log(me().id, 'pitch.deleted', `Removed pitch “${p.name}”${up.length ? ` and cancelled ${up.length} upcoming booking${up.length > 1 ? 's' : ''}` : ''}`, id);
       return { cancelled: up.length };
@@ -693,7 +693,7 @@
       return out;
     },
     setStoreStatus(id, status) {
-      assert(isAdmin(), 'Only Super App admins can suspend stores.');
+      assert(isAdmin(), 'Only Super Malaab admins can suspend stores.');
       const s = db.update('stores', id, { status });
       db.log(me().id, `store.${status}`, `${status === 'active' ? 'Reactivated' : 'Suspended'} store “${s.name}”`, id);
       return s;
@@ -832,19 +832,19 @@
       const r = dash.review(id);
       if (!reason) throw new ApiError('Choose a reason.', 'invalid', { reason: 'Required' });
       db.update('reviews', id, { reported: { reason, at: Date.now(), by: me().id } });
-      db.log(me().id, 'review.reported', `Reported ${r.customer.name}’s review to Super App — ${reason}`, id);
+      db.log(me().id, 'review.reported', `Reported ${r.customer.name}’s review to Super Malaab — ${reason}`, id);
       SA.services.notify?.toAdmins({ cat: 'store', tone: 'danger', title: `Review reported: ${db.find('pitches', r.pitchId)?.name || ''}`, body: `${me().company || me().name}: ${reason}`, link: '#/admin/reviews?filter=reported' });
-      SA.services.notify?.toAccount(me().id, { cat: 'store', title: 'Report sent to Super App', body: `We’ll check ${r.customer.name}’s review and tell you what we decided.`, link: '#/dash/reviews?filter=reported' });
+      SA.services.notify?.toAccount(me().id, { cat: 'store', title: 'Report sent to Super Malaab', body: `We’ll check ${r.customer.name}’s review and tell you what we decided.`, link: '#/dash/reviews?filter=reported' });
     },
     moderateReview(id, action) {
-      assert(isAdmin(), 'Only Super App admins can moderate reviews.');
+      assert(isAdmin(), 'Only Super Malaab admins can moderate reviews.');
       const r = db.find('reviews', id);
       const patch = action === 'hide' ? { hidden: true, reported: r.reported ? { ...r.reported, resolved: 'hidden' } : null } : action === 'show' ? { hidden: false } : { reported: null };
       db.update('reviews', id, patch);
       db.log(me().id, `review.${action}`, `${action === 'hide' ? 'Hid' : action === 'show' ? 'Restored' : 'Kept'} ${r.customer.name}’s review`, id);
-      // The pitch partner and the player who wrote it hear what Super App decided
+      // The pitch partner and the player who wrote it hear what Super Malaab decided
       const p = db.find('pitches', r.pitchId);
-      if (p) SA.services.notify?.toAccount(p.ownerId, { cat: 'store', tone: action === 'hide' ? 'turf' : '', title: action === 'hide' ? 'A review was hidden' : action === 'show' ? 'A review is visible again' : 'Super App kept a review', body: `${r.customer.name}’s ${r.rating}★ review on ${p.name}${action === 'keep' ? ' follows the review rules, so it stays. You can reply to it publicly.' : '.'}`, link: '#/dash/reviews' });
+      if (p) SA.services.notify?.toAccount(p.ownerId, { cat: 'store', tone: action === 'hide' ? 'turf' : '', title: action === 'hide' ? 'A review was hidden' : action === 'show' ? 'A review is visible again' : 'Super Malaab kept a review', body: `${r.customer.name}’s ${r.rating}★ review on ${p.name}${action === 'keep' ? ' follows the review rules, so it stays. You can reply to it publicly.' : '.'}`, link: '#/dash/reviews' });
       const u = SA.core.store.get().user;
       if (u && r.customer?.id === u.id && action !== 'keep') SA.services.user.notify({ kind: 'booking', title: action === 'hide' ? 'Your review was hidden' : 'Your review is visible again', body: action === 'hide' ? `Your review of ${p?.name || 'the pitch'} doesn’t follow the review rules (no insults or personal details).` : `${p?.name || ''}`, link: `/pitches/${r.pitchId}` });
     },
@@ -908,8 +908,8 @@
     // ---- Check-in ----
     checkIn(raw) {
       const parsed = SA.services.bookings.parseCheckInCode(raw);
-      if (!parsed) return { state: 'invalid', message: 'This isn’t a Super App booking code.' };
-      if (!parsed.valid) return { state: 'invalid', message: 'This code has been changed. Ask the customer to open the booking in the Super App.' };
+      if (!parsed) return { state: 'invalid', message: 'This isn’t a Super Malaab booking code.' };
+      if (!parsed.valid) return { state: 'invalid', message: 'This code has been changed. Ask the customer to open the booking in the Super Malaab.' };
       if (parsed.series) return dash.checkPackage(parsed);
       const b = findBooking(parsed.id);
       if (!b) return { state: 'not-found', message: `No booking with the ID ${parsed.id}.` };
@@ -1035,7 +1035,7 @@
       if (unreplied.length) out.push({ key: 'reviews', icon: 'star', tone: 'info', count: unreplied.length, title: `${unreplied.length} review${unreplied.length > 1 ? 's' : ''} waiting for a reply`, text: 'Replies show under the review on your pitch page.', href: '#/dash/reviews?filter=unreplied' });
       if (isAdmin()) {
         const rep = db.all('reviews').filter((r) => r.reported && !r.reported.resolved && !r.hidden);
-        if (rep.length) out.push({ key: 'reported', icon: 'shield', tone: 'danger', count: rep.length, title: `${rep.length} reported review${rep.length > 1 ? 's' : ''}`, text: 'Partners asked Super App to check these.', href: '#/dash/reviews?filter=reported' });
+        if (rep.length) out.push({ key: 'reported', icon: 'shield', tone: 'danger', count: rep.length, title: `${rep.length} reported review${rep.length > 1 ? 's' : ''}`, text: 'Partners asked Super Malaab to check these.', href: '#/dash/reviews?filter=reported' });
         if (SA.services.pod) {
           const q = SA.services.pod.queue().length + db.all('reports').filter((r) => r.status === 'open').length;
           if (q) out.push({ key: 'pod-review', icon: 'image', tone: 'gold', count: q, title: `${q} design${q > 1 ? 's' : ''} to review`, text: 'New designs, spot checks and copyright reports.', href: '#/dash/pod-review' });
@@ -1054,14 +1054,14 @@
 
     // ---- Admin ----
     setCommission({ bookings, store }) {
-      assert(isAdmin(), 'Only Super App admins can change commission rates.');
+      assert(isAdmin(), 'Only Super Malaab admins can change commission rates.');
       const b = +bookings / 100, s = +store / 100;
       if (!(b >= 0 && b <= 0.5 && s >= 0 && s <= 0.5)) throw new ApiError('Commission must be between 0% and 50%.', 'invalid');
       db.setSettings({ commission: { bookings: b, store: s } });
       db.log(me().id, 'settings.commission', `Set commission to ${+bookings}% on bookings and ${+store}% on store sales`);
     },
     setVat(v) {
-      assert(isAdmin(), 'Only Super App admins can change the VAT rate.');
+      assert(isAdmin(), 'Only Super Malaab admins can change the VAT rate.');
       const r = +v / 100;
       if (!(v !== '' && r >= 0 && r <= 0.3)) throw new ApiError('VAT must be between 0% and 30%.', 'invalid');
       db.setSettings({ vat: r });

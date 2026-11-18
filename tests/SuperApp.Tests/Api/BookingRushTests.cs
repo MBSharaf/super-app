@@ -70,7 +70,7 @@ public sealed class BookingRushTests(AccountsApiFactory api) : IClassFixture<Acc
         payers.Where(winners.Contains).Count().ShouldBe(Pitches);
         payers.Where(losers.Contains).ShouldBeEmpty();
 
-        // Every winner has a payment receipt (unique numbers), and Super App's revenue wallet matches its ledger lines
+        // Every winner has a payment receipt (unique numbers), and Super Malaab's revenue wallet matches its ledger lines
         var ids = bookings.Select(b => b.Id).ToList();
         var (receipts, revenue, revenueLines) = await api.DbAsync(async db => (
             await db.Set<Receipt>().Where(r => r.Kind == ReceiptKind.Payment && ids.Contains(r.RefId) && winners.Contains(r.UserId!.Value))

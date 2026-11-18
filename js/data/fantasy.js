@@ -179,10 +179,10 @@
     },
     firsts: ['Mohamed', 'Ahmed', 'Mahmoud', 'Mostafa', 'Omar', 'Karim', 'Hossam', 'Youssef', 'Ali', 'Islam', 'Amr', 'Tarek', 'Hesham', 'Ibrahim', 'Khaled', 'Ziad', 'Hamza', 'Marwan', 'Seif', 'Hazem', 'Abdelrahman', 'Mazen', 'Ayman', 'Sherif', 'Kareem', 'Fady', 'Belal', 'Adham'],
     lasts: ['Gaber', 'Fathy', 'El Sayed', 'Hamdy', 'Abdelaziz', 'Mansour', 'Salah', 'Kamal', 'Shawky', 'Eid', 'Ragab', 'Soliman', 'Nasr', 'El Gendy', 'Fouad', 'Hegazy', 'Morsy', 'Wahba', 'Zaki', 'Atef', 'Galal', 'Shehata', 'Rizk', 'Barakat', 'El Masry', 'Tawfik', 'Farag', 'Lotfy'],
-    // Every league is free (owner, 2026-11-03). "official" = the Super App League (weekly Super Points); "free" = sponsor leagues.
+    // Every league is free (owner, 2026-11-03). "official" = the Super Malaab League (weekly Super Points); "free" = sponsor leagues.
     officialLeagues: [
-      { id: 'ol-grand', name: 'Super App League', kind: 'official', participants: 184320, prizeValue: 0,
-        scope: 'Every gameweek', from: 1, blurb: 'Super App’s own league, run by the Super App team. Everyone who builds a team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
+      { id: 'ol-grand', name: 'Super Malaab League', kind: 'official', participants: 184320, prizeValue: 0,
+        scope: 'Every gameweek', from: 1, blurb: 'Super Malaab’s own league, run by the Super Malaab team. Everyone who builds a team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
         prizes: [['1st', 'Two season tickets + signed kit'], ['2nd', 'Signed kit + 2,000 EGP shop voucher'], ['3rd', '1,000 EGP shop voucher'], ['Top 100', '15% shop discount code']] },
       { id: 'ol-derby', name: 'Cairo Derby Cup', kind: 'free', participants: 3846, cap: 5000, prizeValue: 60000,
         scope: 'GW 9 – GW 17', from: 9, to: 17, blurb: 'Nine gameweeks — the winner watches the derby from the stands.', color: 'blaze',
@@ -253,8 +253,8 @@
     firsts: ['James', 'Jack', 'Harry', 'Oliver', 'George', 'Charlie', 'Tom', 'Josh', 'Ben', 'Lewis', 'Ryan', 'Callum', 'Luke', 'Jamie', 'Kyle', 'Aaron', 'Liam', 'Owen', 'Connor', 'Dan', 'Mason', 'Ethan', 'Sam', 'Joe'],
     lasts: ['Walker', 'Cooper', 'Hughes', 'Clarke', 'Wright', 'Turner', 'Mitchell', 'Phillips', 'Evans', 'Morris', 'Bennett', 'Barnes', 'Fletcher', 'Webb', 'Carter', 'Lowe', 'Shaw', 'Holmes', 'Dawson', 'Reid', 'Palmer', 'Knight', 'Ward', 'Burke'],
     officialLeagues: [
-      { id: 'ol-epl-grand', name: 'Super App League', kind: 'official', participants: 96410, prizeValue: 0,
-        scope: 'Every gameweek', from: 1, blurb: 'Super App’s own league, run by the Super App team. Everyone who builds an English Premier League team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
+      { id: 'ol-epl-grand', name: 'Super Malaab League', kind: 'official', participants: 96410, prizeValue: 0,
+        scope: 'Every gameweek', from: 1, blurb: 'Super Malaab’s own league, run by the Super Malaab team. Everyone who builds an English Premier League team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
         prizes: [['1st', 'Signed Premier League shirt + 2,000 EGP shop voucher'], ['2nd', '1,500 EGP shop voucher'], ['3rd', '1,000 EGP shop voucher'], ['Top 100', '15% shop discount code']] },
       { id: 'ol-epl-kings', name: 'Egyptian Kings League', kind: 'free', participants: 5120, cap: 10000, prizeValue: 35000,
         scope: 'GW 9 – GW 20', from: 9, to: 20, blurb: 'Back the Egyptians abroad — the top managers win watch-party nights and kits.', color: 'blaze',

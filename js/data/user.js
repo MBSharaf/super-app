@@ -21,7 +21,7 @@
     // Super Points history before this device (earned on earlier games / orders)
     loyalty: {
       entries: [
-        { id: 'pt-s1', key: 'welcome', at: Date.now() - 210 * 864e5, points: 250, label: 'Welcome to Super App', kind: 'bonus' },
+        { id: 'pt-s1', key: 'welcome', at: Date.now() - 210 * 864e5, points: 250, label: 'Welcome to Super Malaab', kind: 'bonus' },
         { id: 'pt-s2', at: Date.now() - 150 * 864e5, points: 132, label: 'Played at Maadi Cage (5 games)', kind: 'earn' },
         { id: 'pt-s3', at: Date.now() - 96 * 864e5, points: 260, label: 'Played at Gezira Fives (4 games)', kind: 'earn' },
         { id: 'pt-s4', at: Date.now() - 70 * 864e5, points: 189, label: 'Order delivered — Predator boots', kind: 'earn' },

@@ -5,7 +5,7 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Domain.Entities.Money;
 
-/// <summary>A discount code funded by an owner or by Super App. Table <c>money.PromoCodes</c>.</summary>
+/// <summary>A discount code funded by an owner or by Super Malaab. Table <c>money.PromoCodes</c>.</summary>
 public class PromoCode : BaseEntity, ISoftDelete, IHasAuthor
 {
     public string Code { get; set; } = string.Empty;

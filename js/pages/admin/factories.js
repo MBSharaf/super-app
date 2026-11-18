@@ -14,7 +14,7 @@
   const db = () => SA.services.db;
   const toast = (m, type = 'success') => SA.ui.overlay.toast(m, { type });
   const H = 36e5;
-  const ST = { active: ['badge-turf', 'Active'], paused: ['badge-gold', 'Paused by Super App'], suspended: ['badge-danger', 'Suspended'] };
+  const ST = { active: ['badge-turf', 'Active'], paused: ['badge-gold', 'Paused by Super Malaab'], suspended: ['badge-danger', 'Suspended'] };
   const SH_TONE = { awaiting_pickup: 'badge-blaze', picked_up: 'badge-info', out_for_delivery: 'badge-gold', delivered: 'badge-turf', refused: 'badge-danger', cancelled: 'badge-danger' };
 
   const jobRow = (o, { actions = true } = {}) => `<tr class="${o.late ? 'is-late' : ''}">
@@ -27,7 +27,7 @@
   const jobTable = (list, empty) => (list.length ? `<section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Job</th><th>Item</th><th>Stage</th><th>Deadline</th><th></th></tr></thead><tbody>${list.slice(0, 80).map((o) => jobRow(o)).join('')}</tbody></table></div></section>` : `<div class="dash-card">${SA.ui.c.empty({ icon: 'check', title: empty, text: '' })}</div>`);
 
   SA.pages.adminFactories = A.guard({
-    title: 'Factories — Super App Admin',
+    title: 'Factories — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || '';
       const fs = F().list();
@@ -52,7 +52,7 @@
             <div class="row-between wrap" style="--gap:10px;margin-top:14px"><span class="small"><span>Owed to the factory:</span> <b>${money(m.owed)}</b> · <span>${staff.filter((x) => x.active).length} people on the team</span></span>
               <span class="row wrap" style="--gap:6px">${f.status === 'active' ? `<button class="btn btn-ghost btn-sm" data-status="${f.id}" data-to="paused">Pause</button><button class="btn btn-ghost btn-sm" data-status="${f.id}" data-to="suspended" style="color:var(--danger)">Suspend</button>` : `<button class="btn btn-primary btn-sm" data-status="${f.id}" data-to="active">Make active</button>`}<button class="btn btn-ghost btn-sm" data-strike="${f.id}">Send a warning</button></span></div>
           </section>`;
-        }).join('') + `<section class="dash-card"><h2 class="h4">How it works</h2><p class="small muted">Every printed item goes to a factory as a job with a deadline. Inside the factory it is printed (DTF), checked and packed — and when a whole order is packed, the courier is booked automatically. The factory owns its materials and stock; Super App watches deadlines, quality, prices and payments.</p></section>`;
+        }).join('') + `<section class="dash-card"><h2 class="h4">How it works</h2><p class="small muted">Every printed item goes to a factory as a job with a deadline. Inside the factory it is printed (DTF), checked and packed — and when a whole order is packed, the courier is booked automatically. The factory owns its materials and stock; Super Malaab watches deadlines, quality, prices and payments.</p></section>`;
       } else if (tab === 'jobs') {
         const f = ctx.query.f || 'attention';
         const lists = { attention: all.filter((o) => o.late || (o.issue && !o.issue.resolved)), line: all.filter((o) => F().ACTIVE.includes(o.stage)), ready: all.filter((o) => o.stage === 'ready'), done: all.filter((o) => ['shipped', 'delivered', 'refused', 'cancelled'].includes(o.stage)) };
@@ -61,7 +61,7 @@
       } else if (tab === 'shipping') {
         const cur = SH().cfg();
         const list = SH().list();
-        section = `<section class="dash-card"><h2 class="h4">Courier</h2><p class="small muted">Super App’s courier contract. Parcels are booked automatically when a factory packs an order. Switching only affects new parcels; the ones already booked stay with their courier.</p>
+        section = `<section class="dash-card"><h2 class="h4">Courier</h2><p class="small muted">Super Malaab’s courier contract. Parcels are booked automatically when a factory packs an order. Switching only affects new parcels; the ones already booked stay with their courier.</p>
             <form class="row wrap" data-courier style="--gap:10px;margin-top:12px;align-items:flex-end">
               <label class="field" style="margin:0"><span class="xs muted">Courier</span><select class="select" name="provider">${Object.values(SH().PROVIDERS).map((p) => `<option value="${p.key}" ${cur.provider === p.key ? 'selected' : ''}>${esc(p.name)}${p.note ? ` — ${esc(p.note)}` : ''}</option>`).join('')}</select></label>
               <label class="field" style="margin:0"><span class="xs muted">Mode</span><select class="select" name="mode"><option value="test" ${cur.mode === 'test' ? 'selected' : ''}>Test</option><option value="live" ${cur.mode === 'live' ? 'selected' : ''}>Live</option></select></label>
@@ -78,7 +78,7 @@
               <td><span class="badge ${r.status === 'pending' ? 'badge-gold' : r.status === 'approved' ? 'badge-turf' : ''}">${r.status === 'pending' ? 'Waiting' : r.status === 'approved' ? 'Approved' : r.status === 'replaced' ? 'Replaced' : 'Rejected'}</span></td>
               <td class="r">${r.status === 'pending' ? `<button class="btn btn-primary btn-sm" data-price-ok="${r.id}">Approve</button><button class="btn btn-ghost btn-sm" data-price-no="${r.id}">Reject</button>` : ''}</td></tr>`; }).join('') || '<tr><td colspan="7" class="small muted">No requests.</td></tr>'}
           </tbody></table></div></section>
-          <section class="dash-card"><h2 class="h4">Current prices per piece</h2><p class="xs muted">What Super App pays the factory. The shop base price and sellers’ profit are set in the <a class="link" href="#/admin/catalog">print catalogue</a>.</p>
+          <section class="dash-card"><h2 class="h4">Current prices per piece</h2><p class="xs muted">What Super Malaab pays the factory. The shop base price and sellers’ profit are set in the <a class="link" href="#/admin/catalog">print catalogue</a>.</p>
             <ul class="fac-list">${SA.services.pod.catalog({ all: true }).map((cat) => `<li class="row-between"><span class="small">${esc(cat.name)}</span><span class="small num">${money(cat.partnerCost)} <span class="xs muted">· <span>Margin</span> ${money(cat.base - cat.partnerCost)}</span></span></li>`).join('')}</ul></section>`;
       } else if (tab === 'money') {
         section = fs.map((f) => {

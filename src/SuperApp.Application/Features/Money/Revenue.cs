@@ -4,7 +4,7 @@ using SuperApp.Application.Features.Pitches;
 
 namespace SuperApp.Application.Features.Money;
 
-/// <summary>One Cairo day of platform revenue (EGP). Costs (refunds paid by Super App, vouchers) are positive amounts.</summary>
+/// <summary>One Cairo day of platform revenue (EGP). Costs (refunds paid by Super Malaab, vouchers) are positive amounts.</summary>
 public sealed record RevenueDayDto(DateOnly Date, decimal Bookings, decimal Fees, decimal Passes, decimal Refunds, decimal Promos, decimal Gmv);
 
 /// <summary>A pitch owner's bookings in the period: how many, what customers paid and our commission.</summary>
@@ -23,7 +23,7 @@ public interface IRevenueReader
 }
 
 /// <summary>
-/// GET /admin/revenue (permission revenue.read) — what Super App earns, from its revenue wallet: booking and tournament
+/// GET /admin/revenue (permission revenue.read) — what Super Malaab earns, from its revenue wallet: booking and tournament
 /// commission, service fees, Fantasy Pass; refunds it paid and Super Points vouchers as costs. Cash view: by the day the
 /// money moved (Cairo time). GMV = paid payments, wallet top-ups excluded. Default: the last 30 days; at most a year.
 /// </summary>

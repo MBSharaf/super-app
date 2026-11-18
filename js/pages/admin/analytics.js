@@ -47,14 +47,14 @@
   };
 
   SA.pages.adminAnalytics = A.guard({
-    title: 'Analytics — Super App Admin',
+    title: 'Analytics — Super Malaab Admin',
     render(ctx) {
       const r = C.range(ctx.query, '30');
       const x = build(r), t = x.tot;
       const pct = (v) => `${(v * 100).toFixed(1)}%`;
       const body = `${C.rangePicker(r, '/admin/analytics')}
         <div class="kpi-grid">
-          ${C.kpi({ label: 'Money through Super App', value: money(Math.round(t.gmv)), ic: 'trend', tone: 'k-turf', sub: `${C.rangeLabel(r)}` })}
+          ${C.kpi({ label: 'Money through Super Malaab', value: money(Math.round(t.gmv)), ic: 'trend', tone: 'k-turf', sub: `${C.rangeLabel(r)}` })}
           ${C.kpi({ label: 'Bookings', value: t.bookings.toLocaleString(), ic: 'ticket', sub: `${t.hours.toLocaleString()} hours · ${pct(x.sum.occupancy)} occupancy` })}
           ${C.kpi({ label: 'Shop orders', value: t.shopOrders.toLocaleString(), ic: 'bag', sub: `${t.units.toLocaleString()} items · ${t.printed} printed` })}
           ${C.kpi({ label: 'Customers', value: t.customers.toLocaleString(), ic: 'users', sub: `${t.customers ? Math.round((t.repeat / t.customers) * 100) : 0}% came back more than once` })}
@@ -74,7 +74,7 @@
           <section class="dash-card"><h2 class="h4">Where orders go</h2>${x.cities.length ? bars(x.cities, (v) => `${v} orders`, 'var(--info)') : '<p class="small muted">No deliveries in this period.</p>'}</section>
           <section class="dash-card"><h2 class="h4">How people pay</h2><h3 class="xs muted" style="margin-top:8px">Bookings</h3>${bars(x.payB)}<h3 class="xs muted" style="margin-top:12px">Shop</h3>${bars(x.payS, undefined, 'var(--blaze)')}</section>
         </div>`;
-      return C.layout('analytics', { title: 'Analytics', subtitle: 'Bookings, shop, printed items, customers and payments across Super App', actions: `<button class="btn btn-primary btn-sm" data-export>${icon('file', 15)} Export everything (Excel)</button>`, body });
+      return C.layout('analytics', { title: 'Analytics', subtitle: 'Bookings, shop, printed items, customers and payments across Super Malaab', actions: `<button class="btn btn-primary btn-sm" data-export>${icon('file', 15)} Export everything (Excel)</button>`, body });
     },
     mount(el, ctx) {
       C.bindRange(el, '/admin/analytics');
@@ -84,7 +84,7 @@
         const x = build(r), t = x.tot;
         const money2 = (v) => Math.round(v);
         C.xlsx(`super-app-analytics-${r.from}-to-${r.to}.xlsx`, [
-          { name: 'Summary', columns: [{ header: 'Measure', width: 36 }, { header: 'Value', width: 18 }], rows: [['Period', `${r.from} to ${r.to}`], ['Money through Super App (EGP)', money2(t.gmv)], ['Bookings', t.bookings], ['Hours booked', t.hours], ['Occupancy', `${(x.sum.occupancy * 100).toFixed(1)}%`], ['Average booking (EGP)', money2(t.avgBooking)], ['Cancelled bookings', `${(t.cancelRate * 100).toFixed(1)}%`], ['No-shows', t.noShows], ['Shop orders', t.shopOrders], ['Shop items', t.units], ['Printed items', t.printed], ['Refused print deliveries', t.refused], ['Fantasy passes', t.passes], ['Customers', t.customers], ['Repeat customers', t.repeat]] },
+          { name: 'Summary', columns: [{ header: 'Measure', width: 36 }, { header: 'Value', width: 18 }], rows: [['Period', `${r.from} to ${r.to}`], ['Money through Super Malaab (EGP)', money2(t.gmv)], ['Bookings', t.bookings], ['Hours booked', t.hours], ['Occupancy', `${(x.sum.occupancy * 100).toFixed(1)}%`], ['Average booking (EGP)', money2(t.avgBooking)], ['Cancelled bookings', `${(t.cancelRate * 100).toFixed(1)}%`], ['No-shows', t.noShows], ['Shop orders', t.shopOrders], ['Shop items', t.units], ['Printed items', t.printed], ['Refused print deliveries', t.refused], ['Fantasy passes', t.passes], ['Customers', t.customers], ['Repeat customers', t.repeat]] },
           { name: 'Daily', columns: [{ header: 'Date', width: 12 }, ...VERT.map(([, l]) => ({ header: l, width: 16, type: 'money' })), { header: 'Total', width: 16, type: 'money' }], rows: x.rows.map((d) => [d.date, money2(d.b), money2(d.s), money2(d.p), money2(d.f), money2(d.income)]), totals: ['Total', ...['b', 's', 'p', 'f'].map((k) => money2(x.rows.reduce((s, d) => s + d[k], 0))), money2(t.gmv)] },
           { name: 'Pitches', columns: [{ header: 'Pitch', width: 28 }, { header: 'Owner', width: 24 }, { header: 'Area', width: 16 }, { header: 'Bookings', width: 10, type: 'number' }, { header: 'Occupancy %', width: 12 }, { header: 'Cancelled %', width: 12 }, { header: 'Revenue', width: 14, type: 'money' }], rows: x.byPitch.map((p) => [p.p.name, p.owner, p.p.area, p.n, (p.occ * 100).toFixed(1), (p.cancel * 100).toFixed(1), money2(p.gross)]) },
           { name: 'Bookings', columns: [{ header: 'Booking', width: 26 }, { header: 'Date', width: 12 }, { header: 'Hour', width: 8, type: 'number' }, { header: 'Pitch', width: 26 }, { header: 'Customer', width: 22 }, { header: 'Source', width: 18 }, { header: 'Payment', width: 14 }, { header: 'Status', width: 12 }, { header: 'Amount', width: 12, type: 'money' }, { header: 'Commission', width: 12, type: 'money' }],

@@ -15,8 +15,8 @@ namespace SuperApp.Application.Features.Shop.Orders;
 /// <summary>
 /// Checkout (API آ§4.2, FR-SHOP-04..06, FR-POD-10): checks every line again, prices the cart exactly as shown, takes the
 /// stock, creates the order with one parcel per store and one factory job per printed item, and empties the cart.
-/// Payment (owner's decision, 2026-10-27): online only — card through the gateway or the Super App wallet. The order waits
-/// (Placed) until the gateway confirms; the Super App wallet and the simulated gateway pay at once. A payment that can't
+/// Payment (owner's decision, 2026-10-27): online only — card through the gateway or the Super Malaab wallet. The order waits
+/// (Placed) until the gateway confirms; the Super Malaab wallet and the simulated gateway pay at once. A payment that can't
 /// start (not enough in the wallet…) calls the order off and gives the stock back; an unpaid order expires in 15 minutes.
 /// </summary>
 public interface ICheckoutService
@@ -208,7 +208,7 @@ public sealed class CheckoutRequestValidator : AbstractValidator<CheckoutRequest
         RuleFor(x => x.Phone).NotEmpty().When(x => x.AddressId is null).WithMessage("Add a phone number for the courier.");
         RuleFor(x => x.Phone).EgyptianMobile().When(x => !string.IsNullOrWhiteSpace(x.Phone));
         RuleFor(x => x.DeliverySpeed).Must(s => s is "standard" or "express").WithMessage("Choose standard or express delivery.");
-        RuleFor(x => x.PaymentMethod).Must(s => s is "online" or "wallet").WithMessage("Pay by card or with your Super App wallet (no cash on delivery).");
+        RuleFor(x => x.PaymentMethod).Must(s => s is "online" or "wallet").WithMessage("Pay by card or with your Super Malaab wallet (no cash on delivery).");
         RuleFor(x => x.PromoCode).MaximumLength(30);
     }
 }

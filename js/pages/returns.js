@@ -1,6 +1,6 @@
 /**
  * Returns & exchanges UI: the customer's "Return or exchange" on the order page, the seller's returns page
- * (#/seller/returns) and Super App's (#/admin/returns, the official store and printed designs).
+ * (#/seller/returns) and Super Malaab's (#/admin/returns, the official store and printed designs).
  */
 (function (SA) {
   const { esc, money, timeAgo, fmtDate } = SA.core.utils;
@@ -41,7 +41,7 @@
           </div></div>`; }).join('')}</div>
         <p class="field-error" data-err="items"></p>
         <div class="field"><label for="rt-n">Details <span class="muted">(optional)</span></label><textarea class="input" id="rt-n" name="note" rows="2" maxlength="400" placeholder="${SA.config.podEnabled ? 'e.g. The print peeled after the first wash' : 'e.g. The seam came apart on the first day'}"></textarea></div>
-        <p class="xs muted">${icon('info', 12)} ${SA.config.podEnabled || !SA.services.api.isLive() ? 'Printed designs are made for you: they’re reprinted or refunded only for a fault, damage, a wrong size or a wrong print.' : 'Returns are for an item with a problem, within 24 hours of delivery. Our courier collects it and the refund goes to your Super App wallet.'}</p>
+        <p class="xs muted">${icon('info', 12)} ${SA.config.podEnabled || !SA.services.api.isLive() ? 'Printed designs are made for you: they’re reprinted or refunded only for a fault, damage, a wrong size or a wrong print.' : 'Returns are for an item with a problem, within 24 hours of delivery. Our courier collects it and the refund goes to your Super Malaab wallet.'}</p>
         <button class="btn btn-primary" type="submit">Send the request</button></form>`,
       onMount(m, close) {
         const f = m.querySelector('[data-rt-form]');
@@ -61,7 +61,7 @@
   };
   SA.ui.returns = { orderBlock, openForm };
 
-  /* ---------- Seller and Super App: the returns list ---------- */
+  /* ---------- Seller and Super Malaab: the returns list ---------- */
   const card = (r, { admin = false } = {}) => `<article class="dash-card rt-card">
     <div class="row-between wrap" style="align-items:flex-start;gap:8px"><span><span class="xs muted">${r.id} · ${esc(r.orderId)} · ${timeAgo(r.createdAt)}${admin ? ` · ${esc(r.storeName)}` : ''}</span><b class="h4" style="display:block">${esc(r.customer.name)} <span class="xs muted">· ${esc(r.customer.city || '')}</span></b></span><span class="badge ${TONE[r.status]}">${RT().STATUS[r.status]}</span></div>
     <ul class="rt-lines">${r.items.map((i) => `<li>${img(i.image)}<span class="grow small"><b>${i.qty}× ${esc(i.name)}</b><span class="xs muted" style="display:block">${esc(i.variant.size)} · ${esc(i.variant.color)} → <b>${ACT[i.action]}</b>${i.size ? ` (${esc(i.size)})` : ''}</span></span><span class="num small">${money(i.price * i.qty)}</span></li>`).join('')}</ul>
@@ -75,7 +75,7 @@
   const bind = (el) => {
     el.querySelectorAll('[data-rt-ok]').forEach((b) => b.addEventListener('click', async () => { try { await RT().decide(b.dataset.rtOk, true); toast('Accepted — the customer was told'); } catch (e) { toast(e.message, 'error'); } SA.app.rerender(); }));
     el.querySelectorAll('[data-rt-no]').forEach((b) => b.addEventListener('click', async () => {
-      const r = await SA.pages.adminCommon.reason({ title: 'Refuse this return?', text: 'The customer sees your reason and can ask Super App to look at it.', confirmLabel: 'Refuse', danger: true, placeholder: 'e.g. The item was worn — the tag is missing' });
+      const r = await SA.pages.adminCommon.reason({ title: 'Refuse this return?', text: 'The customer sees your reason and can ask Super Malaab to look at it.', confirmLabel: 'Refuse', danger: true, placeholder: 'e.g. The item was worn — the tag is missing' });
       if (!r) return;
       try { await RT().decide(b.dataset.rtNo, false, r.reason); toast('Refused'); } catch (e) { toast(e.message, 'error'); } SA.app.rerender();
     }));
@@ -89,13 +89,13 @@
       const base = admin ? '/admin/returns' : '/seller/returns';
       const mine = RT().list(admin ? {} : { ownerId: me.id });
       const list = mine.filter((r) => (tab === 'open' ? RT().OPEN.includes(r.status) : tab === 'all' ? true : r.status === tab));
-      const body = `${admin ? `<p class="small muted" style="margin-bottom:10px">${icon('info', 12)} ${SA.services.api.isLive() ? 'Super App decides returns for its own store (and printed designs). Each seller decides returns of their products.' : 'Super App decides returns for the official store and printed designs; you can also step in on any seller’s return.'}</p>` : ''}
+      const body = `${admin ? `<p class="small muted" style="margin-bottom:10px">${icon('info', 12)} ${SA.services.api.isLive() ? 'Super Malaab decides returns for its own store (and printed designs). Each seller decides returns of their products.' : 'Super Malaab decides returns for the official store and printed designs; you can also step in on any seller’s return.'}</p>` : ''}
         ${SA.pages.adminCommon.tabs(base, [['open', 'To handle', mine.filter((r) => RT().OPEN.includes(r.status)).length], ['refunded', 'Refunded'], ['exchanged', 'Exchanged'], ['rejected', 'Refused'], ['all', 'All']], tab)}
         ${list.length ? `<div class="rt-grid">${list.map((r) => card(r, { admin })).join('')}</div>` : `<div class="dash-card">${SA.ui.c.empty({ icon: 'refresh', title: 'No returns here', text: SA.services.api.isLive() ? 'Customers can return a product with a problem within 24 hours of delivery. You pay the refund and the return delivery.' : `Customers can return store products within ${RT().WINDOW} days of delivery; printed designs only for a fault.` })}</div>`}`;
       return C.layout(admin ? 'returns' : 'seller-returns', { title: 'Returns & exchanges', subtitle: `Answer within 2 working days · ${SA.services.api.isLive() ? '24-hour' : `${RT().WINDOW}-day`} return window`, body });
     },
     mount(el) { bind(el); },
   });
-  SA.pages.adminReturns = SA.pages.adminCommon.guard({ title: 'Returns — Super App Admin', ...page({ admin: true }) });
-  SA.pages.sellerReturns = SA.pages.dashCommon.guard({ title: 'Returns — Super App Seller', roles: ['seller'], ...page({ admin: false }) });
+  SA.pages.adminReturns = SA.pages.adminCommon.guard({ title: 'Returns — Super Malaab Admin', ...page({ admin: true }) });
+  SA.pages.sellerReturns = SA.pages.dashCommon.guard({ title: 'Returns — Super Malaab Seller', roles: ['seller'], ...page({ admin: false }) });
 })(window.SA);

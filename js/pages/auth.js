@@ -1,7 +1,7 @@
 /**
  * Real account pages (API mode): sign in (+ two-step code), sign up, forgot / reset password, confirm email,
  * accept a team invitation, and set up the authenticator app. In demo mode they explain that real accounts work
- * when Super App runs on its server.
+ * when Super Malaab runs on its server.
  */
 (function (SA) {
   const { esc } = SA.core.utils;
@@ -16,9 +16,9 @@
 
   const field = (name, label, type = 'text', extra = '') => `<div class="field"><label for="au-${name}">${label}</label><input class="input" id="au-${name}" name="${name}" type="${type}" ${extra} /><p class="field-error" data-err="${name}"></p></div>`;
   const card = (title, sub, body, foot = '') => `<div class="container section-tight auth-page"><div class="panel panel-pad auth-card">
-      <a class="auth-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><b>SUPER APP</b></a>
+      <a class="auth-brand" href="#/"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><b>SUPER MALAAB</b></a>
       <h1 class="h2">${title}</h1>${sub ? `<p class="soft">${sub}</p>` : ''}${body}${foot ? `<div class="auth-foot small">${foot}</div>` : ''}</div></div>`;
-  const demoOnly = () => card('Real accounts', 'Signing in with your own email and password works when Super App runs on its server. This demo site keeps a demo account on your device.',
+  const demoOnly = () => card('Real accounts', 'Signing in with your own email and password works when Super Malaab runs on its server. This demo site keeps a demo account on your device.',
     `<a class="btn btn-primary btn-lg auth-wide" href="#/profile">${icon('user', 18)} Open my demo profile</a>`);
 
   /** Shows the server's field errors under the fields (and the message as a toast) */
@@ -45,7 +45,7 @@
   };
 
   const page = (title, render, mount) => ({
-    title: `${title} — Super App`,
+    title: `${title} — Super Malaab`,
     async render(ctx) { await S.api.ready; return S.api.isLive() ? render(ctx) : demoOnly(); },
     mount(el, ctx) { if (S.api.isLive()) return mount?.(el, ctx); },
   });
@@ -60,7 +60,7 @@
     afterSignIn(r.me, ctx);
   }));
 
-  SA.pages.authTwoFactor = page('Two-step sign-in', (ctx) => card('Enter your code', 'Open your authenticator app and type the 6-digit code for Super App.',
+  SA.pages.authTwoFactor = page('Two-step sign-in', (ctx) => card('Enter your code', 'Open your authenticator app and type the 6-digit code for Super Malaab.',
     `<form class="stack" style="--gap:12px" novalidate>${field('code', 'Code', 'text', 'inputmode="numeric" autocomplete="one-time-code" maxlength="20" dir="ltr"')}
       <label class="choice"><input type="checkbox" name="recovery" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow small">I’m using one of my recovery codes</span></label>
       <button class="btn btn-primary btn-lg auth-wide" type="submit">${icon('shield', 18)} Continue</button></form>`,
@@ -96,7 +96,7 @@
     R.go('/auth/sign-in', { replace: true });
   }));
 
-  SA.pages.authInvite = page('Join the team', () => card('Welcome to the Super App team', 'Choose your password. Next you’ll sign in and set up your authenticator app.',
+  SA.pages.authInvite = page('Join the team', () => card('Welcome to the Super Malaab team', 'Choose your password. Next you’ll sign in and set up your authenticator app.',
     `<form class="stack" style="--gap:12px" novalidate>${field('password', 'Password', 'password', 'autocomplete="new-password" dir="ltr"')}<button class="btn btn-primary btn-lg auth-wide" type="submit">${icon('check', 18)} Accept the invitation</button></form>`),
   (el, ctx) => onSubmit(el, async (d) => {
     await S.session.acceptInvite(ctx.query.u, ctx.query.t, d.password);

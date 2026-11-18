@@ -5,7 +5,7 @@ namespace SuperApp.Application.Features.Support;
 
 public sealed record AttachmentDto(long FileId, string Url);
 
-/// <summary>A chat message. <c>FromTeam</c> for Super App replies; internal notes only reach the team.</summary>
+/// <summary>A chat message. <c>FromTeam</c> for Super Malaab replies; internal notes only reach the team.</summary>
 public sealed record TicketMessageDto(long Id, string Sender, bool FromTeam, bool IsMine, string Body, bool IsInternalNote, DateTime CreatedAt, DateTime? ReadAt,
     IReadOnlyList<AttachmentDto> Attachments);
 

@@ -52,7 +52,7 @@ public sealed class MyOrdersService(
         var order = await orders.FindAsync(Me(), code, ct) ?? throw new NotFoundException("Order not found.");
         if (OrderPayments.IsPaid(order.Status))
         {
-            throw new ConflictException("Paid orders are cancelled through a cancellation request — the Super App team replies within 2 hours.", "request_required");
+            throw new ConflictException("Paid orders are cancelled through a cancellation request — the Super Malaab team replies within 2 hours.", "request_required");
         }
         await CancelCoreAsync(order, "Cancelled by the customer", ct);
         return await GetAsync(code, ct);

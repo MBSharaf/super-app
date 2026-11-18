@@ -5,7 +5,7 @@ Markdown → PDF for the backend planning documents (docs/backend/*.md → docs/
   python tools/docs/md2pdf.py docs/backend/*.md            # all of them
 
 How it works: Markdown is converted to HTML (python-markdown: tables, fenced code, table of contents), wrapped in a
-print stylesheet (A4, cover page, page numbers, Super App colours), and printed to PDF by headless Chrome or Edge.
+print stylesheet (A4, cover page, page numbers, Super Malaab colours), and printed to PDF by headless Chrome or Edge.
 Mermaid diagrams (```mermaid blocks) are rendered in the browser before printing.
 Requires: pip install markdown · Chrome or Edge installed.
 """
@@ -25,7 +25,7 @@ BROWSERS = [
 
 CSS = """
 @page { size: A4; margin: 18mm 16mm 20mm;
-  @bottom-left { content: "Super App — " var(--doc); font: 9px 'Segoe UI', Arial, sans-serif; color: #6b756f; }
+  @bottom-left { content: "Super Malaab — " var(--doc); font: 9px 'Segoe UI', Arial, sans-serif; color: #6b756f; }
   @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 9px 'Segoe UI', Arial, sans-serif; color: #6b756f; } }
 @page :first { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
 :root { --turf: #0B6E4F; --blaze: #E8590C; --ink: #0D1411; --ink2: #3a4540; --line: #d5dcd7; --soft: #F3F5F2; }
@@ -80,7 +80,7 @@ td.rid { white-space: nowrap; font-weight: 650; color: var(--turf); }
 
 def cover(title: str, sub: str, meta: dict) -> str:
     rows = "".join(f"<tr><td>{html.escape(k)}</td><td>{html.escape(v)}</td></tr>" for k, v in meta.items())
-    return f"""<section class="cover"><div class="brand">SUPER APP</div>
+    return f"""<section class="cover"><div class="brand">SUPER MALAAB</div>
       <div><h1>{html.escape(title)}</h1><div class="bar"></div><div class="sub">{html.escape(sub)}</div></div>
       <table>{rows}</table></section>"""
 

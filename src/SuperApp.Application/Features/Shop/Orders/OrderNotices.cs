@@ -8,7 +8,7 @@ namespace SuperApp.Application.Features.Shop.Orders;
 /// <summary>"Every action notifies everyone concerned" for orders: the customer, each store, each seller and the factory.</summary>
 public sealed class OrderNotices(INotifier notifier, IAuditLogger audit, ICustomerContacts contacts)
 {
-    /// <summary>The payment is in: the customer and every store with items in the order are told (the official store is Super App).</summary>
+    /// <summary>The payment is in: the customer and every store with items in the order are told (the official store is Super Malaab).</summary>
     public async Task PaidAsync(Order order, IReadOnlyList<Money.OrderShare> shares, CancellationToken ct)
     {
         var count = order.Items.Sum(i => i.Qty);
@@ -18,7 +18,7 @@ public sealed class OrderNotices(INotifier notifier, IAuditLogger audit, ICustom
         {
             var items = order.Items.Where(i => store.Any(s => s.ItemId == i.Id)).ToList();
             await notifier.NotifyUserAsync(store.Key, new NotificationMessage(NotificationCategory.Orders, $"New store order {order.Code}",
-                $"{items.Sum(i => i.Qty)} item(s) · {store.Sum(s => s.Earning):0} EGP for you. Pack it — Super App's courier picks it up.", "#/dash/orders?status=open", NotificationTone.Success), ct);
+                $"{items.Sum(i => i.Qty)} item(s) · {store.Sum(s => s.Earning):0} EGP for you. Pack it — Super Malaab's courier picks it up.", "#/dash/orders?status=open", NotificationTone.Success), ct);
         }
         await audit.LogAsync(AuditSystem.Site, "order.created", $"Order {order.Code}: {count} item(s), {order.Total:0} EGP", "Order", order.Code,
             Details(order, await contacts.GetAsync(order.CustomerId, ct)), ct);
@@ -42,7 +42,7 @@ public sealed class OrderNotices(INotifier notifier, IAuditLogger audit, ICustom
     public async Task CancelledAsync(Order order, IReadOnlyList<Guid> people, string by, CancellationToken ct)
     {
         await notifier.NotifyUserAsync(order.CustomerId, new NotificationMessage(NotificationCategory.Orders, $"Order {order.Code} cancelled",
-            order.PaymentId is null ? "Nothing to pay." : "The money is back in your Super App wallet.", $"#/order/{order.Code}", NotificationTone.Warning), ct);
+            order.PaymentId is null ? "Nothing to pay." : "The money is back in your Super Malaab wallet.", $"#/order/{order.Code}", NotificationTone.Warning), ct);
         foreach (var person in people.Distinct())
         {
             await notifier.NotifyUserAsync(person, new NotificationMessage(NotificationCategory.Orders, $"Order {order.Code} cancelled",

@@ -42,7 +42,7 @@ public interface IAdminPeopleService
 
     Task<SellerDetailDto> FeatureSellerAsync(long id, FeatureRequest request, CancellationToken ct);
 
-    /// <summary>Goodwill money to the customer's Super App wallet, paid by Super App, with a receipt.</summary>
+    /// <summary>Goodwill money to the customer's Super Malaab wallet, paid by Super Malaab, with a receipt.</summary>
     Task<CustomerDetailDto> CreditAsync(Guid id, CreditRequest request, CancellationToken ct);
 
     /// <summary>Super Points + or −; the balance never goes below 0 (422 <c>not_enough_points</c>).</summary>
@@ -56,7 +56,7 @@ public interface IAdminPeopleService
 
     Task<PartnerDetailDto> AdjustBalanceAsync(long id, BalanceAdjustRequest request, CancellationToken ct);
 
-    /// <summary>Closes a live pitch (no new bookings) or reopens one Super App closed; the owner is told.</summary>
+    /// <summary>Closes a live pitch (no new bookings) or reopens one Super Malaab closed; the owner is told.</summary>
     Task<PartnerDetailDto> SetPitchClosedAsync(long pitchId, bool close, string? reason, CancellationToken ct);
 }
 

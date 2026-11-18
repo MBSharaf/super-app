@@ -23,7 +23,7 @@ public sealed partial class AdminPeopleService
         }
         (partner.Status, partner.SuspendedReason) = (target, suspend ? reason!.Trim() : null);
         await unitOfWork.SaveChangesAsync(ct);
-        var (title, body) = suspend ? ("Your partner account is suspended", reason!.Trim()) : ("Your partner account is active again", "Your pitches are back in Super App.");
+        var (title, body) = suspend ? ("Your partner account is suspended", reason!.Trim()) : ("Your partner account is active again", "Your pitches are back in Super Malaab.");
         await notifier.NotifyUserAsync(partner.UserId, new NotificationMessage(NotificationCategory.Account, title, body, "#/dash",
             suspend ? NotificationTone.Warning : NotificationTone.Success), ct);
         await audit.LogAsync(AuditSystem.Admin, suspend ? "partner.suspended" : "partner.reactivated", $"{partner.BusinessName}: {body}", "Partner", id.ToString(), ct: ct);
@@ -60,7 +60,7 @@ public sealed partial class AdminPeopleService
         if (request.Featured)
         {
             await notifier.NotifyUserAsync(seller.UserId, new NotificationMessage(NotificationCategory.Store, "You are a featured seller",
-                "Super App now shows your store on the shop's front page.", "#/seller", NotificationTone.Success), ct);
+                "Super Malaab now shows your store on the shop's front page.", "#/seller", NotificationTone.Success), ct);
         }
         await audit.LogAsync(AuditSystem.Admin, "seller.featured", request.Featured ? "Featured" : "No longer featured", "Seller", id.ToString(), ct: ct);
         return await SellerAsync(id, ct);

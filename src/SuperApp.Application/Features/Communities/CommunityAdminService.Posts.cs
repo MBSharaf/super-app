@@ -6,7 +6,7 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Communities;
 
-/// <summary>"Super App Admin" posts and replies, post flags, banned words and mutes.</summary>
+/// <summary>"Super Malaab Admin" posts and replies, post flags, banned words and mutes.</summary>
 public sealed partial class CommunityAdminService
 {
     public async Task<PostDto> PostAsync(string slug, AdminPostRequest request, CancellationToken ct)
@@ -39,7 +39,7 @@ public sealed partial class CommunityAdminService
         if (!post.AsSuperAppAdmin)
         {
             await notifier.NotifyUserAsync(post.AuthorId, new Abstractions.Notifications.NotificationMessage(NotificationCategory.Community,
-                "Super App replied to your post", PostsService.Excerpt(comment.Text), $"#/communities/post/{postId}"), ct);
+                "Super Malaab replied to your post", PostsService.Excerpt(comment.Text), $"#/communities/post/{postId}"), ct);
         }
         return (await repository.CommentsAsync(postId, UserId, true, ct)).Single(c => c.Id == comment.Id);
     }

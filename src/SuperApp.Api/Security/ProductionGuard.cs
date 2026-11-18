@@ -36,12 +36,12 @@ public static class ProductionGuard
         var site = c["Payments:PublicBaseUrl"];
         if (string.IsNullOrWhiteSpace(site) || !site.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || site.Contains("localhost", StringComparison.OrdinalIgnoreCase))
         {
-            yield return "PAYMENTS__PUBLICBASEURL must be the live https address of the site (e.g. https://superapp.eg).";
+            yield return "PAYMENTS__PUBLICBASEURL must be the live https address of the site (e.g. https://supermalaab.eg).";
         }
         var hosts = c["AllowedHosts"];
         if (string.IsNullOrWhiteSpace(hosts) || hosts.Split(';').Any(h => h.Trim() == "*"))
         {
-            yield return "ALLOWEDHOSTS must list the site's domain(s), e.g. superapp.eg;www.superapp.eg — not *.";
+            yield return "ALLOWEDHOSTS must list the site's domain(s), e.g. supermalaab.eg;www.supermalaab.eg — not *.";
         }
         if (!bool.TryParse(c["Seed:DemoData"], out var demo) || demo)
         {

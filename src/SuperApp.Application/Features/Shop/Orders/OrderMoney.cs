@@ -8,7 +8,7 @@ namespace SuperApp.Application.Features.Shop.Orders;
 /// <c>BaseAmount</c> is per unit. Phase 5 turns these into ledger entries when the item is delivered.
 /// <list type="bullet">
 /// <item>Store product: commission = line × rate (official store 0, partner deal, seller level, else the default); the store earns the rest minus its own code's share.</item>
-/// <item>Printed design: the seller earns (price − base) × qty; Super App keeps (base − factory cost) × qty; the factory is paid its cost.</item>
+/// <item>Printed design: the seller earns (price − base) × qty; Super Malaab keeps (base − factory cost) × qty; the factory is paid its cost.</item>
 /// </list>
 /// </summary>
 public static class OrderMoney

@@ -1,8 +1,8 @@
 /**
  * Discount codes created by partners: pitch codes (used at booking checkout) and store codes
  * (used in the shop cart, only on that store's products). The partner pays for the discount —
- * their revenue is the discounted price. Platform codes (kind "platform") are made by the Super App team in the admin console,
- * work in the shop, on bookings or both, and Super App pays for the discount (partners still earn on the full price).
+ * their revenue is the discounted price. Platform codes (kind "platform") are made by the Super Malaab team in the admin console,
+ * work in the shop, on bookings or both, and Super Malaab pays for the discount (partners still earn on the full price).
  * Future API: POST /partner/codes, GET /codes/:code/validate
  */
 (function (SA) {
@@ -54,7 +54,7 @@
       const c = check(code, { kind: 'store', amount: sub });
       return { code: c.code, id: c.id, storeId: c.storeId, storeName: db().find('stores', c.storeId)?.name, label: `${label(c)} ${db().find('stores', c.storeId)?.name}`, amount: discountOf(c, sub), base: sub };
     },
-    /** Super App code for the shop or bookings (null when it isn't a platform code) */
+    /** Super Malaab code for the shop or bookings (null when it isn't a platform code) */
     platform(code, { scope, amount }) {
       const c0 = find(code);
       if (!c0 || c0.kind !== 'platform') return null;

@@ -16,7 +16,7 @@
     SA.ui.overlay.open({
       title: 'Name your team', subtitle: 'You can change it later.',
       body: `<form id="name-form" class="stack" style="--gap:12px"><div class="field"><label for="tn">Team name</label><input class="input" id="tn" name="name" maxlength="24" value="${esc(user.firstName)} FC" autofocus /></div>
-        <p class="xs muted">Your team is entered into the Super App League automatically.</p></form>`,
+        <p class="xs muted">Your team is entered into the Super Malaab League automatically.</p></form>`,
       footer: `<button class="btn btn-outline" data-close>Back</button><button class="btn btn-primary" form="name-form" type="submit">Create team</button>`,
       onMount(el, close) {
         el.querySelector('#tn').select();
@@ -111,7 +111,7 @@
   };
 
   SA.pages.fantasySquad = {
-    title: 'Pick your squad — Super App Fantasy',
+    title: 'Pick your squad — Super Malaab Fantasy',
     promptCreate,
     render(ctx) {
       const f = F(), team = f.team();

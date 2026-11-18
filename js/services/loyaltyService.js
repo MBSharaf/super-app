@@ -102,12 +102,12 @@
       add({ key, points, label, kind: 'bonus' });
       SA.ui?.overlay?.toast(`+${points} Super Points — ${label}`, { type: 'success' });
     },
-    /** Correction from the Super App team (+ or −), shown in the points history */
+    /** Correction from the Super Malaab team (+ or −), shown in the points history */
     adjust(points, label) {
       const p = Math.round(+points);
       if (!p) throw new ApiError('Enter the number of points.', 'invalid');
       if (p < 0 && compute().balance + p < 0) throw new ApiError(`They only have ${compute().balance.toLocaleString()} points.`, 'invalid');
-      add({ points: p, label: `Super App: ${label}`, kind: p > 0 ? 'bonus' : 'adjust' });
+      add({ points: p, label: `Super Malaab: ${label}`, kind: p > 0 ? 'bonus' : 'adjust' });
     },
     /** Points → a voucher code (no cash). Its value is spent at checkout, in one go or over several payments. */
     redeem(points) {
@@ -121,7 +121,7 @@
       add({ points: -p, label: `Voucher ${code} — ${amount} EGP`, kind: 'redeem' });
       const v = { code, amount, balance: amount, points: p, at: Date.now(), uses: [] };
       store.set((st) => ({ vouchers: [v, ...(st.vouchers || [])] }), 'voucher');
-      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super App: pitch bookings, games, the shop and printed designs. It can’t be exchanged for cash.' });
+      SA.services.payment.record({ kind: 'voucher', label: `Super Points voucher (${p.toLocaleString()} points)`, amount, method: 'Super Points', code, note: 'Use it at checkout in Super Malaab: pitch bookings, games, the shop and printed designs. It can’t be exchanged for cash.' });
       return Promise.resolve({ points: p, amount, code });
     },
     vouchers,

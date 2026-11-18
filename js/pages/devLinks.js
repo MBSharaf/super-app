@@ -13,7 +13,7 @@
     ] },
     { title: 'Communities', icon: 'users', links: [
       ['All communities', '#/community'], ['Players', '#/community/players'], ['Fantasy Talk', '#/community/fantasy'], ['Creators (sellers)', '#/community/creators'], ['Pro & Elite Lounge', '#/community/pro-lounge'],
-      ['Admin: reports', '#/admin/community'], ['Admin: all posts', '#/admin/community?tab=posts'], ['Admin: post as Super App Admin', '#/admin/community?tab=new'], ['Admin: communities', '#/admin/community?tab=communities'], ['Admin: safety & muted', '#/admin/community?tab=safety'],
+      ['Admin: reports', '#/admin/community'], ['Admin: all posts', '#/admin/community?tab=posts'], ['Admin: post as Super Malaab Admin', '#/admin/community?tab=new'], ['Admin: communities', '#/admin/community?tab=communities'], ['Admin: safety & muted', '#/admin/community?tab=safety'],
     ] },
     { title: 'Free slots & games', icon: 'pitch', games: true, links: [
       ['Free-slot alerts', '#/alerts'], ['Find players', '#/players'], ['Post your match', '#/players/new'], ['A game (auto-accept)', '#/players/m-1001'], ['A game (host decides)', '#/players/m-1002'],
@@ -37,7 +37,7 @@
     { title: 'Pitch owner dashboard', icon: 'pitch', as: [['acc-o1', 'Karim · Turf 22'], ['acc-new', 'New partner']], links: [
       ['Overview', '#/dash'], ['My pitches', '#/dash/pitches'], ['Add a pitch', '#/dash/pitches/new'], ['Availability', '#/dash/availability'], ['Check-in', '#/dash/checkin'], ['Bookings', '#/dash/bookings'],
       ['Teams', '#/dash/teams'], ['Reviews', '#/dash/reviews'], ['Tournaments', '#/dash/tournaments'], ['Finance', '#/dash/finance'], ['Wallet', '#/dash/wallet'], ['Forecast & offers', '#/dash/insights'],
-      ['Discount codes', '#/dash/codes'], ['Sell on Super App', '#/dash/sell'], ['Notifications', '#/dash/notifications'], ['Help & support', '#/dash/support'], ['Activity', '#/dash/activity'],
+      ['Discount codes', '#/dash/codes'], ['Sell on Super Malaab', '#/dash/sell'], ['Notifications', '#/dash/notifications'], ['Help & support', '#/dash/support'], ['Activity', '#/dash/activity'],
     ] },
     { title: 'Seller dashboard', icon: 'image', as: [['acc-s1', 'Koora Ink · Elite'], ['acc-s2', 'Nile Lines · Pro'], ['acc-s3', 'Cairo Otaku · Rising']], links: [
       ['Overview', '#/seller'], ['Store settings', '#/seller/store'], ['Marketing calendar', '#/seller/calendar'], ['Analytics', '#/seller/analytics'], ['Designs & samples', '#/seller/designs'],
@@ -47,7 +47,7 @@
       ['Profile (grow cards)', '#/profile'], ['Apply to sell', '#/sell'], ['Apply as a pitch partner', '#/partner/apply'], ['Pitch partner: apply to sell', '#/dash/sell'], ['Karim’s shop (seller dashboard)', '#/seller/products'],
       ['Admin: pitch partner applications', '#/admin/approvals?tab=partners'], ['Admin: seller applications', '#/admin/approvals?tab=sellers'],
     ] },
-    { title: 'Real accounts (when the site runs on the Super App server)', icon: 'lock', links: [
+    { title: 'Real accounts (when the site runs on the Super Malaab server)', icon: 'lock', links: [
       ['Sign in', '#/auth/sign-in'], ['Create an account', '#/auth/sign-up'], ['Two-step code', '#/auth/2fa'], ['Set up two-step sign-in', '#/auth/2fa-setup'],
       ['Forgot password', '#/auth/forgot'], ['Choose a new password (from the email)', '#/auth/reset'], ['Confirm email (from the email)', '#/auth/confirm'], ['Team invitation (from the email)', '#/auth/invite'],
     ] },
@@ -62,9 +62,9 @@
       ['A job (with a problem)', '#/factory/job/PO-F706'], ['Scan a job', '#/factory/scan?code=PO-F708'], ['Shipping & courier', '#/factory/shipping'], ['Partly packed orders', '#/factory/shipping?tab=partial'], ['Team', '#/factory/team'], ['Money', '#/factory/money'], ['Reports', '#/factory/reports'], ['Settings & prices', '#/factory/settings'], ['Activity', '#/factory/activity'],
       ['Admin: factories', '#/admin/factories'], ['Admin: late & problems', '#/admin/factories?tab=jobs'], ['Admin: courier', '#/admin/factories?tab=shipping'], ['Admin: price requests', '#/admin/factories?tab=prices'], ['Admin: factory money', '#/admin/factories?tab=money'],
     ] },
-    { title: 'Admin console', icon: 'shield', as: [['acc-admin', 'Super App HQ']], links: [
+    { title: 'Admin console', icon: 'shield', as: [['acc-admin', 'Super Malaab HQ']], links: [
       ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['Finance approvals', '#/admin/finance-approvals'], ['Returns', '#/admin/returns'], ['Cancellation requests', '#/admin/cancellations'], ['Revenue', '#/admin/revenue'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
-      ['Approvals', '#/admin/approvals'], ['Product review', '#/admin/approvals?tab=products'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super App Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
+      ['Approvals', '#/admin/approvals'], ['Product review', '#/admin/approvals?tab=products'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super Malaab Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
       ['Design review', '#/admin/designs'], ['Level review', '#/admin/levels'], ['Samples', '#/admin/samples'], ['Print orders', '#/admin/print'], ['Print catalogue', '#/admin/catalog'], ['Broadcasts', '#/admin/broadcast'],
       ['Promo codes', '#/admin/promos'], ['Site content', '#/admin/content'], ['Pop-up ads', '#/admin/content?tab=popups'], ['Fantasy', '#/admin/fantasy'], ['Analytics', '#/admin/analytics'], ['Audit log', '#/admin/audit'], ['Platform settings', '#/admin/settings'],
     ] },

@@ -12,7 +12,7 @@ namespace SuperApp.Application.Features.Support;
 
 /// <summary>
 /// Support tickets (API §6.4, FR-SUP-01/02/04): customers, partners, sellers and factories open a ticket that is a live
-/// chat with the Super App team. Opening sends the auto-reply ("we reply within 24 hours") in the chat and by email.
+/// chat with the Super Malaab team. Opening sends the auto-reply ("we reply within 24 hours") in the chat and by email.
 /// </summary>
 public interface ISupportService
 {
@@ -42,7 +42,7 @@ public sealed class SupportService(
     IValidator<TicketMessageRequest> messageRules,
     IAuditLogger audit) : ISupportService
 {
-    public const string AutoReply = "Thanks for reaching out — the Super App team replies within 24 hours. You can add details or photos here meanwhile.";
+    public const string AutoReply = "Thanks for reaching out — the Super Malaab team replies within 24 hours. You can add details or photos here meanwhile.";
 
     private Guid UserId => currentUser.UserId ?? throw new UnauthorizedException();
 
@@ -78,7 +78,7 @@ public sealed class SupportService(
         if (ticket.AgainstUserId is { } other)
         {
             await notifier.NotifyUserAsync(other, new NotificationMessage(NotificationCategory.Support, $"A dispute was opened ({ticket.Code})",
-                "The Super App team will look at it and contact you.", "#/help", NotificationTone.Warning), ct);
+                "The Super Malaab team will look at it and contact you.", "#/help", NotificationTone.Warning), ct);
         }
     }
 

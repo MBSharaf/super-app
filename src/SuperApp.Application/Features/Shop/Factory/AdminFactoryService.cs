@@ -53,7 +53,7 @@ public sealed class AdminFactoryService(
         {
             throw new BusinessRuleException("Choose another active factory.", "bad_factory");
         }
-        job.Events.Add(new JobEvent { FromStage = (byte)job.Stage, ToStage = (byte)JobStage.New, Note = $"Moved to {target.Name} by Super App", At = clock.UtcNow });
+        job.Events.Add(new JobEvent { FromStage = (byte)job.Stage, ToStage = (byte)JobStage.New, Note = $"Moved to {target.Name} by Super Malaab", At = clock.UtcNow });
         (job.FactoryId, job.Stage, job.AssignedStaffId, job.DueAt) = (target.Id, JobStage.New, null, clock.UtcNow.AddHours(target.SlaHours));
         job.OrderItem.Status = OrderItemStatus.Received;
         await unitOfWork.SaveChangesAsync(ct);
@@ -65,7 +65,7 @@ public sealed class AdminFactoryService(
     {
         var reason = Reason(request.Resolution);
         var job = await OpenJobAsync(code, ct);
-        job.Events.Add(new JobEvent { FromStage = (byte)job.Stage, ToStage = (byte)JobStage.Cancelled, Note = $"Cancelled by Super App: {reason}", At = clock.UtcNow });
+        job.Events.Add(new JobEvent { FromStage = (byte)job.Stage, ToStage = (byte)JobStage.Cancelled, Note = $"Cancelled by Super Malaab: {reason}", At = clock.UtcNow });
         job.Stage = JobStage.Cancelled;
         job.OrderItem.Status = OrderItemStatus.Cancelled;
         var order = await admin.OrderOfJobAsync(job, ct);

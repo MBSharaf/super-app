@@ -79,7 +79,7 @@
     const savings = lines.reduce((a, l) => a + Math.max(0, l.product.was - l.product.price) * l.qty, 0);
     let c = null;
     let couponOff = 0, freeShip = false, partner = null;
-    // Super App code (made in the admin console, paid by Super App)
+    // Super Malaab code (made in the admin console, paid by Super Malaab)
     let pc = null;
     if (s.coupon && SA.services.codes) { try { pc = SA.services.codes.platform(s.coupon, { scope: 'shop', amount: subtotal }); } catch { pc = null; } }
     if (pc) {
@@ -264,7 +264,7 @@
             variant: l.variant, customer: { name: u.name || 'Customer', city: address?.city || '', phone: address?.phone || u.phone || '' }, payment: paid.method === 'cod' ? 'Cash on delivery' : paid.method === 'wallet' ? 'Wallet' : 'Card',
             address: address ? { label: address.label || '', line1: address.line1 || '', line2: address.line2 || '', city: address.city || '', phone: address.phone || u.phone || '' } : null, delivery, fulfil: null });
         });
-        // Super App code: Super App pays the discount (recorded for the revenue report)
+        // Super Malaab code: Super Malaab pays the discount (recorded for the revenue report)
         if (t.coupon?.platform) {
           const saved = t.couponOff || (t.shipping === 0 && t.subtotal < P.shipping.freeOver ? P.shipping.standard : 0);
           SA.services.codes.use(t.coupon.id, { discount: saved, revenue: t.subtotal - t.couponOff });
@@ -322,7 +322,7 @@
         const PST = { received: 'confirmed', printing: 'packed', shipped: 'shipped', delivered: 'delivered', refused: 'cancelled', cancelled: 'cancelled' };
         const rank = (s) => STAGES.indexOf(PST[s] || 'confirmed');
         const slow = po.filter((x) => x.status !== 'refused').sort((a, b) => rank(a.status) - rank(b.status))[0] || po[0];
-        const g = groups.get('pod') || { storeId: 'pod', storeName: 'Printed for you by Super App', official: false, pod: true, status: slow ? PST[slow.status] : 'confirmed',
+        const g = groups.get('pod') || { storeId: 'pod', storeName: 'Printed for you by Super Malaab', official: false, pod: true, status: slow ? PST[slow.status] : 'confirmed',
           courier: slow?.courier || '', tracking: slow?.tracking || '', at: Object.fromEntries((slow?.history || []).map((h) => [PST[h.status] || h.status, h.at])), reason: '', lines: [] };
         g.lines.push({ ...l, index: i });
         groups.set('pod', g);
@@ -331,7 +331,7 @@
       const sale = db.find('sales', `${o.id}-${i + 1}`);
       const f = sale && SA.services.dash ? SA.services.dash.saleState(sale) : { status: orderStatus(o), at: {} };
       const k = l.storeId || 'st-official';
-      const g = groups.get(k) || { storeId: k, storeName: storeOf({ storeId: k })?.name || 'Super App Store', official: !!storeOf({ storeId: k })?.official, status: f.status, courier: f.courier || '', tracking: f.tracking || '', at: f.at || {}, reason: (sale?.fulfil || {}).reason || '', lines: [] };
+      const g = groups.get(k) || { storeId: k, storeName: storeOf({ storeId: k })?.name || 'Super Malaab Store', official: !!storeOf({ storeId: k })?.official, status: f.status, courier: f.courier || '', tracking: f.tracking || '', at: f.at || {}, reason: (sale?.fulfil || {}).reason || '', lines: [] };
       g.lines.push({ ...l, index: i });
       groups.set(k, g);
     });

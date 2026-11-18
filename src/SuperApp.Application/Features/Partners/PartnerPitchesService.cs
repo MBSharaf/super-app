@@ -83,7 +83,7 @@ public sealed class PartnerPitchesService(
         SwitchAsync(id, PitchStatus.Live, PitchStatus.ClosedByOwner, "Only a live pitch can be closed for booking.", ct);
 
     public Task<PitchEditDto> ReopenAsync(long id, CancellationToken ct) =>
-        SwitchAsync(id, PitchStatus.ClosedByOwner, PitchStatus.Live, "Only a pitch you closed can be reopened. A pitch closed by Super App reopens after its review.", ct);
+        SwitchAsync(id, PitchStatus.ClosedByOwner, PitchStatus.Live, "Only a pitch you closed can be reopened. A pitch closed by Super Malaab reopens after its review.", ct);
 
     private async Task<PitchEditDto> SwitchAsync(long id, PitchStatus from, PitchStatus to, string notAllowed, CancellationToken ct)
     {
@@ -98,7 +98,7 @@ public sealed class PartnerPitchesService(
         var open = to == PitchStatus.Live;
         await notifier.NotifyUserAsync(scope.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings,
             open ? $"{pitch.Name} is open for booking again" : $"{pitch.Name} is closed for new bookings",
-            open ? "Players can book it on Super App." : "Bookings already made stay as they are.", "#/dash/pitches", open ? NotificationTone.Success : NotificationTone.Warning), ct);
+            open ? "Players can book it on Super Malaab." : "Bookings already made stay as they are.", "#/dash/pitches", open ? NotificationTone.Success : NotificationTone.Warning), ct);
         await audit.LogAsync(AuditSystem.Partner, open ? "pitch.reopened" : "pitch.closed", $"{pitch.Name} {(open ? "reopened" : "closed")} for booking", "Pitch", pitch.Slug, ct: ct);
         return await GetAsync(pitch.Id, ct);
     }
@@ -134,7 +134,7 @@ public sealed class PartnerPitchesService(
         await notifier.NotifyStaffAsync("approvals.pitches", new NotificationMessage(NotificationCategory.System,
             $"New pitch to review: {pitch.Name}", scope.BusinessName, "#/admin/approvals", NotificationTone.Info), ct);
         await notifier.NotifyUserAsync(scope.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings,
-            $"{pitch.Name} was sent for review", "Super App checks new pitches within 2 working days. You’ll get a notification.", "#/dash/pitches"), ct);
+            $"{pitch.Name} was sent for review", "Super Malaab checks new pitches within 2 working days. You’ll get a notification.", "#/dash/pitches"), ct);
         await audit.LogAsync(AuditSystem.Partner, action, $"{pitch.Name} sent for review", "Pitch", pitch.Slug, ct: ct);
     }
 

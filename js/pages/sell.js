@@ -1,4 +1,4 @@
-/** Site: "Sell on Super App" — switch on seller mode (print on demand, own store, or both) and see your level. */
+/** Site: "Sell on Super Malaab" — switch on seller mode (print on demand, own store, or both) and see your level. */
 (function (SA) {
   const { esc, money, fmtNum } = SA.core.utils;
   const { icon } = SA.ui;
@@ -17,7 +17,7 @@
   const STORE_RULES = [
     'Only sell genuine products you own and can hand to our courier.',
     'No fakes or copies of other brands. Every product is reviewed before it goes on sale.',
-    'Customers pay online. Our courier collects from you and delivers. Super App takes 5% of each sale.',
+    'Customers pay online. Our courier collects from you and delivers. Super Malaab takes 5% of each sale.',
     'A product with a problem can be returned within 24 hours of delivery — the refund and the return delivery are on you.',
   ];
   const STORE_STEPS = [
@@ -108,7 +108,7 @@
 
   /** API mode: the seller application goes to the server (ID card front and back, payout by InstaPay or bank) */
   const L = () => SA.ui.applyLive;
-  const liveStatus = (a) => `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Sell on Super App</h1></div>${L().statusCard(a)}</div>`;
+  const liveStatus = (a) => `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Sell on Super Malaab</h1></div>${L().statusCard(a)}</div>`;
   const applySellerLive = async (data, form, idData) => {
     const answers = {
       fullName: data.fullName, phone: data.phone, nationalId: data.nationalId, storeName: data.name, handle: null, mode: data.mode, bio: data.bio || null,
@@ -122,13 +122,13 @@
   };
 
   SA.pages.sell = {
-    title: 'Sell on Super App',
+    title: 'Sell on Super Malaab',
     async render() {
       await S.api.ready;
       let rejected = null;
       if (L().live()) {
         if (!S.session.loaded()) await S.session.load();
-        if (!S.session.me()) return L().signInFirst('Sell on Super App');
+        if (!S.session.me()) return L().signInFirst('Sell on Super Malaab');
         const a = await L().latestLive('Seller');
         if (a && a.status !== 'rejected') return liveStatus(a);
         rejected = a;
@@ -140,7 +140,7 @@
       return `<section class="sell-hero">
         <div class="container sell-hero-in">
           <div>
-            <p class="eyebrow">${icon('sparkle', 14)} New on Super App</p>
+            <p class="eyebrow">${icon('sparkle', 14)} New on Super Malaab</p>
             ${POD() ? `<h1 class="display">Sell your designs<br />to Egypt’s players and fans</h1>
             <p class="lead">Put your art on hoodies and tees with no stock and no upfront cost, or open a store for products you already have. One account, one wallet.</p>
             <div class="sell-points">
@@ -202,10 +202,10 @@
     welcome(s) {
       const l = S.sellers.levelOf(s);
       const used = S.sellers.activeDesigns(s);
-      return `${c.pageHead({ crumbs: [['Shop', '#/shop'], ['Sell on Super App']], title: esc(s.name), text: `superapp.eg/s/${esc(s.handle)} · ${MODES.find((m) => m.id === s.mode)?.title || ''}` })}
+      return `${c.pageHead({ crumbs: [['Shop', '#/shop'], ['Sell on Super Malaab']], title: esc(s.name), text: `supermalaab.eg/s/${esc(s.handle)} · ${MODES.find((m) => m.id === s.mode)?.title || ''}` })}
       <div class="container sell-layout">
         <div class="stack" style="--gap:20px">
-          ${s.status === 'pending' ? `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">The Super App team checks new sellers within one working day. You can prepare designs and products meanwhile — they go live after approval.</p></div></section>` : s.status === 'rejected' ? `<section class="panel panel-pad ap-status is-bad">${icon('alert', 28)}<div><h2 class="h3">Your application wasn’t approved</h2><p class="soft">${esc(s.reviewReason || '')}</p></div></section>` : ''}
+          ${s.status === 'pending' ? `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">The Super Malaab team checks new sellers within one working day. You can prepare designs and products meanwhile — they go live after approval.</p></div></section>` : s.status === 'rejected' ? `<section class="panel panel-pad ap-status is-bad">${icon('alert', 28)}<div><h2 class="h3">Your application wasn’t approved</h2><p class="soft">${esc(s.reviewReason || '')}</p></div></section>` : ''}
           <div class="row wrap" style="--gap:8px"><button class="btn btn-primary btn-sm" data-open-dash>${icon('grid', 14)} Seller dashboard</button><button class="btn btn-outline btn-sm" data-open-dash="store">${icon('settings', 14)} Store settings</button><a class="btn btn-outline btn-sm" href="#/s/${esc(s.handle)}">${icon('eye', 14)} View my store</a></div>
           ${levelCard(s)}
           <div class="panel panel-pad">

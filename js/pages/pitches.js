@@ -34,7 +34,7 @@
     </div>`;
 
   SA.pages.pitches = {
-    title: 'Book a pitch — Super App',
+    title: 'Book a pitch — Super Malaab',
     render(ctx) {
       if (ctx.query.sort) state.sort = ctx.query.sort;
       if (ctx.query.q !== undefined) state.q = ctx.query.q;

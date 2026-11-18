@@ -14,7 +14,7 @@ namespace SuperApp.Infrastructure.Persistence.Repositories;
 /// <summary>Post and comment lists with authors, badges, polls, my reaction and link cards.</summary>
 public sealed partial class CommunityRepository
 {
-    private const string AdminName = "Super App Admin";
+    private const string AdminName = "Super Malaab Admin";
 
     private sealed record PostRow(long Id, string Community, Guid AuthorId, string AuthorName, string? Level, bool AsAdmin, string Text, long? ImageFileId, bool HasPoll,
         bool IsPinned, bool IsAnnouncement, bool CommentsClosed, bool IsHidden, int CommentsCount, int ReactionsCount, ReactionType? MyReaction,
@@ -65,7 +65,7 @@ public sealed partial class CommunityRepository
             viewer is not null && r.AuthorId == viewer && !r.AsAdmin)).ToList();
     }
 
-    /// <summary>Admins appear as "Super App Admin" with the team badge; sellers carry their level; others first name and initial.</summary>
+    /// <summary>Admins appear as "Super Malaab Admin" with the team badge; sellers carry their level; others first name and initial.</summary>
     private static AuthorDto Author(bool asAdmin, string fullName, string? level)
     {
         if (asAdmin)

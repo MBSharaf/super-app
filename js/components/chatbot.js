@@ -1,5 +1,5 @@
 /**
- * Floating chatbot support button (all pages), styled in Super App brand colours. An AI agent answers customers.
+ * Floating chatbot support button (all pages), styled in Super Malaab brand colours. An AI agent answers customers.
  * - SA.config.chatbot.url set (the AI agent's webhook, e.g. an n8n "AI Agent" workflow): every message is sent there as
  *   POST JSON { sessionId, message, topic, lang, page, user } and the reply is read from { reply } or { output }.
  * - Link set: the site never answers by itself (no template replies, no "contact support" pointer): every answer comes
@@ -168,8 +168,8 @@
     const link = `<a href="#${esc(rec.link)}">${L('Open it', 'افتحه')}</a>`;
     const money = (n) => `${Math.round(n || 0).toLocaleString()} ${L('EGP', 'جنيه')}`;
     if (phase === 'sent') {
-      return L(`Your cancellation request ${code} was sent to the Super App team for: ${what}. We’ll reply within 2 hours, here and in your notifications. Until then it stays active. ${link}`,
-        `طلب الإلغاء رقم ${code} اتبعت لفريق Super App عشان: ${what}. هنرد عليك في خلال ساعتين، هنا وفي الإشعارات. لحد ما نرد هيفضل شغال زي ما هو. ${link}`);
+      return L(`Your cancellation request ${code} was sent to the Super Malaab team for: ${what}. We’ll reply within 2 hours, here and in your notifications. Until then it stays active. ${link}`,
+        `طلب الإلغاء رقم ${code} اتبعت لفريق سوبر ملعب عشان: ${what}. هنرد عليك في خلال ساعتين، هنا وفي الإشعارات. لحد ما نرد هيفضل شغال زي ما هو. ${link}`);
     }
     if (phase === 'approved') {
       return L(`Good news: cancellation ${code} was approved. ${what} is cancelled.${rec.refunded ? ` ${money(rec.refunded)} is back in your wallet.` : ''}${rec.note ? ` ${esc(rec.note)}` : ''} ${link}`,
@@ -196,14 +196,14 @@
     const el = document.createElement('div');
     el.className = 'wa cb';
     el.innerHTML = `
-      <div class="wa-card" id="wa-card" role="dialog" aria-label="Chat with Super App assistant" hidden>
+      <div class="wa-card" id="wa-card" role="dialog" aria-label="Chat with Super Malaab assistant" hidden>
         <div class="wa-head">
           <span class="wa-avatar">${GLYPH}<i class="wa-online"></i></span>
-          <div class="grow"><b>Super App assistant</b><span class="xs">AI assistant · replies straight away${cfg.hours ? ` · ${cfg.hours}` : ''}</span></div>
+          <div class="grow"><b>Super Malaab assistant</b><span class="xs">AI assistant · replies straight away${cfg.hours ? ` · ${cfg.hours}` : ''}</span></div>
           <button class="wa-close" type="button" data-wa-close aria-label="Close">${icon('x', 18)}</button>
         </div>
         <div class="wa-body cb-body" data-cb-body>
-          <div class="wa-bubble">Hi there! I’m the Super App assistant. Ask me about a booking, a match, your fantasy team or an order — or pick a topic.</div>
+          <div class="wa-bubble">Hi there! I’m the Super Malaab assistant. Ask me about a booking, a match, your fantasy team or an order — or pick a topic.</div>
           <div class="wa-topics">${TOPICS.map(([ic, t, k]) => `<button type="button" class="wa-topic" data-topic="${k}" aria-pressed="false">${icon(ic, 16)}<span>${t}</span></button>`).join('')}</div>
           <div class="cb-log" data-cb-log data-i18n-skip aria-live="polite"></div>
         </div>
@@ -213,7 +213,7 @@
           <button class="btn wa-cta cb-send" type="submit" aria-label="Send">${icon('send', 18)}</button>
         </form>
       </div>
-      <button class="wa-fab" type="button" aria-label="Chat with the Super App assistant" aria-expanded="false" aria-controls="wa-card">
+      <button class="wa-fab" type="button" aria-label="Chat with the Super Malaab assistant" aria-expanded="false" aria-controls="wa-card">
         <span class="wa-fab-ico">${GLYPH}</span>
         <span class="wa-fab-label">Chat with us</span>
         <i class="wa-dot" aria-hidden="true"></i>
@@ -238,7 +238,7 @@
       const a = m?.acts?.[actIdx];
       if (!a || m.done) return;
       if (a.type === 'open') { open(false); SA.core.router.go(String(a.path || '/').replace(/^#/, '')); return; }
-      if (!window.confirm(L(`Send a cancellation request for ${a.id}? The Super App team replies within 2 hours.`, `تبعت طلب إلغاء لـ ${a.id}؟ فريق Super App هيرد في خلال ساعتين.`))) return;
+      if (!window.confirm(L(`Send a cancellation request for ${a.id}? The Super Malaab team replies within 2 hours.`, `تبعت طلب إلغاء لـ ${a.id}؟ فريق سوبر ملعب هيرد في خلال ساعتين.`))) return;
       m.done = true; save(state);
       try { SA.services.cancellations.request({ kind: a.kind, refId: a.id, reason: a.reason || '' }); paint(); }
       catch (err) { m.done = false; save(state); push('bot', esc(err.message || L('That couldn’t be sent.', 'مقدرتش أبعت الطلب.'))); }

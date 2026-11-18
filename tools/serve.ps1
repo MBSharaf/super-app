@@ -10,7 +10,7 @@ $mime = @{ '.html'='text/html; charset=utf-8'; '.css'='text/css; charset=utf-8';
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$Port/")
 $listener.Start()
-Write-Host "Super App running at http://localhost:$Port/super-app/ (root: $Root)"
+Write-Host "Super Malaab running at http://localhost:$Port/super-app/ (root: $Root)"
 while ($listener.IsListening) {
   $ctx = $listener.GetContext()
   try {

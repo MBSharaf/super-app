@@ -11,7 +11,7 @@
   const monthName = (m) => new Date(`${m}-01T12:00:00`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
   SA.pages.adminLevels = A.guard({
-    title: 'Level review — Super App Admin',
+    title: 'Level review — Super Malaab Admin',
     render() {
       const L = SA.services.sellers.levels();
       const preview = AD().previewLevelReview();
@@ -42,7 +42,7 @@
 
   const SST = { requested: ['badge-gold', 'Waiting'], approved: ['badge-info', 'In the print queue'], delivered: ['badge-turf', 'Delivered'], rejected: ['badge-danger', 'Rejected'] };
   SA.pages.adminSamples = A.guard({
-    title: 'Samples — Super App Admin',
+    title: 'Samples — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || 'requested';
       const all = SA.services.pod.samples();

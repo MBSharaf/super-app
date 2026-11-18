@@ -18,7 +18,7 @@
   };
 
   SA.pages.adminCancellations = A.guard({
-    title: 'Cancellation requests — Super App Admin',
+    title: 'Cancellation requests — Super Malaab Admin',
     async render(ctx) {
       await CX().ready?.();
       const tab = ctx.query.tab || '';

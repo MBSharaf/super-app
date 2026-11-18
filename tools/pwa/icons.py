@@ -1,4 +1,4 @@
-"""Draws the Super App mark (the favicon's S and orange dot on dark green) as PNG icons for the web app manifest."""
+"""Draws the Super Malaab mark (the favicon's S and orange dot on dark green) as PNG icons for the web app manifest."""
 import re
 from PIL import Image, ImageDraw
 

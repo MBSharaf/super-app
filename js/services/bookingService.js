@@ -90,7 +90,7 @@
       for (let h = hour; h < hour + duration; h += 0.5) hours.push(h);
       const list = Math.round(hours.reduce((sum, h) => sum + PS().priceAt(p, date, Math.floor(h)) / 2, 0));
       const off = Math.round(list * discount);
-      // A Super App code (Super App pays: the venue still earns the full price) or the venue's own code (throws a friendly error if it doesn't apply)
+      // A Super Malaab code (Super Malaab pays: the venue still earns the full price) or the venue's own code (throws a friendly error if it doesn't apply)
       const sa = code ? SA.services.codes.platform(code, { scope: 'bookings', amount: list - off }) : null;
       const promo = sa || (code ? SA.services.codes.forBooking(code, { pitchId, amount: list - off }) : null);
       const pitchTotal = list - off - (promo && !promo.platform ? promo.amount : 0);

@@ -51,7 +51,7 @@
   };
 
   SA.pages.tournaments = {
-    title: 'Tournaments — Super App',
+    title: 'Tournaments — Super Malaab',
     async render(ctx) {
       if (SA.config.tournamentsSoon) return soonPage();
       const tab = ctx.query.status || '';
@@ -68,7 +68,7 @@
           </div></section>
         <div class="container section-tight">
           <div class="tabs" role="tablist" style="margin-bottom:18px">${[['', 'All'], ['open', 'Open for teams'], ['running', 'In progress'], ['finished', 'Finished']].map(([v, l]) => `<a class="tab" role="tab" href="${SA.core.router.href('/tournaments', { status: v || undefined })}" aria-selected="${tab === v}">${l}</a>`).join('')}</div>
-          <div class="tour-grid">${list.map(card).join('') || `<div class="panel" style="grid-column:1/-1">${c.empty({ icon: 'trophy', title: 'No tournaments here yet', text: 'Check the other tabs, or ask your favourite venue to run one on Super App.' })}</div>`}</div>
+          <div class="tour-grid">${list.map(card).join('') || `<div class="panel" style="grid-column:1/-1">${c.empty({ icon: 'trophy', title: 'No tournaments here yet', text: 'Check the other tabs, or ask your favourite venue to run one on Super Malaab.' })}</div>`}</div>
         </div>`;
     },
     mount(el) { const off = SA.core.motion.tilt(el.querySelector('.trophy3d'), { max: 14 }); return off; },
@@ -148,10 +148,10 @@
   };
 
   SA.pages.tournament = {
-    title: 'Tournament — Super App',
+    title: 'Tournament — Super Malaab',
     async render(ctx) {
       const t = await S.tournaments.get(ctx.params.id);
-      this.title = `${t.name} — Super App`;
+      this.title = `${t.name} — Super Malaab`;
       const tab = ctx.query.tab || (t.fixtures.length ? (t.format === 'league' ? 'table' : 'bracket') : 'overview');
       const days = Math.max(0, t.startsIn);
       return `<section class="tour-head" style="--cover:url('${media.photo(t.cover, 1600, 700)}')">

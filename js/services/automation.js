@@ -3,7 +3,7 @@
  * package, published game and request to join a game is sent with all its details to the links in
  * `SA.config.automation` (orders → `orders`; bookings, packages and games → `bookings`). Fantasy: a new private league
  * (`league.created`), someone joining a league (`league.member.joined`) and a finished gameweek (`gameweek.finished`, with
- * `superAppLeague.weeklyWinners`: the gameweek's top 3 in the Super App League and the Super Points each won; one
+ * `superAppLeague.weeklyWinners`: the gameweek's top 3 in the Super Malaab League and the Super Points each won; one
  * per league with every member's rank and points and the gameweek's top three) → `fantasy` (the orders link). In API mode the server sends
  * these events itself (its webhooks), so nothing is sent from the browser there.
  * Cancellation requests (`cancellation.requested`, then `.approved` / `.rejected`) → the chatbot's AI agent
@@ -21,7 +21,7 @@
   /** A page address on this site (clean URLs: /super-app/order/ORD-1) */
   const link = (path) => new URL(SA.core.router.url(path), location.href).href;
   const hh = (h) => `${String(Math.floor(h) % 24).padStart(2, '0')}:${h % 1 ? '30' : '00'}`;
-  const STORE_COMMISSION = 0.05;   // owner's decision (2026-10-27): 5% on every purchase; Super App's own store pays none
+  const STORE_COMMISSION = 0.05;   // owner's decision (2026-10-27): 5% on every purchase; Super Malaab's own store pays none
 
   const send = async (url, event, data) => {
     if (!url || S.api?.isLive()) return;
@@ -75,7 +75,7 @@
       const itemsTotal = lines.reduce((t, l) => t + l.price * l.qty, 0);
       const commission = official ? 0 : Math.round(itemsTotal * STORE_COMMISSION * 100) / 100;
       return {
-        storeId: key, name: key === 'printed' ? 'Printed for you by Super App' : st?.name || 'Super App Store', handle: st?.slug || null, official,
+        storeId: key, name: key === 'printed' ? 'Printed for you by Super Malaab' : st?.name || 'Super Malaab Store', handle: st?.slug || null, official,
         tagline: st?.tagline || null, phone: st?.phone || null, owner: st ? account(st.ownerId) : null, commissionRate: official ? 0 : STORE_COMMISSION,
         items: lines.map((l) => ({ productId: l.productId, name: l.name, brand: l.brand || null, size: l.variant?.size || null, color: l.variant?.color || null, qty: l.qty,
           unitPrice: l.price, lineTotal: l.price * l.qty, link: link(`/shop/${l.productId}`) })),
@@ -233,7 +233,7 @@
      * request per "Listen" click, so one event per league lost all but the first. `league` / `winners` / `participants`
      * at the top level are the first league's, as before.
      */
-    /** The Super App League's weekly prize: the gameweek's top 3 and the Super Points each one won (1,500 / 1,000 / 500 by default) */
+    /** The Super Malaab League's weekly prize: the gameweek's top 3 and the Super Points each one won (1,500 / 1,000 / 500 by default) */
     const superAppLeagueOf = (weekly, gw) => {
       const sl = F.superLeague?.();
       if (!sl) return null;
@@ -260,7 +260,7 @@
       });
     };
 
-    /** A new fantasy team (the player is entered into the Super App League with it) */
+    /** A new fantasy team (the player is entered into the Super Malaab League with it) */
     const saveSquad = F.saveSquad;
     F.saveSquad = async (ids, opts) => {
       const had = !!F.team();

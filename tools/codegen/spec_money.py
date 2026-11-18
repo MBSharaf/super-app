@@ -13,7 +13,7 @@ T("money", "Wallets", "Wallet", "B", "V", doc="A wallet; balances are cached fro
     .ck("AvailableBalance", "[AvailableBalance] >= 0 OR [Type] >= 5") \
     .ix("OwnerUserId Type", unique=True)
 
-T("money", "PromoCodes", "PromoCode", "B", "S A", doc="A discount code funded by an owner or by Super App.") \
+T("money", "PromoCodes", "PromoCode", "B", "S A", doc="A discount code funded by an owner or by Super Malaab.") \
     .c("Code", "varchar(30)", uq=True, check="[Code] NOT LIKE '%[^A-Z0-9]%'") \
     .c("Funding", E("CodeFunding", "OwnerFunded SuperAppFunded")) \
     .c("OwnerUserId", "uniqueidentifier", null=True, fk=U).c("StoreId", "bigint", null=True, fk="shop.Stores") \

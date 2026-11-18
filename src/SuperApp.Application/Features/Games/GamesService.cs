@@ -263,7 +263,7 @@ public sealed class GamesService(
         var (game, mine) = await ForRequestAsync(code, Me(), ct);
         if (mine.Payment is { Status: PaymentStatus.Paid })
         {
-            throw new ConflictException("A paid place is cancelled through a cancellation request — the Super App team replies within 2 hours.", "request_required");
+            throw new ConflictException("A paid place is cancelled through a cancellation request — the Super Malaab team replies within 2 hours.", "request_required");
         }
         await WithdrawCoreAsync(game, mine, "Left the game", ct);
         return await GetAsync(code, ct);

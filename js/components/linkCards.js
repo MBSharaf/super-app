@@ -1,6 +1,6 @@
 /**
- * Rich cards for Super App content inside community posts: free slots (live: "Book now" until someone books it),
- * games looking for players (ask to join), and any Super App link people paste — pitch, product or design, seller store,
+ * Rich cards for Super Malaab content inside community posts: free slots (live: "Book now" until someone books it),
+ * games looking for players (ask to join), and any Super Malaab link people paste — pitch, product or design, seller store,
  * tournament, community post. Outside links are blocked by the community filter, so every card here is ours.
  *   SA.ui.linkCards.slot(card) · SA.ui.linkCards.game(card) · SA.ui.linkCards.fromText(text)
  */
@@ -26,7 +26,7 @@
     slotState,
     slot(c) {
       const { p, state, price } = slotState(c);
-      if (!p) return '<div class="lk-card is-off"><span class="lk-body small muted">This pitch is no longer on Super App.</span></div>';
+      if (!p) return '<div class="lk-card is-off"><span class="lk-body small muted">This pitch is no longer on Super Malaab.</span></div>';
       const tag = state === 'free' ? `<span class="badge badge-turf">${icon('check', 11, 2.6)} Free now</span>` : state === 'booked' ? '<span class="badge badge-danger">Booked</span>' : '<span class="badge">Gone</span>';
       const body = `<span class="row wrap" style="--gap:6px">${tag}${c.pct ? `<span class="badge badge-blaze">${Math.round(c.pct * 100)}% off</span>` : ''}<span class="badge">${esc(p.format)}</span></span>
         <b>${esc(p.name)}</b><span class="xs muted">${esc(p.area)}, ${esc(p.city)}</span>
@@ -45,7 +45,7 @@
       const cta = !m.isMine && !m.joined && !r && m.spotsLeft ? `<span class="btn btn-primary btn-sm lk-cta">${icon('users', 14)} Ask to join</span>` : '';
       return shell(`#/players/${m.id}`, media.photo(m.pitch.image, 360, 240), body, cta).replace('class="lk-card"', 'class="lk-card lk-game"');
     },
-    /** Cards for Super App links written in a post or comment */
+    /** Cards for Super Malaab links written in a post or comment */
     fromText(text) {
       return (S.community?.linksIn(text) || []).map((l) => {
         try {
@@ -60,7 +60,7 @@
         return '';
       }).join('');
     },
-    /** Links in a text made clickable (Super App links only) */
+    /** Links in a text made clickable (Super Malaab links only) */
     linkify(html) { return html.replace(/((?:https?:\/\/[^\s<]+|#\/[^\s<]+))/g, (u) => (S.community?.isInternal(u.replace(/&amp;/g, '&')) ? `<a class="link" href="${S.community.hashOf(u.replace(/&amp;/g, '&'))}">${u.length > 48 ? `${u.slice(0, 46)}…` : u}</a>` : u)); },
   };
   SA.ui.linkCards = cards;

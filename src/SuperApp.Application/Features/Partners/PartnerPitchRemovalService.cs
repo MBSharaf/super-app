@@ -63,7 +63,7 @@ public sealed class PartnerPitchRemovalService(
         foreach (var b in cancelled.Where(b => b.CustomerId is not null))
         {
             await notifier.NotifyUserAsync(b.CustomerId!.Value, new NotificationMessage(NotificationCategory.Bookings, "The venue cancelled your booking",
-                $"{b.Code} · {pitch.Name} is no longer on Super App · full refund {b.RefundAmount:0} EGP", $"#/booking/{b.Code}", NotificationTone.Danger), ct);
+                $"{b.Code} · {pitch.Name} is no longer on Super Malaab · full refund {b.RefundAmount:0} EGP", $"#/booking/{b.Code}", NotificationTone.Danger), ct);
         }
         await notifier.NotifyUserAsync(scope.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings, $"{pitch.Name} was deleted",
             cancelled.Count == 0 ? "No upcoming bookings were affected." : $"{cancelled.Count} upcoming booking(s) cancelled and refunded in full.", "#/dash/pitches", NotificationTone.Warning), ct);

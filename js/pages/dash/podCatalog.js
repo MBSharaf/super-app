@@ -51,7 +51,7 @@
 
   const open = (x = {}) => {
     SA.ui.overlay.open({
-      wide: true, title: x.id ? `Edit ${esc(x.name)}` : 'New print product', subtitle: 'Sellers only see the base price. Everything between the partner cost and the base price is the Super App margin.',
+      wide: true, title: x.id ? `Edit ${esc(x.name)}` : 'New print product', subtitle: 'Sellers only see the base price. Everything between the partner cost and the base price is the Super Malaab margin.',
       body: form(x),
       footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" form="pc-form" type="submit">${icon('check', 16)} Save product</button>`,
       onMount(m, close) {
@@ -76,9 +76,9 @@
   };
 
   SA.pages.dashPodCatalog = C.guard({
-    title: 'Print catalogue — Super App Admin',
+    title: 'Print catalogue — Super Malaab Admin',
     render() {
-      if (!D().isAdmin()) return C.layout('pod-catalog', { title: 'Print catalogue', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Super App admins only', text: 'This section is only available to the Super App team.' })}</div>` });
+      if (!D().isAdmin()) return C.layout('pod-catalog', { title: 'Print catalogue', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Super Malaab admins only', text: 'This section is only available to the Super Malaab team.' })}</div>` });
       const items = P().catalog({ all: true });
       const cats = P().categories();
       const live = SA.services.db.all('designs').filter((d) => d.status === 'live');

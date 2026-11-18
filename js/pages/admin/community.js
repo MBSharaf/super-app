@@ -1,6 +1,6 @@
 /**
- * Admin console: communities — reports queue, every post (moderate, pin, close comments, reply as "Super App Admin"),
- * new posts as "Super App Admin", community settings (create / edit / archive, audience, slow mode, rules) and safety
+ * Admin console: communities — reports queue, every post (moderate, pin, close comments, reply as "Super Malaab Admin"),
+ * new posts as "Super Malaab Admin", community settings (create / edit / archive, audience, slow mode, rules) and safety
  * (banned words, phone numbers and links, muted members).
  */
 (function (SA) {
@@ -40,7 +40,7 @@
   };
 
   const communityDialog = (c = null) => SA.ui.overlay.open({
-    wide: true, title: c ? `Edit ${esc(c.name)}` : 'New community', subtitle: 'Only Super App creates communities. Choose who can join and the rules.',
+    wide: true, title: c ? `Edit ${esc(c.name)}` : 'New community', subtitle: 'Only Super Malaab creates communities. Choose who can join and the rules.',
     body: `<form class="form-grid" data-cmf novalidate>
       <div class="field"><label for="cf-n">Name</label><input class="input" id="cf-n" name="name" maxlength="40" value="${esc(c?.name || '')}" /><p class="field-error" data-err="name"></p></div>
       <div class="field"><label for="cf-s">Link (English)</label><input class="input mono" id="cf-s" name="slug" maxlength="30" value="${esc(c?.slug || '')}" placeholder="e.g. padel-players" /><p class="field-error" data-err="slug"></p></div>
@@ -50,13 +50,13 @@
       <div class="field"><label for="cf-i">Icon</label><select class="select" id="cf-i" name="icon">${['users', 'shirt', 'crown', 'trophy', 'ball', 'pitch', 'image', 'flag', 'megaphone', 'racket', 'whistle'].map((k) => `<option ${c?.icon === k ? 'selected' : ''}>${k}</option>`).join('')}</select></div>
       <div class="field"><label for="cf-c">Colour</label><input class="input" id="cf-c" name="color" type="color" value="${esc(c?.color || '#0B6E4F')}" /></div>
       <div class="field span-2"><label for="cf-p">Cover photo</label><select class="select" id="cf-p" name="cover">${['stadiumNight', 'nightMatch', 'litField', 'stadium', 'aerialPitch', 'greenTeam', 'kidsTraining', 'trophy', 'cairoNile'].filter((k) => media.photos[k]).map((k) => `<option ${c?.cover === k ? 'selected' : ''}>${k}</option>`).join('')}</select></div>
-      <div class="field span-2"><label for="cf-r">Rules (one per line)</label><textarea class="input" id="cf-r" name="rules" rows="4">${esc((c?.rules || ['Be respectful — no insults, no fan fights.', 'No phone numbers or outside links: keep deals on Super App.']).join('\n'))}</textarea></div>
+      <div class="field span-2"><label for="cf-r">Rules (one per line)</label><textarea class="input" id="cf-r" name="rules" rows="4">${esc((c?.rules || ['Be respectful — no insults, no fan fights.', 'No phone numbers or outside links: keep deals on Super Malaab.']).join('\n'))}</textarea></div>
       <div class="span-2 row" style="--gap:8px;justify-content:flex-end"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-primary" type="submit">${c ? 'Save' : 'Create community'}</button></div></form>`,
     onMount(m, close) { m.querySelector('[data-cmf]').addEventListener('submit', (e) => { e.preventDefault(); try { AD().saveCommunity(SA.core.utils.formData(e.target), c?.id); close(); toast(c ? 'Community saved' : 'Community created'); SA.app.rerender(); } catch (err) { C.showErrors(e.target, err.details || {}); } }); },
   });
 
   SA.pages.adminCommunity = A.guard({
-    title: 'Communities — Super App Admin',
+    title: 'Communities — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const tab = q.tab || '';
@@ -80,7 +80,7 @@
             <label class="field grow"><span class="field-label">Search</span><input class="input" name="q" value="${esc(q.q || '')}" placeholder="Text or member name…" /></label><button class="btn btn-primary" type="submit" style="align-self:end">Filter</button>${q.post ? '<a class="btn btn-ghost" href="#/admin/community?tab=posts" style="align-self:end">Show all</a>' : ''}</form></section>
           <div class="cm-feed adm-cm-feed">${posts.map((p) => SA.ui.community.postCard(adminView(p), { admin: true, showCommunity: true })).join('') || `<div class="dash-card">${SA.ui.c.empty({ icon: 'message', title: 'No posts found' })}</div>`}</div>`;
       } else if (tab === 'new') {
-        section = `<section class="dash-card"><h2 class="h4">${icon('shield', 18)} Post as Super App Admin</h2><p class="small soft" style="margin-top:4px">Tell members something right away. It shows with the official badge; members of the community get a notification.</p>
+        section = `<section class="dash-card"><h2 class="h4">${icon('shield', 18)} Post as Super Malaab Admin</h2><p class="small soft" style="margin-top:4px">Tell members something right away. It shows with the official badge; members of the community get a notification.</p>
           <form class="form-grid" data-np novalidate style="margin-top:14px">
             <fieldset class="field span-2"><legend class="field-label">Post in</legend><div class="chips" style="margin-top:6px">${comms.filter((c) => c.status !== 'archived').map((c, i) => `<label class="chip"><input type="checkbox" name="to" value="${c.id}" ${i === 0 ? 'checked' : ''} hidden /><span>${esc(c.name)}</span></label>`).join('')}</div><p class="field-error" data-err="to"></p></fieldset>
             <div class="field span-2"><label for="np-t">Post</label><textarea class="input" id="np-t" name="text" rows="5" maxlength="3000" placeholder="e.g. New this week: …"></textarea><p class="field-error" data-err="text"></p></div>
@@ -98,7 +98,7 @@
       } else {
         section = `<div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">Filter</h2><p class="small soft" style="margin-top:4px">Posts and comments with these words are blocked before they’re published.</p>
             <form data-filter novalidate class="stack" style="--gap:10px;margin-top:12px"><div class="field"><label for="fl-w">Banned words (comma or new line)</label><textarea class="input" id="fl-w" name="words" rows="6">${esc((settings.bannedWords || []).join('\n'))}</textarea></div>
-              <label class="choice"><input type="checkbox" name="blockContacts" ${settings.blockContacts !== false ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Block phone numbers and outside links</b><span class="xs muted" style="display:block">Keeps deals and payments on Super App and stops spam.</span></span></label>
+              <label class="choice"><input type="checkbox" name="blockContacts" ${settings.blockContacts !== false ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Block phone numbers and outside links</b><span class="xs muted" style="display:block">Keeps deals and payments on Super Malaab and stops spam.</span></span></label>
               <div><button class="btn btn-primary" type="submit">Save filter</button></div></form></section>
           <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Muted members</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Member</th><th>Where</th><th>Until</th><th></th></tr></thead><tbody>
             ${activeMutes.map((x) => `<tr><td class="small"><b>${esc(x.name)}</b><span class="xs muted" style="display:block">${esc(x.reason)}</span></td><td class="small">${x.communityId ? esc(db().find('communities', x.communityId)?.name || '') : 'All communities'}</td><td class="small">${fmtDate(new Date(x.until))}</td><td class="r"><button class="btn btn-ghost btn-sm" data-unmute="${esc(x.userId)}|${x.communityId || ''}">Unmute</button></td></tr>`).join('') || '<tr><td colspan="4" class="small muted" style="padding:18px">Nobody is muted.</td></tr>'}
@@ -111,14 +111,14 @@
           ${C.kpi({ label: 'Posts this week', value: posts.filter((p) => Date.now() - p.at < 7 * 864e5).length, ic: 'message', tone: 'k-turf' })}
           ${C.kpi({ label: 'Muted members', value: activeMutes.length, ic: 'ban' })}
         </div>
-        ${A.tabs('/admin/community', [['', 'Reports', reports.length], ['posts', 'All posts'], ['new', 'Post as Super App Admin'], ['communities', 'Communities', comms.length], ['safety', 'Safety & muted']], tab)}${section}`;
-      return C.layout('community', { title: 'Communities', subtitle: 'Moderate, post and reply as Super App Admin, and manage the communities', actions: '<a class="btn btn-ghost btn-sm" href="#/community" target="_blank" rel="noopener">Open on the site ' + icon('arrowUpRight', 14) + '</a>', body });
+        ${A.tabs('/admin/community', [['', 'Reports', reports.length], ['posts', 'All posts'], ['new', 'Post as Super Malaab Admin'], ['communities', 'Communities', comms.length], ['safety', 'Safety & muted']], tab)}${section}`;
+      return C.layout('community', { title: 'Communities', subtitle: 'Moderate, post and reply as Super Malaab Admin, and manage the communities', actions: '<a class="btn btn-ghost btn-sm" href="#/community" target="_blank" rel="noopener">Open on the site ' + icon('arrowUpRight', 14) + '</a>', body });
     },
     mount(el, ctx) {
       SA.ui.community.bindPosts(el, { onAdmin });
       el.querySelector('[data-pf]')?.addEventListener('submit', (e) => { e.preventDefault(); const f = SA.core.utils.formData(e.target); SA.core.router.go(SA.core.router.href('/admin/community', { tab: 'posts', c: f.c || undefined, q: f.q || undefined }).slice(1)); });
       el.querySelector('[data-filter]')?.addEventListener('submit', (e) => { e.preventDefault(); const f = SA.core.utils.formData(e.target); AD().setCommunityFilter({ words: f.words, blockContacts: !!f.blockContacts }); toast('Filter saved'); SA.app.rerender(); });
-      // New post as Super App Admin
+      // New post as Super Malaab Admin
       const np = el.querySelector('[data-np]');
       if (np) {
         draftImage = null;

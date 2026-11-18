@@ -6,7 +6,7 @@ NOW = "sql:SYSUTCDATETIME()"
 PAYOUT = E("PayoutMethod", "Bank InstaPay")
 SIDE = E("PrintSide", "Front Back")
 
-T("shop", "Stores", "Store", "B", "S", doc="A store: the official Super App Store, a partner's store or a seller's store.") \
+T("shop", "Stores", "Store", "B", "S", doc="A store: the official Super Malaab Store, a partner's store or a seller's store.") \
     .c("OwnerUserId", "uniqueidentifier", null=True, fk=U) \
     .c("Type", E("StoreType", "Official PitchPartner Seller")) \
     .c("Handle", "varchar(40)", uq=True, check="[Handle] NOT LIKE '%[^a-z0-9-]%'").c("Name", "nvarchar(80)") \

@@ -8,14 +8,14 @@ namespace SuperApp.Application.Features.Communities;
 public sealed record CommunityDto(long Id, string Slug, string Name, string? About, string Audience, IReadOnlyList<string> Rules, int SlowModeSeconds,
     string? Color, string? Icon, bool IsArchived, int Members, int Posts, bool Joined, bool CanJoin, string? MyRole, DateTime? MutedUntil);
 
-/// <summary>Who wrote a post or comment. Admin posts show as "Super App Admin" with the team badge; sellers show their level.</summary>
+/// <summary>Who wrote a post or comment. Admin posts show as "Super Malaab Admin" with the team badge; sellers show their level.</summary>
 public sealed record AuthorDto(string Name, IReadOnlyList<string> Badges);
 
 public sealed record PollOptionDto(long Id, string Text, int Votes);
 
 public sealed record PollDto(IReadOnlyList<PollOptionDto> Options, long? MyVote, int TotalVotes);
 
-/// <summary>A rich card for a Super App link (pitch, product, store, tournament, post, community, news…).</summary>
+/// <summary>A rich card for a Super Malaab link (pitch, product, store, tournament, post, community, news…).</summary>
 public sealed record LinkCardDto(string Kind, string Id, string Title, string? Subtitle, string? Image, string Link);
 
 public sealed record PostDto(long Id, string Community, AuthorDto Author, bool AsSuperAppAdmin, string Text, string? ImageUrl, PollDto? Poll,
@@ -53,7 +53,7 @@ public sealed record MuteRequest(int Days, string Reason);
 
 public sealed record CommunityRequest(string Slug, string Name, string? About, string Audience, IReadOnlyList<string>? Rules, int SlowModeSeconds, string? Color, string? Icon);
 
-/// <summary>An admin post as "Super App Admin" — pinned and/or announcement.</summary>
+/// <summary>An admin post as "Super Malaab Admin" — pinned and/or announcement.</summary>
 public sealed record AdminPostRequest(string Text, IReadOnlyList<string>? PollOptions, bool IsPinned, bool IsAnnouncement);
 
 public sealed record PostFlagsRequest(bool IsPinned, bool IsAnnouncement, bool CommentsClosed, bool IsHidden);
@@ -141,7 +141,7 @@ public interface ICommunityRepository
 
     Task<IReadOnlyList<MuteDto>> MutesAsync(DateTime now, CancellationToken ct);
 
-    /// <summary>Rich cards for Super App links (unknown targets are left out).</summary>
+    /// <summary>Rich cards for Super Malaab links (unknown targets are left out).</summary>
     Task<IReadOnlyList<LinkCardDto>> CardsAsync(IReadOnlyList<SuperAppLink> links, CancellationToken ct);
 }
 

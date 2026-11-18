@@ -8,7 +8,7 @@
   const blockDialog = (p, { date, hours = [] } = {}) => new Promise((resolve) => {
     SA.ui.overlay.open({
       title: hours.length === 1 ? `Block ${fmtHour(hours[0])} on ${fmtDate(date)}` : `Block dates at ${esc(p.name)}`,
-      subtitle: 'Blocked time can’t be booked on Super App. Existing bookings are not affected.',
+      subtitle: 'Blocked time can’t be booked on Super Malaab. Existing bookings are not affected.',
       body: `<form id="blk" novalidate class="form-grid">
         <div class="field"><label for="b-from">From</label><input class="input" id="b-from" type="date" name="from" value="${date}" min="${isoDate(today())}" /></div>
         <div class="field"><label for="b-to">To</label><input class="input" id="b-to" type="date" name="to" value="${date}" min="${isoDate(today())}" /></div>
@@ -43,7 +43,7 @@
         <div class="field"><label for="w-dur">Duration</label><select class="select" id="w-dur" name="duration">${[1, 2, 3].map((d) => `<option value="${d}">${d} hour${d > 1 ? 's' : ''}</option>`).join('')}</select></div>
         <div class="field"><label for="w-amt">Amount collected (EGP)</label><input class="input num" id="w-amt" name="amount" type="number" min="0" step="10" value="${price}" /></div>
         <fieldset class="field span-2"><legend class="field-label">Paid with</legend><div class="seg">${['Cash at venue', 'Card at venue'].map((x, i) => `<label class="seg-opt"><input type="radio" name="payment" value="${x}" ${i === 0 ? 'checked' : ''} /><span>${x}</span></label>`).join('')}</div></fieldset>
-        <p class="xs muted span-2">Walk-ins are recorded for your reports and block the time on Super App. No commission is charged on walk-ins.</p>
+        <p class="xs muted span-2">Walk-ins are recorded for your reports and block the time on Super Malaab. No commission is charged on walk-ins.</p>
         <p class="field-error span-2" data-err="form"></p></form>`,
       footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" form="wi" type="submit">${icon('plus', 15)} Add booking</button>`,
       onMount(m, close) {
@@ -61,7 +61,7 @@
   });
 
   SA.pages.dashAvailability = C.guard({
-    title: 'Availability — Super App Partner',
+    title: 'Availability — Super Malaab Partner',
     render(ctx) {
       const pitches = D().myPitches(C.scope());
       if (!pitches.length) return C.layout('availability', { title: 'Availability', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'calendar', title: 'Add a pitch first', text: 'Once you have a pitch you can manage its hours, block time and add walk-in bookings here.', action: `<a class="btn btn-primary" href="#/dash/pitches/new">Add a pitch</a>` })}</div>` });
@@ -125,8 +125,8 @@
       el.querySelector('.date-strip .is-active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
       el.addEventListener('click', async (e) => {
         const bl = e.target.closest('[data-block]');
-        if (bl) { if (await blockDialog(p, { date, hours: [+bl.dataset.block] })) { SA.ui.overlay.toast('Time blocked on Super App'); SA.app.rerender(); } return; }
-        if (e.target.closest('[data-block-range]')) { if (await blockDialog(p, { date })) { SA.ui.overlay.toast('Dates blocked on Super App'); SA.app.rerender(); } return; }
+        if (bl) { if (await blockDialog(p, { date, hours: [+bl.dataset.block] })) { SA.ui.overlay.toast('Time blocked on Super Malaab'); SA.app.rerender(); } return; }
+        if (e.target.closest('[data-block-range]')) { if (await blockDialog(p, { date })) { SA.ui.overlay.toast('Dates blocked on Super Malaab'); SA.app.rerender(); } return; }
         const ub = e.target.closest('[data-unblock]');
         if (ub && ub.dataset.unblock) {
           const cl = SA.services.db.find('closures', ub.dataset.unblock);

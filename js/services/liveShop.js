@@ -234,8 +234,8 @@
   /** Server order → the site's order shape (one group per parcel, as the order page reads it) */
   const toOrder = (o) => {
     const address = JSON.parse(o.addressJson || '{}');
-    const sellers = o.groups.map((g) => ({ storeId: g.printed ? 'pod' : `api:${g.store.handle}`, storeName: g.printed ? 'Printed for you by Super App' : g.store.name, official: g.store?.type === 'Official',
-      pod: g.printed, status: g.printed ? ITEM[g.status] || 'confirmed' : PARCEL[g.status] || 'confirmed', courier: g.courier === 'courier.simulated' ? 'Super App courier (test)' : g.courier || '',
+    const sellers = o.groups.map((g) => ({ storeId: g.printed ? 'pod' : `api:${g.store.handle}`, storeName: g.printed ? 'Printed for you by Super Malaab' : g.store.name, official: g.store?.type === 'Official',
+      pod: g.printed, status: g.printed ? ITEM[g.status] || 'confirmed' : PARCEL[g.status] || 'confirmed', courier: g.courier === 'courier.simulated' ? 'Super Malaab courier (test)' : g.courier || '',
       tracking: g.trackingNumber || '', at: {}, reason: '', lines: g.items.map(toLine) }));
     const open = sellers.filter((g) => g.status !== 'cancelled');
     const placed = Date.parse(o.placedAt);

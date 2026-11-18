@@ -60,7 +60,7 @@
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore();
       },
       image(img, x, y, w, h) { try { ctx.drawImage(img, x, y, w, h); } catch { /* tainted or broken image: skip */ } },
-      /** Super App brand mark */
+      /** Super Malaab brand mark */
       logo(x, y, s = 26) {
         ctx.save();
         const g = ctx.createLinearGradient(x, y, x + s, y + s); g.addColorStop(0, '#FF5B14'); g.addColorStop(1, '#E54A07');
@@ -108,7 +108,7 @@
   const enc = new TextEncoder();
   const pdfString = (s) => `(${String(s).replace(/[^\x20-\x7E]/g, '').replace(/([\\()])/g, '\\$1')})`;
 
-  const create = ({ title = 'Super App document', author = 'Super App' } = {}) => {
+  const create = ({ title = 'Super Malaab document', author = 'Super Malaab' } = {}) => {
     const pages = [];
     const doc = {
       page() {
@@ -130,7 +130,7 @@
         const pageObj = (i) => 4 + i * 3;
         obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
         obj(2, () => push(`<< /Type /Pages /Count ${n} /Kids [${pages.map((_, i) => `${pageObj(i)} 0 R`).join(' ')}] >>`));
-        obj(3, () => push(`<< /Title ${pdfString(title)} /Author ${pdfString(author)} /Producer (Super App) /CreationDate (D:${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}) >>`));
+        obj(3, () => push(`<< /Title ${pdfString(title)} /Author ${pdfString(author)} /Producer (Super Malaab) /CreationDate (D:${new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)}) >>`));
         pages.forEach((c, i) => {
           const po = pageObj(i);
           obj(po, () => push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im${i} ${po + 2} 0 R >> >> /Contents ${po + 1} 0 R >>`));

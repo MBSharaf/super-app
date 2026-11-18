@@ -14,7 +14,7 @@
 
   /* ======================= List ======================= */
   SA.pages.dashPitches = C.guard({
-    title: 'My pitches — Super App Partner',
+    title: 'My pitches — Super Malaab Partner',
     render() {
       const sc = C.scope();
       const from = isoDate(addDays(today(), -29)), to = isoDate(today());
@@ -28,7 +28,7 @@
         return `<article class="dp-card ${p.status === 'closed' ? 'is-closed' : ''}">
           <div class="dp-media media"><img src="${media.photo(p.images[0], 640, 400)}" alt="" loading="lazy" />
             <span class="badge badge-glass dp-format">${esc(p.format)}${p.indoor ? ' · Indoor' : ''}</span>
-            ${p.review === 'pending' ? '<span class="dp-closed dp-review"><b>Waiting for Super App review</b><span class="xs">We check new pitches within one working day. It goes live when approved.</span></span>' : p.review === 'rejected' ? `<span class="dp-closed"><b>Not approved</b><span class="xs">${esc(p.reviewReason || '')} — edit the pitch to send it again.</span></span>` : ''}
+            ${p.review === 'pending' ? '<span class="dp-closed dp-review"><b>Waiting for Super Malaab review</b><span class="xs">We check new pitches within one working day. It goes live when approved.</span></span>' : p.review === 'rejected' ? `<span class="dp-closed"><b>Not approved</b><span class="xs">${esc(p.reviewReason || '')} — edit the pitch to send it again.</span></span>` : ''}
             ${p.status === 'closed' ? `<span class="dp-closed"><b>Closed for booking</b>${p.closedReason ? `<span class="xs">${esc(p.closedReason)}</span>` : ''}</span>` : ''}</div>
           <div class="dp-body">
             <div class="row-between" style="align-items:flex-start"><div class="grow"><h3 class="h4 truncate">${esc(p.name)}</h3><p class="xs muted truncate">${esc(p.area)}, ${esc(p.city)}${D().isAdmin() ? ` · ${esc(owners[p.ownerId]?.company || '')}` : ''}</p></div><span class="price">${money(p.price)}</span></div>
@@ -50,7 +50,7 @@
       return C.layout('pitches', {
         title: 'My pitches', subtitle: `${s.pitches.length} pitch${s.pitches.length === 1 ? '' : 'es'} · ${s.pitches.filter((p) => p.status === 'active').length} open for booking`,
         actions: `<a class="btn btn-primary btn-sm" href="#/dash/pitches/new">${icon('plus', 15)} Add pitch</a>`,
-        body: s.pitches.length ? `<div class="dp-grid">${cards}</div>` : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No pitches yet', text: 'Add your first pitch with photos, prices and opening hours. It appears on Super App as soon as you save it.', action: `<a class="btn btn-primary" href="#/dash/pitches/new">${icon('plus', 16)} Add a pitch</a>` })}</div>`,
+        body: s.pitches.length ? `<div class="dp-grid">${cards}</div>` : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No pitches yet', text: 'Add your first pitch with photos, prices and opening hours. It appears on Super Malaab as soon as you save it.', action: `<a class="btn btn-primary" href="#/dash/pitches/new">${icon('plus', 16)} Add a pitch</a>` })}</div>`,
       });
     },
     mount(el) {
@@ -79,7 +79,7 @@
         if (d) {
           const p = D().pitch(d.dataset.delete);
           const up = D().upcomingFor(p.id).length;
-          const ok = await SA.ui.overlay.confirm({ title: `Delete ${esc(p.name)}?`, text: `The pitch is removed from Super App.${up ? ` <b>${up} upcoming booking${up > 1 ? 's' : ''} will be cancelled</b> and customers refunded in full.` : ''} Past bookings and earnings stay in your reports. This can’t be undone.`, confirmLabel: 'Delete pitch', cancelLabel: 'Keep pitch', danger: true });
+          const ok = await SA.ui.overlay.confirm({ title: `Delete ${esc(p.name)}?`, text: `The pitch is removed from Super Malaab.${up ? ` <b>${up} upcoming booking${up > 1 ? 's' : ''} will be cancelled</b> and customers refunded in full.` : ''} Past bookings and earnings stay in your reports. This can’t be undone.`, confirmLabel: 'Delete pitch', cancelLabel: 'Keep pitch', danger: true });
           if (!ok) return;
           let r;
           try { r = await D().deletePitch(p.id); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); return; }
@@ -95,7 +95,7 @@
   const hourOpts = (from, to, sel) => { let o = ''; for (let h = from; h <= to; h++) o += `<option value="${h}" ${h === sel ? 'selected' : ''}>${fmtHour(h)}${h >= 24 ? ' (next day)' : ''}</option>`; return o; };
 
   SA.pages.dashPitchEdit = C.guard({
-    title: 'Edit pitch — Super App Partner',
+    title: 'Edit pitch — Super Malaab Partner',
     render(ctx) {
       const isNew = !ctx.params.id;
       const p = isNew ? blank() : D().pitch(ctx.params.id);
@@ -150,9 +150,9 @@
           <div class="pe-preview"><p class="xs muted" style="margin-bottom:8px">${icon('eye', 13)} Live preview — how players see it</p><div data-preview></div></div>
           ${!isNew ? `<div class="dash-card"><h2 class="h4">Status</h2><div style="margin-top:12px">${switchHtml(p)}</div><p class="xs muted" style="margin-top:10px">Closed pitches are hidden from search and can’t be booked.</p></div>` : ''}
         </aside>
-        <div class="save-bar"><span class="small soft grow" data-dirty>${isNew ? 'New pitch — fill in the details and save.' : 'Changes go live on Super App when you save.'}</span><a class="btn btn-outline" href="#/dash/pitches">Cancel</a><button class="btn btn-primary" type="submit">${icon('check', 16)} ${isNew ? 'Publish pitch' : 'Save changes'}</button></div>
+        <div class="save-bar"><span class="small soft grow" data-dirty>${isNew ? 'New pitch — fill in the details and save.' : 'Changes go live on Super Malaab when you save.'}</span><a class="btn btn-outline" href="#/dash/pitches">Cancel</a><button class="btn btn-primary" type="submit">${icon('check', 16)} ${isNew ? 'Publish pitch' : 'Save changes'}</button></div>
       </form>`;
-      return C.layout('pitches', { title: isNew ? 'Add a pitch' : `Edit ${esc(p.name)}`, subtitle: isNew ? 'It appears on Super App as soon as you publish it.' : `Last updated ${SA.core.utils.timeAgo(p.updatedAt)}`, actions: !isNew ? `<a class="btn btn-outline btn-sm" href="#/pitches/${p.id}" target="_blank" rel="noopener">${icon('eye', 15)} View on site</a>` : '', body });
+      return C.layout('pitches', { title: isNew ? 'Add a pitch' : `Edit ${esc(p.name)}`, subtitle: isNew ? 'It appears on Super Malaab as soon as you publish it.' : `Last updated ${SA.core.utils.timeAgo(p.updatedAt)}`, actions: !isNew ? `<a class="btn btn-outline btn-sm" href="#/pitches/${p.id}" target="_blank" rel="noopener">${icon('eye', 15)} View on site</a>` : '', body });
     },
     mount(el, ctx) {
       const form = el.querySelector('#pitch-form');
@@ -216,7 +216,7 @@
           if (save) save.disabled = true;
           const out = await (ctx.params.id ? D().updatePitch(p.id, d) : D().createPitch(d, d.ownerId));
           SA.core.motion.confetti({ count: 50, spread: 0.6 });
-          SA.ui.overlay.toast(out.review === 'pending' ? `${out.name} was sent for Super App review` : ctx.params.id ? 'Changes saved — live on Super App' : `${out.name} is live on Super App`, { action: 'View', onAction: () => window.open(`#/pitches/${out.id}`, '_blank') });
+          SA.ui.overlay.toast(out.review === 'pending' ? `${out.name} was sent for Super Malaab review` : ctx.params.id ? 'Changes saved — live on Super Malaab' : `${out.name} is live on Super Malaab`, { action: 'View', onAction: () => window.open(`#/pitches/${out.id}`, '_blank') });
           SA.core.router.go('/dash/pitches');
         } catch (err) {
           if (save) save.disabled = false;

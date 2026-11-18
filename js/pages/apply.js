@@ -1,5 +1,5 @@
 /**
- * Grow with Super App: apply to list your pitch (#/partner/apply), apply to sell from the pitch partner dashboard
+ * Grow with Super Malaab: apply to list your pitch (#/partner/apply), apply to sell from the pitch partner dashboard
  * (#/dash/sell), and the profile cards that open the right dashboard (or show the application's status).
  */
 (function (SA) {
@@ -16,20 +16,20 @@
   const readPhoto = (file, max = 900) => SA.pages.dashCommon.readImage(file, max, 0.72);
   const field = (name, label, input, hint = '') => `<div class="field"><label for="ap-${name}">${label}</label>${input}${hint ? `<span class="field-hint">${hint}</span>` : ''}<p class="field-error" data-err="${name}"></p></div>`;
   const idBlock = (prefix = '') => `
-      ${field('nationalId', 'National ID number', `<input class="input num" id="ap-nationalId" name="nationalId" inputmode="numeric" maxlength="14" autocomplete="off" dir="ltr" placeholder="14 digits" />`, 'Only the last 4 digits are kept on Super App.')}
+      ${field('nationalId', 'National ID number', `<input class="input num" id="ap-nationalId" name="nationalId" inputmode="numeric" maxlength="14" autocomplete="off" dir="ltr" placeholder="14 digits" />`, 'Only the last 4 digits are kept on Super Malaab.')}
       <div class="field"><span class="field-label">Photo of your ID (front)</span><label class="ap-photo" data-pick="idPhoto${prefix}"><input type="file" accept="image/*" hidden /><span data-preview>${icon('camera', 22)}<span class="small">Add a photo</span></span></label><p class="field-error" data-err="idPhoto"></p></div>
       <div class="field"><span class="field-label">Photo of your ID (back)</span><label class="ap-photo" data-pick="idPhotoBack${prefix}"><input type="file" accept="image/*" hidden /><span data-preview>${icon('camera', 22)}<span class="small">Add a photo</span></span></label><p class="field-error" data-err="idPhotoBack"></p></div>`;
   const bindPhoto = (el, key, onPick) => el.querySelectorAll(`[data-pick="${key}"]`).forEach((lbl) => lbl.querySelector('input').addEventListener('change', async (e) => {
     try { const url = await readPhoto(e.target.files[0]); lbl.querySelector('[data-preview]').innerHTML = `<img src="${url}" alt="" />`; onPick(url); } catch (err) { toast(err.message, 'error'); }
   }));
 
-  /* ======================= API mode (the site served by the Super App server) ======================= */
+  /* ======================= API mode (the site served by the Super Malaab server) ======================= */
   const live = () => S.api?.isLive();
   /** Server field names → the names used by these forms */
   const FIELD = { areaId: 'area', lng: 'lat', acceptTerms: 'agree', idFront: 'idPhoto', idBack: 'idPhotoBack', storeName: 'name', bio: 'bio' };
   const apiErrors = (details = {}) => Object.fromEntries(Object.entries(details).map(([k, v]) => [FIELD[k] || k, v]));
   const signInFirst = (title) => `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">${title}</h1></div>
-    <section class="panel panel-pad acc-real">${icon('lock', 26)}<div class="grow"><h2 class="h4">Sign in to apply</h2><p class="small soft">Applications are linked to your Super App account.</p></div><a class="btn btn-primary" href="#/auth/sign-in?next=${encodeURIComponent(SA.core.router.location())}">${icon('lock', 16)} Sign in</a></section></div>`;
+    <section class="panel panel-pad acc-real">${icon('lock', 26)}<div class="grow"><h2 class="h4">Sign in to apply</h2><p class="small soft">Applications are linked to your Super Malaab account.</p></div><a class="btn btn-primary" href="#/auth/sign-in?next=${encodeURIComponent(SA.core.router.location())}">${icon('lock', 16)} Sign in</a></section></div>`;
   /** The latest application of one type from the server, in the shape the status card reads */
   const latestLive = async (type) => {
     const a = (await S.api.get('/applications/mine')).find((x) => x.type === type);
@@ -57,13 +57,13 @@
 
   /* ======================= Pitch partner application ======================= */
   const statusCard = (a) => {
-    if (a.status === 'pending') return `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">“${esc(a.pitchName)}”${a.area ? ` in ${esc(a.area)}` : ''} — the Super App team replies within 2 working days. You’ll get a notification.</p></div></section>`;
-    if (a.status === 'approved' && a.kind === 'seller') return `<section class="panel panel-pad ap-status is-ok">${icon('check', 28)}<div><h2 class="h3">You’re a Super App seller</h2><p class="soft">“${esc(a.pitchName)}” is open. Add designs and products from your seller dashboard.</p><a class="btn btn-primary" href="#/seller" style="margin-top:12px">${icon('bag', 16)} Open my seller dashboard</a></div></section>`;
-    if (a.status === 'approved') return `<section class="panel panel-pad ap-status is-ok">${icon('check', 28)}<div><h2 class="h3">You’re a Super App pitch partner</h2><p class="soft">“${esc(a.pitchName)}” is live. Manage bookings, hours and money from your dashboard.</p><button class="btn btn-primary" data-open-partner style="margin-top:12px">${icon('pitch', 16)} Open my pitch dashboard</button></div></section>`;
+    if (a.status === 'pending') return `<section class="panel panel-pad ap-status">${icon('clock', 28)}<div><h2 class="h3">We’re reviewing your application</h2><p class="soft">“${esc(a.pitchName)}”${a.area ? ` in ${esc(a.area)}` : ''} — the Super Malaab team replies within 2 working days. You’ll get a notification.</p></div></section>`;
+    if (a.status === 'approved' && a.kind === 'seller') return `<section class="panel panel-pad ap-status is-ok">${icon('check', 28)}<div><h2 class="h3">You’re a Super Malaab seller</h2><p class="soft">“${esc(a.pitchName)}” is open. Add designs and products from your seller dashboard.</p><a class="btn btn-primary" href="#/seller" style="margin-top:12px">${icon('bag', 16)} Open my seller dashboard</a></div></section>`;
+    if (a.status === 'approved') return `<section class="panel panel-pad ap-status is-ok">${icon('check', 28)}<div><h2 class="h3">You’re a Super Malaab pitch partner</h2><p class="soft">“${esc(a.pitchName)}” is live. Manage bookings, hours and money from your dashboard.</p><button class="btn btn-primary" data-open-partner style="margin-top:12px">${icon('pitch', 16)} Open my pitch dashboard</button></div></section>`;
     return `<section class="panel panel-pad ap-status is-bad">${icon('alert', 28)}<div><h2 class="h3">Your application wasn’t approved</h2><p class="soft">${esc(a.reason || '')}</p><p class="small">Fix it below and apply again.</p></div></section>`;
   };
   SA.pages.partnerApply = {
-    title: 'List your pitch — Super App',
+    title: 'List your pitch — Super Malaab',
     async render() {
       await S.api.ready;
       if (live() && !S.session.loaded()) await S.session.load();
@@ -73,7 +73,7 @@
       if (a && a.status !== 'rejected') return `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">List your pitch</h1></div>${statusCard(a)}</div>`;
       const areas = live() ? (await S.api.get('/lookups/areas')).map((x) => (SA.i18n?.isAr ? x.nameAr : x.nameEn)) : [...new Set(S.db.all('pitches').map((p) => p.area))].sort();
       return `<div class="container section-tight ap-page">
-        <div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">List your pitch on Super App</h1>
+        <div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">List your pitch on Super Malaab</h1>
           <p class="lead">Players book and pay online, you get paid every week. Tell us about you and your pitch — we review it within 2 working days.</p></div>
         ${a ? statusCard(a) : ''}
         <form class="stack ap-form" style="--gap:18px" data-apply ${a?.status === 'rejected' && a.code ? `data-code="${esc(a.code)}"` : ''} novalidate>
@@ -97,8 +97,8 @@
           <section class="panel panel-pad"><h2 class="h4">3. How we pay you</h2><div class="form-grid" style="margin-top:12px">
             ${field('payoutMethod', 'Method', `<select class="select" id="ap-payoutMethod" name="payoutMethod">${S.partners.PAYOUTS.map((p) => `<option>${p}</option>`).join('')}</select>`)}
             ${field('payoutDetail', 'Account', '<input class="input" id="ap-payoutDetail" name="payoutDetail" maxlength="60" dir="ltr" placeholder="IBAN, account number or InstaPay address" />')}
-          </div><p class="xs muted" style="margin-top:8px">${icon('info', 12)} Super App pays your bookings every week, after its commission.</p></section>
-          <section class="panel panel-pad"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the Super App <a class="link" href="#/legal/partner" target="_blank" rel="noopener">pitch partner agreement</a></b><span class="xs muted" style="display:block">Accurate prices and hours, honour every booking, and Super App’s cancellation and refund rules.</span></span></label><p class="field-error" data-err="agree"></p></section>
+          </div><p class="xs muted" style="margin-top:8px">${icon('info', 12)} Super Malaab pays your bookings every week, after its commission.</p></section>
+          <section class="panel panel-pad"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the Super Malaab <a class="link" href="#/legal/partner" target="_blank" rel="noopener">pitch partner agreement</a></b><span class="xs muted" style="display:block">Accurate prices and hours, honour every booking, and Super Malaab’s cancellation and refund rules.</span></span></label><p class="field-error" data-err="agree"></p></section>
           <button class="btn btn-blaze btn-lg" type="submit">${icon('pitch', 18)} Send my application</button>
         </form></div>`;
     },
@@ -155,15 +155,15 @@
   const D = () => S.dash;
   SA.pages.dashSell = SA.pages.dashCommon.guard({
     roles: ['owner'],
-    title: 'Sell on Super App — Super App Partner',
+    title: 'Sell on Super Malaab — Super Malaab Partner',
     render() {
       const a = D().me();
       const s = S.sellers.byAccount(a.id);
       if (s) {
         const body = `<section class="dash-card ap-status ${s.status === 'active' ? 'is-ok' : ''}">${icon(s.status === 'active' ? 'check' : 'clock', 28)}<div><h2 class="h3">${s.status === 'active' ? `Your store “${esc(s.name)}” is open` : s.status === 'pending' ? 'We’re reviewing your seller application' : 'Your seller application wasn’t approved'}</h2>
-          <p class="soft">${s.status === 'pending' ? 'The Super App team replies within one working day.' : s.status === 'active' ? 'Designs, products, orders and your seller wallet are in the seller dashboard.' : esc(s.reviewReason || '')}</p>
+          <p class="soft">${s.status === 'pending' ? 'The Super Malaab team replies within one working day.' : s.status === 'active' ? 'Designs, products, orders and your seller wallet are in the seller dashboard.' : esc(s.reviewReason || '')}</p>
           ${s.status !== 'rejected' ? `<button class="btn btn-primary" data-switch="seller" style="margin-top:12px">${icon('bag', 16)} Open the seller dashboard</button>` : ''}</div></section>`;
-        return C().layout('sell', { title: 'Sell on Super App', body });
+        return C().layout('sell', { title: 'Sell on Super Malaab', body });
       }
       const body = `<form class="stack" style="--gap:18px;max-width:820px" data-sell novalidate>
         <section class="dash-card"><p class="soft">Sell print-on-demand designs (we print and ship), products you already stock, or both — with the same account. Your seller dashboard is separate from your pitches; switch between them in one tap.</p></section>
@@ -179,7 +179,7 @@
         </div></section>
         <section class="dash-card"><label class="choice"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the <a class="link" href="#/legal/seller" target="_blank" rel="noopener">seller agreement</a></b></span></label><p class="field-error" data-err="agree"></p></section>
         <button class="btn btn-blaze btn-lg" type="submit" style="justify-self:start">${icon('bag', 18)} Send my application</button></form>`;
-      return C().layout('sell', { title: 'Sell on Super App', subtitle: 'Open a store next to your pitches', body });
+      return C().layout('sell', { title: 'Sell on Super Malaab', subtitle: 'Open a store next to your pitches', body });
     },
     mount(el) {
       const f = el.querySelector('[data-sell]'); if (!f) return;
@@ -193,11 +193,11 @@
     },
   });
 
-  /* ======================= Profile: grow with Super App ======================= */
+  /* ======================= Profile: grow with Super Malaab ======================= */
   SA.ui.growCards = () => {
     const seller = S.sellers.mine();
     const app = S.partners.mine();
-    const sellerCard = !seller ? ['bag', 'Sell on Super App', 'Your designs printed on demand, or your own products — one store, one wallet.', '<a class="btn btn-blaze btn-sm" href="#/sell">Apply to sell</a>', '']
+    const sellerCard = !seller ? ['bag', 'Sell on Super Malaab', 'Your designs printed on demand, or your own products — one store, one wallet.', '<a class="btn btn-blaze btn-sm" href="#/sell">Apply to sell</a>', '']
       : seller.status === 'pending' ? ['clock', 'Seller application', `“${esc(seller.name)}” is being reviewed — usually within one working day.`, '<a class="btn btn-outline btn-sm" href="#/sell">See my application</a>', 'is-wait']
       : seller.status === 'rejected' ? ['alert', 'Seller application', esc(seller.reviewReason || 'Not approved.'), '<a class="btn btn-outline btn-sm" href="#/support">Contact us</a>', 'is-bad']
       : ['bag', 'Seller dashboard', `“${esc(seller.name)}” — designs, products, orders and your wallet.`, '<button class="btn btn-blaze btn-sm" data-grow="seller">Open seller dashboard</button>', 'is-on'];
@@ -205,7 +205,7 @@
       : app.status === 'pending' ? ['clock', 'Pitch partner application', `“${esc(app.pitchName)}” is being reviewed — within 2 working days.`, '<a class="btn btn-outline btn-sm" href="#/partner/apply">See my application</a>', 'is-wait']
       : ['pitch', 'Pitch partner dashboard', `“${esc(app.pitchName)}” — bookings, hours, check-in and your money.`, '<button class="btn btn-primary btn-sm" data-grow="partner">Open pitch dashboard</button>', 'is-on'];
     const card = ([ic, t, text, cta, cls]) => `<article class="grow-card ${cls}"><span class="grow-ico">${icon(ic, 22)}</span><div class="grow"><b>${t}</b><p class="small soft">${text}</p></div>${cta}</article>`;
-    return `<section class="section-tight grow-wrap"><div class="sec-head"><h2 class="h3">${icon('sparkle', 20)} Grow with Super App</h2></div><div class="grow-grid">${card(sellerCard)}${card(partnerCard)}</div></section>`;
+    return `<section class="section-tight grow-wrap"><div class="sec-head"><h2 class="h3">${icon('sparkle', 20)} Grow with Super Malaab</h2></div><div class="grow-grid">${card(sellerCard)}${card(partnerCard)}</div></section>`;
   };
   document.addEventListener('click', (e) => {
     const g = e.target.closest('[data-grow]'); if (!g) return;

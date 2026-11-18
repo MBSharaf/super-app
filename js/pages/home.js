@@ -43,12 +43,12 @@
   const services = [
     { key: 'pitches', title: 'Book a pitch', text: 'Live availability for 5, 7 and 11-a-side pitches near you. Pay by Visa or wallet.', href: '#/pitches', icon: 'pitch', img: 'litField', cta: 'See pitches near me' },
     { key: 'players', title: 'Find players', text: 'Short on numbers? Post your booking and players nearby join in minutes.', href: '#/players', icon: 'users', img: 'menPlaying', cta: 'Browse open games' },
-    { key: 'fantasy', title: 'Play fantasy', text: 'Free fantasy leagues. The top 3 of every gameweek in the Super App League win Super Points.', href: '#/fantasy', icon: 'trophy', img: 'stadiumNight', cta: 'Pick your team' },
+    { key: 'fantasy', title: 'Play fantasy', text: 'Free fantasy leagues. The top 3 of every gameweek in the Super Malaab League win Super Points.', href: '#/fantasy', icon: 'trophy', img: 'stadiumNight', cta: 'Pick your team' },
     { key: 'shop', title: 'Shop gear', text: 'Boots, balls, kits and padel — original brands, delivered across Egypt.', href: '#/shop', icon: 'bag', img: 'goalTrees', productImg: 'photo-1511886929837-354d827aae26', cta: 'Shop now' },
   ].filter((x) => x.key !== 'shop' || SA.config.storeEnabled);
 
   SA.pages.home = {
-    title: 'Super App — Book, play, compete',
+    title: 'Super Malaab — Book, play, compete',
     async render() {
       const [nearby, matches, products] = await Promise.all([S.pitches.list({ sort: 'distance' }), S.matches.list({ sort: 'soon' }), SA.config.storeEnabled ? S.shop.list({ sort: 'featured' }) : Promise.resolve([])]);  // the store is paused: its API answers 423
       const meta = S.fantasy.meta();
@@ -79,7 +79,7 @@
         <div class="hero-copy">
           <span class="badge badge-blaze hero-live"><span class="live-dot"></span>${tonight} games looking for players this week</span>
           <h1 class="display hero-title"><span>Book the pitch.</span><span>Fill the squad.</span><span>Win the <span class="rotator">${['week.', 'derby.', 'league.'].map((w, i) => `<span class="${i === 0 ? 'is-on' : ''}" ${i ? 'aria-hidden="true"' : ''}>${w}</span>`).join('')}</span></span></h1>
-          <p class="lead">${SA.config.storeEnabled ? 'Super App finds open pitches near you, fills the empty spots in your match, runs your Premier League fantasy team and delivers your gear — with one account and one wallet.' : 'Super App finds open pitches near you, fills the empty spots in your match and runs your Premier League fantasy team — with one account and one wallet.'}</p>
+          <p class="lead">${SA.config.storeEnabled ? 'Super Malaab finds open pitches near you, fills the empty spots in your match, runs your Premier League fantasy team and delivers your gear — with one account and one wallet.' : 'Super Malaab finds open pitches near you, fills the empty spots in your match and runs your Premier League fantasy team — with one account and one wallet.'}</p>
           <div class="row wrap hero-ctas">
             ${c.cta('Book a pitch near me', { href: '#/pitches?locate=1', size: 'lg' })}
             <a class="btn btn-outline btn-lg" href="#/players">Find a game</a>
@@ -93,13 +93,13 @@
       </section>
 
       <section class="container">
-        <nav class="quick-nav reveal" aria-label="Everything in Super App">
+        <nav class="quick-nav reveal" aria-label="Everything in Super Malaab">
           ${['pitches', 'players', 'post', 'tournaments', 'community', 'matches', 'fantasy', 'shop'].filter((k) => k !== 'shop' || SA.config.storeEnabled).map((k) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item"><span class="quick-nav-ico">${icon(n.icon, 22)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${n.label}</span></a>`; }).join('')}
         </nav>
       </section>
 
       <section class="container">
-        <div class="ticker" aria-label="Live activity across Super App">
+        <div class="ticker" aria-label="Live activity across Super Malaab">
           <span class="ticker-label"><span class="live-dot" style="width:8px;height:8px;border-radius:50%;background:#fff;display:inline-block"></span>LIVE</span>
           <div class="ticker-track" aria-hidden="true">${ticker}${ticker}</div>
         </div>

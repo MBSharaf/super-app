@@ -37,7 +37,7 @@
 body.is-loading::before { content: ""; position: fixed; top: 0; inset-inline-start: 0; height: 3px; width: 40%; background: var(--blaze); z-index: 500; animation: loadbar 1s var(--ease) infinite; }
 @keyframes loadbar { from { inset-inline-start: -40%; } to { inset-inline-start: 100%; } }
 
-/* Grow with Super App (profile) — highlighted so partners and sellers find their dashboards */
+/* Grow with Super Malaab (profile) — highlighted so partners and sellers find their dashboards */
 .grow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .grow-card { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); overflow: hidden; isolation: isolate; }
 .grow-card::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; padding: 1.5px; background: conic-gradient(from var(--ga, 0deg), transparent 0 60%, var(--blaze) 75%, var(--turf-fill, #0B6E4F) 90%, transparent); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: growSpin 6s linear infinite; }

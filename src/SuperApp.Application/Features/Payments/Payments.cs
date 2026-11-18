@@ -57,7 +57,7 @@ public interface IPaymentListener
 }
 
 /// <summary>
-/// What a service asks for: who pays, how much, for what. <c>FromWallet</c> pays from the payer's Super App wallet at once
+/// What a service asks for: who pays, how much, for what. <c>FromWallet</c> pays from the payer's Super Malaab wallet at once
 /// (not enough money → 422 insufficient_funds); <c>IdempotencyKey</c> defaults to a new one.
 /// </summary>
 public sealed record PaymentRequest(PaymentPurpose Purpose, decimal Amount, Guid PayerId, string Description, string ReturnPath, bool FromWallet = false,

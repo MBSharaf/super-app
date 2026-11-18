@@ -1,5 +1,5 @@
 /**
- * Super App service worker (backend 8.7): lets the site install as an app and shows a friendly page when offline.
+ * Super Malaab service worker (backend 8.7): lets the site install as an app and shows a friendly page when offline.
  *
  * - The site's own files (css, js, fonts, icons, models) come from the network first, so an update shows up at once;
  *   each answer is kept so the app still opens on a bad connection.

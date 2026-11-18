@@ -24,7 +24,7 @@
     fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'star', 'Premier League fantasy and prizes', /^\/fantasy/),
     shop: L('shop', 'Shop', '#/shop', 'bag', 'Boots, kits and gear', /^\/(shop|cart|checkout|order\/)/),
     wishlist: L('wishlist', 'Wishlist', '#/wishlist', 'heart', 'Items you saved', /^\/wishlist/),
-    sell: L('sell', 'Sell on Super App', '#/sell', 'shirt', 'Sell your designs', /^\/(sell|s\/)/),
+    sell: L('sell', 'Sell on Super Malaab', '#/sell', 'shirt', 'Sell your designs', /^\/(sell|s\/)/),
   };
   const GROUPS = [
     { key: 'play', label: 'Play', items: ['pitches', 'players', 'post', 'tournaments', 'community'] },
@@ -49,7 +49,7 @@
       <div class="nav-dd-menu">${d.items.map((n) => `<a href="${n.href}" class="${n.match(path) ? 'is-active' : ''}"><span class="menu-ico">${icon(n.icon, 18)}</span><span class="grow"><b>${n.label}</b><span class="xs muted">${n.text}</span></span></a>`).join('')}</div></div>`;
   }).join('');
 
-  const brand = `<a class="brand" href="#/" aria-label="Super App home"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span>SUPER APP</span></a>`;
+  const brand = `<a class="brand" href="#/" aria-label="Super Malaab home"><span class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg></span><span>SUPER MALAAB</span></a>`;
 
   /** Theme + language switches (header, dashboard, menu) */
   const prefButtons = (cls = '') => `<button class="icon-btn ${cls}" data-action="toggle-theme" aria-label="${SA.core.theme.current() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}" title="${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 19)}</button><button class="icon-btn lang-btn ${cls}" data-action="toggle-lang" aria-label="${SA.i18n.isAr ? 'English' : 'العربية'}" title="${SA.i18n.isAr ? 'English' : 'العربية'}" data-i18n-skip>${SA.i18n.isAr ? 'EN' : 'ع'}</button>`;
@@ -91,11 +91,11 @@
       <div class="footer-brand">${brand}<p>Book pitches, fill your squad, play Premier League fantasy and gear up — all from one account and one wallet.</p>${SA.ui.social.render({ variant: 'dark' })}</div>
       <div><h4>Play</h4><a href="#/pitches">Book a pitch</a><a href="#/players">Find players</a><a href="#/tournaments">Tournaments</a><a href="#/players/new">Post a match</a><a href="#/bookings">My bookings</a></div>
       <div><h4>Fantasy</h4><a href="#/fantasy">My team</a><a href="#/fantasy/leagues">Leagues</a><a href="#/fantasy/fixtures">Fixtures</a><a href="#/fantasy/stats">Player stats</a></div>
-      <div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super App</a></div>
+      <div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super Malaab</a></div>
       <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/community">Communities</a><a href="#/help">Help center</a><a href="#/support">Contact support</a><a href="#/dash">Partner dashboard</a><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
     </div>
     <div class="footer-legal"><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/refunds">Refunds & returns</a><a href="#/legal/waiver">Injury waiver</a><a href="#/legal/cookies">Cookies</a><button class="footer-link" data-cookie-settings>Cookie settings</button><a href="#/legal">All legal</a></div>
-    <div class="footer-base"><span>© 2026 Super App. Cairo, Egypt.</span><span>Frontend demo: payments, bookings and fantasy scores are simulated on this device.</span></div>
+    <div class="footer-base"><span>© 2026 Super Malaab. Cairo, Egypt.</span><span>Frontend demo: payments, bookings and fantasy scores are simulated on this device.</span></div>
   </div>`;
 
   const openNotifications = () => {

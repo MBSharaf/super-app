@@ -14,7 +14,7 @@
   const STATE = { send: ['badge-blaze', 'You can send it'], confirm: ['badge-danger', 'Your second approval'], done: ['badge-turf', 'You approved — waiting for the CEO'], ceo: ['badge', 'Waiting for the CEO'], own: ['badge', 'You asked — someone else approves'] };
 
   SA.pages.adminFinanceApprovals = A.guard({
-    title: 'Finance approvals — Super App Admin',
+    title: 'Finance approvals — Super Malaab Admin',
     render() {
       const list = CE().financeQueue();
       const L = CE().limits();

@@ -1,7 +1,7 @@
 /**
  * Games, join requests, player record and slot alerts — built on top of "Find players" (matchService).
  *
- * - A player asks to join a game (position + message) and pays their share online straight away; Super App holds it.
+ * - A player asks to join a game (position + message) and pays their share online straight away; Super Malaab holds it.
  *   The host accepts or declines (or turns on auto-accept). Declined, withdrawn or removed players are refunded in full.
  * - The host controls the game: auto-accept on/off, close requests, remove a player, a waitlist when it's full.
  * - After kick-off the host rates players (stars + showed up / no-show). That builds each player's record:
@@ -48,7 +48,7 @@
       reliable: attendance == null ? 'new' : attendance >= 0.9 ? 'high' : attendance >= 0.7 ? 'ok' : 'low' };
   };
 
-  /** Is this player blocked from joining games by Super App? */
+  /** Is this player blocked from joining games by Super Malaab? */
   const blockedFor = (playerId) => blocks().find((b) => b.playerId === playerId) || null;
 
   /** Host settings: the shopper's own published games live in the device store; others are demo hosts */
@@ -70,7 +70,7 @@
     myRequest: (matchId) => requests().find((r) => r.matchId === matchId && r.player.id === me().id && ['pending', 'accepted', 'waitlist'].includes(r.status)) || null,
     myRequests: () => requests().filter((r) => r.player.id === me().id),
 
-    /** Ask to join: the share is paid online now and held by Super App until the host decides */
+    /** Ask to join: the share is paid online now and held by Super Malaab until the host decides */
     async request(matchId, { position, message = '', payment, waiver = false }) {
       SA.services.user.assertActive();
       SA.services.legal?.requireWaiver(waiver, 'joining a game');
@@ -83,7 +83,7 @@
       const hs = hostSettings(m);
       if (hs.closed) throw new ApiError('The host closed requests for this game.', 'closed');
       if (!POSITIONS.includes(position)) throw new ApiError('Choose your position.', 'invalid');
-      if (!payment || payment.method === 'cash') throw new ApiError('Pay your share online — Super App holds it until the host accepts.', 'invalid');
+      if (!payment || payment.method === 'cash') throw new ApiError('Pay your share online — Super Malaab holds it until the host accepts.', 'invalid');
       const full = m.spotsLeft <= 0;
       const paid = await SA.services.payment.charge({ ...payment, amount: m.pricePerPlayer, label: `Game at ${m.pitch.name} (held until the host accepts)` });
       const r = db().insert('gameRequests', { matchId, hostName: m.hostName, pitchName: m.pitch.name, date: m.date, hour: m.hour, player: games.meAsPlayer(), position, message: String(message).trim().slice(0, 200),

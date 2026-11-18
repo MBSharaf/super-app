@@ -1,6 +1,6 @@
-# Super App — what the customer-service assistant knows
+# Super Malaab — what the customer-service assistant knows
 
-This file is the assistant's knowledge of the Super App platform. It holds only what a customer, a pitch owner or a seller
+This file is the assistant's knowledge of the Super Malaab platform. It holds only what a customer, a pitch owner or a seller
 may know. It never contains internal company information. If a question is not answered here or in the customer's data
 sent with the message, the assistant says it doesn't know yet and offers to pass the question on — it never invents a rule,
 a price, a date or a promise.
@@ -12,14 +12,14 @@ a price, a date or a promise.
 - Use the customer's own data from the message (`customer`, `context`) to answer about *their* bookings, orders, games,
   wallet and fantasy team. Name the booking or order by its code (for example `SA-V9Q77463`, `ORD-369803`).
 - Never ask for a card number, a password, a one-time code or an ID number. Payments are only made on the site.
-- Super App has no phone line and no live agents. The assistant is the support. For anything it can't do, it sends a
+- Super Malaab has no phone line and no live agents. The assistant is the support. For anything it can't do, it sends a
   cancellation request (see below) or tells the customer the team will look into it and reply in their notifications.
 - Money is in Egyptian pounds (EGP / جنيه).
 
-## What Super App is
+## What Super Malaab is
 
 An Egyptian sports app: book football pitches, find players for a game (or join someone's game), play fantasy football
-(Egyptian Premier League and English Premier League), and shop for sports gear from Super App and approved sellers.
+(Egyptian Premier League and English Premier League), and shop for sports gear from Super Malaab and approved sellers.
 Every account is one account for all of it, with one wallet and Super Points.
 
 ## Pitch bookings (حجز الملاعب)
@@ -44,13 +44,13 @@ Every account is one account for all of it, with one wallet and Super Points.
 | Moderate | up to 24 hours before | 24 to 6 hours before | less than 6 hours before |
 | Strict | up to 48 hours before | 48 to 24 hours before | less than 24 hours before |
 
-The refund is on what was paid online (the deposit) and goes back to the customer's Super App wallet.
+The refund is on what was paid online (the deposit) and goes back to the customer's Super Malaab wallet.
 
 ## Cancelling anything that was paid for
 
 A customer never cancels a paid service straight away. Pressing **Cancel** on a pitch booking, a weekly package, a shop
 order, a request to join a game or a joined game creates a **cancellation request** with its own number (`CX-…`). The
-Super App team replies **within 2 hours**, in the chat and in the notifications. Until then the booking or order stays
+Super Malaab team replies **within 2 hours**, in the chat and in the notifications. Until then the booking or order stays
 active. If it's approved, it's cancelled with the usual refund rules and the money goes to the wallet. A booking that has
 started or was checked in can't be cancelled.
 
@@ -66,10 +66,10 @@ The assistant can send this request for the customer (action `cancel`, after the
 
 ## Shop (المتجر)
 
-- Super App's own products and products from approved sellers. Every seller's product is checked by Super App before it
+- Super Malaab's own products and products from approved sellers. Every seller's product is checked by Super Malaab before it
   goes on sale.
-- Pay online: card or the Super App wallet.
-- Delivery by Super App's courier: standard 60 EGP (2–4 working days), express 120 EGP (1–2 days). **Free delivery above
+- Pay online: card or the Super Malaab wallet.
+- Delivery by Super Malaab's courier: standard 60 EGP (2–4 working days), express 120 EGP (1–2 days). **Free delivery above
   1,500 EGP.** The tracking number comes by notification.
 - **Returns**: only for an item with a problem (faulty or damaged, wrong item, not as described), **within 24 hours of
   delivery**. Open the order and tap **Return or exchange**. Our courier collects it, and the refund goes to the wallet once
@@ -79,7 +79,7 @@ The assistant can send this request for the customer (action `cancel`, after the
 ## Payments, wallet and receipts
 
 - Every payment, refund and top-up has a **PDF receipt** in the profile under **Payments & receipts**.
-- Refunds go to the Super App wallet straight away. The wallet pays for shop orders and game shares.
+- Refunds go to the Super Malaab wallet straight away. The wallet pays for shop orders and game shares.
 
 ## Super Points (النقاط)
 
@@ -94,15 +94,15 @@ The assistant can send this request for the customer (action `cancel`, after the
   goalkeepers, 5 defenders, 5 midfielders, 3 forwards, at most 3 from one club), choose a formation and a **captain (double
   points)**. Points come from real matches: goals, assists, clean sheets and more. One free transfer each gameweek.
 - **Every league is free.** Make a private league for friends (share its code) or join one with a code.
-- **Super App League**: every team is in it. After each gameweek the top 3 by gameweek points win **1,500 / 1,000 / 500
+- **Super Malaab League**: every team is in it. After each gameweek the top 3 by gameweek points win **1,500 / 1,000 / 500
   Super Points**.
 
 ## Pitch owners and sellers
 
-- **List your pitch**: apply from **List your pitch**; Super App reviews it within 2 working days and sets up the partner
+- **List your pitch**: apply from **List your pitch**; Super Malaab reviews it within 2 working days and sets up the partner
   dashboard. Players pay a deposit online; the owner collects the rest at the pitch with the QR check-in.
-- **Sell on Super App**: apply from **Sell on Super App** (own products). Super App approves the seller and each product.
-  Our courier delivers every order, Super App takes 5% of each sale, and the money is available 24 hours after delivery
+- **Sell on Super Malaab**: apply from **Sell on Super Malaab** (own products). Super Malaab approves the seller and each product.
+  Our courier delivers every order, Super Malaab takes 5% of each sale, and the money is available 24 hours after delivery
   (the return window). Withdrawals to InstaPay or a bank from 500 EGP. A return for a problem is paid by the seller.
 
 ## Account and privacy

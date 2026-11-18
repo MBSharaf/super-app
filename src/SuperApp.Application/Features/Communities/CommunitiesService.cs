@@ -8,7 +8,7 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Communities;
 
 /// <summary>
-/// Communities (API §6.3, FR-COM-01/06): only Super App creates them; audience everyone / sellers / Pro and Elite sellers.
+/// Communities (API §6.3, FR-COM-01/06): only Super Malaab creates them; audience everyone / sellers / Pro and Elite sellers.
 /// Reading public communities needs no account; sellers-only communities need the role; there are no private messages.
 /// </summary>
 public interface ICommunitiesService
@@ -124,7 +124,7 @@ public sealed class CommunitiesService(ICommunityRepository repository, IUnitOfW
     }
 
     private static string AudienceMessage(string audience) =>
-        audience == nameof(CommunityAudience.Sellers) ? "This community is for Super App sellers." : "This community is for Pro and Elite sellers.";
+        audience == nameof(CommunityAudience.Sellers) ? "This community is for Super Malaab sellers." : "This community is for Pro and Elite sellers.";
 }
 
 /// <summary>Who may see and join a community.</summary>

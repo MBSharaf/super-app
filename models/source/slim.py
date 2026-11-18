@@ -26,7 +26,7 @@ pad = lambda d: d + b"\0" * (-len(d) % 4)
 idata, pdata = pad(idata), pad(pdata)
 binbuf = idata + pdata
 out = {
-    "asset": {"version": "2.0", "generator": "TRELLIS (slimmed for Super App)"},
+    "asset": {"version": "2.0", "generator": "TRELLIS (slimmed for Super Malaab)"},
     "scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"mesh": 0, "name": "garment"}],
     "meshes": [{"primitives": [{"attributes": {"POSITION": 1}, "indices": 0, "mode": 4, "material": 0}]}],
     "materials": [{"pbrMetallicRoughness": {"baseColorFactor": [1, 1, 1, 1], "metallicFactor": 0, "roughnessFactor": 1}}],

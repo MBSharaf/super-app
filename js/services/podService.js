@@ -2,7 +2,7 @@
  * Print on demand: the partner catalogue, seller designs (draft → review → live), copyright reports,
  * print orders (received → printing → shipped → delivered | refused) and seller earnings.
  *
- * Money: the customer pays the seller's price. The base price (which already includes Super App's margin, minus the
+ * Money: the customer pays the seller's price. The base price (which already includes Super Malaab's margin, minus the
  * seller's level discount) stays with the platform; the rest is the seller's profit. Profit is pending until the item is
  * delivered and the hold period (7 days) has passed, then it can be withdrawn (minimum 500 EGP).
  * Future API: /pod/catalog, /pod/designs, /pod/orders, /sellers/me/earnings
@@ -220,7 +220,7 @@
     resolveReport(id, action) {
       const r = db().find('reports', id); if (!r) throw new ApiError('Report not found.', 'not_found');
       if (action === 'takedown') pod.reject(r.designId, `Removed after a ${r.reason} report.`, { strike: r.reason === 'copyright' || r.reason === 'trademark' });
-      if (action !== 'takedown') { const d = db().find('designs', r.designId); if (d) N()?.toSeller(d.sellerId, { cat: 'designs', tone: 'turf', title: `Report checked: “${d.title}” stays live`, body: `Someone reported it (${r.reason}). The Super App team checked it and found no problem.`, link: '#/dash/seller/designs' }); }
+      if (action !== 'takedown') { const d = db().find('designs', r.designId); if (d) N()?.toSeller(d.sellerId, { cat: 'designs', tone: 'turf', title: `Report checked: “${d.title}” stays live`, body: `Someone reported it (${r.reason}). The Super Malaab team checked it and found no problem.`, link: '#/dash/seller/designs' }); }
       return db().update('reports', id, { status: action === 'takedown' ? 'removed' : 'dismissed', resolvedAt: Date.now() });
     },
 
@@ -294,7 +294,7 @@
         printing: { title: `Printing: ${o.title}`, body: `${o.qty} × ${o.color} · ${o.size} — the factory started on it.` },
         shipped: { title: `Shipped: ${o.title}`, body: `${courier || 'Courier'} · tracking ${tracking}. Usually delivered in 1–3 days.` },
         delivered: { tone: 'turf', title: `Delivered: ${o.title}`, body: `${o.profit.toLocaleString()} EGP profit is released in ${hold} days.` },
-        refused: { tone: 'danger', title: `Refused on delivery: ${o.title}`, body: 'The customer didn’t accept it. Super App covers the cost — nothing is taken from your wallet.' },
+        refused: { tone: 'danger', title: `Refused on delivery: ${o.title}`, body: 'The customer didn’t accept it. Super Malaab covers the cost — nothing is taken from your wallet.' },
       }[status];
       if (sellerMsg) N()?.toSeller(o.sellerId, { cat: 'orders', link: '#/dash/seller/orders', ...sellerMsg });
       // The customer on this device hears about shipping and delivery

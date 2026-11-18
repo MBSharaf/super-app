@@ -27,7 +27,7 @@
   const editLeague = (l) => {
     const e = SA.services.db?.settings().fantasyLeagues?.[l.id] || {};
     const m = { ...l, ...e };
-    // The Super App League's prizes are the weekly Super Points (admin sets the amounts)
+    // The Super Malaab League's prizes are the weekly Super Points (admin sets the amounts)
     if (m.kind === 'official') { const w = weeklyPoints(); m.prizes = [['1st every gameweek', `${w[0].toLocaleString()} Super Points`], ['2nd every gameweek', `${w[1].toLocaleString()} Super Points`], ['3rd every gameweek', `${w[2].toLocaleString()} Super Points`]]; }
     return { ...m, sponsor: m.kind === 'official' ? null : sponsorOf(m.sponsorId) };
   };
@@ -126,8 +126,8 @@
   const managers = () => D.managers || 184320;
   const rankFor = (pts, rounds) => (rounds <= 0 ? managers() : Math.max(1, Math.round(managers() * (1 - phi((pts - 47 * rounds) / (13 * Math.sqrt(rounds)))))));
 
-  /* ---------- Super App League: weekly Super Points for the gameweek's top 3 (owner's rule, 2026-11-03) ---------- */
-  // Every league is free to enter (no Fantasy Pass). The Super App League is run by the admin; every team is in it.
+  /* ---------- Super Malaab League: weekly Super Points for the gameweek's top 3 (owner's rule, 2026-11-03) ---------- */
+  // Every league is free to enter (no Fantasy Pass). The Super Malaab League is run by the admin; every team is in it.
   const SUPER_LEAGUE_KIND = 'official';
   function weeklyPoints() { const w = SA.services.db?.settings().fantasyWeekly; return Array.isArray(w) && w.length === 3 ? w.map((x) => Math.max(0, Math.round(+x) || 0)) : [1500, 1000, 500]; }
   const superLeague = () => OL().find((l) => l.kind === SUPER_LEAGUE_KIND) || null;
@@ -140,7 +140,7 @@
   };
 
   /**
-   * After a gameweek: the Super App League's top 3 by gameweek points win 1,500 / 1,000 / 500 Super Points (admin can
+   * After a gameweek: the Super Malaab League's top 3 by gameweek points win 1,500 / 1,000 / 500 Super Points (admin can
    * change the amounts). Saved once per league and gameweek; the player gets the points if they're one of the three.
    */
   const awardWeekly = (gw) => {
@@ -174,9 +174,9 @@
       store.set({ fantasyLeague: key }, 'fantasy');
       index(); syncRounds();
     },
-    /* Super App League weekly prizes */
+    /* Super Malaab League weekly prizes */
     weeklyPoints, superLeague,
-    /** Weekly winners of the Super App League, newest first ({ league, gw, winners: [{ place, name, team, gw, points, isMe }] }) */
+    /** Weekly winners of the Super Malaab League, newest first ({ league, gw, winners: [{ place, name, team, gw, points, isMe }] }) */
     weeklyWinners: (lg = league()) => (SA.services.db?.all('fantasyWeekly') || []).filter((w) => w.league === lg).sort((a, b) => b.gw - a.gw),
     /** Leagues are free: kept so older callers don't break */
     pass: () => null, passCovers: () => true, passPlans: () => [],
@@ -249,7 +249,7 @@
         const vice = xi.filter((x) => x !== captain).sort((a, b) => score(byId[b]) - score(byId[a]))[0];
         const team = { id: uid('FT'), name: (name || '').trim() || `${store.get().user.firstName} FC`, squad: ids, xi, bench, captain, vice, freeTransfers: 1, hits: 0, createdGW: liveGW(), history: [] };
         setF({ team });
-        SA.services.user.notify({ kind: 'fantasy', title: 'Your fantasy team is ready', body: `${team.name} is entered into the Super App League. Join a private group to play your friends.`, link: '/fantasy' });
+        SA.services.user.notify({ kind: 'fantasy', title: 'Your fantasy team is ready', body: `${team.name} is entered into the Super Malaab League. Join a private group to play your friends.`, link: '/fantasy' });
         return { created: true, team };
       }
       const incoming = ids.filter((id) => !cur.squad.includes(id));

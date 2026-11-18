@@ -19,7 +19,7 @@ public class Product : BaseEntity, ISoftDelete, IHasAuthor
     public bool HiddenByAdmin { get; set; }
     public string? HiddenReason { get; set; }
 
-    /// <summary>When Super App approved it; cleared when the name, brand, description, category or photos change.</summary>
+    /// <summary>When Super Malaab approved it; cleared when the name, brand, description, category or photos change.</summary>
     public DateTime? ApprovedAt { get; set; }
 
     /// <summary>Why the last review said no.</summary>

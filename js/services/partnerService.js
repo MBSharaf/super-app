@@ -1,6 +1,6 @@
 /**
  * Becoming a pitch partner: a customer applies from their profile (#/partner/apply) with their details, ID and the
- * pitch; the Super App team approves or rejects it (Admin → Approvals → Pitch partners). On approval the pitch partner
+ * pitch; the Super Malaab team approves or rejects it (Admin → Approvals → Pitch partners). On approval the pitch partner
  * account and the pitch are created, and the customer opens the pitch partner dashboard from their profile.
  * Future API: POST /partner-applications, GET /me/partner-application, /admin/partner-applications/*
  */
@@ -56,7 +56,7 @@
       SA.services.legal?.accept(['partner', 'terms', 'privacy'], { where: 'pitch partner application', person: { id: u.id, name: app.ownerName, kind: 'partner' } });
       db().log('customer', 'partner.applied', `${app.ownerName} applied to list “${app.pitchName}” (${app.area})`, app.id);
       N()?.toAdmins({ cat: 'store', tone: 'gold', title: `New pitch partner application: ${app.pitchName}`, body: `${app.ownerName} · ${app.area} · ${app.count} pitch${app.count > 1 ? 'es' : ''}`, link: '#/admin/approvals?tab=partners' });
-      SA.services.user.notify({ kind: 'account', title: 'We got your application', body: `“${app.pitchName}” — the Super App team reviews it within 2 working days.`, link: '/partner/apply' });
+      SA.services.user.notify({ kind: 'account', title: 'We got your application', body: `“${app.pitchName}” — the Super Malaab team reviews it within 2 working days.`, link: '/partner/apply' });
       return app;
     },
 
@@ -76,8 +76,8 @@
       });
       db().update('partnerApps', id, { status: 'approved', accountId, pitchId: pitch.id, decidedAt: now, decidedBy: ad.id });
       SA.services.admin.log('partner.approved', `Approved pitch partner ${app.ownerName} — “${app.pitchName}”`, id);
-      N()?.toAccount(accountId, { cat: 'account', tone: 'turf', title: `Welcome to Super App, ${app.ownerName.split(' ')[0]}!`, body: `“${app.pitchName}” is live. Check the price, hours and photos, and add your other pitches.`, link: `#/dash/pitches/${pitch.id}` });
-      if (app.userId === me().id) SA.services.user.notify({ kind: 'account', title: 'You’re a Super App pitch partner!', body: `“${app.pitchName}” is approved. Open your pitch partner dashboard from your profile.`, link: '/profile' });
+      N()?.toAccount(accountId, { cat: 'account', tone: 'turf', title: `Welcome to Super Malaab, ${app.ownerName.split(' ')[0]}!`, body: `“${app.pitchName}” is live. Check the price, hours and photos, and add your other pitches.`, link: `#/dash/pitches/${pitch.id}` });
+      if (app.userId === me().id) SA.services.user.notify({ kind: 'account', title: 'You’re a Super Malaab pitch partner!', body: `“${app.pitchName}” is approved. Open your pitch partner dashboard from your profile.`, link: '/profile' });
       return { accountId, pitchId: pitch.id };
     },
     reject(id, reason) {

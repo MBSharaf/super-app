@@ -83,7 +83,7 @@
   };
 
   SA.pages.matches = {
-    title: 'Matches — Super App',
+    title: 'Matches — Super Malaab',
     openCentre,
     async render(ctx) {
       const date = ctx.query.date || isoDate(today());

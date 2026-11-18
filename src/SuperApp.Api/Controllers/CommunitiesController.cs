@@ -111,7 +111,7 @@ public sealed class CommunitiesController(ICommunitiesService communities, IPost
     public async Task<ActionResult<object>> ReportPost(long id, ReportRequest request, CancellationToken ct)
     {
         await posts.ReportAsync(id, null, request, ct);
-        return Ok<object?>(null, "Thanks — the Super App team will look at it.");
+        return Ok<object?>(null, "Thanks — the Super Malaab team will look at it.");
     }
 
     [HttpPost("comments/{id:long}/report")]
@@ -120,10 +120,10 @@ public sealed class CommunitiesController(ICommunitiesService communities, IPost
     public async Task<ActionResult<object>> ReportComment(long id, ReportRequest request, CancellationToken ct)
     {
         await posts.ReportAsync(null, id, request, ct);
-        return Ok<object?>(null, "Thanks — the Super App team will look at it.");
+        return Ok<object?>(null, "Thanks — the Super Malaab team will look at it.");
     }
 
-    /// <summary>Rich card for a Super App link; outside links → 422 outside_link.</summary>
+    /// <summary>Rich card for a Super Malaab link; outside links → 422 outside_link.</summary>
     [HttpGet("link-preview")]
     [Authorize]
     public async Task<ActionResult<object>> Preview([FromQuery] string url, CancellationToken ct) => Ok(await posts.PreviewAsync(url, ct));

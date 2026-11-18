@@ -46,7 +46,7 @@ public sealed class AdminPeopleController(IAdminPeopleService people, IAdminOpsS
     [EnableRateLimiting(RateLimitPolicies.Write)]
     public async Task<ActionResult<object>> Note(Guid id, NoteRequest request, CancellationToken ct) => Ok(await people.NoteAsync(id, request, ct), "Note saved.");
 
-    /// <summary>{ amount 5–5,000, reason } to their wallet, paid by Super App; checks the caller's credit limit (403 over_credit_limit).</summary>
+    /// <summary>{ amount 5–5,000, reason } to their wallet, paid by Super Malaab; checks the caller's credit limit (403 over_credit_limit).</summary>
     [HttpPost("customers/{id:guid}/credit")]
     [RequirePermission("credits.issue")]
     [EnableRateLimiting(RateLimitPolicies.Write)]

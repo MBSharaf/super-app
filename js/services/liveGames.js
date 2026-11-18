@@ -142,7 +142,7 @@
   G.request = async (id, { position, message = '', payment, waiver = false }) => {
     if (!isLive(id)) return demo.games.request(id, { position, message, payment, waiver });
     SA.services.legal?.requireWaiver(waiver, 'joining a game');
-    if (!payment || payment.method === 'cash') throw new ApiError('Pay your share online — Super App holds it until the host accepts.', 'invalid');
+    if (!payment || payment.method === 'cash') throw new ApiError('Pay your share online — Super Malaab holds it until the host accepts.', 'invalid');
     const d = await api.post(`/games/${id}/requests`, { position, message: String(message).trim().slice(0, 200) || null, payFromWallet: payment.method === 'wallet' });
     keepDetail(d);
     await loadMine().catch(() => null);

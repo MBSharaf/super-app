@@ -24,7 +24,7 @@
     return `<section class="panel panel-pad host-panel"><div class="row-between wrap" style="--gap:8px"><h2 class="h3">Players asking to join</h2>
         <span class="row wrap" style="--gap:8px"><label class="choice host-opt"><input type="checkbox" data-auto ${hs.autoAccept ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="xs"><b>Accept automatically</b></span></label>
         <label class="choice host-opt"><input type="checkbox" data-closed ${hs.closed ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="xs"><b>Close requests</b></span></label></span></div>
-      <p class="xs muted" style="margin-top:6px">Players pay their share online when they ask; Super App holds it. Declined or removed players get it back in full.</p>
+      <p class="xs muted" style="margin-top:6px">Players pay their share online when they ask; Super Malaab holds it. Declined or removed players get it back in full.</p>
       ${pending.length ? `<h3 class="small strong sub-mini">Waiting for you (${pending.length})</h3><ul class="pl-list">${pending.map(row).join('')}</ul>` : ''}
       ${inn.length ? `<h3 class="small strong sub-mini">In the game (${inn.length})</h3><ul class="pl-list">${inn.map(row).join('')}</ul>` : ''}
       ${wait.length ? `<h3 class="small strong sub-mini">Waitlist (${wait.length})</h3><ul class="pl-list">${wait.map(row).join('')}</ul>` : ''}
@@ -38,7 +38,7 @@
   };
 
   SA.pages.matchDetail = {
-    title: 'Match — Super App',
+    title: 'Match — Super Malaab',
     async render(ctx) {
       const m = await S.matches.get(ctx.params.id);
       await S.cancellations.ready?.();
@@ -53,7 +53,7 @@
       const actionBlock = m.isMine
         ? `<div class="stack" style="--gap:10px"><button class="btn btn-primary btn-lg btn-block" data-share>${icon('share', 16)} Share invite link</button><a class="btn btn-outline btn-block" href="#/booking/${m.bookingId}">View booking</a><button class="btn btn-ghost btn-block" data-unpublish style="color:var(--danger)">Remove listing</button></div>`
         : myReq && myReq.status !== 'accepted'
-          ? `<div class="notice ${myReq.status === 'waitlist' ? '' : 'gold'}">${icon('clock', 18)}<span><b>${myReq.status === 'waitlist' ? 'You’re on the waitlist.' : 'Request sent.'}</b> ${money(myReq.amount)} is held by Super App and comes back in full if you don’t get in.</span></div>${cxBtn('Withdraw request', `data-withdraw="${myReq.id}"`)}`
+          ? `<div class="notice ${myReq.status === 'waitlist' ? '' : 'gold'}">${icon('clock', 18)}<span><b>${myReq.status === 'waitlist' ? 'You’re on the waitlist.' : 'Request sent.'}</b> ${money(myReq.amount)} is held by Super Malaab and comes back in full if you don’t get in.</span></div>${cxBtn('Withdraw request', `data-withdraw="${myReq.id}"`)}`
           : m.joined
           ? `<div class="notice turf">${icon('check', 18)}<span><b>You’re in this match.</b> ${req?.payment ? (req.payment === 'Paid online' ? 'Your share is paid online.' : `Paid with ${esc(req.payment)}.`) : ''}</span></div>${cxBtn('Leave match', 'data-leave')}`
           : m.spotsLeft ? c.cta(`Join · ${money(m.pricePerPlayer)}`, { variant: 'blaze', size: 'lg', attrs: `data-action="join-match" data-id="${m.id}" style="width:100%;justify-content:space-between"` }) : `<button class="btn btn-outline btn-block" disabled>Match is full</button>`;
@@ -142,7 +142,7 @@
         S.games.rate(id, list); SA.ui.overlay.toast('Ratings saved — thanks!'); SA.app.rerender();
       });
       el.querySelectorAll('[data-leave]').forEach((b) => b.addEventListener('click', async () => {
-        // Paid share: ask the Super App team (cancellation request); paying at the pitch: leave straight away
+        // Paid share: ask the Super Malaab team (cancellation request); paying at the pitch: leave straight away
         const rq = S.games.myRequest(id);
         const req = SA.core.store.get().matchRequests[id];
         if (rq?.status === 'accepted' && rq.paid) { await SA.ui.cancelRequest.ask({ kind: 'game-request', refId: rq.id, title: 'Leave this match?', text: 'If it’s approved, your spot opens up and your share is refunded under the game’s rules.' }); return; }

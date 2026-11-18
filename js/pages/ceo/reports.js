@@ -13,7 +13,7 @@
     const cols = rep.columns;
     const moneyCol = cols.find(([k]) => k === (rep.chart || 'amount')) || cols.find(([, , t]) => t === 'money');
     const sheets = SA.core.xlsx.dashboard({
-      title: `Super App — ${label} report`, subtitle: `${r.from} to ${r.to} · Command Center`,
+      title: `Super Malaab — ${label} report`, subtitle: `${r.from} to ${r.to} · Command Center`,
       data: { name: label.slice(0, 28), columns: cols.map(([, h, t]) => ({ header: h, width: t === 'money' ? 16 : Math.min(36, Math.max(12, h.length + 4)), type: t === 'money' ? 'money' : undefined })), rows: rep.rows.map((x) => cols.map(([k, , t]) => (t === 'money' || t === 'n' ? Math.round((+x[k] || 0) * 100) / 100 : x[k] ?? ''))) },
       kpis: [{ label: 'Lines', f: 'COUNT', col: cols[0][1] }, ...(moneyCol ? [{ label: `Total — ${moneyCol[1]}`, col: moneyCol[1], type: 'money' }] : []), ...(moneyCol ? [{ label: `Average — ${moneyCol[1]}`, f: 'AVERAGE', col: moneyCol[1], type: 'money' }] : [])],
       groups: [
@@ -26,11 +26,11 @@
 
   /** PDF: header, the report's key numbers, then the table (the first columns that fit on A4) */
   const pdf = async (kind, label, rep, r) => {
-    const doc = SA.core.pdf.create({ title: `Super App — ${label} report` });
+    const doc = SA.core.pdf.create({ title: `Super Malaab — ${label} report` });
     let p = doc.page();
     p.rect(0, 0, p.W, 92, { fill: '#0D1411' });
     p.logo(40, 30, 30);
-    p.text('SUPER APP', 80, 46, { size: 15, weight: 800, color: '#fff', spacing: 1 });
+    p.text('SUPER MALAAB', 80, 46, { size: 15, weight: 800, color: '#fff', spacing: 1 });
     p.text('Command Center — CEO report', 80, 62, { size: 8.5, color: '#9FB3A9' });
     p.text(`${label} report`, p.W - 40, 46, { size: 17, weight: 800, color: '#fff', align: 'right' });
     p.text(`${fmtDate(r.from)} – ${fmtDate(r.to)}`, p.W - 40, 63, { size: 9, color: '#9FB3A9', align: 'right' });
@@ -48,7 +48,7 @@
   };
 
   SA.pages.ceoReports = C.guard({
-    title: 'Reports — Super App',
+    title: 'Reports — Super Malaab',
     render(ctx) {
       const kind = ctx.query.kind || 'finance';
       const r = D.range(ctx.query, '30');

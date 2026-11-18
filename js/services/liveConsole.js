@@ -195,7 +195,7 @@
   });
 
   /* ---------------- Pitch bookings (Orders & bookings, first tab) ---------------- */
-  const SOURCE = { App: 'Super App', WalkIn: 'Walk-in', Package: 'Weekly package', Series: 'Series', Tournament: 'Tournament', FreeSlot: 'Free slot' };
+  const SOURCE = { App: 'Super Malaab', WalkIn: 'Walk-in', Package: 'Weekly package', Series: 'Series', Tournament: 'Tournament', FreeSlot: 'Free slot' };
   const bookings = cached();
   /** null outside API mode (the page keeps the dashboard ledger); else the server's bookings in the range */
   AD.bookingsLive = (r, f = {}) => {

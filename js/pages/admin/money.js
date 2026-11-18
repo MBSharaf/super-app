@@ -14,7 +14,7 @@
 
   /* ======================= Withdrawals ======================= */
   SA.pages.adminPayouts = A.guard({
-    title: 'Withdrawals — Super App Admin',
+    title: 'Withdrawals — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || '';
       const all = AD().payouts();
@@ -44,7 +44,7 @@
         const recent = pr.orders.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 12);
         const hist = all.filter((p) => p.kind === 'printer');
         section = `<div class="dash-grid g-1-1">
-          <section class="dash-card"><h2 class="h4">${esc(pr.account?.company || 'Print partner')}</h2><p class="small soft" style="margin-top:6px">Super App pays the partner cost of every item it printed and shipped (refused deliveries included — we absorb them). Reprints for print faults are on the partner.</p>
+          <section class="dash-card"><h2 class="h4">${esc(pr.account?.company || 'Print partner')}</h2><p class="small soft" style="margin-top:6px">Super Malaab pays the partner cost of every item it printed and shipped (refused deliveries included — we absorb them). Reprints for print faults are on the partner.</p>
             <dl class="kv" style="margin-top:14px"><div><dt>Printed items not settled yet</dt><dd class="num">${pr.items}</dd></div><div><dt>Partner cost earned</dt><dd class="num">${money(pr.earned)}</dd></div><div><dt>Already paid</dt><dd class="num">${money(pr.paid)}</dd></div><div class="total"><dt>Owed now</dt><dd class="num">${money(pr.owed)}</dd></div></dl>
             <button class="btn btn-primary" data-settle style="margin-top:14px" ${pr.owed ? '' : 'disabled'}>${icon('wallet', 15)} Pay ${money(pr.owed)}</button></section>
           <section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">Settlements</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Date</th><th>Reference</th><th class="r">Amount</th></tr></thead><tbody>
@@ -162,7 +162,7 @@
   /* ======================= Revenue ======================= */
   const pct = (a, b) => (b ? Math.round(((a - b) / b) * 100) : 0);
   SA.pages.adminRevenue = A.guard({
-    title: 'Revenue — Super App Admin',
+    title: 'Revenue — Super Malaab Admin',
     render(ctx) {
       const r = C.range(ctx.query, '30');
       const len = Math.round((parseISO(r.to) - parseISO(r.from)) / 864e5) + 1;
@@ -183,7 +183,7 @@
           ${C.kpi({ label: 'Income', value: money(t.income), count: t.income, suffix: ' EGP', ic: 'trend', tone: 'k-turf', sub: `${chg(t.income, p.income)} vs previous ${len} days` })}
           ${C.kpi({ label: 'Costs', value: money(t.cost), count: t.cost, suffix: ' EGP', ic: 'alert', sub: `${chg(t.cost, p.cost)} vs previous ${len} days` })}
           ${C.kpi({ label: 'Net platform revenue', value: money(t.net), count: t.net, suffix: ' EGP', ic: 'percent', tone: 'k-blaze', sub: `${chg(t.net, p.net)} vs previous ${len} days` })}
-          ${C.kpi({ label: 'Take rate', value: `${t.gmv ? ((t.net / t.gmv) * 100).toFixed(1) : '0.0'}%`, ic: 'swap', sub: `of ${money(t.gmv)} through Super App` })}
+          ${C.kpi({ label: 'Take rate', value: `${t.gmv ? ((t.net / t.gmv) * 100).toFixed(1) : '0.0'}%`, ic: 'swap', sub: `of ${money(t.gmv)} through Super Malaab` })}
         </div>
         <section class="dash-card"><div class="row-between"><h2 class="h4">Income by day</h2><span class="xs muted">${C.rangeLabel(r)}</span></div><div style="margin-top:14px">${A.revChart(cur.daily, AD().STREAMS)}</div></section>
         <div class="dash-grid g-1-1">
@@ -202,8 +202,8 @@
             ${sellers.map((x) => `<tr><td class="small"><b>${esc(x.s.name)}</b></td><td class="r num">${x.items}</td><td class="r num">${money(x.sales)}</td><td class="r num strong">${money(x.margin)}</td></tr>`).join('') || '<tr><td colspan="4" class="small muted" style="padding:18px">No print orders in this period.</td></tr>'}</tbody></table></div></section>
         </div>
         <section class="dash-card"><h2 class="h4">Fantasy Pass</h2><div class="adm-counts" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[['trophy', cur.passes.length, 'Passes sold'], ['flag', plans.egy, 'Egyptian league'], ['globe', plans.epl, 'Premier League'], ['sparkle', plans.both, 'Both leagues']].map(([ic, n, l]) => `<div class="adm-count"><span class="kpi-ico">${icon(ic, 18)}</span><b class="h3 num">${n.toLocaleString()}</b><span class="xs muted">${l}</span></div>`).join('')}</div>
-          <p class="xs muted" style="margin-top:10px">${money(t.passes)} from subscriptions. Prizes come from sponsors — Super App pays no cash prizes.</p></section>`;
-      return C.layout('revenue', { title: 'Revenue', subtitle: 'What Super App earns, where it comes from and what it costs', actions: `<button class="btn btn-outline btn-sm" data-export>${icon('file', 15)} Export Excel</button>`, body });
+          <p class="xs muted" style="margin-top:10px">${money(t.passes)} from subscriptions. Prizes come from sponsors — Super Malaab pays no cash prizes.</p></section>`;
+      return C.layout('revenue', { title: 'Revenue', subtitle: 'What Super Malaab earns, where it comes from and what it costs', actions: `<button class="btn btn-outline btn-sm" data-export>${icon('file', 15)} Export Excel</button>`, body });
     },
     mount(el, ctx) {
       C.bindRange(el, '/admin/revenue');
@@ -216,14 +216,14 @@
         const lines = [];
         cur.daily.forEach((d) => { S.forEach(([k, l]) => { if (d[k]) lines.push([d.date, l, 'Income', Math.round(d[k])]); }); K.forEach(([k, l]) => { if (d[k]) lines.push([d.date, l, 'Cost', -Math.round(d[k])]); }); });
         const dashSheets = SA.core.xlsx.dashboard({
-          title: 'Super App — Revenue', subtitle: `${r.from} to ${r.to}`,
+          title: 'Super Malaab — Revenue', subtitle: `${r.from} to ${r.to}`,
           data: { name: 'Revenue lines', columns: [{ header: 'Date', width: 12 }, { header: 'Stream', width: 34 }, { header: 'Kind', width: 10 }, { header: 'Amount', width: 14, type: 'money' }], rows: lines },
-          kpis: [{ label: 'Net platform revenue', col: 'Amount', type: 'money' }, { label: 'Income', f: 'SUMIF', col: 'Kind', match: 'Income', sum: 'Amount', type: 'money' }, { label: 'Costs', f: 'SUMIF', col: 'Kind', match: 'Cost', sum: 'Amount', type: 'money' }, { label: 'Money through Super App (GMV)', formula: `${t.gmv}`, type: 'money' }],
+          kpis: [{ label: 'Net platform revenue', col: 'Amount', type: 'money' }, { label: 'Income', f: 'SUMIF', col: 'Kind', match: 'Income', sum: 'Amount', type: 'money' }, { label: 'Costs', f: 'SUMIF', col: 'Kind', match: 'Cost', sum: 'Amount', type: 'money' }, { label: 'Money through Super Malaab (GMV)', formula: `${t.gmv}`, type: 'money' }],
           groups: [{ title: 'Revenue by stream', by: 'Stream', sum: 'Amount', chart: 'bar', type: 'money' }, { title: 'Net by day', by: 'Date', sum: 'Amount', chart: 'line', type: 'money', limit: 62 }],
         });
         C.xlsx(`super-app-revenue-${r.from}-to-${r.to}.xlsx`, [...dashSheets,
           { name: 'Summary', columns: [{ header: 'Line', width: 38 }, { header: 'Amount', width: 16, type: 'money' }],
-            rows: [...S.map(([k, l]) => [l, t[k]]), ['Total income', t.income], ...K.map(([k, l]) => [l, -t[k]]), ['Total costs', -t.cost], ['Money through Super App (GMV)', t.gmv]], totals: ['Net platform revenue', t.net] },
+            rows: [...S.map(([k, l]) => [l, t[k]]), ['Total income', t.income], ...K.map(([k, l]) => [l, -t[k]]), ['Total costs', -t.cost], ['Money through Super Malaab (GMV)', t.gmv]], totals: ['Net platform revenue', t.net] },
           { name: 'Daily', columns: [{ header: 'Date', width: 12 }, ...S.map(([, l]) => ({ header: l, width: 16, type: 'money' })), ...K.map(([, l]) => ({ header: l, width: 16, type: 'money' })), { header: 'Net', width: 14, type: 'money' }, { header: 'GMV', width: 14, type: 'money' }],
             rows: cur.daily.map((d) => [d.date, ...S.map(([k]) => Math.round(d[k])), ...K.map(([k]) => -Math.round(d[k])), Math.round(d.net), Math.round(d.gmv)]),
             totals: ['Total', ...S.map(([k]) => t[k]), ...K.map(([k]) => -t[k]), t.net, t.gmv] },

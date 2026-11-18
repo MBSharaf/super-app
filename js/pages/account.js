@@ -9,7 +9,7 @@
   const DASHBOARDS = { partner: ['pitch', 'Pitch dashboard', '#/dash'], seller: ['bag', 'Seller dashboard', '#/seller'], factory: ['package', 'Factory system', '#/factory'], admin: ['shield', 'Admin console', '#/admin'], ceo: ['crown', 'Command Center', '#/ceo'] };
   const accountPanel = (me) => {
     if (!me) {
-      return `<section class="panel panel-pad acc-real">${icon('user', 26)}<div class="grow"><h2 class="h4">Sign in to your Super App account</h2><p class="small soft">Your bookings, orders and applications follow you on every device.</p></div>
+      return `<section class="panel panel-pad acc-real">${icon('user', 26)}<div class="grow"><h2 class="h4">Sign in to your Super Malaab account</h2><p class="small soft">Your bookings, orders and applications follow you on every device.</p></div>
         <div class="row wrap" style="--gap:8px"><a class="btn btn-outline" href="#/auth/sign-in?next=/profile">${icon('lock', 16)} Sign in</a><a class="btn btn-primary" href="#/auth/sign-up?next=/profile">${icon('sparkle', 16)} Create account</a></div></section>`;
     }
     const boards = me.dashboards.filter((d) => DASHBOARDS[d]).map((d) => `<a class="btn btn-ghost btn-sm" href="${DASHBOARDS[d][2]}">${icon(DASHBOARDS[d][0], 14)} ${DASHBOARDS[d][1]}</a>`).join('');
@@ -25,7 +25,7 @@
   };
 
   SA.pages.profile = {
-    title: 'Profile — Super App',
+    title: 'Profile — Super Malaab',
     async render() {
       await S.api.ready;
       if (S.api.isLive() && !S.session.loaded()) await S.session.load();
@@ -106,12 +106,12 @@
     const per = Math.round(1 / L.cfg.pointValue), minEgp = Math.round(L.cfg.minRedeem * L.cfg.pointValue);
     const earn = L.cfg.earnPer === 1 ? '' : `${L.cfg.earnPer} `;
     const rows = ar ? [
-      ['pitch', `<b>نقطة على كل ${L.cfg.earnPer === 1 ? '' : `${earn}`}جنيه بتدفعه</b> — عربون الحجز، والباقي اللي بتدفعه في الملعب، والماتشات، والمتجر. النقط بتنزل أول ما تدفع. وأول 3 في كل جولة في دوري فانتازي Super App بيكسبوا نقط كمان.`],
+      ['pitch', `<b>نقطة على كل ${L.cfg.earnPer === 1 ? '' : `${earn}`}جنيه بتدفعه</b> — عربون الحجز، والباقي اللي بتدفعه في الملعب، والماتشات، والمتجر. النقط بتنزل أول ما تدفع. وأول 3 في كل جولة في دوري فانتازي سوبر ملعب بيكسبوا نقط كمان.`],
       ['star', '<b>+20 نقطة</b> على كل تقييم بعد الماتش'],
       ['trophy', `<b>برونزي · فضي · ذهبي</b> — مستواك بيعلى مع مجموع نقاطك (${n(L.lifetime)} لحد دلوقتي)`],
       ['gift', `<b>${n(per)} نقطة = 1 جنيه</b> كقسيمة، من ${n(L.cfg.minRedeem)} نقطة (${n(minEgp)} جنيه). استخدمها في حجز الملاعب والماتشات والمتجر والتصميمات المطبوعة — النقط مش بتتحول لفلوس كاش.`],
     ] : [
-      ['pitch', `<b>1 point for every ${earn}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, and the shop. The points land the moment you pay. The top 3 of every gameweek in the Super App fantasy league win points too.`],
+      ['pitch', `<b>1 point for every ${earn}EGP you pay</b> — booking deposits, the rest paid at the pitch, games, and the shop. The points land the moment you pay. The top 3 of every gameweek in the Super Malaab fantasy league win points too.`],
       ['star', '<b>+20 points</b> for each review after a game'],
       ['trophy', `<b>Bronze · Silver · Gold</b> — your tier rises with lifetime points (${n(L.lifetime)} so far)`],
       ['gift', `<b>${n(per)} points = 1 EGP</b> as a voucher, from ${n(L.cfg.minRedeem)} points (${n(minEgp)} EGP). Use it on pitch bookings, games, the shop and printed designs — points can’t be turned into cash.`],
@@ -145,7 +145,7 @@
   };
 
   SA.pages.wallet = {
-    title: 'Wallet — Super App',
+    title: 'Wallet — Super Malaab',
     render() {
       const w = S.user.wallet();
       return `${c.pageHead({ crumbs: [['Profile', '#/profile'], ['Wallet']], title: 'Wallet', text: 'Pay for pitches, matches, fantasy leagues and orders in one tap. Refunds and winnings land here.' })}
@@ -155,7 +155,7 @@
             <span class="small" style="opacity:.75">Available balance</span>
             <b class="wallet-bal num">${money(w.balance)}</b>
             <div class="row wrap" style="margin-top:22px">${[200, 500, 1000].map((a) => `<button class="btn btn-sm wallet-quick" data-topup="${a}">+ ${a}</button>`).join('')}<button class="btn btn-blaze btn-sm" data-topup="">${icon('plus', 14)} Top up</button></div>
-            <span class="wallet-mark" aria-hidden="true">SUPER APP</span>
+            <span class="wallet-mark" aria-hidden="true">SUPER MALAAB</span>
           </div>
           <div class="panel panel-pad">
             <h2 class="h4">Activity</h2>
@@ -228,7 +228,7 @@
   };
 
   SA.pages.notFound = {
-    title: 'Page not found — Super App',
+    title: 'Page not found — Super Malaab',
     render: () => `<div class="container section">${c.empty({ icon: 'alert', title: 'This page is off the pitch', text: 'The link may be old or mistyped.', action: '<a class="btn btn-primary" href="#/">Back to home</a>' })}</div>`,
   };
 })(window.SA);

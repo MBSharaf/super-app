@@ -80,7 +80,7 @@ T("fantasy", "FantasyPasses", "FantasyPass", "B", doc="A Fantasy Pass subscripti
     .c("StartsAt", "datetime2(0)").c("EndsAt", "datetime2(0)").ck("Dates", "[EndsAt] > [StartsAt]").ix("UserId EndsAt")
 
 # ------------------------------------------------------------------------------------------- communities
-T("community", "Communities", "Community", "B", "A", doc="A community (forum) created by Super App.") \
+T("community", "Communities", "Community", "B", "A", doc="A community (forum) created by Super Malaab.") \
     .c("Slug", "varchar(40)", uq=True).c("Name", "nvarchar(80)").c("About", "nvarchar(500)", null=True) \
     .c("Audience", E("CommunityAudience", "Everyone Sellers ProAndEliteSellers")).c("RulesText", "nvarchar(1000)", null=True) \
     .c("SlowModeSeconds", "int", default=0, check="[SlowModeSeconds] BETWEEN 0 AND 3600") \
@@ -169,7 +169,7 @@ T("content", "CookieConsents", "CookieConsent", "P", doc="A visitor's cookie cho
     .c("VisitorId", "varchar(40)").c("UserId", "uniqueidentifier", null=True, fk=U, on="SetNull") \
     .c("Analytics", "bit").c("PolicyVersion", "smallint").c("At", "datetime2(0)", default=NOW)
 
-T("content", "NewsPosts", "NewsPost", "B", "S", doc="A Super App news story.") \
+T("content", "NewsPosts", "NewsPost", "B", "S", doc="A Super Malaab news story.") \
     .c("AuthorId", "uniqueidentifier", fk=U).c("Category", "varchar(20)") \
     .c("Title", "nvarchar(110)", check="LEN([Title]) >= 10").c("Excerpt", "nvarchar(260)", check="LEN([Excerpt]) >= 20") \
     .c("Body", "nvarchar(max)").c("ImageFileId", "bigint", null=True, fk="ops.Files") \

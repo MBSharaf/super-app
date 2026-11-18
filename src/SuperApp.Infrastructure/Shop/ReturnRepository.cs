@@ -67,7 +67,7 @@ public sealed class ReturnRepository(AppDbContext db) : IReturnRepository
         Decided(db.Set<ReturnRequest>(), storeId).Include(r => r.Items).Include(r => r.Order).ThenInclude(o => o.Items).Include(r => r.Order).ThenInclude(o => o.Fulfilments)
             .AsSplitQuery().FirstOrDefaultAsync(r => r.Code == code, ct);
 
-    /// <summary>A store decides returns of its own products; Super App (null) decides printed items and the official store's.</summary>
+    /// <summary>A store decides returns of its own products; Super Malaab (null) decides printed items and the official store's.</summary>
     private static IQueryable<ReturnRequest> Decided(IQueryable<ReturnRequest> q, long? storeId) => storeId is { } id
         ? q.Where(r => r.Items.All(i => i.OrderItem.StoreId == id && i.OrderItem.Kind == OrderItemKind.StoreProduct))
         : q.Where(r => r.Items.Any(i => i.OrderItem.Kind == OrderItemKind.PrintedDesign || i.OrderItem.Store.Type == StoreType.Official));
@@ -79,7 +79,7 @@ public sealed class ReturnRepository(AppDbContext db) : IReturnRepository
             r.Id, r.Code, Order = r.Order.Code, r.OrderId, r.Reason, r.Detail, r.Status, r.RejectReason, r.RefundAmount, r.CustomerPaysDelivery, r.CreatedAt,
             Customer = r.Customer.FullName, r.Order.AddressJson,
             Lines = r.Items.Select(i => new { i.OrderItemId, i.Qty, i.Action, i.NewSize, i.NewColor }).ToList(),
-            Decider = r.Items.Any(i => i.OrderItem.Kind == OrderItemKind.PrintedDesign || i.OrderItem.Store.Type == StoreType.Official) ? "Super App" : r.Items.Select(i => i.OrderItem.Store.Name).FirstOrDefault(),
+            Decider = r.Items.Any(i => i.OrderItem.Kind == OrderItemKind.PrintedDesign || i.OrderItem.Store.Type == StoreType.Official) ? "Super Malaab" : r.Items.Select(i => i.OrderItem.Store.Name).FirstOrDefault(),
             Pickup = db.Set<Shipment>().Where(s => s.OrderId == r.OrderId && s.IsReturn).OrderByDescending(s => s.Id).Select(s => s.TrackingNumber).FirstOrDefault(),
         }).ToListAsync(ct);
         var itemIds = rows.SelectMany(r => r.Lines.Select(l => l.OrderItemId)).Distinct().ToList();

@@ -2,7 +2,7 @@
  * Store owners on the real API (owner's decisions, 2026-10-27): products, orders and returns of
  *   - the signed-in seller's own store (`/seller/store/...`, `/seller/returns`) in the seller dashboard, with the seller
  *     wallet, withdrawals and store discount codes;
- *   - Super App's official store (`/admin/store/...`) and the returns Super App decides (`/admin/returns`) in the admin console.
+ *   - Super Malaab's official store (`/admin/store/...`) and the returns Super Malaab decides (`/admin/returns`) in the admin console.
  * Loaded after liveShop and liveReturns; demo mode (GitHub Pages) is unchanged.
  *
  * The dashboard pages read `SA.services.dash` synchronously from the local data, so each store, its products and orders
@@ -12,7 +12,7 @@
  * Products keep their shop slug as id (so "View on the site" opens the product page). The site keeps one stock number
  * per product with its sizes and colours; the server keeps stock per size and colour (variant): a new product's stock is
  * shared out over its variants and a restock goes to the variant with the least. A seller's product is sent for review
- * when published (Super App approves each one): "Waiting for review" or "Not approved" with the reason.
+ * when published (Super Malaab approves each one): "Waiting for review" or "Not approved" with the reason.
  */
 (function (SA) {
   const api = SA.services.api;
@@ -25,7 +25,7 @@
   const photo = (ph) => (!ph ? '' : ph.url ? `${location.origin}${ph.url}` : ph.key);
   const STATUS_IN = { Published: 'active', Draft: 'draft', Unpublished: 'draft', WaitingForReview: 'review', Rejected: 'rejected' };
   const OSTATUS = { New: 'confirmed', Packed: 'packed', Shipped: 'shipped', Delivered: 'delivered', Cancelled: 'cancelled' };
-  const PAY = { Online: 'Card', Wallet: 'Super App wallet', CashOnDelivery: 'Cash on delivery' };
+  const PAY = { Online: 'Card', Wallet: 'Super Malaab wallet', CashOnDelivery: 'Cash on delivery' };
 
   /** Replaces the records `drop` picks with the given list (a mirror of the server) */
   const put = (col, list, drop) => {
@@ -89,7 +89,7 @@
       const status = OSTATUS[o.status] || 'confirmed';
       return {
         key: `${o.orderCode}|${store}`, live: true, orderId: o.orderCode, storeId: store, storeName: db.find('stores', store)?.name || '', createdAt: Date.parse(o.placedAt), status, at: {},
-        auto: status === 'shipped' || status === 'delivered', courier: o.trackingNumber ? 'Super App courier' : '', tracking: o.trackingNumber || '', payment: PAY[o.paymentMethod] || o.paymentMethod,
+        auto: status === 'shipped' || status === 'delivered', courier: o.trackingNumber ? 'Super Malaab courier' : '', tracking: o.trackingNumber || '', payment: PAY[o.paymentMethod] || o.paymentMethod,
         customer: { name: o.customerName, city: a.city || '', phone: o.phone }, address: { line1: a.line1 || '', line2: a.line2 || '', city: a.city || '', phone: o.phone },
         delivery: o.deliverySpeed === 'Express' ? 'express' : 'standard', lines: o.items.map((i) => ({ id: i.id, name: i.title, qty: i.qty, price: +i.unitPrice, total: i.unitPrice * i.qty,
           image: photo(i.image) || 'photo-1579952363873-27f3bade9f55', variant: { size: i.size, color: i.color } })),
@@ -216,7 +216,7 @@
       return out;
     };
 
-    /* ---------- Orders (Super App's courier carries every parcel) ---------- */
+    /* ---------- Orders (Super Malaab's courier carries every parcel) ---------- */
 
     const mineOrder = (key) => api.isLive() && String(key).endsWith(`|${store}`);
     Object.assign(D, {
@@ -232,7 +232,7 @@
       async orderAction(key, action, { reason = '' } = {}) {
         if (!mineOrder(key)) return demo.orderAction(key, action, { reason });
         const o = D.order(key);
-        if (action === 'deliver') throw new ApiError('Super App’s courier marks the order delivered when it reaches the customer.', 'courier_delivers');
+        if (action === 'deliver') throw new ApiError('Super Malaab’s courier marks the order delivered when it reaches the customer.', 'courier_delivers');
         await api.post(`${area}/store/orders/${encodeURIComponent(o.orderId)}/${action}`, action === 'cancel' ? { reason: reason || 'Cancelled by the store' } : {});
         await Promise.all([loadOrders(), loadProducts()]);
         return D.order(key);
@@ -361,13 +361,13 @@
   const sellerReady = SA.services.liveShop.sellerReady;
   SA.services.liveShop.sellerReady = async (dashboard) => { const rec = await sellerReady(dashboard); if (rec?.storeId) await seller.ready(); return rec; };
 
-  /* ================= Super App's official store (admin console) ================= */
+  /* ================= Super Malaab's official store (admin console) ================= */
 
   const official = mountStore({
     area: '/admin', store: 'st-official', official: true, owner: () => 'acc-admin', active: () => D.adminMode?.(),
     returnsFor: (opts) => !opts.ownerId,
   });
-  /** The admin console's store pages load the official store and Super App's returns from the server */
+  /** The admin console's store pages load the official store and Super Malaab's returns from the server */
   const ADMIN_STORE = /^\/admin\/(store|store-orders|returns)(\/|$|\?)/;
   const adminReady = () => (api.isLive() && ADMIN_STORE.test(SA.core.router.location()) ? official.ready() : Promise.resolve());
 

@@ -18,7 +18,7 @@ public sealed class TwoFactorService(
     PermissionReader permissions,
     IAuditLogger audit) : ITwoFactorService
 {
-    private const string Issuer = "Super App";
+    private const string Issuer = "Super Malaab";
 
     public async Task<TwoFactorSetupResponse> BeginSetupAsync(Guid userId)
     {

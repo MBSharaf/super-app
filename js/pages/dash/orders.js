@@ -17,15 +17,15 @@
     let o;
     try { o = D().order(key); } catch (err) { return SA.ui.overlay.toast(err.message, { type: 'error' }); }
     const idx = STEPS.findIndex(([k]) => k === o.status);
-    // Live orders ship with Super App's courier (booked by the server) and the courier marks them delivered
-    const next = o.live ? (o.status === 'shipped' ? null : o.status === 'packed' ? ['ship', 'Hand to Super App courier', 'truck'] : NEXT[o.status]) : NEXT[o.status];
+    // Live orders ship with Super Malaab's courier (booked by the server) and the courier marks them delivered
+    const next = o.live ? (o.status === 'shipped' ? null : o.status === 'packed' ? ['ship', 'Hand to Super Malaab courier', 'truck'] : NEXT[o.status]) : NEXT[o.status];
     SA.ui.overlay.open({
       drawer: true, title: `Order ${esc(o.orderId)}`, subtitle: `${esc(o.storeName)} · ${timeAgo(o.createdAt)}`,
       body: `<div class="bk-detail">
         <div class="row-between">${badge(o.status)}<span class="badge">${esc(o.payment)}</span></div>
         ${o.status === 'cancelled' ? `<div class="notice blaze">${icon('x', 16)}<span>Cancelled${o.at.cancelled ? ` ${tm(o.at.cancelled)}` : ''}. Items went back into stock${o.payment !== 'Cash on delivery' ? ' and the customer was refunded' : ''}.</span></div>`
           : `<ol class="ord-steps">${STEPS.map(([k, l], i) => `<li class="${i <= idx ? 'is-done' : ''} ${i === idx ? 'is-current' : ''}"><span>${icon(i <= idx ? 'check' : 'clock', 12, 2.6)}</span><b class="xs">${l}</b><span class="xs muted">${i === 0 ? tm(o.createdAt) : tm(o.at[k])}</span></li>`).join('')}</ol>`}
-        ${o.auto ? `<p class="xs muted">${icon('truck', 12)} Delivered by Super App logistics — status updates automatically.</p>` : ''}
+        ${o.auto ? `<p class="xs muted">${icon('truck', 12)} Delivered by Super Malaab logistics — status updates automatically.</p>` : ''}
         ${o.courier ? `<p class="small">${icon('truck', 14)} ${esc(o.courier)}${o.tracking ? ` · tracking <b class="num">${esc(o.tracking)}</b>` : ''}</p>` : ''}
         <h3 class="small strong">Items</h3>
         <ul class="co-items">${o.lines.map((l) => `<li><span class="media"><img src="${media.u(l.image, 120, 120)}" alt="" /><i class="num">${l.qty}</i></span><span class="grow small">${esc(l.name)}<span class="xs muted" style="display:block">${esc(l.variant?.size || '—')} · ${esc(l.variant?.color || '—')}</span></span><span class="small num">${money(l.total)}</span></li>`).join('')}</ul>
@@ -36,7 +36,7 @@
           <div><dt>Delivery</dt><dd>${o.delivery === 'express' ? 'Express (next day)' : 'Standard'}</dd></div>
         </dl>
         <h3 class="small strong" style="margin-top:14px">Money</h3>
-        <dl class="kv"><div><dt>Order value</dt><dd class="num">${money(o.gross)}</dd></div><div><dt>Super App commission</dt><dd class="num">−${money(o.commission)}</dd></div><div class="total"><dt>Your net</dt><dd class="num">${money(o.net)}</dd></div></dl>
+        <dl class="kv"><div><dt>Order value</dt><dd class="num">${money(o.gross)}</dd></div><div><dt>Super Malaab commission</dt><dd class="num">−${money(o.commission)}</dd></div><div class="total"><dt>Your net</dt><dd class="num">${money(o.net)}</dd></div></dl>
         <p class="xs muted">${o.live ? (o.status === 'cancelled' ? '' : 'Available in your wallet 24 hours after delivery (the return window).') : o.status === 'delivered' ? 'In your store wallet.' : o.status === 'cancelled' ? '' : 'Reaches your store wallet when it’s delivered.'}</p>
         <form class="ship-form" data-ship hidden novalidate>
           <h3 class="small strong">Shipping details</h3>
@@ -54,7 +54,7 @@
         m.querySelector('[data-doc]').addEventListener('click', async (e) => { e.currentTarget.disabled = true; await SA.ui.docs.storeOrderDoc(o); e.currentTarget.disabled = false; });
         m.querySelector('[data-next]')?.addEventListener('click', async (e) => {
           const act = e.currentTarget.dataset.next;
-          if (act === 'ship' && o.live) { try { await D().orderAction(key, 'ship'); done('Handed to Super App’s courier — the customer has the tracking number'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
+          if (act === 'ship' && o.live) { try { await D().orderAction(key, 'ship'); done('Handed to Super Malaab’s courier — the customer has the tracking number'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } return; }
           if (act === 'ship') { const f = m.querySelector('[data-ship]'); f.hidden = false; f.courier.focus(); f.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
           try { await D().orderAction(key, act); done(act === 'pack' ? 'Marked as packed' : 'Marked as delivered — money moved to your store wallet'); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
         });
@@ -74,13 +74,13 @@
   };
 
   SA.pages.dashOrders = C.guard({
-    title: 'Orders — Super App Partner',
+    title: 'Orders — Super Malaab Partner',
     openOrder,
     render(ctx) {
       const q = ctx.query;
       const sc = C.scope();
       const stores = D().myStores(sc);
-      if (!stores.length) return C.layout('orders', { title: 'Orders', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'package', title: 'No store yet', text: 'Open your store and add products — orders from the Super App shop arrive here.', action: '<a class="btn btn-primary" href="#/dash/store">Open my store</a>' })}</div>` });
+      if (!stores.length) return C.layout('orders', { title: 'Orders', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'package', title: 'No store yet', text: 'Open your store and add products — orders from the Super Malaab shop arrive here.', action: '<a class="btn btn-primary" href="#/dash/store">Open my store</a>' })}</div>` });
       const r = C.range(q, '30');
       const all = D().orders({ ...sc, from: r.from, to: r.to });
       const status = q.status || 'open';
@@ -103,7 +103,7 @@
             <td>${esc(o.customer?.name || '—')}<span class="xs muted" style="display:block">${esc(o.address?.city || o.customer?.city || '')}${o.delivery === 'express' ? ' · <b style="color:var(--blaze)">Express</b>' : ''}</span></td>
             <td><span class="ord-thumbs">${o.lines.slice(0, 3).map((l) => `<img src="${media.u(l.image, 80, 80)}" alt="" loading="lazy" />`).join('')}</span><span class="xs muted">${o.units} item${o.units === 1 ? '' : 's'}</span></td>
             <td class="r num strong">${money(o.gross)}</td><td class="small">${esc(o.payment)}</td><td>${badge(o.status)}</td>
-            <td class="r">${NEXT[o.status] && !o.auto ? `<button class="btn btn-outline btn-sm" data-quick="${NEXT[o.status][0]}">${NEXT[o.status][1]}</button>` : ''}</td></tr>`).join('') || `<tr><td colspan="7">${SA.ui.c.empty({ icon: 'package', title: status === 'open' ? 'Nothing to send' : 'No orders here', text: status === 'open' ? 'New orders from the Super App shop appear here.' : 'Try a wider date range.' })}</td></tr>`}</tbody>
+            <td class="r">${NEXT[o.status] && !o.auto ? `<button class="btn btn-outline btn-sm" data-quick="${NEXT[o.status][0]}">${NEXT[o.status][1]}</button>` : ''}</td></tr>`).join('') || `<tr><td colspan="7">${SA.ui.c.empty({ icon: 'package', title: status === 'open' ? 'Nothing to send' : 'No orders here', text: status === 'open' ? 'New orders from the Super Malaab shop appear here.' : 'Try a wider date range.' })}</td></tr>`}</tbody>
         </table></div></section>`;
       return C.layout('orders', { title: 'Orders', subtitle: `${all.length} order${all.length === 1 ? '' : 's'} · ${C.rangeLabel(r)}`, body });
     },

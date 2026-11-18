@@ -32,7 +32,7 @@
     'Relaxed fit with dropped shoulders': 'قصّة مريحة وكتف نازل', 'Double-lined hood, kangaroo pocket, ribbed cuffs and waistband': 'كابيشون دبل، جيب كانجارو، وأساور ووسط ريب',
     /* ---------- Store page for the owner ---------- */
     'Only you can see this': 'إنت بس اللي شايف ده', 'All my designs': 'كل تصميماتي', 'Untitled design': 'تصميم من غير اسم',
-    'These designs aren’t in your store yet. A design shows here for customers once the Super App team approves it (usually within {0} hours).': 'التصميمات دي لسه مش في متجرك. التصميم بيظهر للعملاء هنا أول ما فريق Super App يوافق عليه (غالباً في خلال {0} ساعة).',
+    'These designs aren’t in your store yet. A design shows here for customers once the Super Malaab team approves it (usually within {0} hours).': 'التصميمات دي لسه مش في متجرك. التصميم بيظهر للعملاء هنا أول ما فريق سوبر ملعب يوافق عليه (غالباً في خلال {0} ساعة).',
   });
   D.patterns.push(
     ['^(.+) \\+ front print$', '{t1} + طباعة قدام'],

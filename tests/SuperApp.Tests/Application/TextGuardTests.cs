@@ -3,7 +3,7 @@ using SuperApp.Application.Features.Communities;
 
 namespace SuperApp.Tests.Application;
 
-/// <summary>Community text rules: outside links, phone numbers (also in Arabic digits), banned words, and Super App link cards.</summary>
+/// <summary>Community text rules: outside links, phone numbers (also in Arabic digits), banned words, and Super Malaab link cards.</summary>
 public sealed class TextGuardTests
 {
     private static readonly string[] Banned = ["scam", "نصاب"];

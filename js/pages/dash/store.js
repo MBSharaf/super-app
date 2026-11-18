@@ -29,7 +29,7 @@
   };
 
   SA.pages.dashStore = C.guard({
-    title: 'My store — Super App Partner',
+    title: 'My store — Super Malaab Partner',
     render(ctx) {
       const sc = C.scope();
       const store = D().myStore(sc.ownerId);
@@ -38,7 +38,7 @@
       if (!store) {
         if (viewingOther) return C.layout('store', { title: 'Store', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'bag', title: 'This partner hasn’t opened a store yet', text: 'Partners open their own store from their dashboard.' })}</div>` });
         return C.layout('store', {
-          title: 'Open your store', subtitle: 'Sell products to every Super App player. One store per account.',
+          title: 'Open your store', subtitle: 'Sell products to every Super Malaab player. One store per account.',
           body: `<div class="store-create">
             <section class="dash-card">
               <ol class="sc-steps"><li class="is-on"><span>1</span>Name and brand your store</li><li><span>2</span>Add products</li><li><span>3</span>Get paid to your store wallet</li></ol>
@@ -46,8 +46,8 @@
               <div class="row" style="justify-content:flex-end;margin-top:18px"><button class="btn btn-blaze btn-lg" form="store-form" type="submit">${icon('bag', 17)} Open my store</button></div>
             </section>
             <aside class="sc-perks">
-              <div class="sc-perk"><span>${icon('users', 18)}</span><div><b>Every Super App player</b><p class="small soft">Your products appear in the Super App shop, search and recommendations.</p></div></div>
-              <div class="sc-perk"><span>${icon('truck', 18)}</span><div><b>We deliver</b><p class="small soft">Super App handles payment and delivery across Egypt.</p></div></div>
+              <div class="sc-perk"><span>${icon('users', 18)}</span><div><b>Every Super Malaab player</b><p class="small soft">Your products appear in the Super Malaab shop, search and recommendations.</p></div></div>
+              <div class="sc-perk"><span>${icon('truck', 18)}</span><div><b>We deliver</b><p class="small soft">Super Malaab handles payment and delivery across Egypt.</p></div></div>
               <div class="sc-perk"><span>${icon('wallet', 18)}</span><div><b>Separate store wallet</b><p class="small soft">Sales land in your store wallet after delivery, minus ${Math.round(D().commission().store * 100)}% commission — kept apart from your booking money.</p></div></div>
             </aside></div>`,
         });
@@ -65,11 +65,11 @@
         <section class="store-hero" style="--cover:url('${media.u(store.cover, 1600, 600)}')">
           <div class="sh-bg" data-parallax="0.08"></div>
           <div class="sh-inner"><span class="sh-logo">${store.logo ? `<img src="${store.logo}" alt="" />` : icon('bag', 26)}</span>
-            <div class="grow"><div class="row wrap" style="--gap:8px"><h2 class="h2" style="color:#fff">${esc(store.name)}</h2>${store.official ? '<span class="badge badge-glass">Official</span>' : ''}<span class="badge ${store.status === 'active' ? 'badge-turf' : 'badge-danger'}">${store.status === 'active' ? 'Live on Super App' : 'Suspended'}</span></div>
+            <div class="grow"><div class="row wrap" style="--gap:8px"><h2 class="h2" style="color:#fff">${esc(store.name)}</h2>${store.official ? '<span class="badge badge-glass">Official</span>' : ''}<span class="badge ${store.status === 'active' ? 'badge-turf' : 'badge-danger'}">${store.status === 'active' ? 'Live on Super Malaab' : 'Suspended'}</span></div>
               <p style="color:rgba(255,255,255,.8)">${esc(store.tagline || store.description)}</p></div>
             <div class="row wrap" style="--gap:8px"><a class="btn btn-sm sh-btn" href="#/dash/orders">${icon('package', 14)} Orders</a><a class="btn btn-sm sh-btn" href="#/shop?store=${store.id}" target="_blank" rel="noopener">${icon('eye', 14)} View storefront</a><button class="btn btn-sm sh-btn" data-edit-store>${icon('edit', 14)} Edit store</button></div></div>
         </section>
-        ${store.status !== 'active' ? `<div class="notice blaze">${icon('alert', 18)}<span>This store is suspended by Super App — its products are hidden from the shop. Contact partner support.</span></div>` : ''}
+        ${store.status !== 'active' ? `<div class="notice blaze">${icon('alert', 18)}<span>This store is suspended by Super Malaab — its products are hidden from the shop. Contact partner support.</span></div>` : ''}
         <div class="kpi-grid kpi-sm">
           ${C.kpi({ label: 'Products', value: allProducts.length, count: allProducts.length, sub: `${allProducts.filter((p) => p.status === 'active').length} published`, ic: 'bag' })}
           ${C.kpi({ label: 'Units sold (30d)', value: sales.reduce((t, x) => t + x.qty, 0), ic: 'package' })}
@@ -81,18 +81,18 @@
           <div class="row-between" style="padding:18px 18px 0"><h2 class="h4">${lowOnly ? 'Products running low' : 'Products'}</h2><a class="btn btn-primary btn-sm" href="#/dash/store/product/new">${icon('plus', 15)} Add product</a></div>
           ${products.length ? `<div class="table-wrap"><table class="table dash-table"><thead><tr><th>Product</th><th>Category</th><th class="r">Price</th><th class="r">Stock</th><th class="r">Sold (30d)</th><th>Status</th><th></th></tr></thead><tbody>
             ${products.map((p) => `<tr>
-              <td>${p.hiddenByAdmin ? `<span class="badge badge-danger" title="${esc(p.hiddenReason || '')}">Hidden by Super App</span> ` : ''}<a class="prod-cell" href="#/dash/store/product/${p.id}"><span class="media pc-thumb"><img src="${media.u(p.images[0], 120, 120)}" alt="" loading="lazy" /></span><span><b class="small">${esc(p.name)}</b><span class="xs muted" style="display:block">${esc(p.brand)} · updated ${timeAgo(p.updatedAt)}</span></span></a></td>
+              <td>${p.hiddenByAdmin ? `<span class="badge badge-danger" title="${esc(p.hiddenReason || '')}">Hidden by Super Malaab</span> ` : ''}<a class="prod-cell" href="#/dash/store/product/${p.id}"><span class="media pc-thumb"><img src="${media.u(p.images[0], 120, 120)}" alt="" loading="lazy" /></span><span><b class="small">${esc(p.name)}</b><span class="xs muted" style="display:block">${esc(p.brand)} · updated ${timeAgo(p.updatedAt)}</span></span></a></td>
               <td class="small">${esc(CATS.find((c) => c.id === p.cat)?.name || p.cat)}</td>
               <td class="r num">${money(p.price)}${p.was > p.price ? `<s class="xs muted" style="display:block">${money(p.was)}</s>` : ''}</td>
               <td class="r num ${isLow(p) ? 'low-stock' : ''}">${p.stock}${p.stock === 0 ? '<span class="xs" style="display:block">Sold out</span>' : isLow(p) ? `<span class="xs" style="display:block">Low (alert at ${p.lowStockAt ?? 5})</span>` : ''}<button class="link xs" data-restock="${p.id}" style="display:block;margin-left:auto">+ Restock</button></td>
               <td class="r num">${by.get(p.id) || 0}</td>
-              <td>${p.status === 'review' ? `<span class="badge badge-gold" title="Super App checks every product before it goes on sale">Waiting for review</span>`
+              <td>${p.status === 'review' ? `<span class="badge badge-gold" title="Super Malaab checks every product before it goes on sale">Waiting for review</span>`
                 : p.status === 'rejected' ? `<span class="badge badge-danger">Not approved</span>${p.reviewNote ? `<span class="xs t-danger" style="display:block;max-width:220px">${esc(p.reviewNote)}</span>` : ''}<a class="link xs" href="#/dash/store/product/${p.id}" style="display:block">Fix and send again</a>`
                 : `<button class="switch sm ${p.status === 'active' ? 'is-on' : ''}" role="switch" aria-checked="${p.status === 'active'}" data-pub="${p.id}" aria-label="${p.status === 'active' ? 'Unpublish' : 'Publish'} ${esc(p.name)}"><span class="switch-knob"></span><span class="switch-label xs">${p.status === 'active' ? 'Published' : 'Draft'}</span></button>`}</td>
               <td class="r"><div class="row" style="--gap:2px;justify-content:flex-end"><a class="icon-btn" href="#/shop/${p.id}" target="_blank" rel="noopener" aria-label="View ${esc(p.name)} on the site">${icon('eye', 16)}</a><a class="icon-btn" href="#/dash/store/product/${p.id}" aria-label="Edit ${esc(p.name)}">${icon('edit', 16)}</a><button class="icon-btn" data-del="${p.id}" aria-label="Delete ${esc(p.name)}" style="color:var(--danger)">${icon('trash', 16)}</button></div></td></tr>`).join('')}
-          </tbody></table></div>` : SA.ui.c.empty({ icon: 'bag', title: 'Add your first product', text: store.live ? 'Super App checks each product before it goes on sale — usually within one working day.' : 'Products you publish appear in the Super App shop straight away.', action: `<a class="btn btn-primary" href="#/dash/store/product/new">${icon('plus', 16)} Add product</a>` })}
+          </tbody></table></div>` : SA.ui.c.empty({ icon: 'bag', title: 'Add your first product', text: store.live ? 'Super Malaab checks each product before it goes on sale — usually within one working day.' : 'Products you publish appear in the Super Malaab shop straight away.', action: `<a class="btn btn-primary" href="#/dash/store/product/new">${icon('plus', 16)} Add product</a>` })}
         </section>`;
-      return C.layout('store', { title: viewingOther ? `Store · ${esc(store.name)}` : D().isAdmin() ? 'Super App Store' : 'My store', subtitle: `${products.length} product${products.length === 1 ? '' : 's'} · ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super App commission on sales`, actions: `<a class="btn btn-primary btn-sm" href="#/dash/store/product/new">${icon('plus', 15)} Add product</a>`, body });
+      return C.layout('store', { title: viewingOther ? `Store · ${esc(store.name)}` : D().isAdmin() ? 'Super Malaab Store' : 'My store', subtitle: `${products.length} product${products.length === 1 ? '' : 's'} · ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super Malaab commission on sales`, actions: `<a class="btn btn-primary btn-sm" href="#/dash/store/product/new">${icon('plus', 15)} Add product</a>`, body });
     },
     mount(el) {
       const sc = C.scope();
@@ -102,7 +102,7 @@
         const read = bindStoreForm(create);
         el.querySelector('#store-form').addEventListener('submit', (e) => {
           e.preventDefault();
-          try { const s = D().createStore(read()); SA.core.motion.confetti(); SA.ui.overlay.toast(`${s.name} is open on Super App — add your first product`); SA.core.router.go('/dash/store/product/new'); }
+          try { const s = D().createStore(read()); SA.core.motion.confetti(); SA.ui.overlay.toast(`${s.name} is open on Super Malaab — add your first product`); SA.core.router.go('/dash/store/product/new'); }
           catch (err) { if (err.details) C.showErrors(e.target, err.details); SA.ui.overlay.toast(err.message, { type: 'error' }); }
         });
         return;
@@ -122,7 +122,7 @@
       });
       el.addEventListener('click', async (e) => {
         const pub = e.target.closest('[data-pub]');
-        if (pub) { const p = D().product(pub.dataset.pub); D().setProductStatus(p.id, p.status === 'active' ? 'draft' : 'active'); SA.ui.overlay.toast(p.status === 'active' ? 'Unpublished — hidden from the shop' : p.live ? 'Sent to Super App — it goes on sale once approved' : 'Published to the Super App shop'); SA.app.rerender(); return; }
+        if (pub) { const p = D().product(pub.dataset.pub); D().setProductStatus(p.id, p.status === 'active' ? 'draft' : 'active'); SA.ui.overlay.toast(p.status === 'active' ? 'Unpublished — hidden from the shop' : p.live ? 'Sent to Super Malaab — it goes on sale once approved' : 'Published to the Super Malaab shop'); SA.app.rerender(); return; }
         const rs = e.target.closest('[data-restock]');
         if (rs) {
           const p = D().product(rs.dataset.restock);
@@ -141,7 +141,7 @@
         const del = e.target.closest('[data-del]');
         if (del) {
           const p = D().product(del.dataset.del);
-          if (!(await SA.ui.overlay.confirm({ title: `Delete ${esc(p.name)}?`, text: 'It’s removed from the Super App shop and from shoppers’ carts. Past sales stay in your reports.', confirmLabel: 'Delete product', danger: true }))) return;
+          if (!(await SA.ui.overlay.confirm({ title: `Delete ${esc(p.name)}?`, text: 'It’s removed from the Super Malaab shop and from shoppers’ carts. Past sales stay in your reports.', confirmLabel: 'Delete product', danger: true }))) return;
           D().deleteProduct(p.id); SA.ui.overlay.toast('Product deleted'); SA.app.rerender();
         }
       });
@@ -152,7 +152,7 @@
   const blank = () => ({ name: '', brand: '', cat: 'boots', price: '', was: '', stock: 10, lowStockAt: 5, sizes: [], colors: [{ name: 'Black', hex: '#141414' }], images: [], desc: '', specs: [['', '']], status: 'active' });
 
   SA.pages.dashProductEdit = C.guard({
-    title: 'Product — Super App Partner',
+    title: 'Product — Super Malaab Partner',
     render(ctx) {
       const sc = C.scope();
       const store = D().myStore(sc.ownerId);
@@ -174,7 +174,7 @@
             <div class="field"><label for="pr-was">Original price <span class="muted">(optional, shows a discount)</span></label><input class="input num" id="pr-was" name="was" type="number" min="1" step="1" value="${p.was > p.price ? p.was : ''}" /><span class="field-error" data-err="was"></span></div>
             <div class="field"><label for="pr-stock">Units in stock</label><input class="input num" id="pr-stock" name="stock" type="number" min="0" step="1" value="${p.stock}" /><span class="field-error" data-err="stock"></span></div>
             <div class="field"><label for="pr-low">Low-stock alert at</label><input class="input num" id="pr-low" name="lowStockAt" type="number" min="0" step="1" value="${p.lowStockAt ?? 5}" /><span class="field-hint">You’ll get an alert when stock reaches this number</span><span class="field-error" data-err="lowStockAt"></span></div>
-            <div class="field"><span class="field-label">You receive per unit</span><b class="h4 num" data-you-get>—</b><span class="field-hint">After ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super App commission</span></div>
+            <div class="field"><span class="field-label">You receive per unit</span><b class="h4 num" data-you-get>—</b><span class="field-hint">After ${Math.round(D().commission().store * 100 * (store.official ? 0 : 1))}% Super Malaab commission</span></div>
           </div></section>
           <section class="dash-card"><h2 class="h4">Options</h2>
             <div class="field" style="margin-top:12px"><label for="pr-sizes">Sizes <span class="muted">(separated by commas — leave empty for one size)</span></label><input class="input" id="pr-sizes" name="sizes" value="${esc(p.sizes.join(', '))}" placeholder="e.g. 40, 41, 42, 43 or S, M, L" /></div>
@@ -228,7 +228,7 @@
         try {
           const out = ctx.params.id ? D().updateProduct(p.id, read()) : D().createProduct(store.id, read());
           SA.core.motion.confetti({ count: 50, spread: 0.6 });
-          SA.ui.overlay.toast(out.status === 'review' ? `${out.name} was sent to Super App for review` : out.status === 'active' ? `${out.name} is live in the Super App shop` : `${out.name} saved as a draft`, out.status === 'active' && !out.live ? { action: 'View', onAction: () => window.open(`#/shop/${out.id}`, '_blank') } : {});
+          SA.ui.overlay.toast(out.status === 'review' ? `${out.name} was sent to Super Malaab for review` : out.status === 'active' ? `${out.name} is live in the Super Malaab shop` : `${out.name} saved as a draft`, out.status === 'active' && !out.live ? { action: 'View', onAction: () => window.open(`#/shop/${out.id}`, '_blank') } : {});
           SA.core.router.go(D().adminMode() ? '/admin/store' : '/dash/store');
         } catch (err) {
           if (err.details) C.showErrors(form, err.details);

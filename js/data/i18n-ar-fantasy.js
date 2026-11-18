@@ -9,8 +9,8 @@
     'Fantasy Pass active': 'الـ Fantasy Pass اتفعّل',
     'Prize leagues are open.': 'دوريات الجوايز مفتوحة ليك.',
     'Both leagues': 'الدوريين',
-    'Super App Grand League': 'دوري Super App الكبير',
-    'Super App Premier League Cup': 'كأس Super App للدوري الإنجليزي',
+    'Super Malaab Grand League': 'دوري سوبر ملعب الكبير',
+    'Super Malaab Premier League Cup': 'كأس سوبر ملعب للدوري الإنجليزي',
     'Everyone who builds a team is entered automatically.': 'أي حد يعمل فريق بيدخل أوتوماتيك.',
     'You': 'إنت',
 
@@ -48,23 +48,23 @@
     'Vote counted.': 'صوتك اتحسب.',
     'Welcome to the community.': 'أهلاً بيك في المجتمع.',
     'You left the community.': 'خرجت من المجتمع.',
-    'Thanks — the Super App team will look at it.': 'شكراً — فريق Super App هيشوفه.',
+    'Thanks — the Super Malaab team will look at it.': 'شكراً — فريق سوبر ملعب هيشوفه.',
     'Join the community to take part.': 'انضم للمجتمع عشان تشارك.',
-    'Links to other websites are not allowed. Share Super App links instead.': 'لينكات المواقع التانية ممنوعة. شارك لينكات Super App بدالها.',
+    'Links to other websites are not allowed. Share Super Malaab links instead.': 'لينكات المواقع التانية ممنوعة. شارك لينكات سوبر ملعب بدالها.',
     'Phone numbers are not allowed — there are no private messages in communities.': 'أرقام التليفونات ممنوعة — مفيش رسايل خاصة في المجتمعات.',
     'Please keep it friendly — your text has a word that is not allowed here.': 'خلّي الكلام ودّي — فيه كلمة مش مسموحة هنا.',
     'You have already voted in this poll.': 'إنت صوّت في الاستطلاع ده قبل كده.',
     'You have already reported this.': 'إنت بلّغت عن ده قبل كده.',
     'Comments are closed on this post.': 'التعليقات مقفولة على البوست ده.',
     'This community is archived.': 'المجتمع ده مؤرشف.',
-    'This community is for Super App sellers.': 'المجتمع ده لبائعين Super App.',
+    'This community is for Super Malaab sellers.': 'المجتمع ده لبائعين سوبر ملعب.',
     'This community is for Pro and Elite sellers.': 'المجتمع ده لبائعين Pro و Elite.',
 
     /* ---------- Support (server messages) ---------- */
     'We got your message. The team replies within 24 hours.': 'رسالتك وصلت. الفريق هيرد خلال 24 ساعة.',
-    'Thanks for reaching out — the Super App team replies within 24 hours. You can add details or photos here meanwhile.': 'شكراً إنك كلمتنا — فريق Super App بيرد خلال 24 ساعة. تقدر تضيف تفاصيل أو صور هنا لحد ما نرد.',
+    'Thanks for reaching out — the Super Malaab team replies within 24 hours. You can add details or photos here meanwhile.': 'شكراً إنك كلمتنا — فريق سوبر ملعب بيرد خلال 24 ساعة. تقدر تضيف تفاصيل أو صور هنا لحد ما نرد.',
     'This ticket is closed. Open a new one if you still need help.': 'التذكرة دي مقفولة. افتح واحدة جديدة لو لسه محتاج مساعدة.',
     'Ticket closed.': 'التذكرة اتقفلت.',
-    'Super App': 'Super App',
+    
   });
 })(window.SA);

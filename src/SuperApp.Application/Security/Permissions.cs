@@ -71,7 +71,7 @@ public static class Permissions
 
         new("community.moderate", "Community", "Moderate communities", "الإشراف على المجتمعات"),
         new("community.manage", "Community", "Create and edit communities", "إنشاء وتعديل المجتمعات"),
-        new("community.postAsAdmin", "Community", "Post as Super App", "النشر باسم سوبر آب"),
+        new("community.postAsAdmin", "Community", "Post as Super Malaab", "النشر باسم سوبر ملعب"),
 
         new("fantasy.manage", "Fantasy", "Run fantasy", "إدارة الفانتازي"),
         new("fantasy.groups.paid", "Fantasy", "Manage paid groups", "إدارة المجموعات المدفوعة", true),

@@ -68,9 +68,9 @@ public sealed class StoreOrdersService(
         return await GetAsync(scope, code, ct);
     }
 
-    /// <summary>Shipping is through Super App's courier (owner's decision, 2026-10-27): the courier marks delivery, not the store.</summary>
+    /// <summary>Shipping is through Super Malaab's courier (owner's decision, 2026-10-27): the courier marks delivery, not the store.</summary>
     public Task<StoreOrderDto> DeliverAsync(StoreScope scope, string code, CancellationToken ct) =>
-        throw new ConflictException("Super App's courier marks the order delivered when it reaches the customer.", "courier_delivers");
+        throw new ConflictException("Super Malaab's courier marks the order delivered when it reaches the customer.", "courier_delivers");
 
     public async Task<StoreOrderDto> CancelAsync(StoreScope scope, string code, CancelReasonRequest request, CancellationToken ct)
     {

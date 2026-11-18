@@ -33,12 +33,12 @@
           ${b.money.deposit != null && b.status !== 'cancelled' ? `<div><dt>Deposit paid in the app</dt><dd class="num">${money(b.money.deposit)}</dd></div>
           <div><dt>${b.money.collected ? 'Collected at the pitch' : 'To collect at the pitch'}</dt><dd class="num" style="${b.money.collected ? 'color:var(--turf)' : 'color:var(--blaze)'}">${money(b.money.due)}</dd></div>` : ''}
           ${b.discountAmount || b.discount ? `<div><dt>Includes weekly discount</dt><dd class="num">${Math.round((b.discount || 0) * 100)}%</dd></div>` : ''}
-          <div><dt>Super App commission (${b.source === 'app' ? +(D().bookingRate(b.ownerId) * 100).toFixed(1) : '0'}%)</dt><dd class="num">−${money(b.money.commission)}</dd></div>
+          <div><dt>Super Malaab commission (${b.source === 'app' ? +(D().bookingRate(b.ownerId) * 100).toFixed(1) : '0'}%)</dt><dd class="num">−${money(b.money.commission)}</dd></div>
           ${b.status === 'cancelled' ? `<div><dt>Refunded to customer</dt><dd class="num" style="color:var(--danger)">${money(b.money.refund)}</dd></div>` : ''}
           ${b.money.retained ? `<div><dt>Kept under the cancellation policy</dt><dd class="num">${money(b.money.gross)}</dd></div>` : ''}
           <div class="total"><dt>Your earnings</dt><dd class="num">${money(b.money.net)}</dd></div>
         </dl>
-        <p class="xs muted" style="margin-top:8px">${b.money.retained ? 'Late cancellation — the part the policy didn’t refund is yours.' : b.money.deposit != null && b.status !== 'cancelled' ? `The customer paid a deposit in the app; the deposit’s pitch part (${money(b.money.online)}) less the commission goes to your wallet. The rest (${money(b.money.due)}) is paid to you at the pitch. Collect it when you scan their QR at check-in.` : b.money.online ? 'Paid online — added to your wallet after the match.' : b.status === 'cancelled' ? '' : b.source === 'app' ? 'Paid at the venue — you collected the cash; the commission is deducted from your wallet.' : 'Paid at the venue — no Super App commission.'}</p>
+        <p class="xs muted" style="margin-top:8px">${b.money.retained ? 'Late cancellation — the part the policy didn’t refund is yours.' : b.money.deposit != null && b.status !== 'cancelled' ? `The customer paid a deposit in the app; the deposit’s pitch part (${money(b.money.online)}) less the commission goes to your wallet. The rest (${money(b.money.due)}) is paid to you at the pitch. Collect it when you scan their QR at check-in.` : b.money.online ? 'Paid online — added to your wallet after the match.' : b.status === 'cancelled' ? '' : b.source === 'app' ? 'Paid at the venue — you collected the cash; the commission is deducted from your wallet.' : 'Paid at the venue — no Super Malaab commission.'}</p>
         <p class="xs muted">${icon('shield', 12)} ${esc(SA.services.pitches.policyOf(b.policy).name)} cancellation policy — ${esc(SA.services.pitches.policyOf(b.policy).summary)}</p>
         <button class="btn btn-outline btn-sm" data-invoice style="margin-top:12px">${icon('file', 14)} Invoice (PDF)</button>
       </div>`,
@@ -75,7 +75,7 @@
   };
 
   SA.pages.dashBookings = C.guard({
-    title: 'Bookings — Super App Partner',
+    title: 'Bookings — Super Malaab Partner',
     openBooking, bookingSheets, filterRows,
     render(ctx) {
       const q = ctx.query;
@@ -96,7 +96,7 @@
           <div class="input-icon grow">${icon('search', 17)}<input class="input" type="search" name="q" value="${esc(q.q || '')}" placeholder="Search booking ID, customer, phone" data-search /></div>
           ${sel('pitch', [['', 'All pitches'], ...pitches.map((p) => [p.id, p.name + (p.deleted ? ' (removed)' : '')])])}
           ${sel('status', [['', 'All statuses'], ...Object.entries(C.STATUS).map(([k, [, l]]) => [k, l])])}
-          ${sel('source', [['', 'All sources'], ['app', 'Super App'], ['walk-in', 'Walk-in'], ['team', 'Team booking']])}
+          ${sel('source', [['', 'All sources'], ['app', 'Super Malaab'], ['walk-in', 'Walk-in'], ['team', 'Team booking']])}
         </div>
         <div class="kpi-grid kpi-sm">
           ${C.kpi({ label: 'Bookings', value: live.length, count: live.length, sub: `${rows.length - live.length} cancelled`, ic: 'ticket' })}

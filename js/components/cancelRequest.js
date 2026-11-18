@@ -1,6 +1,6 @@
 /**
  * "Cancel" on anything the customer paid for opens this dialog: it explains that a cancellation request is sent to the
- * Super App team (reply within 2 hours, in the chatbot), takes an optional reason and creates the request.
+ * Super Malaab team (reply within 2 hours, in the chatbot), takes an optional reason and creates the request.
  *   SA.ui.cancelRequest.ask({ kind, refId, title, text }) → the request, or null if the customer kept it
  *   SA.ui.cancelRequest.notice(kind, refId) → a notice for the page while a request is open (or '' when none)
  */
@@ -15,7 +15,7 @@
       title,
       body: `<form class="stack" style="--gap:12px" data-cx novalidate>
           ${text ? `<p class="soft">${text}</p>` : ''}
-          <div class="notice">${icon('message', 18)}<span>Your request goes to the Super App team with its own request number. We reply in the chat within <b>${CX().REPLY_HOURS} hours</b>. Until then nothing is cancelled.</span></div>
+          <div class="notice">${icon('message', 18)}<span>Your request goes to the Super Malaab team with its own request number. We reply in the chat within <b>${CX().REPLY_HOURS} hours</b>. Until then nothing is cancelled.</span></div>
           <div class="field"><label for="cx-r">Why are you cancelling? (optional)</label><textarea class="input" id="cx-r" name="reason" rows="3" maxlength="300"></textarea></div>
           <p class="field-error" data-err="form"></p>
         </form>`,
@@ -40,7 +40,7 @@
   const notice = (kind, refId) => {
     const r = CX()?.openFor(kind, refId);
     if (!r) return '';
-    return `<div class="notice gold" style="margin-top:14px">${icon('clock', 18)}<span><b>Cancellation request <span class="num">${esc(r.id)}</span> sent.</b> The Super App team replies in the chat within ${CX().REPLY_HOURS} hours. Until then it stays active. <button class="link" type="button" data-cx-chat>Open the chat</button></span></div>`;
+    return `<div class="notice gold" style="margin-top:14px">${icon('clock', 18)}<span><b>Cancellation request <span class="num">${esc(r.id)}</span> sent.</b> The Super Malaab team replies in the chat within ${CX().REPLY_HOURS} hours. Until then it stays active. <button class="link" type="button" data-cx-chat>Open the chat</button></span></div>`;
   };
   document.addEventListener('click', (e) => { if (e.target.closest('[data-cx-chat]')) SA.ui.chatbot?.open(); });
 

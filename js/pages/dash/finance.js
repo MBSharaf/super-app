@@ -21,7 +21,7 @@
   };
 
   SA.pages.dashFinance = C.guard({
-    title: 'Finance — Super App Partner',
+    title: 'Finance — Super Malaab Partner',
     render(ctx) {
       const r = C.range(ctx.query, '30');
       const sc = C.scope();
@@ -35,7 +35,7 @@
 
       const body = `
         ${C.rangePicker(r, '/dash/finance')}
-        ${admin && !sc.ownerId ? `<div class="platform-card"><div><span class="xs">Super App platform revenue · ${C.rangeLabel(r)}</span><b class="num" data-countup="${Math.round(s.commission + s.storeCommission + fees)}" data-suffix=" EGP">${money(Math.round(s.commission + s.storeCommission + fees))}</b></div>
+        ${admin && !sc.ownerId ? `<div class="platform-card"><div><span class="xs">Super Malaab platform revenue · ${C.rangeLabel(r)}</span><b class="num" data-countup="${Math.round(s.commission + s.storeCommission + fees)}" data-suffix=" EGP">${money(Math.round(s.commission + s.storeCommission + fees))}</b></div>
           <div class="pc-split"><span><i style="background:#3ddc97"></i>Booking commission ${money(Math.round(s.commission))}</span><span><i style="background:#FFB48F"></i>Store commission ${money(Math.round(s.storeCommission))}</span><span><i style="background:#fff"></i>Service fees ${money(Math.round(fees))}</span></div></div>` : ''}
         <div class="money-split">
           <div class="ms-head"><span class="small strong">Your net earnings</span><b class="h2 num">${money(Math.round(total))}</b></div>
@@ -49,7 +49,7 @@
               <div><dt>Gross pitch revenue</dt><dd class="num">${money(Math.round(s.gross))}</dd></div>
               <div class="kv-sub"><dt>of which VAT ${vatPct()}% (you declare it)</dt><dd class="num">${money(Math.round(vatIn(s.gross)))}</dd></div>
               ${s.retained ? `<div class="kv-sub"><dt>includes late-cancellation income</dt><dd class="num">${money(Math.round(s.retained))}</dd></div>` : ''}
-              <div><dt>Super App commission (${+(D().bookingRate(C.scope().ownerId || D().me().id) * 100).toFixed(1)}% on app bookings)</dt><dd class="num">−${money(Math.round(s.commission))}</dd></div>
+              <div><dt>Super Malaab commission (${+(D().bookingRate(C.scope().ownerId || D().me().id) * 100).toFixed(1)}% on app bookings)</dt><dd class="num">−${money(Math.round(s.commission))}</dd></div>
               <div><dt>Refunded to customers</dt><dd class="num">${money(Math.round(s.refunds))}</dd></div>
               ${s.tourGross ? `<div class="kv-sub"><dt>includes tournament entry fees (${s.tourTeams} team${s.tourTeams === 1 ? '' : 's'})</dt><dd class="num">${money(Math.round(s.tourGross))}</dd></div>` : ''}
               <div class="total"><dt>Net from bookings</dt><dd class="num">${money(Math.round(s.net))}</dd></div>
@@ -63,7 +63,7 @@
               <div><dt>Orders · units</dt><dd class="num">${s.storeOrders} · ${s.storeUnits}</dd></div>
               <div><dt>Gross sales</dt><dd class="num">${money(Math.round(s.storeGross))}</dd></div>
               <div class="kv-sub"><dt>of which VAT ${vatPct()}%</dt><dd class="num">${money(Math.round(vatIn(s.storeGross)))}</dd></div>
-              <div><dt>Super App commission</dt><dd class="num">−${money(Math.round(s.storeCommission))}</dd></div>
+              <div><dt>Super Malaab commission</dt><dd class="num">−${money(Math.round(s.storeCommission))}</dd></div>
               <div class="total"><dt>Net from store</dt><dd class="num">${money(Math.round(s.storeNet))}</dd></div>
             </dl>
             <h3 class="small strong" style="margin-top:18px">Top products</h3>
@@ -75,7 +75,7 @@
           <div class="table-wrap"><table class="table dash-table"><thead><tr><th>Pitch</th><th class="r">Bookings</th><th class="r">Hours</th><th class="r">Gross</th><th class="r">Commission</th><th class="r">Online</th><th class="r">Cash</th><th class="r">Net</th></tr></thead>
           <tbody>${s.tourGross ? `<tr><td><b>${icon('trophy', 14)} Tournament entry fees</b></td><td class="r num">${s.tourTeams} teams</td><td class="r num">—</td><td class="r num">${money(Math.round(s.tourGross))}</td><td class="r num">−${money(Math.round(s.tourGross - s.tourNet))}</td><td class="r num">${money(Math.round((s.tourLines || []).reduce((t, x) => t + x.online, 0)))}</td><td class="r num">${money(Math.round((s.tourLines || []).reduce((t, x) => t + x.cash, 0)))}</td><td class="r num strong">${money(Math.round(s.tourNet))}</td></tr>` : ''}${pp.map((x) => `<tr><td><b>${esc(x.p.name)}</b>${x.p.deleted ? ' <span class="badge">Removed</span>' : ''}</td><td class="r num">${x.n}</td><td class="r num">${x.hours}</td><td class="r num">${money(Math.round(x.gross))}</td><td class="r num">−${money(Math.round(x.commission))}</td><td class="r num">${money(Math.round(x.online))}</td><td class="r num">${money(Math.round(x.cash))}</td><td class="r num strong">${money(Math.round(x.net))}</td></tr>`).join('')}
             <tr class="tr-total"><td>Total</td><td class="r num">${s.bookings}</td><td class="r num">${s.hours}</td><td class="r num">${money(Math.round(s.gross))}</td><td class="r num">−${money(Math.round(s.commission))}</td><td class="r num">${money(Math.round(s.online))}</td><td class="r num">${money(Math.round(s.cash))}</td><td class="r num">${money(Math.round(s.net))}</td></tr></tbody></table></div></section>`;
-      return C.layout('finance', { title: 'Finance', subtitle: `Every booking and sale, after Super App commission · ${C.rangeLabel(r)}`, actions: `<button class="btn btn-outline btn-sm" data-statement>${icon('file', 15)} Monthly statement (PDF)</button><button class="btn btn-primary btn-sm" data-export>${icon('arrowUpRight', 15)} Export finance report</button>`, body });
+      return C.layout('finance', { title: 'Finance', subtitle: `Every booking and sale, after Super Malaab commission · ${C.rangeLabel(r)}`, actions: `<button class="btn btn-outline btn-sm" data-statement>${icon('file', 15)} Monthly statement (PDF)</button><button class="btn btn-primary btn-sm" data-export>${icon('arrowUpRight', 15)} Export finance report</button>`, body });
     },
     mount(el, ctx) {
       C.bindRange(el, '/dash/finance'); C.bindChart(el);
@@ -84,7 +84,7 @@
         const t = today();
         const months = Array.from({ length: 6 }, (_, i) => new Date(t.getFullYear(), t.getMonth() - i, 1)).filter((d) => { const s0 = new Date(SA.services.db.raw().platformSince); return d >= new Date(s0.getFullYear(), s0.getMonth(), 1); });
         SA.ui.overlay.open({
-          title: 'Monthly statement', subtitle: 'A PDF with your earnings, VAT, Super App commission (as a tax invoice) and payouts for one month.',
+          title: 'Monthly statement', subtitle: 'A PDF with your earnings, VAT, Super Malaab commission (as a tax invoice) and payouts for one month.',
           body: `<form id="stm" class="stack" style="--gap:10px" novalidate>${months.map((d, i) => `<label class="choice"><input type="radio" name="month" value="${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}" ${i === (months.length > 1 ? 1 : 0) ? 'checked' : ''} /><span class="grow"><b>${MONTHS[d.getMonth()]} ${d.getFullYear()}</b>${i === 0 ? '<span class="xs muted" style="display:block">Month to date</span>' : ''}</span>${icon('file', 16)}</label>`).join('')}</form>`,
           footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" form="stm" type="submit">${icon('arrowUpRight', 15)} Download PDF</button>`,
           onMount(m, close) {
@@ -106,10 +106,10 @@
         const who = sc.ownerId ? SA.services.db.find('accounts', sc.ownerId) : D().me();
         C.xlsx(`super-app-finance-${r.from}-to-${r.to}.xlsx`, [
           { name: 'Summary', title: `${who.company} — finance report ${r.from} to ${r.to}`, columns: [{ header: 'Item', width: 46 }, { header: 'Amount', width: 18, type: 'money' }], rows: [
-            ['Pitch bookings — gross revenue (incl. VAT)', Math.round(s.gross)], [`Pitch bookings — VAT ${vatPct()}% included`, Math.round(vatIn(s.gross))], ['Pitch bookings — kept from late cancellations', Math.round(s.retained || 0)], ['Pitch bookings — Super App commission', -Math.round(s.commission)], ['Pitch bookings — net', Math.round(s.net)],
+            ['Pitch bookings — gross revenue (incl. VAT)', Math.round(s.gross)], [`Pitch bookings — VAT ${vatPct()}% included`, Math.round(vatIn(s.gross))], ['Pitch bookings — kept from late cancellations', Math.round(s.retained || 0)], ['Pitch bookings — Super Malaab commission', -Math.round(s.commission)], ['Pitch bookings — net', Math.round(s.net)],
             ['Collected online (card + wallet)', Math.round(s.online)], ['Collected at the venue (cash)', Math.round(s.cash)], ['Refunded to customers', Math.round(s.refunds)],
-            ['Store — gross sales (incl. VAT)', Math.round(s.storeGross)], [`Store — VAT ${vatPct()}% included`, Math.round(vatIn(s.storeGross))], ['Store — Super App commission', -Math.round(s.storeCommission)], ['Store — net', Math.round(s.storeNet)],
-            [`Super App commission — VAT ${vatPct()}% included (reclaimable)`, Math.round(vatIn(s.commission + s.storeCommission))],
+            ['Store — gross sales (incl. VAT)', Math.round(s.storeGross)], [`Store — VAT ${vatPct()}% included`, Math.round(vatIn(s.storeGross))], ['Store — Super Malaab commission', -Math.round(s.storeCommission)], ['Store — net', Math.round(s.storeNet)],
+            [`Super Malaab commission — VAT ${vatPct()}% included (reclaimable)`, Math.round(vatIn(s.commission + s.storeCommission))],
             ['Wallet — available to withdraw now', w.balance], ['Wallet — pending (bookings not yet played)', Math.round(w.bookings.pending)], ['Wallet — pending (orders not yet delivered)', Math.round(w.store.pending)],
           ], totals: ['Total net earnings (bookings + store)', Math.round(s.net + s.storeNet)] },
           { name: 'Daily', columns: [{ header: 'Date', width: 12 }, { header: 'Bookings', width: 10, type: 'number' }, { header: 'Hours', width: 8, type: 'number' }, { header: 'Bookings net', width: 15, type: 'money' }, { header: 'Store net', width: 14, type: 'money' }, { header: 'Total net', width: 14, type: 'money' }],
@@ -133,7 +133,7 @@
 
   /* ======================= Wallet ======================= */
   SA.pages.dashWallet = C.guard({
-    title: 'Wallet — Super App Partner',
+    title: 'Wallet — Super Malaab Partner',
     render(ctx) {
       const sc = C.scope();
       const w = D().wallet(sc.ownerId ? { ownerId: sc.ownerId } : {});
@@ -157,7 +157,7 @@
                 <div class="row-between"><span class="xs fc-dim">Available to withdraw</span><span class="fc-chip"></span></div>
                 <b class="fc-bal num" data-countup="${w.balance}" data-suffix=" EGP">${money(w.balance)}</b>
                 <span class="xs fc-dim">Pending ${money(Math.round(w.bookings.pending + w.store.pending))} · next automatic payout ${fmtDate(nextPayout)}</span>
-                <div class="row-between fc-foot"><span><span class="xs fc-dim">Paid to</span><b class="small" style="display:block">${esc(acct.payout?.method || 'Not set')} ${esc(acct.payout?.detail || '')}</b></span><span class="fc-brand">SUPER APP</span></div>
+                <div class="row-between fc-foot"><span><span class="xs fc-dim">Paid to</span><b class="small" style="display:block">${esc(acct.payout?.method || 'Not set')} ${esc(acct.payout?.detail || '')}</b></span><span class="fc-brand">SUPER MALAAB</span></div>
               </div>
               <div class="flip-face flip-back">
                 <span class="xs fc-dim">Where your balance comes from</span>

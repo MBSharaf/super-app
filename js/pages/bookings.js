@@ -4,7 +4,7 @@
   const S = SA.services;
 
   SA.pages.bookings = {
-    title: 'My bookings — Super App',
+    title: 'My bookings — Super Malaab',
     async render(ctx) {
       const { upcoming, past } = await S.bookings.list();
       const tab = ['past', 'waitlist'].includes(ctx.query.tab) ? ctx.query.tab : 'upcoming';

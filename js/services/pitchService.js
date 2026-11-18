@@ -10,7 +10,7 @@
   const db = SA.services.db;
 
   const all = () => db.all('pitches').filter((p) => !p.deleted);
-  // A pitch is listed when it is open and its owner's account isn't suspended by Super App
+  // A pitch is listed when it is open and its owner's account isn't suspended by Super Malaab
   const ownerOk = (p) => db.find('accounts', p.ownerId)?.status !== 'suspended';
   const reviewed = (p) => !p.review || p.review === 'approved';
   const live = () => all().filter((p) => p.status === 'active' && ownerOk(p) && reviewed(p));

@@ -1,4 +1,4 @@
-# Code style for the Super App backend (enforced at build time)
+# Code style for the Super Malaab backend (enforced at build time)
 root = true
 
 [*]

@@ -14,13 +14,13 @@ public sealed record ReturnRequestDto(string OrderCode, IReadOnlyList<ReturnItem
 
 public sealed record ReturnLineDto(long OrderItemId, string Title, string Size, string Color, int Qty, string Action, string? NewSize, string? NewColor, PhotoDto? Image);
 
-/// <summary>A return. Status: Requested, Approved, Received, Refunded, Exchanged, Reprinting, Rejected. DecidedBy: the store or "Super App".</summary>
+/// <summary>A return. Status: Requested, Approved, Received, Refunded, Exchanged, Reprinting, Rejected. DecidedBy: the store or "Super Malaab".</summary>
 public sealed record ReturnDto(string Code, string OrderCode, string Reason, string? Detail, string Status, string DecidedBy, string? RejectReason, decimal RefundAmount,
     bool CustomerPaysDelivery, string? PickupTracking, DateTime CreatedAt, IReadOnlyList<ReturnLineDto> Lines, string? CustomerName = null, string? City = null);
 
 public sealed record RejectReturnRequest(string Reason);
 
-/// <summary>Who decides a return: a store (its own products) or Super App (official store and printed items).</summary>
+/// <summary>Who decides a return: a store (its own products) or Super Malaab (official store and printed items).</summary>
 public sealed record ReturnScope(long? StoreId, string Name, Domain.Enums.AuditSystem System);
 
 /// <summary>Returns in the database.</summary>
@@ -42,7 +42,7 @@ public interface IReturnRepository
 
     Task<ReturnDto?> DtoAsync(string code, CancellationToken ct);
 
-    /// <summary>Returns to decide for a store (its products) or for Super App (storeId null: official store and printed items).</summary>
+    /// <summary>Returns to decide for a store (its products) or for Super Malaab (storeId null: official store and printed items).</summary>
     Task<IReadOnlyList<ReturnDto>> ForDeciderAsync(long? storeId, string? status, CancellationToken ct);
 
     /// <summary>The return with items and the order (items, parcels), tracked, when this decider owns it.</summary>

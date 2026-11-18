@@ -6,11 +6,11 @@
   const media = SA.data.media;
 
   SA.pages.product = {
-    title: 'Product — Super App Shop',
+    title: 'Product — Super Malaab Shop',
     async render(ctx) {
       const p = await S.shop.get(ctx.params.id);
       const [reviews, related, recommended] = await Promise.all([S.shop.reviews(p.id), S.shop.related(p.id, 4), S.shop.recommended(4, [p.id])]);
-      this.title = `${p.name} — Super App Shop`;
+      this.title = `${p.name} — Super Malaab Shop`;
       const breakdown = S.shop.ratingBreakdown(p);
       const lowStock = p.stock <= 8;
       return `<div class="container has-action-bar">
@@ -45,12 +45,12 @@
             <ul class="assurance small pdp-assure">
               <li>${icon('truck', 16)} Printed and shipped in 3–5 days</li>
               <li>${icon('refresh', 16)} Free reprint if there’s a print fault — made-to-order items can’t be returned otherwise</li>
-              <li>${icon('sparkle', 16)} Original design by ${esc(p.seller?.name || 'a Super App seller')}</li>
+              <li>${icon('sparkle', 16)} Original design by ${esc(p.seller?.name || 'a Super Malaab seller')}</li>
             </ul>` : `<p class="small" style="margin-top:14px;color:${lowStock ? 'var(--blaze-2)' : 'var(--turf)'}"><b>${p.soldOut ? 'Sold out — check back soon' : lowStock ? `Only ${p.stock} left in stock` : 'In stock'}</b>${p.service ? ' · booked after checkout' : ' · ships from Cairo'}</p>
             <ul class="assurance small pdp-assure">
               <li>${icon('truck', 16)} ${p.service ? 'We’ll call within 24 hours to schedule' : 'Delivery in 1–3 days · free over 1,500 EGP'}</li>
               <li>${icon('refresh', 16)} A problem with the item? Return it within 24 hours of delivery</li>
-              <li>${icon('shield', 16)} ${p.seller && !p.seller.official ? 'Checked by Super App before it went on sale' : '100% original — authorised retailer'}</li>
+              <li>${icon('shield', 16)} ${p.seller && !p.seller.official ? 'Checked by Super Malaab before it went on sale' : '100% original — authorised retailer'}</li>
             </ul>`}
             <details class="pdp-details" open><summary>Specifications</summary><dl class="kv">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></details>
             ${p.sizeChart ? `<details class="pdp-details"><summary>Size chart (cm)</summary>${SA.ui.sizeChart(p)}</details>` : ''}

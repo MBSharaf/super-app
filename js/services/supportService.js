@@ -1,7 +1,7 @@
 /**
  * Support tickets and disputes. Customers open them from the site (a booking, an order or a printed item can be attached);
- * pitch owners, sellers and the print partner open them from their dashboard. The Super App team answers in the admin console,
- * and can refund a dispute — choosing who pays (Super App, the partner or the seller).
+ * pitch owners, sellers and the print partner open them from their dashboard. The Super Malaab team answers in the admin console,
+ * and can refund a dispute — choosing who pays (Super Malaab, the partner or the seller).
  * Future API: POST /support/tickets, GET /me/tickets, POST /support/tickets/:id/messages, /admin/support/*
  */
 (function (SA) {
@@ -17,7 +17,7 @@
     account: { label: 'My account', icon: 'user' },
     other: { label: 'Something else', icon: 'message' },
   };
-  const STATUS = { open: 'Waiting for Super App', pending: 'Waiting for your reply', resolved: 'Resolved' };
+  const STATUS = { open: 'Waiting for Super Malaab', pending: 'Waiting for your reply', resolved: 'Resolved' };
 
   const me = () => SA.core.store.get().user || SA.data.user.profile;
   /**
@@ -26,7 +26,7 @@
    */
   const inbox = () => db().settings().supportEmail || 'test@gmail.com';
   const sendEmail = (mail) => { const d = db().raw(); if (!Array.isArray(d.emails)) d.emails = []; return db().insert('emails', { ...mail, status: 'sent (demo)' }, 'em'); };
-  const KIND_LABEL = { customer: 'Customer', partner: 'Pitch owner', seller: 'Seller', printer: 'Factory', admin: 'Super App' };
+  const KIND_LABEL = { customer: 'Customer', partner: 'Pitch owner', seller: 'Seller', printer: 'Factory', admin: 'Super Malaab' };
   const accountKind = (id) => { const a = db().find('accounts', id); return a?.role === 'seller' ? 'seller' : a?.role === 'printer' ? 'printer' : 'partner'; };
   const nextId = () => `TK-${2042 + (db().all('tickets') || []).length + Math.floor(Math.random() * 9)}`;
 
@@ -82,12 +82,12 @@
       // Email: to the support inbox, and an automatic answer to the person who wrote
       const email = who.kind === 'customer' ? (u.email || '') : (db().find('accounts', who.id)?.email || '');
       sendEmail({ to: inbox(), from: email || 'no-reply@superapp.example', subject: `[${tk.id}] ${tk.subject}`, body: `${KIND_LABEL[who.kind] || 'User'}: ${who.name}${who.phone ? ` · ${who.phone}` : ''}${email ? ` · ${email}` : ''}\nAbout: ${CATS[category].label}${r.label ? ` — ${r.label}` : ''}\n\n${t}`, ticketId: tk.id, kind: 'to-support' });
-      if (email) sendEmail({ to: email, from: inbox(), subject: `We got your request ${tk.id}`, body: `Hi ${who.name.split(' ')[0]},\n\nThanks for writing to Super App. We received your request “${tk.subject}” and we reply within 24 hours.\n\nRequest number: ${tk.id}\n\n— Super App support`, ticketId: tk.id, kind: 'auto-reply' });
+      if (email) sendEmail({ to: email, from: inbox(), subject: `We got your request ${tk.id}`, body: `Hi ${who.name.split(' ')[0]},\n\nThanks for writing to Super Malaab. We received your request “${tk.subject}” and we reply within 24 hours.\n\nRequest number: ${tk.id}\n\n— Super Malaab support`, ticketId: tk.id, kind: 'auto-reply' });
       const ack = { title: `We got your request ${tk.id}`, body: `We reply within 24 hours${email ? ` — we also emailed ${email}` : ''}.` };
       if (who.kind === 'customer') SA.services.user.notify({ kind: 'account', ...ack, link: `/support/${tk.id}` });
       else N()?.toAccount(who.id, { cat: 'account', ...ack, link: `#/dash/support/${tk.id}` });
       // The pitch owner or seller the dispute is about hears about it straight away
-      if (r.against && r.against !== who.id) N()?.toAccount(r.against, { cat: 'account', tone: 'danger', title: `A customer opened a dispute · ${tk.id}`, body: `${r.label || tk.subject}. Super App is looking into it and may ask you for details.`, link: `#/dash/support/${tk.id}` });
+      if (r.against && r.against !== who.id) N()?.toAccount(r.against, { cat: 'account', tone: 'danger', title: `A customer opened a dispute · ${tk.id}`, body: `${r.label || tk.subject}. Super Malaab is looking into it and may ask you for details.`, link: `#/dash/support/${tk.id}` });
       N()?.toAdmins({ cat: 'account', tone: CATS[category].dispute ? 'danger' : '', title: `${CATS[category].dispute ? 'Dispute' : 'Support'}: ${tk.subject}`, body: `${who.name} · ${tk.id}`, link: `#/admin/support/${tk.id}` });
       return tk;
     },
@@ -97,7 +97,7 @@
       const t = String(text || '').trim();
       if (t.length < 2) throw new ApiError('Write a message first.', 'invalid', { text: 'Write a message' });
       const who = from || { kind: 'customer', name: me().name };
-      // The partner or seller a dispute is about answers Super App privately; Super App passes it on to the customer
+      // The partner or seller a dispute is about answers Super Malaab privately; Super Malaab passes it on to the customer
       const party = from && tk.against === from.id && tk.from?.id !== from.id;
       db().update('tickets', id, { messages: [...tk.messages, { by: who.kind, name: who.name, text: t.slice(0, 2000), at: Date.now(), ...(party ? { private: true } : {}) }], status: 'open', ...(party ? { partyReplied: Date.now() } : {}) });
       N()?.toAdmins({ cat: 'account', tone: party ? 'gold' : '', title: party ? `${KIND_LABEL[who.kind] || 'Partner'} answered on ${tk.id}` : `New reply on ${tk.id}`, body: `${who.name}: ${t.slice(0, 90)}`, link: `#/admin/support/${tk.id}` });
@@ -119,9 +119,9 @@
           ref: { type: 'booking', id: 'BK-DEMO-2040', label: 'Booking at Gezira Fives · last Friday 9 PM' }, against: 'acc-o2', amount: 960, status: 'open', priority: 'high', refund: null,
           messages: [msg('customer', 'Mostafa Gamal', 'We paid for 9–10 PM but the lights only came on at 9:20. Staff said it was a power cut. We’d like part of the money back.', 20)], createdAt: now - 20 * H, updatedAt: now - 20 * H },
         { id: 'TK-2038', category: 'payment', subject: 'When will my withdrawal arrive?', from: { kind: 'partner', id: 'acc-o3', name: 'Mariam Fathy' }, ref: null, against: null, amount: 0, status: 'pending', priority: 'normal', refund: null,
-          messages: [msg('partner', 'Mariam Fathy', 'I requested 2,750 EGP yesterday. Is there anything missing on my side?', 22), msg('admin', 'Super App HQ', 'Hi Mariam — it’s in today’s batch. You’ll get a notification as soon as it’s sent.', 2)], createdAt: now - 22 * H, updatedAt: now - 2 * H },
+          messages: [msg('partner', 'Mariam Fathy', 'I requested 2,750 EGP yesterday. Is there anything missing on my side?', 22), msg('admin', 'Super Malaab HQ', 'Hi Mariam — it’s in today’s batch. You’ll get a notification as soon as it’s sent.', 2)], createdAt: now - 22 * H, updatedAt: now - 2 * H },
         { id: 'TK-2035', category: 'account', subject: 'Appeal: “Press Start Hoodie” was rejected', from: { kind: 'seller', id: 'acc-s3', name: 'Nour Khaled' }, ref: null, against: null, amount: 0, status: 'resolved', priority: 'normal', refund: null,
-          messages: [msg('seller', 'Nour Khaled', 'The controller in my design is drawn by me — it isn’t a console brand’s logo.', 4 * 24), msg('admin', 'Super App HQ', 'Thanks for explaining. We checked it again: send it once more without the brand-style buttons and it will go live.', 3 * 24)], createdAt: now - 4 * 24 * H, updatedAt: now - 3 * 24 * H },
+          messages: [msg('seller', 'Nour Khaled', 'The controller in my design is drawn by me — it isn’t a console brand’s logo.', 4 * 24), msg('admin', 'Super Malaab HQ', 'Thanks for explaining. We checked it again: send it once more without the brand-style buttons and it will go live.', 3 * 24)], createdAt: now - 4 * 24 * H, updatedAt: now - 3 * 24 * H },
       ];
     },
   };

@@ -103,7 +103,7 @@ public sealed class ReportsReader(AppDbContext db, AdminReader reader, IRevenueR
                 rows.Select(r => Row(r.Agent, r.StartedAt, r.FinishedAt, r.Result.ToString(), r.Summary, r.InputTokens, r.OutputTokens, r.CostUsd)))]);
     }
 
-    /// <summary>Platform revenue by Cairo day (the revenue wallet): income streams, costs, net and money through Super App.</summary>
+    /// <summary>Platform revenue by Cairo day (the revenue wallet): income streams, costs, net and money through Super Malaab.</summary>
     private async Task<ReportData> FinanceAsync(DateTime from, DateTime to, CancellationToken ct)
     {
         var (f, t) = (DateOnly.FromDateTime(from), DateOnly.FromDateTime(to));
@@ -113,8 +113,8 @@ public sealed class ReportsReader(AppDbContext db, AdminReader reader, IRevenueR
         static decimal Income(RevenueDayDto d) => d.Bookings + d.Fees + d.Passes;
         static decimal Costs(RevenueDayDto d) => d.Refunds + d.Promos;
         return new ReportData("Finance", [new("Income", all.Sum(Income), true), new("Costs", all.Sum(Costs), true), new("Net", all.Sum(d => Income(d) - Costs(d)), true),
-                new("Money through Super App", all.Sum(d => d.Gmv), true)],
-            [Sheet("By day", ["Day", "Commission (EGP)", "Service fees (EGP)", "Fantasy Pass (EGP)", "Refunds (EGP)", "Vouchers (EGP)", "Net (EGP)", "Through Super App (EGP)"],
+                new("Money through Super Malaab", all.Sum(d => d.Gmv), true)],
+            [Sheet("By day", ["Day", "Commission (EGP)", "Service fees (EGP)", "Fantasy Pass (EGP)", "Refunds (EGP)", "Vouchers (EGP)", "Net (EGP)", "Through Super Malaab (EGP)"],
                 all.Select(d => Row(d.Date.ToDateTime(TimeOnly.MinValue), d.Bookings, d.Fees, d.Passes, d.Refunds, d.Promos, Income(d) - Costs(d), d.Gmv)))]);
     }
 

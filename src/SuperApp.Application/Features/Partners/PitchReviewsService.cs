@@ -76,7 +76,7 @@ public sealed class PitchReviewsService(
         pitch.ReviewedById = currentUser.UserId;
         await unitOfWork.SaveChangesAsync(ct);
         var result = await GetAsync(id, ct);
-        await notifier.NotifyUserAsync(owner.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings, $"{pitch.Name} is live on Super App",
+        await notifier.NotifyUserAsync(owner.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings, $"{pitch.Name} is live on Super Malaab",
             "Players can find and book it now.", "#/dash/pitches", NotificationTone.Success), ct);
         await audit.LogAsync(AuditSystem.Admin, "pitch.approved", $"{pitch.Name} approved", "Pitch", pitch.Slug, ct: ct);
         return result;

@@ -58,22 +58,23 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/SuperApp.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/SuperMalaab.apk"
 
       - uses: actions/upload-artifact@v4
         with:
           name: SuperApp-apk
-          path: SuperApp.apk
+          path: SuperMalaab.apk
 
       - name: Publish to the android-latest release
         working-directory: .
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NOTES="Test build from ${GITHUB_SHA::7} ($(date -u '+%Y-%m-%d %H:%M UTC')). Download SuperApp.apk on an Android phone and open it to install."
+          NOTES="Test build from ${GITHUB_SHA::7} ($(date -u '+%Y-%m-%d %H:%M UTC')). Download SuperMalaab.apk on an Android phone and open it to install."
           if gh release view android-latest >/dev/null 2>&1; then
             gh release edit android-latest --notes "$NOTES" --prerelease
-            gh release upload android-latest SuperApp.apk --clobber
+            gh release upload android-latest SuperMalaab.apk --clobber
+            gh release delete-asset android-latest SuperApp.apk -y || true   # the file's name before the rename
           else
-            gh release create android-latest SuperApp.apk --title "Super App — Android test build" --notes "$NOTES" --prerelease
+            gh release create android-latest SuperMalaab.apk --title "Super Malaab — Android test build" --notes "$NOTES" --prerelease
           fi

@@ -4,7 +4,7 @@ using SuperApp.Domain.Entities.Communities;
 namespace SuperApp.Infrastructure.Persistence.Seed.Demo;
 
 /// <summary>
-/// Demo 18: the 18 community posts (members, partners and Super App announcements), including the spam post the
+/// Demo 18: the 18 community posts (members, partners and Super Malaab announcements), including the spam post the
 /// moderators see reported. Game and slot cards are linked when the games phase exists.
 /// </summary>
 public sealed class DemoCommunitySeeder(AppDbContext db) : ISeeder

@@ -3,7 +3,7 @@ using SuperApp.Application.Features.Fantasy;
 
 namespace SuperApp.Tests.Application;
 
-/// <summary>Owner's rule (2026-11-03): the Super App League's top 3 of each gameweek win 1,500 / 1,000 / 500 Super Points.</summary>
+/// <summary>Owner's rule (2026-11-03): the Super Malaab League's top 3 of each gameweek win 1,500 / 1,000 / 500 Super Points.</summary>
 public sealed class FantasyWeeklyPrizesTests
 {
     private static TeamToScore Team(long id, int hits = 0) => new(id, Guid.NewGuid(), [], null, hits);

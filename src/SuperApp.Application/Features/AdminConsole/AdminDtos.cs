@@ -5,11 +5,11 @@ namespace SuperApp.Application.Features.AdminConsole;
 
 public sealed record PeopleQuery(string? Q = null, string? Status = null, string? Level = null, int Page = 1, int PageSize = 20);
 
-/// <summary>Spent = bookings (not cancelled) and shop orders (not cancelled or refunded) through Super App.</summary>
+/// <summary>Spent = bookings (not cancelled) and shop orders (not cancelled or refunded) through Super Malaab.</summary>
 public sealed record CustomerRowDto(Guid Id, string FullName, string? Email, string? Phone, string Status, string MustPrepay, int CodRefusals,
     DateTime CreatedAt, DateTime? LastSeenAt, int Bookings, int Orders, decimal Spent);
 
-/// <summary>A wallet credit Super App gave the customer.</summary>
+/// <summary>A wallet credit Super Malaab gave the customer.</summary>
 public sealed record CreditRowDto(decimal Amount, string? Reason, DateTime At);
 
 /// <summary>The customer drawer: profile, admin note, latest bookings and orders, open tickets, wallet, points and credits.</summary>
@@ -18,7 +18,7 @@ public sealed record CustomerDetailDto(CustomerRowDto Customer, string? AdminNot
     decimal WalletBalance, int Points, IReadOnlyList<CreditRowDto> Credits);
 
 /// <summary>
-/// One pitch partner with its last 30 days: gross (what customers paid), commission (Super App's share), booked hours against
+/// One pitch partner with its last 30 days: gross (what customers paid), commission (Super Malaab's share), booked hours against
 /// the opening hours of its live pitches (occupancy), closed pitches and its bookings wallet (available money).
 /// </summary>
 public sealed record PartnerRowDto(long Id, Guid UserId, string BusinessName, string Owner, string? Email, string? Phone, string Status,
@@ -68,7 +68,7 @@ public sealed record NoteRequest(string Note);
 
 public sealed record FeatureRequest(bool Featured);
 
-/// <summary>POST /admin/customers/{id}/credit — goodwill money to their Super App wallet, paid by Super App (5–5,000 EGP).</summary>
+/// <summary>POST /admin/customers/{id}/credit — goodwill money to their Super Malaab wallet, paid by Super Malaab (5–5,000 EGP).</summary>
 public sealed record CreditRequest(decimal Amount, string Reason);
 
 /// <summary>POST /admin/customers/{id}/points — + adds, − removes (never below 0); they see the reason.</summary>
@@ -77,7 +77,7 @@ public sealed record PointsRequest(int Points, string Reason);
 /// <summary>PUT /admin/partners/{id}/commission — percent (0–50); null = the platform rate.</summary>
 public sealed record CommissionDealRequest(decimal? Bookings, decimal? Store, string? Note);
 
-/// <summary>POST /admin/partners/{id}/adjust — + or − on the bookings wallet's available money, with Super App on the other side.</summary>
+/// <summary>POST /admin/partners/{id}/adjust — + or − on the bookings wallet's available money, with Super Malaab on the other side.</summary>
 public sealed record BalanceAdjustRequest(decimal Amount, string Reason);
 
 /// <summary>A platform setting; money settings are shown but changed only from the CEO limits (Phase 5).</summary>

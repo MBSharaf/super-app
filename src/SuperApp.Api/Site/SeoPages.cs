@@ -18,7 +18,7 @@ public sealed record SeoPage(string Title, string Description, string Path, stri
 /// </summary>
 public sealed class SeoPages(IPitchesService pitches)
 {
-    private const string Brand = "Super App";
+    private const string Brand = "Super Malaab";
 
     public async Task<SeoPage?> BuildAsync(string path, CancellationToken ct)
     {
@@ -42,10 +42,10 @@ public sealed class SeoPages(IPitchesService pitches)
     private async Task<SeoPage> HomeAsync(CancellationToken ct)
     {
         var top = await pitches.SearchAsync(new PitchSearchQuery(PageSize: 8), ct);
-        var body = new StringBuilder("<h1>Super App — book football pitches, find players and play fantasy in Egypt</h1>")
+        var body = new StringBuilder("<h1>Super Malaab — book football pitches, find players and play fantasy in Egypt</h1>")
             .Append("<p>Book 5, 7 and 11-a-side pitches near you in Cairo, Giza and Alexandria, find players for your match and play fantasy football.</p>")
             .Append("<h2>Top pitches</h2>").Append(PitchList(top.Items));
-        return new SeoPage("Super App — Book, play, compete", "Book football pitches near you, find players for your match and play Egyptian Premier League fantasy — in one app.", "", body.ToString(),
+        return new SeoPage("Super Malaab — Book, play, compete", "Book football pitches near you, find players for your match and play Egyptian Premier League fantasy — in one app.", "", body.ToString(),
             new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@type"] = "WebSite", ["name"] = Brand });
     }
 
@@ -54,7 +54,7 @@ public sealed class SeoPages(IPitchesService pitches)
         var list = await pitches.SearchAsync(new PitchSearchQuery(PageSize: 50), ct);
         var body = "<h1>Book a football pitch in Egypt</h1><p>Live availability, prices and reviews for football pitches near you. Pick a time, pay, and you're on.</p>"
             + PitchList(list.Items);
-        return new SeoPage("Book a football pitch — Super App", $"Compare {list.Total} football pitches in Egypt by price, rating and area, and book an hour online.", "pitches", body);
+        return new SeoPage("Book a football pitch — Super Malaab", $"Compare {list.Total} football pitches in Egypt by price, rating and area, and book an hour online.", "pitches", body);
     }
 
     private async Task<SeoPage> PitchAsync(string slug, CancellationToken ct)
@@ -76,7 +76,7 @@ public sealed class SeoPages(IPitchesService pitches)
         {
             ld["aggregateRating"] = new Dictionary<string, object> { ["@type"] = "AggregateRating", ["ratingValue"] = c.Rating, ["reviewCount"] = c.ReviewsCount };
         }
-        return new SeoPage($"{c.Name} — {c.AreaEn} | Book on Super App", $"{c.Name} in {c.AreaEn}: {c.Format}-a-side, {price} an hour, rated {c.Rating:0.0}. See live hours and book online.", $"pitches/p-{slug}", body, ld);
+        return new SeoPage($"{c.Name} — {c.AreaEn} | Book on Super Malaab", $"{c.Name} in {c.AreaEn}: {c.Format}-a-side, {price} an hour, rated {c.Rating:0.0}. See live hours and book online.", $"pitches/p-{slug}", body, ld);
     }
 
     private static string PitchList(IEnumerable<PitchCardDto> items) =>
@@ -90,7 +90,7 @@ public sealed class SeoPages(IPitchesService pitches)
         var url = $"{origin}/super-app/{page.Path}";
         string A(string s) => WebUtility.HtmlEncode(s);
         var html = indexHtml
-            .Replace("<title>Super App — Book, play, compete</title>", $"<title>{A(page.Title)}</title>", StringComparison.Ordinal)
+            .Replace("<title>Super Malaab — Book, play, compete</title>", $"<title>{A(page.Title)}</title>", StringComparison.Ordinal)
             .Replace("https://mbsharaf.github.io/super-app/\" />", $"{A(url)}\" />", StringComparison.Ordinal);
         html = ReplaceMeta(html, "name=\"description\"", page.Description);
         html = ReplaceMeta(html, "property=\"og:title\"", page.Title);

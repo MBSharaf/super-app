@@ -3,11 +3,11 @@
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
     /* ---------- Sign-in & layout ---------- */
-    'Command Center': 'مركز القيادة', 'Command Center — Super App': 'مركز القيادة — Super App', 'CEO only': 'للمدير التنفيذي بس', 'CEO': 'المدير التنفيذي',
+    'Command Center': 'مركز القيادة', 'Command Center — Super Malaab': 'مركز القيادة — سوبر ملعب', 'CEO only': 'للمدير التنفيذي بس', 'CEO': 'المدير التنفيذي',
     'The whole company on one screen.': 'الشركة كلها في شاشة واحدة.',
     '{0} departments, {1} AI agents and every system — with your approvals, goals, budgets, deadlines, reports and kill switches.': '{0} إدارات و{1} AI agent وكل الأنظمة — بموافقاتك وأهدافك وميزانياتك ومواعيدك وتقاريرك ومفاتيح الإيقاف.',
     'Chief executive (CEO)': 'المدير التنفيذي (CEO)', 'Demo PIN: {0} — sign-in with two-step verification arrives with the backend.': 'الـ PIN التجريبي: {0} — الدخول بالتحقق بخطوتين هييجي مع الـ backend.',
-    'Super App team?': 'فريق Super App؟', 'Factory?': 'المصنع؟', 'Only what needs you': 'اللي محتاجك بس', '{0} agents': '{0} agent', 'Approvals': 'الموافقات', 'AI workforce': 'فريق الـ AI',
+    'Super Malaab team?': 'فريق سوبر ملعب؟', 'Factory?': 'المصنع؟', 'Only what needs you': 'اللي محتاجك بس', '{0} agents': '{0} agent', 'Approvals': 'الموافقات', 'AI workforce': 'فريق الـ AI',
     'Enter the PIN': 'اكتب الـ PIN', 'Chief executive · enter your 4-digit PIN': 'المدير التنفيذي · اكتب الـ PIN بتاعك (4 أرقام)', 'Wrong PIN.': 'الـ PIN غلط.',
     'Welcome back, Sharaf': 'أهلاً بيك تاني يا Sharaf', 'Signed out of the Command Center': 'خرجت من مركز القيادة', 'CEO? ': 'المدير التنفيذي؟ ', 'CEO?': 'المدير التنفيذي؟',
     'Command overview': 'نظرة عامة', 'Morning briefing': 'ملخص الصبح', 'Company': 'الشركة', 'Departments': 'الإدارات', 'Goals (OKRs)': 'الأهداف (OKRs)', 'Budgets': 'الميزانيات',
@@ -17,8 +17,8 @@
     'Back to the overview': 'ارجع للنظرة العامة', 'Not found': 'مش موجود',
 
     /* ---------- Overview ---------- */
-    'Good to see you, Sharaf': 'منوّر يا Sharaf', '{0}, {1} {2} {3} — everything happening in Super App': '{0}، {1} {2} {3} — كل اللي بيحصل في Super App', 'everything happening in Super App': 'كل اللي بيحصل في Super App',
-    'Today’s briefing': 'ملخص النهارده', 'Platform revenue (30 days)': 'إيراد المنصة (30 يوم)', 'Money through Super App (30 days)': 'الفلوس اللي عدّت على Super App (30 يوم)',
+    'Good to see you, Sharaf': 'منوّر يا Sharaf', '{0}, {1} {2} {3} — everything happening in Super Malaab': '{0}، {1} {2} {3} — كل اللي بيحصل في سوبر ملعب', 'everything happening in Super Malaab': 'كل اللي بيحصل في سوبر ملعب',
+    'Today’s briefing': 'ملخص النهارده', 'Platform revenue (30 days)': 'إيراد المنصة (30 يوم)', 'Money through Super Malaab (30 days)': 'الفلوس اللي عدّت على سوبر ملعب (30 يوم)',
     'Waiting for your decision': 'مستني قرارك', 'Nothing waiting': 'مفيش حاجة مستنية', 'AI agents working': 'الـ AI agents الشغالين', '{0} {1} a month': '{0} {1} في الشهر',
     'Bookings ({0} days)': 'الحجوزات ({0} يوم)', 'Orders ({0} days)': 'الطلبات ({0} يوم)', 'Customers': 'العملاء', 'Pitch partners': 'شركاء الملاعب', 'Active sellers': 'البائعين النشطين',
     'Live designs': 'التصميمات المنشورة', 'Open tickets': 'التذاكر المفتوحة', 'Average rating': 'متوسط التقييم', 'Department health': 'صحة الإدارات', 'Health {0} out of {1}': 'الصحة {0} من {1}',
@@ -81,7 +81,7 @@
     'Monthly close and reconciliation': 'قفل الشهر والمطابقة', 'Taxes with the legal counsel': 'الضرايب مع المستشار القانوني',
     'Watches bookings, orders and the factory every hour': 'بيتابع الحجوزات والطلبات والمصنع كل ساعة', 'Escalates late jobs and problems': 'بيصعّد الشغل المتأخر والمشاكل', 'Writes the daily operations summary': 'بيكتب ملخص العمليات اليومي',
     'Checks double bookings and no-shows': 'بيراجع الحجز المكرر واللي مجوش', 'Weekly packages and make-up games': 'الباقات الأسبوعية والماتشات التعويضية', 'Tournaments and free-slot games': 'البطولات وماتشات المواعيد الفاضية',
-    'Sends printed orders to the factory': 'بيبعت طلبات الطباعة للمصنع', 'Chases late jobs and quality problems': 'بيتابع الشغل المتأخر ومشاكل الجودة', 'Keeps the Super App Store stocked': 'بيخلي متجر Super App متمّلي',
+    'Sends printed orders to the factory': 'بيبعت طلبات الطباعة للمصنع', 'Chases late jobs and quality problems': 'بيتابع الشغل المتأخر ومشاكل الجودة', 'Keeps the Super Malaab Store stocked': 'بيخلي متجر سوبر ملعب متمّلي',
     'Books the courier when an order is packed': 'بيحجز الشحن لما الطلب يتغلّف', 'Follows every parcel to delivery': 'بيتابع كل شحنة لحد ما توصل', 'Handles refused parcels': 'بيتعامل مع الشحنات المرفوضة',
     'Answers disputes and decides refunds up to 1,000 EGP': 'بيرد على الشكاوى ويقرر الاسترجاع لحد 1,000 ج.م', 'Blocks abusive customers': 'بيحظر العملاء المسيئين', 'Reviews the frontline agent’s answers': 'بيراجع ردود agent الدعم الأول',
     'Replies to every ticket within 2 hours': 'بيرد على كل تذكرة في خلال ساعتين', 'Refunds up to 300 EGP': 'بيرجّع لحد 300 ج.م', 'Hands harder cases to the lead': 'بيسلّم الحالات الصعبة للقائد',
@@ -127,8 +127,8 @@
 
     /* ---------- Goals ---------- */
     'Each key result measures itself from live data, or you enter it': 'كل نتيجة رئيسية بتتقاس لوحدها من البيانات الحية، أو بتكتبها إنت', 'New goal': 'هدف جديد', 'Edit goal': 'عدّل الهدف', 'Goal': 'الهدف',
-    'Grow the business': 'نكبّر الشغل', 'Customers love Super App': 'العملاء يحبوا Super App', 'A strong seller marketplace': 'سوق بائعين قوي', 'Run lean with AI agents': 'نشتغل بأقل تكلفة بالـ AI agents',
-    'Platform revenue in the last {0} days': 'إيراد المنصة في آخر {0} يوم', 'Money through Super App in the last {0} days': 'الفلوس اللي عدّت على Super App في آخر {0} يوم', 'Active pitches': 'الملاعب النشطة',
+    'Grow the business': 'نكبّر الشغل', 'Customers love Super Malaab': 'العملاء يحبوا سوبر ملعب', 'A strong seller marketplace': 'سوق بائعين قوي', 'Run lean with AI agents': 'نشتغل بأقل تكلفة بالـ AI agents',
+    'Platform revenue in the last {0} days': 'إيراد المنصة في آخر {0} يوم', 'Money through Super Malaab in the last {0} days': 'الفلوس اللي عدّت على سوبر ملعب في آخر {0} يوم', 'Active pitches': 'الملاعب النشطة',
     'Open support tickets (lower is better)': 'تذاكر الدعم المفتوحة (الأقل أحسن)', 'Average pitch rating': 'متوسط تقييم الملاعب', 'Active sellers': 'البائعين النشطين',
     'AI agents cost per month (EGP, lower is better)': 'تكلفة الـ AI agents في الشهر (ج.م، الأقل أحسن)', 'Agents working (not paused)': 'الـ agents الشغالين (مش واقفين)',
     '{0} {1} of {2} {3} · live': '{0} {1} من {2} {3} · مباشر', '{0} of {1} · live': '{0} من {1} · مباشر', '{0} of {1} (lower is better) · live': '{0} من {1} (الأقل أحسن) · مباشر', '{0} {1} of {2} {3} (lower is better) · live': '{0} {1} من {2} {3} (الأقل أحسن) · مباشر', '{0} of {1}': '{0} من {1}',
@@ -174,7 +174,7 @@
 
     /* ---------- Control room ---------- */
     'Switches, limits, rates and who may do what': 'المفاتيح والحدود والنسب ومين مسموح له بإيه', 'Kill switches': 'مفاتيح الإيقاف', 'Turning one off works at once in every system and is logged': 'لما تقفل واحد بيتقفل فوراً في كل الأنظمة وبيتسجل',
-    'Pitch bookings': 'حجز الملاعب', 'New bookings and weekly packages': 'الحجوزات الجديدة والباقات الأسبوعية', 'Shop checkout': 'الدفع في المتجر', 'Buying from stores and the Super App Store': 'الشرا من المتاجر ومتجر Super App',
+    'Pitch bookings': 'حجز الملاعب', 'New bookings and weekly packages': 'الحجوزات الجديدة والباقات الأسبوعية', 'Shop checkout': 'الدفع في المتجر', 'Buying from stores and the Super Malaab Store': 'الشرا من المتاجر ومتجر سوبر ملعب',
     'Printed designs': 'التصميمات المطبوعة', 'Print-on-demand products in the shop': 'منتجات الطباعة حسب الطلب في المتجر', 'Withdrawals': 'السحوبات', 'Partners and sellers asking for money, and sending it': 'الشركاء والبائعين لما يطلبوا فلوسهم، وإرسالها',
     'New applications': 'طلبات الانضمام الجديدة', 'New pitch partners and sellers': 'شركاء ملاعب وبائعين جداد', 'Fantasy': 'الفانتازي', 'Saving teams and buying the Fantasy Pass': 'حفظ الفرق وشرا الـ Fantasy Pass',
     'Community posting': 'النشر في المجتمعات', 'New posts and comments': 'البوستات والتعليقات الجديدة', 'Joining games': 'الانضمام للماتشات', 'Players asking to join free-slot games': 'اللعيبة اللي بيطلبوا يدخلوا ماتشات المواعيد الفاضية',
@@ -191,11 +191,11 @@
     'Printed designs are paused right now.': 'التصميمات المطبوعة واقفة دلوقتي.', 'This is paused right now.': 'ده واقف دلوقتي.',
 
     /* ---------- All systems ---------- */
-    'Every system Super App runs — open any of them as anyone': 'كل الأنظمة اللي Super App بتشغلها — افتح أي واحد فيهم بأي حد', 'Every system opens in a new tab, signed in as the person you choose. Each opening is written in the audit log.': 'كل نظام بيفتح في تاب جديد، داخل باسم الشخص اللي تختاره. وكل فتحة بتتسجل في السجل.',
+    'Every system Super Malaab runs — open any of them as anyone': 'كل الأنظمة اللي سوبر ملعب بتشغلها — افتح أي واحد فيهم بأي حد', 'Every system opens in a new tab, signed in as the person you choose. Each opening is written in the audit log.': 'كل نظام بيفتح في تاب جديد، داخل باسم الشخص اللي تختاره. وكل فتحة بتتسجل في السجل.',
     'The site customers use: book, play, shop, fantasy and communities.': 'الموقع اللي العملاء بيستخدموه: حجز ولعب وشرا وفانتازي ومجتمعات.', 'Admin console': 'لوحة الإدارة', 'Open it as yourself (everything) or as any role — see exactly what each agent sees.': 'افتحها بنفسك (كل حاجة) أو بأي دور — وشوف بالظبط كل agent شايف إيه.',
     'Partner dashboard': 'لوحة الشريك', 'Any pitch partner’s own dashboard.': 'لوحة أي شريك ملعب.', 'Seller dashboard': 'لوحة البائع', 'Any seller’s own dashboard.': 'لوحة أي بائع.', 'Factory system': 'نظام المصنع', 'The factory as any member of staff.': 'المصنع بأي حد من الموظفين.',
     '{0} admin accounts': '{0} حساب إدارة', '{0} partners': '{0} شريك', '{0} sellers': '{0} بائع', '{0} staff': '{0} موظف', 'Admin console: open as': 'لوحة الإدارة: افتح باسم', 'Partner dashboard: open as': 'لوحة الشريك: افتح باسم', 'Seller dashboard: open as': 'لوحة البائع: افتح باسم', 'Factory system: open as': 'نظام المصنع: افتح باسم',
-    'Super App (the site)': 'Super App (الموقع)', 'Account not found.': 'الحساب مش موجود.', 'Seller not found.': 'البائع مش موجود.',
+    'Super Malaab (the site)': 'سوبر ملعب (الموقع)', 'Account not found.': 'الحساب مش موجود.', 'Seller not found.': 'البائع مش موجود.',
 
     /* ---------- Audit ---------- */
     'Every action in every system, signed by who did it': 'كل حاجة اتعملت في كل الأنظمة، وباسم اللي عملها', 'Search the log — e.g. refund, PO-, Atlas': 'دوّر في السجل — مثلاً refund أو PO- أو Atlas', 'Search the audit log': 'دوّر في السجل', 'Search': 'دوّر',
@@ -208,7 +208,7 @@
     'Support': 'الدعم', 'Tickets, refunds and response': 'التذاكر والاسترجاعات والردود', 'Work, errors and cost of every agent': 'شغل وأخطاء وتكلفة كل agent', 'Everything that needed the CEO': 'كل اللي احتاج المدير التنفيذي',
     'Excel': 'إكسيل', 'PDF': 'PDF', 'PDF downloaded': 'الـ PDF اتنزل', 'The Excel file opens on a Dashboard sheet with live formulas and charts over the data.': 'ملف الإكسيل بيفتح على شيت Dashboard فيه معادلات حية ورسوم بيانية فوق البيانات.',
     'Nothing in these dates.': 'مفيش حاجة في الفترة دي.', 'Showing {0} of {1} lines — the Excel file has all of them.': 'ظاهر {0} من {1} سطر — ملف الإكسيل فيه كله.',
-    'Lines': 'السطور', 'Total': 'الإجمالي', 'Income': 'الدخل', 'Costs': 'التكاليف', 'Money through Super App': 'الفلوس اللي عدّت على Super App', 'Refused deliveries': 'طلبات مرفوضة', 'Refunds': 'الاسترجاعات', 'Promo codes': 'أكواد الخصم',
+    'Lines': 'السطور', 'Total': 'الإجمالي', 'Income': 'الدخل', 'Costs': 'التكاليف', 'Money through Super Malaab': 'الفلوس اللي عدّت على سوبر ملعب', 'Refused deliveries': 'طلبات مرفوضة', 'Refunds': 'الاسترجاعات', 'Promo codes': 'أكواد الخصم',
     'Type': 'النوع', 'Reference': 'المرجع', 'Customer': 'العميل', 'Pitch, store or stage': 'الملعب أو المتجر أو المرحلة', 'Status': 'الحالة', 'Amount': 'المبلغ', 'Booking': 'حجز', 'Store order': 'طلب متجر', 'Printed item': 'قطعة مطبوعة',
     'Name': 'الاسم', 'City': 'المدينة', 'Phone': 'الموبايل', 'Bookings': 'الحجوزات', 'Orders': 'الطلبات', 'Printed items': 'القطع المطبوعة', 'Refused': 'مرفوض', 'Blocked': 'محظور', 'Last seen': 'آخر ظهور', 
     'Owner': 'المسؤول', 'Pitches': 'الملاعب', 'Balance': 'الرصيد', 'Owed to partners': 'مستحق للشركاء', 'Seller': 'البائع', 'Handle': 'اسم المستخدم', 'Level': 'المستوى',
@@ -229,7 +229,7 @@
     ['^(.+) signed in to the admin console$', '{1} دخل لوحة الإدارة'],
     ['^Maintenance on: (.+) paused$', 'الصيانة شغالة: {t1} واقف'],
     ['^(.+) \\(AI\\) — (.+)$', '{1} (AI) — {t2}'],
-    ['^(Sharaf|Super App HQ|Laila Mansour|Atlas|Kick|Loom|Route|Haven|Echo|Shield|Bridge|Spark|Ledger|Abacus|Clause|Pulse|Buzz|Arena|Forge|Probe|Conductor|Fictional law firm \\(external\\)) — (.+)$', '{t1} — {t2}'],
+    ['^(Sharaf|Super Malaab HQ|Laila Mansour|Atlas|Kick|Loom|Route|Haven|Echo|Shield|Bridge|Spark|Ledger|Abacus|Clause|Pulse|Buzz|Arena|Forge|Probe|Conductor|Fictional law firm \\(external\\)) — (.+)$', '{t1} — {t2}'],
     ['^(.+) · (.+?) \\((.+)\\) · (Once|Every month|Every 3 months|Every year)$', '{t1} · {t2} ({t3}) · {t4}'],
     ['^over the ([\\d,]+) EGP (payout|refund) limit$', 'فوق حد {t2} {1} ج.م'],
     ['^over your ([\\d,]+) EGP limit$', 'فوق حدك {1} ج.م'],
@@ -250,7 +250,7 @@
     ['^Turn off (.+)\\?$', 'تقفل {t1}؟'],
     ['^(.+) turned off by the CEO$', 'المدير التنفيذي قفل {t1}'],
     ['^Yesterday’s platform revenue was ([\\d,]+) EGP — (\\d+)% (above|below) the 7-day average\\.$', 'إيراد المنصة امبارح كان {1} ج.م — {2}% {t3} متوسط الـ 7 أيام.'],
-    ['^([\\d,]+) EGP went through Super App, with (\\d+) bookings and (\\d+) store orders\\.$', '{1} ج.م عدّت على Super App، مع {2} حجز و{3} طلب متجر.'],
+    ['^([\\d,]+) EGP went through Super Malaab, with (\\d+) bookings and (\\d+) store orders\\.$', '{1} ج.م عدّت على سوبر ملعب، مع {2} حجز و{3} طلب متجر.'],
     ['^(\\d+) request\\(s\\) wait for your approval\\.$', '{1} طلب مستني موافقتك.'],
     ['^(\\d+) withdrawal\\(s\\) are waiting in the admin console\\.$', '{1} سحب مستني في لوحة الإدارة.'],
     ['^Needs attention: (.+)\\.$', 'محتاج انتباه: {1}.'],
@@ -294,7 +294,7 @@
   Object.assign(D.strings, {
     '{0} community report': '{0} بلاغ في المجتمعات', '{0} community reports': '{0} بلاغ في المجتمعات', 'Posts and comments people reported.': 'بوستات وتعليقات الناس بلّغت عنها.',
     'Balance adjustment ·': 'تعديل رصيد ·', 'Withdrawal ·': 'سحب ·', 'Factory settlement ·': 'تسوية المصنع ·', 'Customer refund ·': 'استرجاع لعميل ·', 'Customer credit ·': 'رصيد لعميل ·',
-    '{0} working': '{0} شغالين', 'Agent': 'الـ Agent', 'Agent — Super App': 'الـ Agent — Super App', 'Department — Super App': 'الإدارة — Super App', 'Maintenance off': 'الصيانة اتقفلت',
+    '{0} working': '{0} شغالين', 'Agent': 'الـ Agent', 'Agent — Super Malaab': 'الـ Agent — سوبر ملعب', 'Department — Super Malaab': 'الإدارة — سوبر ملعب', 'Maintenance off': 'الصيانة اتقفلت',
     'bookings': 'الحجز', 'shop checkout': 'الدفع في المتجر', 'bookings and shop checkout': 'الحجز والدفع في المتجر', 'payout': 'السحب', 'refund': 'الاسترجاع',
     'active': 'نشط', 'pending': 'مستني', 'open': 'مفتوح', 'resolved': 'اتحل', 'approved': 'اتوافق', 'rejected': 'اترفض', 'suspended': 'موقوف', 'customer': 'عميل', 'partner': 'شريك', 'seller': 'بائع',
     'pod': 'طباعة', 'both': 'الاتنين', 'store': 'متجر', 'print': 'طباعة', 'booking': 'حجز', 'payment': 'دفع', 'account': 'حساب', 'verified': 'متأكد منها', 'paid': 'مدفوع', 'confirmed': 'مأكد', 'cancelled': 'ملغي',

@@ -18,7 +18,7 @@ public sealed class StorePausedFilter(IConfiguration configuration) : IAsyncReso
             && action.ControllerTypeInfo.Namespace == ShopNamespace;
         if (shop && !configuration.GetValue("Features:StoreEnabled", false))
         {
-            throw new FeatureDisabledException("The Super App store is coming soon.", "store_paused");
+            throw new FeatureDisabledException("The Super Malaab store is coming soon.", "store_paused");
         }
         return next();
     }

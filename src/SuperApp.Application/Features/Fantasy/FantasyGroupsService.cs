@@ -10,7 +10,7 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Fantasy;
 
 /// <summary>
-/// Fantasy groups (API §6.1, FR-FAN-06/07): the Super App League (every team), official sponsor leagues and private
+/// Fantasy groups (API §6.1, FR-FAN-06/07): the Super Malaab League (every team), official sponsor leagues and private
 /// groups with an invite code. Every league is free to enter (owner, 2026-11-03). Tables follow total points.
 /// </summary>
 public interface IFantasyGroupsService

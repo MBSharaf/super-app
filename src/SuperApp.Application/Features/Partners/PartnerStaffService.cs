@@ -12,7 +12,7 @@ namespace SuperApp.Application.Features.Partners;
 /// <summary>A staff member of the partner. Role: Manager, CheckIn, Accountant.</summary>
 public sealed record PartnerStaffDto(long Id, Guid UserId, string FullName, string Email, string? Phone, string Role, bool IsActive, DateTime CreatedAt);
 
-/// <summary>POST /partner/staff — the person signs up on Super App first; they are found by email or mobile.</summary>
+/// <summary>POST /partner/staff — the person signs up on Super Malaab first; they are found by email or mobile.</summary>
 public sealed record AddStaffRequest(string Login, string Role);
 
 /// <summary>PUT /partner/staff/{id}</summary>
@@ -67,10 +67,10 @@ public sealed class PartnerStaffService(
         var role = Enum.Parse<PartnerStaffRole>(request.Role);
         OwnerForManagers(scope, role);
         var person = await identity.FindByLoginAsync(request.Login.Trim(), ct)
-            ?? throw new NotFoundException("No Super App account uses this email or mobile. Ask them to sign up first.", "no_account");
+            ?? throw new NotFoundException("No Super Malaab account uses this email or mobile. Ask them to sign up first.", "no_account");
         if (await staff.WorksForAPartnerAsync(person.Id, ct))
         {
-            throw new ConflictException($"{person.FullName} already works for a pitch partner on Super App.", "already_staff");
+            throw new ConflictException($"{person.FullName} already works for a pitch partner on Super Malaab.", "already_staff");
         }
         var member = new PartnerStaffMember { PartnerId = scope.PartnerId, UserId = person.Id, Role = role };
         staff.Add(member);

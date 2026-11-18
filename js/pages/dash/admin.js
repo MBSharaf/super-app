@@ -5,10 +5,10 @@
   const D = () => SA.services.dash;
   const db = () => SA.services.db;
 
-  const adminOnly = (active, title) => C.layout(active, { title, body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Super App admins only', text: 'This section is only available to the Super App team.' })}</div>` });
+  const adminOnly = (active, title) => C.layout(active, { title, body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Super Malaab admins only', text: 'This section is only available to the Super Malaab team.' })}</div>` });
 
   SA.pages.dashPartners = C.guard({
-    title: 'Partners — Super App Admin',
+    title: 'Partners — Super Malaab Admin',
     render() {
       if (!D().isAdmin()) return adminOnly('partners', 'Partners');
       const list = D().partners();
@@ -17,7 +17,7 @@
       const body = `
         <div class="kpi-grid kpi-sm">
           ${C.kpi({ label: 'Partners', value: list.length, count: list.length, ic: 'users' })}
-          ${C.kpi({ label: 'Pitches on Super App', value: list.reduce((t, p) => t + p.pitches, 0), ic: 'pitch' })}
+          ${C.kpi({ label: 'Pitches on Super Malaab', value: list.reduce((t, p) => t + p.pitches, 0), ic: 'pitch' })}
           ${C.kpi({ label: 'Partner revenue (30d)', value: money(Math.round(tot.gross)), count: Math.round(tot.gross), suffix: ' EGP', ic: 'percent', tone: 'k-turf' })}
           ${C.kpi({ label: 'Commission earned (30d)', value: money(Math.round(tot.comm)), count: Math.round(tot.comm), suffix: ' EGP', ic: 'wallet', tone: 'k-blaze' })}
         </div>
@@ -34,7 +34,7 @@
             <td><span class="badge ${s.status === 'active' ? 'badge-turf' : 'badge-danger'}">${s.status === 'active' ? 'Live' : 'Suspended'}</span></td>
             <td class="r"><div class="row" style="--gap:6px;justify-content:flex-end"><a class="btn btn-ghost btn-sm" href="#/shop?store=${s.id}" target="_blank" rel="noopener">View</a>${s.official ? '' : `<button class="btn btn-outline btn-sm" data-store-status="${s.id}" data-to="${s.status === 'active' ? 'suspended' : 'active'}">${s.status === 'active' ? 'Suspend' : 'Reactivate'}</button>`}</div></td></tr>`).join('')}
           </tbody></table></div></section>`;
-      return C.layout('partners', { title: 'Partners', subtitle: 'Pitch owners and stores on Super App', body });
+      return C.layout('partners', { title: 'Partners', subtitle: 'Pitch owners and stores on Super Malaab', body });
     },
     mount(el) {
       el.addEventListener('click', async (e) => {
@@ -43,7 +43,7 @@
         const st = e.target.closest('[data-store-status]');
         if (st) {
           const s = db().find('stores', st.dataset.storeStatus);
-          if (st.dataset.to === 'suspended' && !(await SA.ui.overlay.confirm({ title: `Suspend ${esc(s.name)}?`, text: 'All its products disappear from the Super App shop until you reactivate it.', confirmLabel: 'Suspend store', danger: true }))) return;
+          if (st.dataset.to === 'suspended' && !(await SA.ui.overlay.confirm({ title: `Suspend ${esc(s.name)}?`, text: 'All its products disappear from the Super Malaab shop until you reactivate it.', confirmLabel: 'Suspend store', danger: true }))) return;
           D().setStoreStatus(s.id, st.dataset.to); SA.ui.overlay.toast(st.dataset.to === 'active' ? 'Store reactivated' : 'Store suspended'); SA.app.rerender();
         }
       });
@@ -51,7 +51,7 @@
   });
 
   SA.pages.dashSettings = C.guard({
-    title: 'Platform settings — Super App Admin',
+    title: 'Platform settings — Super Malaab Admin',
     render() {
       if (!D().isAdmin()) return adminOnly('settings', 'Platform settings');
       const cm = D().commission();
@@ -62,7 +62,7 @@
             <div class="field"><label for="cm-s">On store sales (%)</label><input class="input num" id="cm-s" name="store" type="number" min="0" max="50" step="0.5" value="${+(cm.store * 100).toFixed(1)}" /></div>
             <p class="field-error span-2" data-err="form"></p>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save commission</button></div></form></section>
-        <section class="dash-card"><h2 class="h4">VAT</h2><p class="small soft" style="margin-top:6px">Prices on Super App include VAT. Invoices, statements and finance reports show the VAT inside every amount at this rate.</p>
+        <section class="dash-card"><h2 class="h4">VAT</h2><p class="small soft" style="margin-top:6px">Prices on Super Malaab include VAT. Invoices, statements and finance reports show the VAT inside every amount at this rate.</p>
           <form id="vat" novalidate class="form-grid" style="margin-top:16px">
             <div class="field"><label for="vat-r">VAT rate (%)</label><input class="input num" id="vat-r" name="vat" type="number" min="0" max="30" step="0.5" value="${+(D().vat() * 100).toFixed(1)}" /><span class="field-hint">Egypt standard rate: 14%</span></div>
             <p class="field-error span-2" data-err="vat"></p>
@@ -75,7 +75,7 @@
             <div class="field"><span class="field-label">Cashback rate</span><b class="h4 num" data-lt-rate></b><span class="field-hint">Bronze · Silver ×1.25 · Gold ×1.5</span></div>
             <p class="field-error span-2" data-err="lty"></p>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save loyalty settings</button></div></form></section>
-        <section class="dash-card"><h2 class="h4">Settlements</h2><dl class="kv" style="margin-top:14px"><div><dt>Automatic payouts</dt><dd>Every Monday</dd></div><div><dt>Booking money available</dt><dd>After the match ends</dd></div><div><dt>Store money available</dt><dd>When the order is delivered</dd></div><div><dt>Minimum withdrawal</dt><dd>100 EGP</dd></div><div><dt>Withdrawal requests</dt><dd><a class="link" href="#/admin/payouts">Approved by the Super App team</a></dd></div><div><dt>Customer service fee</dt><dd>${Math.round(SA.services.db.settings().serviceFee * 100)}% per booking</dd></div></dl></section>
+        <section class="dash-card"><h2 class="h4">Settlements</h2><dl class="kv" style="margin-top:14px"><div><dt>Automatic payouts</dt><dd>Every Monday</dd></div><div><dt>Booking money available</dt><dd>After the match ends</dd></div><div><dt>Store money available</dt><dd>When the order is delivered</dd></div><div><dt>Minimum withdrawal</dt><dd>100 EGP</dd></div><div><dt>Withdrawal requests</dt><dd><a class="link" href="#/admin/payouts">Approved by the Super Malaab team</a></dd></div><div><dt>Customer service fee</dt><dd>${Math.round(SA.services.db.settings().serviceFee * 100)}% per booking</dd></div></dl></section>
         <section class="dash-card"><h2 class="h4">Sellers & print on demand</h2><p class="small soft" style="margin-top:6px">Rules for seller profit, withdrawals and customers who refuse printed items.</p>
           <form id="podset" novalidate class="form-grid" style="margin-top:16px">
             <div class="field"><label for="ps-h">Profit on hold after delivery (days)</label><input class="input num" id="ps-h" name="holdDays" type="number" min="0" max="30" value="${db().settings().pod.holdDays}" /></div>
@@ -83,7 +83,7 @@
             <div class="field"><label for="ps-r">Refused deliveries before online payment is required</label><input class="input num" id="ps-r" name="refuseLimit" type="number" min="1" max="10" value="${db().settings().pod.refuseLimit}" /></div>
             <p class="field-error span-2" data-err="podset"></p>
             <div class="span-2"><button class="btn btn-primary" type="submit">Save seller rules</button></div></form></section>
-        <section class="dash-card"><h2 class="h4">Fantasy</h2><p class="small soft" style="margin-top:6px">Every fantasy league is free. In the Super App League, the top 3 of every gameweek win ${SA.services.fantasy.weeklyPoints().map((x) => x.toLocaleString()).join(' / ')} Super Points.</p>
+        <section class="dash-card"><h2 class="h4">Fantasy</h2><p class="small soft" style="margin-top:6px">Every fantasy league is free. In the Super Malaab League, the top 3 of every gameweek win ${SA.services.fantasy.weeklyPoints().map((x) => x.toLocaleString()).join(' / ')} Super Points.</p>
           <a class="btn btn-outline btn-sm" href="#/admin/fantasy?tab=weekly" style="margin-top:14px">Change weekly points</a></section>
         <section class="dash-card span-all"><h2 class="h4">Seller levels</h2><p class="small soft" style="margin-top:6px">Levels are reached on delivered items with a minimum rating. Leave “Designs” or “Codes” empty for unlimited.</p>
           <form id="lvls" novalidate style="margin-top:14px"><div class="table-wrap"><table class="table lvl-edit"><thead><tr><th>Level</th><th>Items sold</th><th>Min rating</th><th>Designs</th><th>Codes</th><th>Base discount (EGP)</th><th>Store commission %</th></tr></thead><tbody>
@@ -175,12 +175,12 @@
   });
 
   SA.pages.dashActivity = C.guard({
-    title: 'Activity — Super App Partner',
+    title: 'Activity — Super Malaab Partner',
     render() {
       const list = D().activity(150);
       const actors = Object.fromEntries(db().all('accounts').map((a) => [a.id, a]));
       const kind = (a) => (a.startsWith('booking') ? ['ticket', 'k-turf'] : a.startsWith('pitch') || a.startsWith('closure') ? ['pitch', ''] : a.startsWith('product') || a.startsWith('store') || a.startsWith('order') ? ['bag', 'k-blaze'] : a.startsWith('payout') ? ['wallet', 'k-ink'] : ['clock', '']);
-      const body = `<section class="dash-card"><ol class="activity">${list.map((x, i) => { const [ic, tone] = kind(x.action); return `<li class="${tone}" style="--i:${Math.min(i, 20)}"><span class="ac-ico">${icon(ic, 15)}</span><span class="grow"><b class="small">${esc(x.text)}</b><span class="xs muted" style="display:block">${x.actor === 'customer' ? 'Customer on Super App' : esc(actors[x.actor]?.name || 'System')} · ${timeAgo(x.at)}</span></span></li>`; }).join('') || '<li class="small muted">No activity yet.</li>'}</ol></section>`;
+      const body = `<section class="dash-card"><ol class="activity">${list.map((x, i) => { const [ic, tone] = kind(x.action); return `<li class="${tone}" style="--i:${Math.min(i, 20)}"><span class="ac-ico">${icon(ic, 15)}</span><span class="grow"><b class="small">${esc(x.text)}</b><span class="xs muted" style="display:block">${x.actor === 'customer' ? 'Customer on Super Malaab' : esc(actors[x.actor]?.name || 'System')} · ${timeAgo(x.at)}</span></span></li>`; }).join('') || '<li class="small muted">No activity yet.</li>'}</ol></section>`;
       return C.layout('activity', { title: 'Activity', subtitle: 'Everything that changed on your account', body });
     },
   });

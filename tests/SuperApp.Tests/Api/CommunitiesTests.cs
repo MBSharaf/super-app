@@ -112,7 +112,7 @@ public sealed class CommunitiesTests(AccountsApiFactory api) : IClassFixture<Acc
         (await ceo.PostAsync("/api/v1/admin/communities", body)).Body.Code().ShouldBe("slug_taken");
 
         var announcement = (await ceo.PostAsync("/api/v1/admin/communities/derby-talk/posts", new { text = "Welcome! Keep it friendly.", pollOptions = (string[]?)null, isPinned = true, isAnnouncement = true })).Body.Data();
-        (announcement.GetProperty("author").GetProperty("name").GetString(), announcement.GetProperty("isPinned").GetBoolean()).ShouldBe(("Super App Admin", true));
+        (announcement.GetProperty("author").GetProperty("name").GetString(), announcement.GetProperty("isPinned").GetBoolean()).ShouldBe(("Super Malaab Admin", true));
 
         var member = await MemberAsync("derby-talk");
         (await member.PostAsync("/api/v1/communities/derby-talk/posts", new { text = "Ahly by two", pollOptions = (string[]?)null })).Status.ShouldBe(HttpStatusCode.Created);

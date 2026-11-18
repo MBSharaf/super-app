@@ -66,7 +66,7 @@
   };
 
   SA.pages.dashCheckin = C.guard({
-    title: 'Check-in — Super App Partner',
+    title: 'Check-in — Super Malaab Partner',
     render() {
       const sc = C.scope();
       const list = D().arrivals(sc.ownerId);

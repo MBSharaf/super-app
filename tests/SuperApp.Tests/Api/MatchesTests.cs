@@ -5,7 +5,7 @@ using SuperApp.Domain.Entities.Fantasy;
 
 namespace SuperApp.Tests.Api;
 
-/// <summary>Real matches from the cache and Super App news with the admin's posts (API §6.2, §7.2).</summary>
+/// <summary>Real matches from the cache and Super Malaab news with the admin's posts (API §6.2, §7.2).</summary>
 [Trait("Category", "Database")]
 public sealed class MatchesTests(FantasyApiFactory api) : IClassFixture<FantasyApiFactory>
 {

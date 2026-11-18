@@ -1,6 +1,6 @@
 /**
  * Seller dashboard: marketing calendar — big matches, Egyptian occasions and shopping moments, typical weather and
- * what's selling on Super App. What a seller sees depends on their level (calendar: basic → weather → trends → early).
+ * what's selling on Super Malaab. What a seller sees depends on their level (calendar: basic → weather → trends → early).
  * Live forecasts and real fixtures arrive with the backend (API-FOOTBALL, Open-Meteo); today the matches come from the
  * schedule service and the weather from Cairo's monthly averages.
  */
@@ -58,7 +58,7 @@
     return out.sort((a, b) => b.score - a.score).slice(0, 8);
   };
 
-  /** What sold on Super App in the last 30 days (all sellers): tags, sections, products, colours */
+  /** What sold on Super Malaab in the last 30 days (all sellers): tags, sections, products, colours */
   const trends = () => {
     const since = Date.now() - 30 * DAY;
     const orders = P().orders().filter((o) => o.placedAt >= since && o.status !== 'refused');
@@ -81,7 +81,7 @@
 
   SA.pages.dashSellerCalendar = C.guard({
     roles: ['seller'],
-    title: 'Marketing calendar — Super App',
+    title: 'Marketing calendar — Super Malaab',
     render() {
       const s = SL().byAccount(D().me().id);
       if (!s) return C.layout('seller-calendar', { title: 'Marketing calendar', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'lock', title: 'Sellers only', text: 'Sign in with a seller account.' })}</div>` });
@@ -113,9 +113,9 @@
         ${rank >= 1 ? `<section class="dash-card"><div class="row-between"><h2 class="h4">${icon('sun', 18)} Weather in Cairo</h2><span class="xs muted">Monthly averages · live forecast coming soon</span></div>
           <div class="mk-weather">${months.map((w) => `<div class="mk-w"><span class="xs muted">${MON[w.m]}</span><b class="num">${w.hi}° <span class="muted">/ ${w.lo}°</span></b><b class="small">${w.tip[0]}</b><p class="xs soft">${w.tip[1]}</p></div>`).join('')}</div></section>`
           : locked('Weather planning', 'See which months are hoodie season and which are tee weather, so you push the right products.', 'Rising')}
-        ${tr ? `<section class="dash-card"><div class="row-between"><h2 class="h4">${icon('trend', 18)} What’s selling on Super App</h2><span class="xs muted">${fmtNum(tr.total)} printed items · last 30 days · all sellers</span></div>
+        ${tr ? `<section class="dash-card"><div class="row-between"><h2 class="h4">${icon('trend', 18)} What’s selling on Super Malaab</h2><span class="xs muted">${fmtNum(tr.total)} printed items · last 30 days · all sellers</span></div>
           <div class="mk-trends"><div><h3 class="xs muted">Top search tags</h3>${bars(tr.tags)}</div><div><h3 class="xs muted">Sections</h3>${bars(tr.cats)}</div><div><h3 class="xs muted">Products</h3>${bars(tr.products)}</div><div><h3 class="xs muted">Colours</h3>${bars(tr.colors)}</div></div></section>`
-          : locked('What’s selling', 'Top tags, sections, products and colours across Super App — use them to pick your next design.', 'Pro')}`;
+          : locked('What’s selling', 'Top tags, sections, products and colours across Super Malaab — use them to pick your next design.', 'Pro')}`;
       return C.layout('seller-calendar', { title: 'Marketing calendar', subtitle: 'Matches, occasions, weather and trends to plan your next drop', body });
     },
   });

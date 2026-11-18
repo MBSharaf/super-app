@@ -1,6 +1,6 @@
 /**
  * Returns from the real API (owner's decisions, 2026-10-27): only an item with a problem (damaged, wrong item, not as
- * described), within 24 hours of delivery; Super App's courier collects it, the refund goes to the customer's wallet and
+ * described), within 24 hours of delivery; Super Malaab's courier collects it, the refund goes to the customer's wallet and
  * the store pays for it. Loaded after returnService and liveShop; demo mode (GitHub Pages) is unchanged.
  *
  * The returns UI reads `SA.services.returns` synchronously, so the order page fills a small cache first: what can still
@@ -30,7 +30,7 @@
     id: r.code, orderId: r.orderCode, kind: 'store', storeName: storeName || r.decidedBy, status: STATUS[r.status] || 'requested', live: true,
     items: r.lines.map((l) => ({ index: l.orderItemId, name: l.title, qty: l.qty, action: l.action.toLowerCase(), size: l.newSize || '', variant: { size: l.size, color: l.color }, image: l.image?.url ? `${location.origin}${l.image.url}` : l.image?.key || '' })),
     reason: r.reason, reasonLabel: LABEL[r.reason] || r.reason, note: r.detail || '', amount: +r.refundAmount, fee: 0, reason2: r.rejectReason || '',
-    courier: r.pickupTracking ? 'Super App courier' : '', awb: r.pickupTracking || '', createdAt: Date.parse(r.createdAt), history: [], customer: { name: '' },
+    courier: r.pickupTracking ? 'Super Malaab courier' : '', awb: r.pickupTracking || '', createdAt: Date.parse(r.createdAt), history: [], customer: { name: '' },
   });
 
   /** Loads what the order page needs: the returnable items of this order and the customer's returns */

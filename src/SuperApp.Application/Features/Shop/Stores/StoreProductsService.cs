@@ -12,7 +12,7 @@ namespace SuperApp.Application.Features.Shop.Stores;
 /// <summary>
 /// A store's own products (API §4.5, §4.4 "own products"): add, edit (variants with stock, specs), delete, restock and photos.
 /// The same service serves the partner's shop, a seller's store and the official store — the scope says which.
-/// A seller's or partner's product goes on sale after Super App approves it (owner's decision, 2026-10-27): asking for
+/// A seller's or partner's product goes on sale after Super Malaab approves it (owner's decision, 2026-10-27): asking for
 /// Published puts it in the review queue, unless it was approved and its name, brand, description, category and photos
 /// are unchanged since. The official store publishes at once.
 /// </summary>

@@ -5,7 +5,7 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Domain.Entities.Shop;
 
-/// <summary>A store: the official Super App Store, a partner's store or a seller's store. Table <c>shop.Stores</c>.</summary>
+/// <summary>A store: the official Super Malaab Store, a partner's store or a seller's store. Table <c>shop.Stores</c>.</summary>
 public class Store : BaseEntity, ISoftDelete
 {
     public Guid? OwnerUserId { get; set; }

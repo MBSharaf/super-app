@@ -5,7 +5,7 @@ using SuperApp.Domain.Enums;
 namespace SuperApp.Application.Features.Money;
 
 /// <summary>
-/// One order item's money: the store's earning (held in its wallet; none for the official store), Super App's commission,
+/// One order item's money: the store's earning (held in its wallet; none for the official store), Super Malaab's commission,
 /// and what the customer paid for it after discounts (used for refunds).
 /// </summary>
 public sealed record OrderShare(long ItemId, Guid? OwnerUserId, WalletType? Wallet, decimal Earning, decimal Commission, decimal CustomerAmount);
@@ -16,8 +16,8 @@ public sealed record StoreWallet(Guid OwnerUserId, WalletType Type);
 /// <summary>
 /// Store orders in the ledger (owner's decisions, 2026-10-27): a paid order holds each store's earning in its wallet with no
 /// release date; delivery sets the date (24 hours later — the return window) and the release job moves it to Available.
-/// Super App's revenue wallet gets the commission, the official store's sales and the delivery fee, less what Super App
-/// pays of a discount. A refund goes to the customer's Super App wallet and takes each share back.
+/// Super Malaab's revenue wallet gets the commission, the official store's sales and the delivery fee, less what Super Malaab
+/// pays of a discount. A refund goes to the customer's Super Malaab wallet and takes each share back.
 /// </summary>
 public sealed partial class Ledger
 {
@@ -45,7 +45,7 @@ public sealed partial class Ledger
         PostRaw(revenue, commission, LedgerBucket.Available, LedgerKind.Commission, "Order", order.Id, null, group);
         PostRaw(revenue, official, LedgerBucket.Available, LedgerKind.StoreEarning, "Order", order.Id, null, group);
         PostRaw(revenue, order.DeliveryFee, LedgerBucket.Available, LedgerKind.ServiceFee, "Order", order.Id, null, group);
-        // What is left is the part of a discount Super App pays (never more than the order's own numbers)
+        // What is left is the part of a discount Super Malaab pays (never more than the order's own numbers)
         PostRaw(revenue, order.Total - held - commission - official - order.DeliveryFee, LedgerBucket.Available, LedgerKind.Voucher, "Order", order.Id, null, group);
         store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = order.CustomerId, Kind = ReceiptKind.Payment,
             Amount = order.Total, RefType = "Order", RefId = order.Id });
@@ -76,7 +76,7 @@ public sealed partial class Ledger
     /// The store pays for a return of a product with a problem (owner's decision, 2026-10-27): it loses its held earning on the
     /// refunded items and pays the rest of the refund (when the customer paid more than it earned) and the return delivery
     /// from its available balance; what that can't cover is a debt held in Pending, taken from its next released earnings
-    /// (see MoneyReleaseJob). Super App keeps its commission.
+    /// (see MoneyReleaseJob). Super Malaab keeps its commission.
     /// </summary>
     public async Task ReturnSettledAsync(Order order, long returnId, IReadOnlyList<OrderShare> refunded, decimal refund, StoreWallet? payer, decimal returnFee, CancellationToken ct)
     {

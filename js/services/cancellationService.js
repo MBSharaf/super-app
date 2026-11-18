@@ -110,7 +110,7 @@
       else if (r.kind === 'order') refund = await cancelOrder(r.refId);
       else if (r.kind === 'game-request') { const x = db().find('gameRequests', r.refId); refund = (await S.games.withdraw(r.refId)).refunded ? x.amount : 0; }
       else if (r.kind === 'game') { await S.matches.leave(r.refId); refund = r.refund; }
-      const out = db().update('cancelRequests', id, { status: 'approved', refunded: refund, note: String(note || '').trim().slice(0, 300), decidedAt: Date.now(), decidedBy: S.dash?.me()?.name || 'Super App' });
+      const out = db().update('cancelRequests', id, { status: 'approved', refunded: refund, note: String(note || '').trim().slice(0, 300), decidedAt: Date.now(), decidedBy: S.dash?.me()?.name || 'Super Malaab' });
       db().log(S.dash?.me()?.id || 'admin', 'admin.cancellation.approved', `Approved cancellation ${id} (${r.label})${refund ? ` — ${refund} EGP refunded` : ''}`, id);
       S.user?.notify({ kind: 'shop', title: `Cancellation ${id} approved`, body: `${r.kindLabel} cancelled.${refund ? ` ${refund.toLocaleString()} EGP is back in your wallet.` : ''}${out.note ? ` ${out.note}` : ''}`, link: r.link });
       SA.ui.chatbot?.cancellation(out, 'approved');
@@ -122,7 +122,7 @@
       if (!r || r.status !== 'pending') throw new ApiError('This request is already answered.', 'invalid');
       const why = String(reason || '').trim();
       if (why.length < 5) throw new ApiError('Write the reason for the customer (5+ characters).', 'invalid', { reason: 'Write the reason.' });
-      const out = db().update('cancelRequests', id, { status: 'rejected', note: why.slice(0, 300), decidedAt: Date.now(), decidedBy: S.dash?.me()?.name || 'Super App' });
+      const out = db().update('cancelRequests', id, { status: 'rejected', note: why.slice(0, 300), decidedAt: Date.now(), decidedBy: S.dash?.me()?.name || 'Super Malaab' });
       db().log(S.dash?.me()?.id || 'admin', 'admin.cancellation.rejected', `Refused cancellation ${id} (${r.label}): ${why}`, id);
       S.user?.notify({ kind: 'shop', title: `Cancellation ${id} not approved`, body: `${why} Your ${r.kindLabel.toLowerCase()} stays active.`, link: r.link });
       SA.ui.chatbot?.cancellation(out, 'rejected');

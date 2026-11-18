@@ -128,7 +128,7 @@ public sealed class SellerStoreController(IStoreScopes scopes, IStoreProfileServ
     protected override Task<StoreScope> ScopeAsync(bool products, CancellationToken ct) => scopes.SellerAsync(products, ct);
 }
 
-/// <summary>The Super App Store (API §7.2 "Official store"): staff with store.official + 2FA.</summary>
+/// <summary>The Super Malaab Store (API §7.2 "Official store"): staff with store.official + 2FA.</summary>
 [Route("api/v1/admin")]
 [RequirePermission("store.official")]
 public sealed class AdminStoreController(IStoreScopes scopes, IStoreProfileService profile, IStoreProductsService products, IStoreOrdersService orders)

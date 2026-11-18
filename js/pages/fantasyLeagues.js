@@ -11,7 +11,7 @@
     const full = l.cap && l.participants >= l.cap;
     return `<article class="league-card lc-${l.color}">
       <div class="lc-top">
-        <div class="row wrap" style="--gap:6px">${l.kind === 'official' ? '<span class="badge badge-glass">Free · Super App</span>' : '<span class="badge badge-glass">Free</span>'}<span class="badge badge-glass">${esc(l.scope)}</span></div>
+        <div class="row wrap" style="--gap:6px">${l.kind === 'official' ? '<span class="badge badge-glass">Free · Super Malaab</span>' : '<span class="badge badge-glass">Free</span>'}<span class="badge badge-glass">${esc(l.scope)}</span></div>
         <h3 class="h3" style="margin-top:14px">${esc(l.name)}</h3>
         <p class="small lc-dim">${esc(l.blurb)}</p>
         ${l.sponsor ? `<p class="xs lc-dim lc-sponsor">${icon('sparkle', 12)} Prizes from <b>${esc(l.sponsor.name)}</b></p>` : ''}
@@ -55,14 +55,14 @@
   };
 
   SA.pages.fantasyLeagues = {
-    title: 'Leagues — Super App Fantasy',
+    title: 'Leagues — Super Malaab Fantasy',
     render() {
       const f = F(), meta = f.meta();
       const official = f.officialLeagues();
       const groups = f.privateGroups();
       return `${SA.pages.fantasy.header('leagues')}
       <div class="container fx-body">
-        <div class="sec-head"><div><h2 class="h2">Leagues</h2><p>Every league is free. The Super App League is run by Super App: the top 3 of every gameweek win ${f.weeklyPoints().map((x) => x.toLocaleString()).join(' / ')} Super Points.</p></div></div>
+        <div class="sec-head"><div><h2 class="h2">Leagues</h2><p>Every league is free. The Super Malaab League is run by Super Malaab: the top 3 of every gameweek win ${f.weeklyPoints().map((x) => x.toLocaleString()).join(' / ')} Super Points.</p></div></div>
         <div class="league-grid">${official.map((l) => leagueCard(l, meta)).join('')}</div>
 
         <div class="sec-head" style="margin-top:56px"><div><h2 class="h2">Private groups</h2><p>Play against friends, colleagues or your weekly five-a-side crew. Free, invite-only.</p></div>
@@ -114,7 +114,7 @@
 
   /* ---------- One league / group ---------- */
   SA.pages.fantasyLeague = {
-    title: 'League — Super App Fantasy',
+    title: 'League — Super Malaab Fantasy',
     render(ctx) {
       const f = F(), meta = f.meta();
       const g = f.group(ctx.params.id);
@@ -146,14 +146,14 @@
               <p class="small soft" style="margin-top:6px">Share this code or link. Anyone with it can join.</p>
               <div class="invite-code"><b class="num">${esc(g.code)}</b><button class="btn btn-outline btn-sm" data-copy="${esc(g.code)}">${icon('copy', 14)} Copy</button></div>
               <div class="row wrap" style="margin-top:12px;--gap:8px">
-                <a class="btn btn-turf btn-sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Join my Super App fantasy group "${g.name}" — code ${g.code} ${link}`)}">${icon('whatsapp', 15)} WhatsApp</a>
+                <a class="btn btn-turf btn-sm" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Join my Super Malaab fantasy group "${g.name}" — code ${g.code} ${link}`)}">${icon('whatsapp', 15)} WhatsApp</a>
                 <button class="btn btn-outline btn-sm" data-copy="${esc(link)}">${icon('link', 14)} Copy link</button>
               </div>
               ${g.mine || g.owner !== SA.services.user.me().name ? `<button class="btn btn-ghost btn-sm btn-block" style="margin-top:14px;color:var(--danger)" data-leave>${g.mine ? 'Delete group' : 'Leave group'}</button>` : ''}
             </div>` : `<div class="panel panel-pad">
               <h3 class="h4">Prizes</h3>
               <ul class="prize-list">${official.prizes.map(([p, v], i) => `<li><span class="medal m${Math.min(i + 1, 4)}">${i < 3 ? i + 1 : ''}</span><span class="grow small">${p}</span><b class="small">${esc(v)}</b></li>`).join('')}</ul>
-              <p class="xs muted" style="margin-top:10px">${official.kind === 'official' ? 'Every gameweek, by gameweek points. The Super Points go straight to the winners’ accounts. No cash prizes.' : `Prizes worth ${money(official.prizeValue || 0)}, provided by sponsors and Super App partners. No cash prizes.`}</p>
+              <p class="xs muted" style="margin-top:10px">${official.kind === 'official' ? 'Every gameweek, by gameweek points. The Super Points go straight to the winners’ accounts. No cash prizes.' : `Prizes worth ${money(official.prizeValue || 0)}, provided by sponsors and Super Malaab partners. No cash prizes.`}</p>
             </div>
             ${official.kind === 'official' ? (() => { const ww = f.weeklyWinners().slice(0, 3); return `<div class="panel panel-pad"><h3 class="h4">Weekly winners</h3>${ww.length ? ww.map((w) => `<div style="margin-top:12px"><b class="small">Gameweek ${w.gw}</b><ul class="prize-list">${w.winners.map((x) => `<li><span class="medal m${x.place}">${x.place}</span><span class="grow small">${esc(x.isMe ? 'You' : x.name)} <span class="xs muted">· ${x.gw} pts</span></span><b class="small num">+${x.points.toLocaleString()}</b></li>`).join('')}</ul></div>`).join('') : '<p class="small soft" style="margin-top:6px">The first winners appear when this gameweek is finished.</p>'}</div>`; })() : ''}
             <div class="panel panel-pad">

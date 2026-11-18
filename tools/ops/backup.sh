@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Super App backup: the database, uploaded files and the data-protection keys, in ONE encrypted file.
+# Super Malaab backup: the database, uploaded files and the data-protection keys, in ONE encrypted file.
 #
 # The keys matter as much as the database: national ID numbers are encrypted with them, so a database restored
 # without its keys cannot read them. That is also why the file is encrypted (AES-256, passphrase from the settings).

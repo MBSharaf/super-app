@@ -1,4 +1,4 @@
-/** Admin console: broadcast messages and Super App promo codes (plus moderation of partner codes). */
+/** Admin console: broadcast messages and Super Malaab promo codes (plus moderation of partner codes). */
 (function (SA) {
   const { esc, money, timeAgo, fmtDate, isoDate, today } = SA.core.utils;
   const { icon } = SA.ui;
@@ -11,7 +11,7 @@
   /* ======================= Broadcasts ======================= */
   const BST = { sent: ['badge-turf', 'Sent'], scheduled: ['badge-info', 'Scheduled'], cancelled: ['', 'Cancelled'], sending: ['badge-gold', 'Sending'] };
   SA.pages.adminBroadcast = A.guard({
-    title: 'Broadcasts — Super App Admin',
+    title: 'Broadcasts — Super Malaab Admin',
     render() {
       const list = (db().all('broadcasts') || []).slice().sort((a, b) => b.sendAt - a.sendAt);
       const levels = SA.services.sellers.levels();
@@ -64,7 +64,7 @@
   const SCOPE = { shop: 'Shop', bookings: 'Pitch bookings', both: 'Shop + bookings' };
   const active = (c) => c.status === 'active' && (!c.to || c.to >= isoDate(today())) && (!c.maxUses || (c.uses || 0) < c.maxUses);
   const codeDialog = (c = null) => SA.ui.overlay.open({
-    wide: true, title: c ? `Edit ${esc(c.code)}` : 'New Super App code', subtitle: 'Super App pays the discount — venues and stores still earn on the full price.',
+    wide: true, title: c ? `Edit ${esc(c.code)}` : 'New Super Malaab code', subtitle: 'Super Malaab pays the discount — venues and stores still earn on the full price.',
     body: `<form class="form-grid" data-code novalidate>
       <div class="field"><label for="pc-c">Code</label><input class="input mono" id="pc-c" name="code" value="${esc(c?.code || '')}" maxlength="16" style="text-transform:uppercase" placeholder="e.g. RAMADAN20" /><p class="field-error" data-err="code"></p></div>
       <div class="field"><label for="pc-s">Works on</label><select class="select" id="pc-s" name="scope">${Object.entries(SCOPE).map(([k, l]) => `<option value="${k}" ${c?.scope === k ? 'selected' : ''}>${l}</option>`).join('')}</select><p class="field-error" data-err="scope"></p></div>
@@ -88,7 +88,7 @@
   });
 
   SA.pages.adminPromos = A.guard({
-    title: 'Promo codes — Super App Admin',
+    title: 'Promo codes — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || '';
       const mine = AD().promos(), partner = AD().partnerCodes();
@@ -100,20 +100,20 @@
           ${mine.map((c) => `<tr><td><b class="mono small">${esc(c.code)}</b>${c.note ? `<span class="xs muted" style="display:block">${esc(c.note)}</span>` : ''}</td><td class="small">${SCOPE[c.scope] || ''}</td><td class="small">${esc(c.label || SA.services.codes.label(c))}${c.min ? `<span class="xs muted" style="display:block">min ${money(c.min)}</span>` : ''}</td>
             <td class="xs">${fmtDate(c.from)}${c.to ? ` – ${fmtDate(c.to)}` : ' – no end'}</td><td class="r num">${(c.uses || 0).toLocaleString()}${c.maxUses ? ` / ${c.maxUses}` : ''}</td><td class="r num">${money(c.discountGiven || 0)}</td><td class="r num">${money(c.revenue || 0)}</td>
             <td><span class="badge ${active(c) ? 'badge-turf' : c.status === 'paused' ? 'badge-gold' : ''}">${active(c) ? 'Active' : c.status === 'paused' ? 'Paused' : 'Ended'}</span></td>
-            <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-edit="${c.id}">Edit</button><button class="btn btn-ghost btn-sm" data-status="${c.id}" data-to="${c.status === 'active' ? 'paused' : 'active'}">${c.status === 'active' ? 'Pause' : 'Resume'}</button><button class="icon-btn" data-del="${c.id}" aria-label="Delete ${esc(c.code)}">${icon('trash', 15)}</button></div></td></tr>`).join('') || '<tr><td colspan="9" class="small muted" style="padding:18px">No Super App codes yet.</td></tr>'}`
+            <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-edit="${c.id}">Edit</button><button class="btn btn-ghost btn-sm" data-status="${c.id}" data-to="${c.status === 'active' ? 'paused' : 'active'}">${c.status === 'active' ? 'Pause' : 'Resume'}</button><button class="icon-btn" data-del="${c.id}" aria-label="Delete ${esc(c.code)}">${icon('trash', 15)}</button></div></td></tr>`).join('') || '<tr><td colspan="9" class="small muted" style="padding:18px">No Super Malaab codes yet.</td></tr>'}`
         : `<thead><tr><th>Code</th><th>Partner</th><th>Works on</th><th>Discount</th><th class="r">Uses</th><th class="r">Discount given</th><th>Status</th><th></th></tr></thead><tbody>
           ${partner.map((c) => `<tr><td><b class="mono small">${esc(c.code)}</b></td><td class="small">${esc(c.owner?.company || '')}<span class="xs muted" style="display:block">${esc(c.owner?.name || '')}</span></td><td class="small">${c.kind === 'pitch' ? 'Their pitches' : 'Their store'}</td><td class="small">${esc(SA.services.codes.label(c))}</td>
             <td class="r num">${c.uses || 0}${c.maxUses ? ` / ${c.maxUses}` : ''}</td><td class="r num">${money(c.discountGiven || 0)}</td><td><span class="badge ${c.status === 'active' ? 'badge-turf' : 'badge-gold'}">${c.status === 'active' ? 'Active' : 'Paused'}</span></td>
             <td class="r"><button class="btn btn-ghost btn-sm" data-status="${c.id}" data-to="${c.status === 'active' ? 'paused' : 'active'}">${c.status === 'active' ? 'Pause' : 'Resume'}</button></td></tr>`).join('') || '<tr><td colspan="8" class="small muted" style="padding:18px">No partner codes.</td></tr>'}`;
       const body = `<div class="kpi-grid kpi-sm">
-          ${C.kpi({ label: 'Active Super App codes', value: mine.filter(active).length, ic: 'gift' })}
+          ${C.kpi({ label: 'Active Super Malaab codes', value: mine.filter(active).length, ic: 'gift' })}
           ${C.kpi({ label: 'Uses (all time)', value: mine.reduce((t, c) => t + (c.uses || 0), 0).toLocaleString(), ic: 'repeat' })}
           ${C.kpi({ label: 'Discount paid this month', value: money(Math.round(costM)), ic: 'wallet', tone: 'k-blaze', sub: 'Counted as a cost in Revenue' })}
           ${C.kpi({ label: 'Partner codes', value: partner.length, ic: 'tag', sub: `${partner.filter((c) => c.status === 'active').length} active` })}
         </div>
-        ${A.tabs('/admin/promos', [['', 'Super App codes', mine.length], ['partners', 'Partner & seller codes', partner.length]], tab)}
+        ${A.tabs('/admin/promos', [['', 'Super Malaab codes', mine.length], ['partners', 'Partner & seller codes', partner.length]], tab)}
         <section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table">${table}</tbody></table></div></section>`;
-      return C.layout('promos', { title: 'Promo codes', subtitle: 'Codes Super App pays for, in the shop and on pitch bookings — and the codes partners run', actions: `<button class="btn btn-primary btn-sm" data-new>${icon('plus', 14, 2.6)} New code</button>`, body });
+      return C.layout('promos', { title: 'Promo codes', subtitle: 'Codes Super Malaab pays for, in the shop and on pitch bookings — and the codes partners run', actions: `<button class="btn btn-primary btn-sm" data-new>${icon('plus', 14, 2.6)} New code</button>`, body });
     },
     mount(el) {
       el.addEventListener('click', async (e) => {

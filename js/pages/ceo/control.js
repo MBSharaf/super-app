@@ -12,7 +12,7 @@
 
   /* ---------- Control room ---------- */
   SA.pages.ceoControl = C.guard({
-    title: 'Control room — Super App',
+    title: 'Control room — Super Malaab',
     render() {
       const S = CE().switches();
       const L = CE().limits();
@@ -100,7 +100,7 @@
     } });
   };
   SA.pages.ceoGoals = C.guard({
-    title: 'Goals — Super App',
+    title: 'Goals — Super Malaab',
     render() {
       const G = CE().goals();
       const body = `<div class="ceo-goals">${G.map((g, i) => `<section class="dash-card" style="--i:${i}">
@@ -118,7 +118,7 @@
 
   /* ---------- Budgets ---------- */
   SA.pages.ceoBudgets = C.guard({
-    title: 'Budgets — Super App',
+    title: 'Budgets — Super Malaab',
     render() {
       const B = CE().budgets();
       const tot = B.reduce((t, b) => ({ budget: t.budget + b.budget, spent: t.spent + b.spent, forecast: t.forecast + b.forecast }), { budget: 0, spent: 0, forecast: 0 });
@@ -159,7 +159,7 @@
   /* ---------- Compliance calendar ---------- */
   const EVERY = { once: 'Once', monthly: 'Every month', quarterly: 'Every 3 months', yearly: 'Every year' };
   SA.pages.ceoCalendar = C.guard({
-    title: 'Compliance calendar — Super App',
+    title: 'Compliance calendar — Super Malaab',
     render(ctx) {
       const show = ctx.query.tab || 'open';
       const all = CE().calendar();
@@ -208,7 +208,7 @@
       <tr><td>Costs (refunds, promos, refusals)</td><td class="num">−${C.egp(w.base.cost)}</td><td class="num">−${C.egp(w.next.cost)}</td></tr>
       <tr><td>AI agents and extra marketing</td><td class="num">−${C.egp(w.agentCost)}</td><td class="num">−${C.egp(w.extra)}</td></tr></tbody></table></div>`;
   SA.pages.ceoWhatIf = C.guard({
-    title: 'What-if simulator — Super App',
+    title: 'What-if simulator — Super Malaab',
     render() {
       const cur = CE().whatIf({ bookingRate: 10, storeRate: 12, serviceFee: 5 }).current;
       const vals = { ...cur, demand: 0, podMargin: 0, marketing: 0, agents: 0 };
@@ -235,7 +235,7 @@
 
   /* ---------- All systems ---------- */
   SA.pages.ceoSystems = C.guard({
-    title: 'All systems — Super App',
+    title: 'All systems — Super Malaab',
     render() {
       const partners = db().all('accounts').filter((a) => a.role === 'owner');
       const sellers = db().all('sellers').filter((s) => s.status !== 'rejected');
@@ -246,13 +246,13 @@
         ${sub ? `<p class="xs muted" style="margin-top:8px">${sub}</p>` : ''}</section>`;
       const body = `<p class="small muted">${icon('info', 12)} Every system opens in a new tab, signed in as the person you choose. Each opening is written in the audit log.</p>
         <div class="ceo-systems">
-          ${box('site', 'home', 'Super App', 'The site customers use: book, play, shop, fantasy and communities.', null)}
+          ${box('site', 'home', 'Super Malaab', 'The site customers use: book, play, shop, fantasy and communities.', null)}
           ${box('admin', 'shield', 'Admin console', 'Open it as yourself (everything) or as any role — see exactly what each agent sees.', admins.map((a) => [a.id, `${a.name} — ${CE().roleOfAccount(a)?.title || ''}`]), `${admins.length} admin accounts`)}
           ${box('partner', 'pitch', 'Partner dashboard', 'Any pitch partner’s own dashboard.', partners.map((a) => [a.id, `${a.company} — ${a.name}`]), `${partners.length} partners`)}
           ${box('seller', 'users', 'Seller dashboard', 'Any seller’s own dashboard.', sellers.map((s) => [s.id, `${s.name} (@${s.handle})`]), `${sellers.length} sellers`)}
           ${box('factory', 'truck', 'Factory system', 'The factory as any member of staff.', staff.map((x) => [x.id, `${x.name} — ${SA.services.factory?.ROLES[x.role]?.label || x.role}`]), `${staff.length} staff`)}
         </div>`;
-      return C.layout('systems', { title: 'All systems', subtitle: 'Every system Super App runs — open any of them as anyone', body });
+      return C.layout('systems', { title: 'All systems', subtitle: 'Every system Super Malaab runs — open any of them as anyone', body });
     },
     mount(el) {
       el.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => { const k = b.dataset.open; const id = el.querySelector(`[data-pick="${k}"]`)?.value || ''; C.run(() => CE().openAs(k, id)); }));
@@ -261,7 +261,7 @@
 
   /* ---------- Legal documents ---------- */
   SA.pages.ceoLegal = C.guard({
-    title: 'Legal documents — Super App',
+    title: 'Legal documents — Super Malaab',
     render() {
       const docs = SA.services.legal.docs();
       const acc = db().all('legalAccepts') || [];
@@ -287,7 +287,7 @@
 
   /* ---------- Every page (site map with test shortcuts) ---------- */
   SA.pages.ceoSiteMap = C.guard({
-    title: 'Every page — Super App',
+    title: 'Every page — Super Malaab',
     render() {
       const n = (SA.ui.siteMapGroups || []).reduce((t, g) => t + g.links.length, 0);
       return C.layout('sitemap', { title: 'Every page', subtitle: `${n} pages in every system — each opens in a new tab`, body: `<p class="small muted">${icon('info', 12)} Dashboards need an account: tap a "Sign in as" shortcut first, then open their pages. Test shortcuts (a test order, a finished game, a big request) only change this device’s demo data.</p>${SA.ui.siteMap?.() || ''}` });
@@ -296,7 +296,7 @@
 
   /* ---------- Company audit log ---------- */
   SA.pages.ceoAudit = C.guard({
-    title: 'Company audit log — Super App',
+    title: 'Company audit log — Super Malaab',
     render(ctx) {
       const q = (ctx.query.q || '').trim().toLowerCase();
       const who = ctx.query.who || '';
@@ -317,7 +317,7 @@
       el.querySelector('[data-q]')?.addEventListener('submit', (e) => { e.preventDefault(); SA.core.router.go(SA.core.router.href('/ceo/audit', { who: ctx.query.who || undefined, q: e.currentTarget.q.value.trim() || undefined }).slice(1)); });
       el.querySelector('[data-xlsx]')?.addEventListener('click', () => {
         const rows = this._list.map((x) => [new Date(x.at).toISOString().slice(0, 16).replace('T', ' '), x.who, x.kind, x.action, x.text, x.ref || '']);
-        D.xlsx(`super-app-audit-log-${isoDate(today())}.xlsx`, SA.core.xlsx.dashboard({ title: 'Super App — Company audit log', subtitle: `${rows.length} actions`, data: { name: 'Audit log', columns: [{ header: 'When', width: 18 }, { header: 'Who', width: 22 }, { header: 'Kind', width: 12 }, { header: 'Action', width: 26 }, { header: 'What happened', width: 70 }, { header: 'Reference', width: 16 }], rows }, kpis: [{ label: 'Actions', f: 'COUNT', col: 'When' }], groups: [{ title: 'Actions by kind', by: 'Kind', chart: 'pie' }, { title: 'Actions by person', by: 'Who', chart: 'bar', limit: 20 }] }));
+        D.xlsx(`super-app-audit-log-${isoDate(today())}.xlsx`, SA.core.xlsx.dashboard({ title: 'Super Malaab — Company audit log', subtitle: `${rows.length} actions`, data: { name: 'Audit log', columns: [{ header: 'When', width: 18 }, { header: 'Who', width: 22 }, { header: 'Kind', width: 12 }, { header: 'Action', width: 26 }, { header: 'What happened', width: 70 }, { header: 'Reference', width: 16 }], rows }, kpis: [{ label: 'Actions', f: 'COUNT', col: 'When' }], groups: [{ title: 'Actions by kind', by: 'Kind', chart: 'pie' }, { title: 'Actions by person', by: 'Who', chart: 'bar', limit: 20 }] }));
         CE().log('report', 'Downloaded the company audit log (Excel)');
       });
     },

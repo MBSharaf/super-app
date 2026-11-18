@@ -35,7 +35,7 @@
   /** Both live lists at once (the tab counts need them); null when this account may not see a type */
   const loadLive = async () => {
     const get = (type) => API().get(`/admin/approvals?type=${type}&pageSize=100`).then((r) => r.items).catch(() => null);
-    // All at once (one wait instead of six). Owner's decision (2026-10-27): Super App approves each product a seller or
+    // All at once (one wait instead of six). Owner's decision (2026-10-27): Super Malaab approves each product a seller or
     // partner adds; null without approvals.products
     const [partners, sellers, areas, pitchCount, packages, products] = await Promise.all([get('PitchOwner'), get('Seller'), API().get('/lookups/areas'),
       API().get('/admin/pitches?status=WaitingForReview&pageSize=1').then((r) => r.meta.total).catch(() => null),
@@ -87,7 +87,7 @@
   };
 
   SA.pages.adminApprovals = A.guard({
-    title: 'Approvals — Super App Admin',
+    title: 'Approvals — Super Malaab Admin',
     async render(ctx) {
       const tab = ctx.query.tab || '';
       const pitches = AD().pendingPitches(), sellers = AD().pendingSellers();
@@ -139,7 +139,7 @@
           </tbody></table></div></section>`;
       }
       const body = `${A.tabs('/admin/approvals', [['', 'New pitches', L ? (L.pitchCount ?? 0) : pitches.filter((p) => p.review === 'pending').length], ['partners', 'Pitch partners', L ? pendingCount(L.partners) : apps.filter((a) => a.status === 'pending').length], ['sellers', 'New sellers', L ? pendingCount(L.sellers) : sellers.filter((s) => s.status === 'pending').length], ...(L ? [['products', 'New products', (L.products || []).length], ['packages', 'Package discounts', (L.packages || []).length]] : [])], tab)}${section}`;
-      return C.layout('approvals', { title: 'Approvals', subtitle: live() ? 'Check new pitches, sellers and products before they go live on Super App' : 'Check new pitches and sellers before they go live on Super App', body });
+      return C.layout('approvals', { title: 'Approvals', subtitle: live() ? 'Check new pitches, sellers and products before they go live on Super Malaab' : 'Check new pitches and sellers before they go live on Super Malaab', body });
     },
     mount(el) {
       el.querySelector('[data-seller-approval]')?.addEventListener('change', (e) => { AD().setSellerApproval(e.target.checked); toast(e.target.checked ? 'New sellers now need approval' : 'New sellers go live straight away', 'info'); });

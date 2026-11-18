@@ -6,7 +6,7 @@
   const D = () => SA.services.dash;
   const DAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  const kindLabel = (sr) => (sr.source === 'app' ? `Weekly via Super App · ${sr.weeks} weeks` : sr.kind === 'membership' ? 'Monthly membership · renews every 4 weeks' : `${sr.weeks}-week booking`);
+  const kindLabel = (sr) => (sr.source === 'app' ? `Weekly via Super Malaab · ${sr.weeks} weeks` : sr.kind === 'membership' ? 'Monthly membership · renews every 4 weeks' : `${sr.weeks}-week booking`);
 
   const form = (pitches, d) => `<form id="team-form" class="stack" style="--gap:16px" novalidate>
     <fieldset class="field"><legend class="field-label">Type</legend><div class="seg">
@@ -80,7 +80,7 @@
   };
 
   SA.pages.dashTeams = C.guard({
-    title: 'Teams & memberships — Super App Partner',
+    title: 'Teams & memberships — Super Malaab Partner',
     render(ctx) {
       const sc = C.scope();
       const pitches = D().myPitches(sc).filter((p) => p.status === 'active');

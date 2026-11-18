@@ -23,11 +23,11 @@
   const DURATIONS = [[1, '60 min'], [1.5, '90 min'], [2, '2 hours']];
 
   SA.pages.pitchDetail = {
-    title: 'Pitch — Super App',
+    title: 'Pitch — Super Malaab',
     async render(ctx) {
       const p = await S.pitches.get(ctx.params.id);
       const reviews = await S.pitches.reviews(p.id);
-      this.title = `${p.name} — Book on Super App`;
+      this.title = `${p.name} — Book on Super Malaab`;
       const F = SA.data.pitches.facilities;
       return `
       <div class="container has-action-bar">

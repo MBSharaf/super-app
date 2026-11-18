@@ -19,7 +19,7 @@
 
   /* ---------------- Cart ---------------- */
   SA.pages.cart = {
-    title: 'Cart — Super App Shop',
+    title: 'Cart — Super Malaab Shop',
     async render() {
       await S.liveShop?.started;
       const t = S.shop.totals();
@@ -85,7 +85,7 @@
 
   /* ---------------- Checkout ---------------- */
   SA.pages.checkout = {
-    title: 'Checkout — Super App Shop',
+    title: 'Checkout — Super Malaab Shop',
     async render() {
       await S.liveShop?.started;
       const t = S.shop.totals();
@@ -164,7 +164,7 @@
   /* ---------------- Order confirmation / detail ---------------- */
   const STAGES = [['confirmed', 'Confirmed', 'check'], ['packed', 'Packed', 'package'], ['shipped', 'On the way', 'truck'], ['delivered', 'Delivered', 'home']];
   SA.pages.order = {
-    title: 'Order — Super App Shop',
+    title: 'Order — Super Malaab Shop',
     async render(ctx) {
       const o = await S.shop.order(ctx.params.id);
       await S.cancellations.ready?.();
@@ -220,7 +220,7 @@
 
   /* ---------------- Order history ---------------- */
   SA.pages.orders = {
-    title: 'Orders — Super App',
+    title: 'Orders — Super Malaab',
     async render() {
       const orders = await S.shop.orders();
       const label = { ...Object.fromEntries(STAGES.map(([k, l]) => [k, l])), cancelled: 'Cancelled' };
@@ -238,7 +238,7 @@
 
   /* ---------------- Wishlist ---------------- */
   SA.pages.wishlist = {
-    title: 'Wishlist — Super App',
+    title: 'Wishlist — Super Malaab',
     render() {
       const items = S.shop.wishlist();
       return `${c.pageHead({ crumbs: [['Profile', '#/profile'], ['Wishlist']], title: 'Wishlist', text: items.length ? `${items.length} saved item${items.length > 1 ? 's' : ''}` : '' })}

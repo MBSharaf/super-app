@@ -27,7 +27,7 @@ public interface IParcelRepository
 /// <summary>
 /// Applies a courier status to a parcel (FR-FAC-06, FR-SHIP-02): picked up → items shipped; delivered → items delivered (the
 /// stores' held earnings become available after the 24-hour return window); refused → items refused, store stock back, the
-/// customer's money for them back to the Super App wallet.
+/// customer's money for them back to the Super Malaab wallet.
 /// A courier event id seen before is ignored.
 /// </summary>
 public sealed class ShipmentTracker(IShipmentRepository shipments, IParcelRepository parcels, IOrderRepository orders, IUnitOfWork unitOfWork, INotifier notifier, IClock clock,

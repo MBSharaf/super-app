@@ -1,5 +1,5 @@
 /**
- * Social media buttons (Facebook, Instagram, TikTok) in Super App brand colours.
+ * Social media buttons (Facebook, Instagram, TikTok) in Super Malaab brand colours.
  * Links come from SA.config.social. An empty link renders the button without navigation.
  */
 (function (SA) {
@@ -10,14 +10,14 @@
   ];
 
   /** Returns the social button row. variant: 'dark' (on ink backgrounds) | 'light' */
-  const render = ({ variant = 'dark', label = 'Follow Super App' } = {}) => {
+  const render = ({ variant = 'dark', label = 'Follow Super Malaab' } = {}) => {
     const links = SA.config.social || {};
     return `<div class="social social-${variant}">
       <span class="social-label">${label}</span>
       <ul class="social-list">${NETWORKS.map((n) => {
         const url = links[n.key];
         const attrs = url ? `href="${url}" target="_blank" rel="noopener"` : 'role="link" aria-disabled="true" tabindex="0" data-social-pending';
-        return `<li><a class="social-btn social-${n.key}" ${attrs} aria-label="Super App on ${n.label}" title="${n.label}">${n.svg}</a></li>`;
+        return `<li><a class="social-btn social-${n.key}" ${attrs} aria-label="Super Malaab on ${n.label}" title="${n.label}">${n.svg}</a></li>`;
       }).join('')}</ul>
     </div>`;
   };

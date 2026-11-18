@@ -149,8 +149,8 @@
   });
 
   const grandOf = (k) => ({
-    id: `grand-${k}`, name: 'Super App League', kind: 'official', participants: S(k)?.groups?.overall.managers || 0,
-    prizeValue: 0, scope: 'Every gameweek', from: 1, blurb: 'Super App’s own league, run by the Super App team. Everyone who builds a team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
+    id: `grand-${k}`, name: 'Super Malaab League', kind: 'official', participants: S(k)?.groups?.overall.managers || 0,
+    prizeValue: 0, scope: 'Every gameweek', from: 1, blurb: 'Super Malaab’s own league, run by the Super Malaab team. Everyone who builds a team is in it. The top 3 of every gameweek win Super Points.', color: 'ink',
     prizes: demo.fantasy.weeklyPoints().map((p, i) => [`${['1st', '2nd', '3rd'][i]} every gameweek`, `${p.toLocaleString()} Super Points`]), joined: !!fstate(k).team,
   });
 

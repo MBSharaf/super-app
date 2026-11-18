@@ -11,7 +11,7 @@ namespace SuperApp.Application.Features.Communities;
 
 /// <summary>
 /// Community admin (API §7.2): reports (remove, keep, remove and mute the author — community.moderate), communities
-/// (community.manage), posts and replies as "Super App Admin" (community.postAsAdmin), banned words and mutes.
+/// (community.manage), posts and replies as "Super Malaab Admin" (community.postAsAdmin), banned words and mutes.
 /// </summary>
 public interface ICommunityAdminService
 {

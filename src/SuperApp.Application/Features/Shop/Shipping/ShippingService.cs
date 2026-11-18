@@ -93,7 +93,7 @@ public sealed class ShippingService(
             throw new ConflictException("The courier already has this parcel.", "wrong_state");
         }
         await (providers.ByKey(shipment.Provider) ?? await providers.ActiveAsync(ct)).CancelAsync(shipment.TrackingNumber, ct);
-        await tracker.ApplyAsync(shipment, ShipmentStatus.Cancelled, "Cancelled by Super App", null, null, ct);
+        await tracker.ApplyAsync(shipment, ShipmentStatus.Cancelled, "Cancelled by Super Malaab", null, null, ct);
         await audit.LogAsync(AuditSystem.Admin, "shipment.cancelled", $"Cancelled parcel {shipment.TrackingNumber}", "Shipment", Id(id), ct: ct);
         return (await reader.OneAsync(id, ct))!;
     }

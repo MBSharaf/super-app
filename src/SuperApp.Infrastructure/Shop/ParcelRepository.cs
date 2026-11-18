@@ -77,11 +77,11 @@ public sealed class ParcelRepository(AppDbContext db) : IParcelRepository, IShip
             Customer = s.Order.Customer.FullName, Store = s.Fulfilment != null ? s.Fulfilment.Store.Name : null,
             Factory = s.Factory != null ? s.Factory.Name : null, FactoryAddress = s.Factory != null ? s.Factory.Address : null,
         }).SingleAsync(ct);
-        return (p.Customer, p.Factory ?? p.Store ?? "Super App", p.FactoryAddress ?? "Store pickup");
+        return (p.Customer, p.Factory ?? p.Store ?? "Super Malaab", p.FactoryAddress ?? "Store pickup");
     }
 
     private static IQueryable<ShipmentTrackDto> Tracks(IQueryable<Shipment> q) => q.AsNoTracking().IgnoreQueryFilters().Select(s => new ShipmentTrackDto(
-        s.Id, s.Factory != null ? "Printed by Super App" : s.Fulfilment != null ? s.Fulfilment.Store.Name : "Super App", s.Provider, s.Mode.ToString(), s.TrackingNumber,
+        s.Id, s.Factory != null ? "Printed by Super Malaab" : s.Fulfilment != null ? s.Fulfilment.Store.Name : "Super Malaab", s.Provider, s.Mode.ToString(), s.TrackingNumber,
         s.Status.ToString(), s.IsReturn, s.CodAmount, s.CreatedAt, s.DeliveredAt,
         s.Events.OrderBy(e => e.At).ThenBy(e => e.Id).Select(e => new ShipmentEventDto(((ShipmentStatus)e.Status).ToString(), e.Description, e.At)).ToList()));
 }

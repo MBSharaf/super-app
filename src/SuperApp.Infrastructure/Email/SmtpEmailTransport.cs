@@ -18,7 +18,7 @@ public sealed class SmtpEmailTransport(IConfiguration configuration) : IEmailTra
     {
         var email = configuration.GetSection("Email");
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(email["From_Name"] ?? "Super App", email["From"] ?? throw Missing("EMAIL__FROM")));
+        message.From.Add(new MailboxAddress(email["From_Name"] ?? "Super Malaab", email["From"] ?? throw Missing("EMAIL__FROM")));
         message.To.Add(MailboxAddress.Parse(to));
         message.Subject = subject;
         message.Body = new BodyBuilder { HtmlBody = html }.ToMessageBody();

@@ -28,7 +28,7 @@ public sealed class ReturnsController(IReturnsService returns) : ApiControllerBa
     public async Task<ActionResult<object>> Get(string code, CancellationToken ct) => Ok(await returns.GetAsync(code, ct));
 }
 
-/// <summary>Deciding returns: the same steps for sellers, pitch partners and Super App (approve books the pickup; received refunds, exchanges or reprints).</summary>
+/// <summary>Deciding returns: the same steps for sellers, pitch partners and Super Malaab (approve books the pickup; received refunds, exchanges or reprints).</summary>
 public abstract class ReturnDecisionsControllerBase(IReturnDecisionsService decisions) : ApiControllerBase
 {
     protected abstract Task<ReturnScope> ScopeAsync(CancellationToken ct);
@@ -78,5 +78,5 @@ public sealed class PartnerReturnsController(IStoreScopes scopes, IReturnDecisio
 [RequirePermission("returns.manage")]
 public sealed class AdminReturnsController(IReturnDecisionsService decisions) : ReturnDecisionsControllerBase(decisions)
 {
-    protected override Task<ReturnScope> ScopeAsync(CancellationToken ct) => Task.FromResult(new ReturnScope(null, "Super App", AuditSystem.Admin));
+    protected override Task<ReturnScope> ScopeAsync(CancellationToken ct) => Task.FromResult(new ReturnScope(null, "Super Malaab", AuditSystem.Admin));
 }

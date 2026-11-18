@@ -47,7 +47,7 @@
     return Math.round(artW / (cm / 2.54));
   };
 
-  const notSeller = () => `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Design studio']], title: 'Design studio' })}
+  const notSeller = () => `${c.pageHead({ crumbs: [['Sell on Super Malaab', '#/sell'], ['Design studio']], title: 'Design studio' })}
     <div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Turn on seller mode first', text: 'The studio is for sellers. It takes a minute to open your store.', action: c.cta('Start selling', { href: '#/sell' }) })}</div></div>`;
 
   SA.ui.readArt = readArt; // shared with the bulk upload (#/sell/bulk)
@@ -61,23 +61,23 @@
   SA.ui.sizeChart = sizeChart;
 
   SA.pages.studio = {
-    title: 'Design studio — Super App',
+    title: 'Design studio — Super Malaab',
     async render(ctx) {
       await SA.services.liveShop?.sellerReady?.();
       const s = S.sellers.current();
       if (!s) return notSeller();
-      if (s.mode === 'store') return `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Design studio']], title: 'Design studio' })}<div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Print on demand is off for your store', text: 'Your store sells your own products. Switch your selling mode to “Both” to add designs too.', action: '<button class="btn btn-primary" data-enable-pod>Turn on print on demand</button>' })}</div></div>`;
+      if (s.mode === 'store') return `${c.pageHead({ crumbs: [['Sell on Super Malaab', '#/sell'], ['Design studio']], title: 'Design studio' })}<div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Print on demand is off for your store', text: 'Your store sells your own products. Switch your selling mode to “Both” to add designs too.', action: '<button class="btn btn-primary" data-enable-pod>Turn on print on demand</button>' })}</div></div>`;
       const d = ctx.params.id ? S.pod.get(ctx.params.id) : null;
-      if (ctx.params.id && (!d || d.sellerId !== s.id || d.deleted)) return `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Design studio']], title: 'Design not found' })}<div class="container"><div class="panel">${c.empty({ icon: 'image', title: 'We couldn’t find that design', text: 'It may have been deleted.', action: c.cta('New design', { href: '#/sell/studio' }) })}</div></div>`;
+      if (ctx.params.id && (!d || d.sellerId !== s.id || d.deleted)) return `${c.pageHead({ crumbs: [['Sell on Super Malaab', '#/sell'], ['Design studio']], title: 'Design not found' })}<div class="container"><div class="panel">${c.empty({ icon: 'image', title: 'We couldn’t find that design', text: 'It may have been deleted.', action: c.cta('New design', { href: '#/sell/studio' }) })}</div></div>`;
       if (!d) {
         const lim = S.sellers.canAddDesign(s);
-        if (!lim.ok) return `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Design studio']], title: 'Design limit reached' })}<div class="container"><div class="panel">${c.empty({ icon: 'lock', title: `You have ${lim.used} of ${lim.limit} active designs`, text: 'Pause or delete a design, or level up to add more.', action: c.cta('See my designs', { href: '#/sell' }) })}</div></div>`;
+        if (!lim.ok) return `${c.pageHead({ crumbs: [['Sell on Super Malaab', '#/sell'], ['Design studio']], title: 'Design limit reached' })}<div class="container"><div class="panel">${c.empty({ icon: 'lock', title: `You have ${lim.used} of ${lim.limit} active designs`, text: 'Pause or delete a design, or level up to add more.', action: c.cta('See my designs', { href: '#/sell' }) })}</div></div>`;
       }
       const items = S.pod.catalog();
       const lvl = S.sellers.levelOf(s);
       const cats = S.pod.categories();
       const cur = items.find((x) => x.id === d?.catalogId) || items[0];
-      return `${c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], [d ? 'Edit design' : 'New design']], title: d ? esc(d.title || 'Edit design') : 'New design',
+      return `${c.pageHead({ crumbs: [['Sell on Super Malaab', '#/sell'], [d ? 'Edit design' : 'New design']], title: d ? esc(d.title || 'Edit design') : 'New design',
         text: d?.status === 'rejected' ? `Rejected: ${esc(d.reason)} — fix it and send it again.` : d?.status === 'live' ? 'Editing a live design takes it out of the shop until it’s approved again.' : `Level ${esc(lvl.name)}${lvl.baseDiscount ? ` · ${money(lvl.baseDiscount)} off every base price` : ''}`,
         actions: `<a class="btn btn-ghost btn-sm" href="#/seller">${icon('grid', 15)} Dashboard</a>` })}
       <div class="container studio">

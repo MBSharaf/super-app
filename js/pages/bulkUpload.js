@@ -12,10 +12,10 @@
   const titleOf = (name) => name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^./, (x) => x.toUpperCase()).slice(0, 60);
 
   SA.pages.bulkUpload = {
-    title: 'Bulk upload — Super App',
+    title: 'Bulk upload — Super Malaab',
     render() {
       const s = S.sellers.current();
-      const head = (t) => c.pageHead({ crumbs: [['Sell on Super App', '#/sell'], ['Bulk upload']], title: 'Upload many designs', text: t });
+      const head = (t) => c.pageHead({ crumbs: [['Sell on Super Malaab', '#/sell'], ['Bulk upload']], title: 'Upload many designs', text: t });
       if (!s) return `${head('')}<div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Start selling first', text: 'Apply to sell, then upload your designs here.', action: '<a class="btn btn-primary" href="#/sell">Start selling</a>' })}</div></div>`;
       if (s.mode === 'store') return `${head('')}<div class="container"><div class="panel">${c.empty({ icon: 'shirt', title: 'Print on demand is off for your store', text: 'Turn it on from the design studio to upload designs.', action: '<a class="btn btn-primary" href="#/sell/studio">Design studio</a>' })}</div></div>`;
       const lim = S.sellers.canAddDesign(s);

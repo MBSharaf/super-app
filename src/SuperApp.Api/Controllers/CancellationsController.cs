@@ -8,7 +8,7 @@ namespace SuperApp.Api.Controllers;
 
 /// <summary>
 /// Cancellation requests (owner's rule, 2026-11-07): a customer can't cancel a paid booking, package, order or game place
-/// directly — "Cancel" posts here, the request gets its own number and the Super App team replies within 2 hours.
+/// directly — "Cancel" posts here, the request gets its own number and the Super Malaab team replies within 2 hours.
 /// </summary>
 [Route("api/v1/cancellations")]
 [Authorize]

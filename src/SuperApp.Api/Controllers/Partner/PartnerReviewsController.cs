@@ -37,6 +37,6 @@ public sealed class PartnerReviewsController(IPartnerReviewsService reviews) : A
     public async Task<ActionResult<object>> Report(long id, ReportRequest request, CancellationToken ct)
     {
         await reviews.ReportAsync(id, request, ct);
-        return Ok<object?>(null, "Reported. Super App will check it.");
+        return Ok<object?>(null, "Reported. Super Malaab will check it.");
     }
 }

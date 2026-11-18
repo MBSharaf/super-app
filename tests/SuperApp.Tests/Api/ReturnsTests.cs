@@ -9,7 +9,7 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Tests.Api;
 
-/// <summary>Returns and exchanges (owner's decisions, 2026-10-27): an item with a problem, within 24 hours of delivery, the store pays; store / Super App decisions.</summary>
+/// <summary>Returns and exchanges (owner's decisions, 2026-10-27): an item with a problem, within 24 hours of delivery, the store pays; store / Super Malaab decisions.</summary>
 [Trait("Category", "Database")]
 public sealed class ReturnsTests(DemoApiFactory api) : IClassFixture<DemoApiFactory>
 {

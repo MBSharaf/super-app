@@ -57,7 +57,7 @@ public interface IMoneyStore
 /// The double-entry side of bookings. A booking pays a deposit in the app and the rest (<c>BalanceDue</c>) in cash at the pitch.
 /// A paid deposit: commission and service fee go to the platform revenue wallet, the rest of the deposit is the partner's
 /// earning (its earning on the booking − the cash it collects at the pitch), Pending until 24 hours after kick-off.
-/// A refund (a share of the deposit) goes to the customer's Super App wallet at once, takes back each share in proportion and
+/// A refund (a share of the deposit) goes to the customer's Super Malaab wallet at once, takes back each share in proportion and
 /// takes back the refunded money's Super Points. Every payment and refund gets a receipt (PDF on demand).
 /// </summary>
 public interface ILedger
@@ -71,34 +71,34 @@ public interface ILedger
     /// <summary>
     /// A payment that arrived after its booking was already called off (paid after the 15 minutes): the whole amount goes
     /// back to the card (<paramref name="gatewayRefundRef"/> set) or waits for the team (null → refund Requested),
-    /// with a refund receipt and the points taken back. Nothing reaches the venue or Super App. Saved by the caller.
+    /// with a refund receipt and the points taken back. Nothing reaches the venue or Super Malaab. Saved by the caller.
     /// </summary>
     Task LatePaymentRefundAsync(Payment payment, long bookingId, string? gatewayRefundRef, CancellationToken ct);
 
-    /// <summary>Something Super App sells itself (Fantasy Pass…): all of it to platform revenue, and a receipt.</summary>
+    /// <summary>Something Super Malaab sells itself (Fantasy Pass…): all of it to platform revenue, and a receipt.</summary>
     Task PlatformSaleAsync(Payment payment, string refType, long refId, CancellationToken ct);
 
     /// <summary>
-    /// Money given to a customer outside a cancellation (a dispute): to their Super App wallet at once, charged to the venue
-    /// (its available balance, else its held money) or to Super App, with a refund receipt.
+    /// Money given to a customer outside a cancellation (a dispute): to their Super Malaab wallet at once, charged to the venue
+    /// (its available balance, else its held money) or to Super Malaab, with a refund receipt.
     /// </summary>
     Task CreditAsync(Guid customerId, decimal amount, Guid? chargedPartnerId, string refType, long refId, CancellationToken ct);
 
     /// <summary>
-    /// A correction by the team: + or − on the wallet's available money, with Super App's revenue wallet on the other side.
+    /// A correction by the team: + or − on the wallet's available money, with Super Malaab's revenue wallet on the other side.
     /// Taking more than is available → 422 <c>not_enough_balance</c>. Saved by the caller.
     /// </summary>
     Task AdjustAsync(Guid ownerUserId, WalletType type, decimal amount, string refType, long refId, CancellationToken ct);
 
-    /// <summary>A paid store order: each store's earning held, Super App's shares to revenue, a payment receipt. Saved by the caller.</summary>
+    /// <summary>A paid store order: each store's earning held, Super Malaab's shares to revenue, a payment receipt. Saved by the caller.</summary>
     Task OrderPaidAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> shares, CancellationToken ct);
 
     /// <summary>Money back to the customer's wallet for these items (+ the delivery fee when given), each share taken back, a refund receipt.</summary>
     Task OrderRefundAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> items, decimal deliveryFee, CancellationToken ct);
 
     /// <summary>
-    /// A return Super App received: the refund to the customer's wallet; the store bears it (its held earning for the
-    /// refunded items, the rest and the return delivery from its available balance), or Super App for its own store. Saved by the caller.
+    /// A return Super Malaab received: the refund to the customer's wallet; the store bears it (its held earning for the
+    /// refunded items, the rest and the return delivery from its available balance), or Super Malaab for its own store. Saved by the caller.
     /// </summary>
     Task ReturnSettledAsync(Domain.Entities.Shop.Order order, long returnId, IReadOnlyList<OrderShare> refunded, decimal refund, StoreWallet? payer, decimal returnFee, CancellationToken ct);
 
@@ -108,11 +108,11 @@ public interface ILedger
     /// <summary>An entry fee the venue earns (tournaments): its share held until <c>release</c>, commission to revenue, a receipt.</summary>
     Task EntryFeeAsync(Payment payment, Guid venueOwnerId, decimal commissionRate, string refType, long refId, DateTime release, CancellationToken ct);
 
-    /// <summary>A player's game share, held in the host's Super App wallet until kick-off; a receipt for the player.</summary>
+    /// <summary>A player's game share, held in the host's Super Malaab wallet until kick-off; a receipt for the player.</summary>
     Task HeldShareAsync(Payment payment, Guid hostId, string refType, long refId, DateTime release, CancellationToken ct);
 
     /// <summary>
-    /// Takes a payment from the payer's Super App wallet (available money only); not enough → 422 insufficient_funds. The row
+    /// Takes a payment from the payer's Super Malaab wallet (available money only); not enough → 422 insufficient_funds. The row
     /// points at the payment by its code (the payment has no id until it is saved).
     /// </summary>
     Task PayFromWalletAsync(Payment payment, CancellationToken ct);
@@ -306,7 +306,7 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, Sup
 
     /// <summary>
     /// Partner earning (pitch amount − the venue's own promo discount − commission), commission and service fee. A Super Points
-    /// voucher is paid by Super App, so earning + commission + fee − voucher = the total paid.
+    /// voucher is paid by Super Malaab, so earning + commission + fee − voucher = the total paid.
     /// </summary>
     private static (decimal Earning, decimal Commission, decimal Fee) Shares(Booking b, decimal voucher)
     {

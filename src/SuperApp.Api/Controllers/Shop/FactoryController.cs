@@ -65,7 +65,7 @@ public sealed class FactoryController(IFactoryAuthService auth, IFactoryJobsServ
 
     [HttpPost("jobs/{code}/problem")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
-    public async Task<ActionResult<object>> Problem(string code, ProblemRequest request, CancellationToken ct) => Ok(await jobs.ProblemAsync(code, request, ct), "Reported. The supervisor and Super App were told.");
+    public async Task<ActionResult<object>> Problem(string code, ProblemRequest request, CancellationToken ct) => Ok(await jobs.ProblemAsync(code, request, ct), "Reported. The supervisor and Super Malaab were told.");
 
     [HttpPost("jobs/{code}/assign")]
     [EnableRateLimiting(RateLimitPolicies.Write)]

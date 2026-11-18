@@ -3,7 +3,7 @@
  *
  * The site works in two modes:
  *   - Demo mode (GitHub Pages, or any copy without the server): everything uses the local demo data, as before.
- *   - API mode (the site served by the Super App server): sign-in, sign-up, applications and approvals use the
+ *   - API mode (the site served by the Super Malaab server): sign-in, sign-up, applications and approvals use the
  *     real API. Parts not built on the server yet keep using the demo data until their phase.
  *
  * `SA.services.api.ready` resolves once the mode is known. Every change (POST/PUT/PATCH/DELETE) sends the
@@ -44,7 +44,7 @@
     return json ? (json.meta ? { items: json.data, meta: json.meta, message: json.message } : json.data) : null;
   };
 
-  /** API mode only when this page is served by the Super App server (it answers the CSRF endpoint) */
+  /** API mode only when this page is served by the Super Malaab server (it answers the CSRF endpoint) */
   const detect = async () => {
     if (location.protocol === 'file:' || /github\.io$/.test(location.hostname)) return 'demo';
     // The Android app uses the demo data until the server is online on a public HTTPS address

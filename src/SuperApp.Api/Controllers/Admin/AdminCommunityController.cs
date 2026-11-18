@@ -91,16 +91,16 @@ public sealed class AdminCommunitiesController(ICommunityAdminService admin) : A
     }
 }
 
-/// <summary>Posts and replies as "Super App Admin" (permission community.postAsAdmin + 2FA).</summary>
+/// <summary>Posts and replies as "Super Malaab Admin" (permission community.postAsAdmin + 2FA).</summary>
 [Route("api/v1/admin")]
 [RequirePermission("community.postAsAdmin")]
 public sealed class AdminCommunityPostsController(ICommunityAdminService admin) : ApiControllerBase
 {
     [HttpPost("communities/{slug}/posts")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
-    public async Task<ActionResult<object>> Post(string slug, AdminPostRequest request, CancellationToken ct) => Created(await admin.PostAsync(slug, request, ct), "Posted as Super App Admin.");
+    public async Task<ActionResult<object>> Post(string slug, AdminPostRequest request, CancellationToken ct) => Created(await admin.PostAsync(slug, request, ct), "Posted as Super Malaab Admin.");
 
     [HttpPost("posts/{id:long}/reply")]
     [EnableRateLimiting(RateLimitPolicies.Write)]
-    public async Task<ActionResult<object>> Reply(long id, CommentRequest request, CancellationToken ct) => Created(await admin.ReplyAsync(id, request, ct), "Replied as Super App Admin.");
+    public async Task<ActionResult<object>> Reply(long id, CommentRequest request, CancellationToken ct) => Created(await admin.ReplyAsync(id, request, ct), "Replied as Super Malaab Admin.");
 }

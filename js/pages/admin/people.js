@@ -72,7 +72,7 @@
       <section class="adm-ds"><h3 class="h4">Bookings</h3>${c.bookingList.length ? `<ul class="adm-list">${c.bookingList.slice(0, 6).map((b) => `<li><span class="grow"><b class="small">${esc(b.pitchName || b.pitchId)}</b><span class="xs muted" style="display:block">${fmtDate(b.date)} · ${fmtHour(b.hour)} · ${esc(b.id)}</span></span>${C.statusBadge(b.status)}<b class="num small">${money(b.amount)}</b></li>`).join('')}</ul>` : '<p class="small muted">No bookings.</p>'}</section>
       ${c.device ? `<section class="adm-ds"><h3 class="h4">Shop orders</h3>${c.orderList.length ? `<ul class="adm-list">${c.orderList.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.id)}</b><span class="xs muted" style="display:block">${fmtDate(new Date(o.createdAt))} · ${o.lines.length} item${o.lines.length > 1 ? 's' : ''} · ${esc(o.payment?.label || '')}</span></span><b class="num small">${money(o.total)}</b></li>`).join('')}</ul>` : '<p class="small muted">No orders.</p>'}</section>` : ''}
       <section class="adm-ds"><h3 class="h4">Printed items</h3>${c.podList.length ? `<ul class="adm-list">${c.podList.slice(0, 6).map((o) => `<li><span class="grow"><b class="small">${esc(o.title)}</b><span class="xs muted" style="display:block">${fmtDate(new Date(o.placedAt))} · ${esc(o.color)} · ${esc(o.size)}</span></span><span class="badge ${o.status === 'refused' ? 'badge-danger' : o.status === 'delivered' ? 'badge-turf' : ''}">${esc(o.status)}</span><b class="num small">${money(o.price)}</b></li>`).join('')}</ul>` : '<p class="small muted">No printed items.</p>'}</section>
-      ${c.credits.length ? `<section class="adm-ds"><h3 class="h4">Credits from Super App</h3><ul class="adm-list">${c.credits.map((x) => `<li><span class="grow small">${esc(x.reason)}<span class="xs muted" style="display:block">${fmtDate(new Date(x.at))}</span></span><b class="num small" style="color:var(--turf)">+${money(x.amount)}</b></li>`).join('')}</ul></section>` : ''}
+      ${c.credits.length ? `<section class="adm-ds"><h3 class="h4">Credits from Super Malaab</h3><ul class="adm-list">${c.credits.map((x) => `<li><span class="grow small">${esc(x.reason)}<span class="xs muted" style="display:block">${fmtDate(new Date(x.at))}</span></span><b class="num small" style="color:var(--turf)">+${money(x.amount)}</b></li>`).join('')}</ul></section>` : ''}
       ${!c.device && !c.live ? `<p class="xs muted adm-ds">${icon('info', 12)} Demo: only the shopper on this device receives notifications and wallet credits for real. Others are recorded.</p>` : ''}`;
   };
   const customerClick = async (e, id) => {
@@ -85,9 +85,9 @@
         const r = await A.reason({ title: 'Adjust Super Points', text: 'Use a minus sign to remove points. They see the reason in their points history.', label: 'Reason they’ll see', confirmLabel: 'Save', extra: '<div class="field"><label for="pt-a">Points (+ or −)</label><input class="input num" id="pt-a" name="points" type="number" step="10" value="100" /></div>' });
         if (!r) return; await AD().adjustPoints(id, r.points, r.reason); toast('Points updated'); return true;
       }
-      if (act === 'note') { const r = await A.reason({ title: 'Add a note', text: 'Only the Super App team sees notes.', label: 'Note', confirmLabel: 'Save note' }); if (!r) return; await AD().noteCustomer(id, r.reason); toast('Note saved'); return true; }
+      if (act === 'note') { const r = await A.reason({ title: 'Add a note', text: 'Only the Super Malaab team sees notes.', label: 'Note', confirmLabel: 'Save note' }); if (!r) return; await AD().noteCustomer(id, r.reason); toast('Note saved'); return true; }
       if (act === 'credit') {
-        const r = await A.reason({ title: 'Credit their wallet', text: 'Super App pays for it. It shows up in the revenue report as a cost.', label: 'Reason they’ll see', confirmLabel: 'Send credit', extra: '<div class="field"><label for="cr-a">Amount (EGP)</label><input class="input num" id="cr-a" name="amount" type="number" min="5" max="5000" value="100" /></div>' });
+        const r = await A.reason({ title: 'Credit their wallet', text: 'Super Malaab pays for it. It shows up in the revenue report as a cost.', label: 'Reason they’ll see', confirmLabel: 'Send credit', extra: '<div class="field"><label for="cr-a">Amount (EGP)</label><input class="input num" id="cr-a" name="amount" type="number" min="5" max="5000" value="100" /></div>' });
         if (!r) return; await AD().creditCustomer(id, r.amount, r.reason); toast(`${money(Math.round(+r.amount))} credited`); return true;
       }
     } catch (err) { toast(err.message, 'error'); }
@@ -95,7 +95,7 @@
   };
 
   SA.pages.adminCustomers = A.guard({
-    title: 'Customers — Super App Admin',
+    title: 'Customers — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const all = AD().customers();
@@ -103,7 +103,7 @@
       const list = all.filter((c) => (!tab || (tab === 'blocked' ? c.blocked : tab === 'upfront' ? c.needsPrepay : tab === 'refused' ? c.refused > 0 : true)) && match(q.q, c.name, c.phone, c.city, c.id));
       const body = `<div class="kpi-grid kpi-sm">
           ${C.kpi({ label: 'Customers', value: all.length, count: all.length, ic: 'user' })}
-          ${C.kpi({ label: 'Spent through Super App', value: money(Math.round(all.reduce((t, c) => t + c.spent, 0))), ic: 'wallet', tone: 'k-turf' })}
+          ${C.kpi({ label: 'Spent through Super Malaab', value: money(Math.round(all.reduce((t, c) => t + c.spent, 0))), ic: 'wallet', tone: 'k-turf' })}
           ${C.kpi({ label: 'Pay upfront', value: all.filter((c) => c.needsPrepay).length, ic: 'card', sub: 'Printed items: card or wallet only' })}
           ${C.kpi({ label: 'Blocked', value: all.filter((c) => c.blocked).length, ic: 'ban', tone: all.some((c) => c.blocked) ? 'k-blaze' : '' })}
         </div>
@@ -122,10 +122,10 @@
         const status = (c) => (c.blocked ? 'Blocked' : c.needsPrepay ? 'Pay upfront' : 'Active');
         const iso = (t) => (t && isFinite(t) ? new Date(t).toISOString().slice(0, 10) : '');
         C.xlsx(`super-app-customers-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
-          title: 'Super App — Customers', subtitle: `${all.length} customers`,
+          title: 'Super Malaab — Customers', subtitle: `${all.length} customers`,
           data: { name: 'Customers', columns: [{ header: 'ID', width: 16 }, { header: 'Name', width: 22 }, { header: 'Phone', width: 16 }, { header: 'City', width: 14 }, { header: 'Bookings', width: 10, type: 'number' }, { header: 'Orders', width: 10, type: 'number' }, { header: 'Printed items', width: 13, type: 'number' }, { header: 'Spent', width: 13, type: 'money' }, { header: 'Refused deliveries', width: 16, type: 'number' }, { header: 'Status', width: 13 }, { header: 'First seen', width: 12 }, { header: 'Last active', width: 12 }],
             rows: all.map((c) => [c.id, c.name, c.phone || '', c.city || 'Unknown', c.bookings, c.orders, c.items, Math.round(c.spent), c.refused || 0, status(c), iso(c.first), iso(c.last)]) },
-          kpis: [{ label: 'Customers', f: 'COUNT', col: 'ID' }, { label: 'Spent through Super App', col: 'Spent', type: 'money' }, { label: 'Average spent', f: 'AVERAGE', col: 'Spent', type: 'money' }, { label: 'Bookings', col: 'Bookings' }, { label: 'Orders', col: 'Orders' }, { label: 'Blocked', f: 'COUNTIF', col: 'Status', match: 'Blocked' }],
+          kpis: [{ label: 'Customers', f: 'COUNT', col: 'ID' }, { label: 'Spent through Super Malaab', col: 'Spent', type: 'money' }, { label: 'Average spent', f: 'AVERAGE', col: 'Spent', type: 'money' }, { label: 'Bookings', col: 'Bookings' }, { label: 'Orders', col: 'Orders' }, { label: 'Blocked', f: 'COUNTIF', col: 'Status', match: 'Blocked' }],
           groups: [{ title: 'Spent by city', by: 'City', sum: 'Spent', chart: 'bar', type: 'money' }, { title: 'Customers by city', by: 'City', chart: 'pie' }, { title: 'Customers by status', by: 'Status', chart: 'pie' }],
         }));
         AD().log('export', `Exported ${all.length} customers`);
@@ -173,7 +173,7 @@
         if (!r) return false;
         await AD().adjustPartnerBalance(id, (+r.sign || 1) * Math.abs(+r.amount || 0), r.reason); toast('Balance adjusted'); return true;
       }
-      if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super App. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; await AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
+      if (act === 'suspend') { const r = await A.reason({ title: 'Suspend this partner?', text: 'They can’t sign in, and their pitches and store disappear from Super Malaab. Upcoming bookings stay — handle them from Orders & bookings.', label: 'Reason they’ll see', confirmLabel: 'Suspend', danger: true }); if (!r) return; await AD().setPartnerStatus(id, 'suspended', r.reason); toast('Partner suspended', 'info'); return true; }
       if (act === 'activate') { await AD().setPartnerStatus(id, 'active'); toast('Partner reactivated'); return true; }
       if (act === 'deal-clear') { await AD().setCommissionDeal(id, {}); toast('Platform rates apply again', 'info'); return true; }
       const hp = e.target.closest('[data-hide-product]');
@@ -193,7 +193,7 @@
   };
 
   SA.pages.adminPartners = A.guard({
-    title: 'Pitch partners — Super App Admin',
+    title: 'Pitch partners — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const all = AD().partners();
@@ -203,7 +203,7 @@
       const tot = all.reduce((t, p) => ({ gross: t.gross + p.gross30, comm: t.comm + p.commission30 }), { gross: 0, comm: 0 });
       const body = `<div class="kpi-grid kpi-sm">
           ${C.kpi({ label: 'Pitch owners', value: all.length, count: all.length, ic: 'users' })}
-          ${C.kpi({ label: 'Pitches on Super App', value: all.reduce((t, p) => t + p.pitches, 0), ic: 'pitch' })}
+          ${C.kpi({ label: 'Pitches on Super Malaab', value: all.reduce((t, p) => t + p.pitches, 0), ic: 'pitch' })}
           ${C.kpi({ label: 'Partner revenue (30d)', value: money(Math.round(tot.gross)), ic: 'percent', tone: 'k-turf' })}
           ${C.kpi({ label: 'Commission earned (30d)', value: money(Math.round(tot.comm)), ic: 'wallet', tone: 'k-blaze' })}
         </div>
@@ -220,7 +220,7 @@
       el.querySelector('[data-export]')?.addEventListener('click', () => {
         const all = AD().partners();
         C.xlsx(`super-app-pitch-partners-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
-          title: 'Super App — Pitch partners', subtitle: 'Last 30 days',
+          title: 'Super Malaab — Pitch partners', subtitle: 'Last 30 days',
           data: { name: 'Pitch partners', columns: [{ header: 'ID', width: 12 }, { header: 'Company', width: 24 }, { header: 'Owner', width: 20 }, { header: 'Email', width: 24 }, { header: 'Phone', width: 16 }, { header: 'Pitches', width: 9, type: 'number' }, { header: 'Closed pitches', width: 13, type: 'number' }, { header: 'Occupancy', width: 11, type: 'percent' }, { header: 'Revenue 30d', width: 14, type: 'money' }, { header: 'Commission 30d', width: 15, type: 'money' }, { header: 'Balance', width: 13, type: 'money' }, { header: 'Status', width: 12 }],
             rows: all.map((x) => [x.id, x.company, x.name, x.email || '', x.phone || '', x.pitches, x.closed, +(x.occupancy || 0).toFixed(3), Math.round(x.gross30), Math.round(x.commission30), Math.round(x.balance || 0), x.status === 'suspended' ? 'Suspended' : 'Active']) },
           kpis: [{ label: 'Pitch partners', f: 'COUNT', col: 'ID' }, { label: 'Pitches', col: 'Pitches' }, { label: 'Revenue (30 days)', col: 'Revenue 30d', type: 'money' }, { label: 'Commission (30 days)', col: 'Commission 30d', type: 'money' }, { label: 'Average occupancy', f: 'AVERAGE', col: 'Occupancy', type: 'percent' }],
@@ -235,7 +235,7 @@
         const st = e.target.closest('[data-store-status]');
         if (st) {
           const s = db().find('stores', st.dataset.storeStatus);
-          if (st.dataset.to === 'suspended' && !(await SA.ui.overlay.confirm({ title: `Suspend ${esc(s.name)}?`, text: 'All its products disappear from the Super App shop until you reactivate it.', confirmLabel: 'Suspend store', danger: true }))) return;
+          if (st.dataset.to === 'suspended' && !(await SA.ui.overlay.confirm({ title: `Suspend ${esc(s.name)}?`, text: 'All its products disappear from the Super Malaab shop until you reactivate it.', confirmLabel: 'Suspend store', danger: true }))) return;
           SA.services.dash.setStoreStatus(s.id, st.dataset.to); AD().log(`store.${st.dataset.to}`, `${st.dataset.to === 'active' ? 'Reactivated' : 'Suspended'} store ${s.name}`, s.id);
           toast(st.dataset.to === 'active' ? 'Store reactivated' : 'Store suspended'); SA.app.rerender();
         }
@@ -286,7 +286,7 @@
   };
 
   SA.pages.adminSellers = A.guard({
-    title: 'Sellers — Super App Admin',
+    title: 'Sellers — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const all = SL().list().map((s) => ({ s, lv: SL().levelOf(s), acc: db().find('accounts', s.accountId), live: db().all('designs').filter((d) => d.sellerId === s.id && d.status === 'live').length }));
@@ -312,7 +312,7 @@
       el.querySelector('[data-export]')?.addEventListener('click', () => {
         const all = SL().list().map((x) => ({ x, lv: SL().levelOf(x), acc: db().find('accounts', x.accountId) }));
         C.xlsx(`super-app-sellers-${new Date().toISOString().slice(0, 10)}.xlsx`, SA.core.xlsx.dashboard({
-          title: 'Super App — Sellers', subtitle: `${all.length} sellers`,
+          title: 'Super Malaab — Sellers', subtitle: `${all.length} sellers`,
           data: { name: 'Sellers', columns: [{ header: 'ID', width: 16 }, { header: 'Store', width: 22 }, { header: 'Owner', width: 20 }, { header: 'Sells', width: 16 }, { header: 'Level', width: 10 }, { header: 'Live designs', width: 12, type: 'number' }, { header: 'Items sold', width: 11, type: 'number' }, { header: 'Profit', width: 13, type: 'money' }, { header: 'ID check', width: 11 }, { header: 'Status', width: 11 }],
             rows: all.map(({ x, lv, acc }) => [x.id, x.name, acc?.name || '', { pod: 'Print on demand', store: 'Own products', both: 'Both' }[x.mode] || x.mode, lv.name, db().all('designs').filter((d) => d.sellerId === x.id && d.status === 'live').length, lv.stats?.sales || 0, Math.round(SA.services.pod.earnings(x.id).lifetime || 0), x.kyc || 'none', x.status]) },
           kpis: [{ label: 'Sellers', f: 'COUNT', col: 'ID' }, { label: 'Live designs', col: 'Live designs' }, { label: 'Items sold', col: 'Items sold' }, { label: 'Paid to sellers (profit)', col: 'Profit', type: 'money' }],

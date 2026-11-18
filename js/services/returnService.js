@@ -3,10 +3,10 @@
  * - Within 14 days of delivery. Store products: return (refund) or exchange (another size/colour) for any reason;
  *   "changed my mind" pays the return delivery. Printed designs (made to order): only a fault, damage, wrong size sent
  *   or a wrong print — reprinted by the factory or refunded; never for a change of mind.
- * - One request per seller in the order. Who decides: the store owner (their own store), Super App (the official store
+ * - One request per seller in the order. Who decides: the store owner (their own store), Super Malaab (the official store
  *   and printed designs). Steps: requested → approved (courier pickup booked) → received → refunded / exchanged;
  *   printed designs skip the pickup: approved → reprinting (factory) or refunded. Or rejected, with a reason.
- * - Refunds go to the customer's wallet with a receipt; the seller's store wallet is charged its share and Super App
+ * - Refunds go to the customer's wallet with a receipt; the seller's store wallet is charged its share and Super Malaab
  *   returns its commission (recorded as a platform refund).
  *
  * Future API: POST /returns, PATCH /returns/:id (approve, reject, received)
@@ -52,7 +52,7 @@
     if (a.role === 'admin') return true;
     return r.ownerId !== 'admin' && (r.ownerId === a.id || r.ownerId === a.baseId || r.ownerId === (a.baseRole ? a.id : ''));
   };
-  const actor = () => SA.services.dash?.me?.() || { id: 'system', name: 'Super App' };
+  const actor = () => SA.services.dash?.me?.() || { id: 'system', name: 'Super Malaab' };
   const step = (r, status, note = '') => [...r.history, { status, at: Date.now(), by: actor().name, note }];
   const tellCustomer = (r, title, body) => { const u = user(); if (u.id && r.customer?.id === u.id) SA.services.user.notify({ kind: 'shop', title, body, link: `/order/${r.orderId}` }); };
   const tellOwner = (r, n) => (r.ownerId === 'admin' ? N()?.toAdmins(n) : N()?.toAccount(r.ownerId, n));
@@ -109,7 +109,7 @@
       return out;
     },
 
-    /** Seller (own store) or Super App: accept or refuse a request */
+    /** Seller (own store) or Super Malaab: accept or refuse a request */
     async decide(id, approve, note = '') {
       const r = returns.get(id);
       if (!owns(r)) throw new ApiError('This return belongs to another seller.', 'forbidden');
@@ -156,7 +156,7 @@
       }
       db().log(actor().id, 'return.received', `Return ${id} received${r.amount ? ` — ${r.amount.toLocaleString()} EGP refunded` : ''}${ex.length ? ' — replacement sent' : ''}`, id);
     },
-    /** Money back: the customer's wallet (receipt), the seller's store wallet pays its share, Super App its commission */
+    /** Money back: the customer's wallet (receipt), the seller's store wallet pays its share, Super Malaab its commission */
     async _refund(r, from) {
       const u = user();
       if (r.customer?.id === u.id && r.amount > 0) await SA.services.payment.refund(r.amount, `Refund — return ${r.id} (${r.orderId})`);
@@ -166,10 +166,10 @@
         const commission = Math.round(r.amount * rate);
         if (st && !st.official) db().insert('adjustments', { accountId: st.ownerId, amount: -(r.amount - commission), reason: `Return ${r.id} for ${r.orderId}: ${r.reasonLabel}`, kind: 'return', ref: r.id, wallet: 'store', at: Date.now(), by: actor().id }, 'adj');
         if (commission) db().insert('refunds', { customerId: r.customer.id, amount: st?.official ? r.amount : commission, bearer: 'platform', kind: 'return', reason: `Commission on return ${r.id}`, ref: r.id, at: Date.now() }, 'rf');
-        if (st && !st.official) N()?.toAccount(st.ownerId, { cat: 'money', tone: 'gold', title: `−${(r.amount - commission).toLocaleString()} EGP · return ${r.id}`, body: `Refund to ${r.customer.name}; Super App returned its ${commission.toLocaleString()} EGP commission.`, link: '#/seller/returns' });
+        if (st && !st.official) N()?.toAccount(st.ownerId, { cat: 'money', tone: 'gold', title: `−${(r.amount - commission).toLocaleString()} EGP · return ${r.id}`, body: `Refund to ${r.customer.name}; Super Malaab returned its ${commission.toLocaleString()} EGP commission.`, link: '#/seller/returns' });
       } else db().insert('refunds', { customerId: r.customer.id, amount: r.amount, bearer: 'platform', kind: 'return', reason: `Return ${r.id}`, ref: r.id, at: Date.now() }, 'rf');
       db().update('returns', r.id, { status: 'refunded', refundedAt: Date.now(), history: step(db().find('returns', r.id), 'refunded', `${r.amount.toLocaleString()} EGP to the wallet`) });
-      tellCustomer(r, `${r.amount.toLocaleString()} EGP refunded`, `Return ${r.id} — it’s in your Super App wallet. The receipt is in your profile.`);
+      tellCustomer(r, `${r.amount.toLocaleString()} EGP refunded`, `Return ${r.id} — it’s in your Super Malaab wallet. The receipt is in your profile.`);
     },
   };
 

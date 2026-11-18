@@ -215,14 +215,14 @@ public sealed class CheckInService(
     private static readonly Dictionary<QrScanResult, (string? Reason, string Message)> Reasons = new()
     {
         [QrScanResult.Accepted] = (null, "Checked in. Have a great game!"),
-        [QrScanResult.BadSignature] = ("bad_signature", "This code isn’t a Super App booking. Ask for the QR in the app or the booking ID."),
+        [QrScanResult.BadSignature] = ("bad_signature", "This code isn’t a Super Malaab booking. Ask for the QR in the app or the booking ID."),
         [QrScanResult.OtherVenue] = ("other_venue", "This booking is for another pitch."),
         [QrScanResult.WrongDay] = ("wrong_day", "This booking is for another day."),
         [QrScanResult.WrongHour] = ("wrong_hour", "Too early or too late: check-in opens 60 minutes before kick-off and closes when the booking ends."),
         [QrScanResult.Cancelled] = ("cancelled", "This booking was cancelled."),
         [QrScanResult.AlreadyUsed] = ("already_used", "Already checked in."),
         [QrScanResult.PackageFinished] = ("package_finished", "Every match of this package was used."),
-        [QrScanResult.AccountBlocked] = ("account_blocked", "This player’s account is blocked. Contact Super App support."),
+        [QrScanResult.AccountBlocked] = ("account_blocked", "This player’s account is blocked. Contact Super Malaab support."),
     };
 }
 

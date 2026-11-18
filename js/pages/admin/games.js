@@ -13,7 +13,7 @@
   const RS = { pending: ['badge-gold', 'Waiting'], accepted: ['badge-turf', 'In'], declined: ['', 'Declined'], withdrawn: ['', 'Withdrew'], removed: ['badge-danger', 'Removed'], waitlist: ['badge-info', 'Waitlist'] };
 
   SA.pages.adminGames = A.guard({
-    title: 'Free slots & games — Super App Admin',
+    title: 'Free slots & games — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || '';
       const slots = SA.services.games.slotPosts().sort((a, b) => b.at - a.at);

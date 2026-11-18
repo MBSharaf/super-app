@@ -41,7 +41,7 @@ public sealed class AdminProductsService(
         var (product, owner) = await WaitingAsync(id, ct);
         (product.Status, product.ApprovedAt, product.ReviewNote) = (ProductStatus.Published, clock.UtcNow, null);
         await unitOfWork.SaveChangesAsync(ct);
-        await TellAsync(owner, $"“{product.Name}” is on sale", "Super App approved it — customers can buy it now.", NotificationTone.Success, ct);
+        await TellAsync(owner, $"“{product.Name}” is on sale", "Super Malaab approved it — customers can buy it now.", NotificationTone.Success, ct);
         await audit.LogAsync(AuditSystem.Admin, "product.approved", $"Approved “{product.Name}”", "Product", product.Slug, ct: ct);
     }
 

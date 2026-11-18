@@ -125,7 +125,7 @@ public sealed class FreeSlotsService(
     {
         if (await slots.PostingBlockedAsync(scope.PartnerId, ct))
         {
-            throw new FeatureDisabledException("Posting free slots is paused for your account. Contact Super App support.", "posting_blocked");
+            throw new FeatureDisabledException("Posting free slots is paused for your account. Contact Super Malaab support.", "posting_blocked");
         }
         var limit = (int)await settings.DecimalAsync("freeSlots.dailyLimit", 5, ct);
         var since = CairoTime.ToUtc(CairoTime.Now(clock).Date);

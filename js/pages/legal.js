@@ -29,16 +29,16 @@
   const draft = (d) => (d.review ? '' : `<p class="notice gold legal-draft">${icon('alert', 16)}<span>Draft — to be reviewed by a lawyer before launch.</span></p>`);
 
   SA.pages.legalIndex = {
-    title: 'Legal — Super App',
+    title: 'Legal — Super Malaab',
     render() {
       return `<div class="container section legal-page">
-        <header class="legal-head"><span class="eyebrow">Legal</span><h1 class="h1">Terms, privacy and policies</h1><p class="lead">Everything you agree to when you use Super App, in plain words.</p></header>
+        <header class="legal-head"><span class="eyebrow">Legal</span><h1 class="h1">Terms, privacy and policies</h1><p class="lead">Everything you agree to when you use Super Malaab, in plain words.</p></header>
         <div class="legal-grid">${L().docs().map((d) => `<a class="card card-link legal-card" href="#/legal/${d.key}">${icon(d.icon, 22)}<b data-i18n-skip>${esc(tx(d.title))}</b><span class="small soft" data-i18n-skip>${esc(tx(d.summary))}</span><span class="xs muted">v${d.version} · ${fmtDate(d.updated)}</span></a>`).join('')}</div>
       </div>`;
     },
   };
   SA.pages.legalDoc = {
-    title: 'Legal — Super App',
+    title: 'Legal — Super Malaab',
     render(ctx) {
       const d = L().doc(ctx.params.key);
       return `<div class="container section legal-page">
@@ -60,7 +60,7 @@
       </div>`;
     },
     mount(el, ctx) {
-      try { document.title = `${tx(L().doc(ctx.params.key).title)} — Super App`; } catch { /* not found */ }
+      try { document.title = `${tx(L().doc(ctx.params.key).title)} — Super Malaab`; } catch { /* not found */ }
       el.querySelector('[data-print]')?.addEventListener('click', () => window.print());
     },
   };
@@ -72,7 +72,7 @@
     const el = document.createElement('div');
     el.className = 'cookie-bar';
     el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Cookies');
-    el.innerHTML = `<p class="small"><b>Cookies</b> — we use essential cookies to run Super App. With your OK we also measure visits and ads. <a class="link" href="#/legal/cookies">Read more</a></p>
+    el.innerHTML = `<p class="small"><b>Cookies</b> — we use essential cookies to run Super Malaab. With your OK we also measure visits and ads. <a class="link" href="#/legal/cookies">Read more</a></p>
       <div class="row" style="--gap:8px"><button class="btn btn-ghost btn-sm" data-c="0">Essential only</button><button class="btn btn-primary btn-sm" data-c="1">Accept all</button></div>`;
     el.addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (!b) return; L().setConsent({ analytics: b.dataset.c === '1' }); el.remove(); });
     document.body.appendChild(el);

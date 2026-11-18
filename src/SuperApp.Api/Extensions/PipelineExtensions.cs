@@ -46,7 +46,7 @@ public static class PipelineExtensions
         if (app.Configuration.GetValue("Docs:Enabled", app.Environment.IsDevelopment()))
         {
             app.MapOpenApi();
-            app.MapScalarApiReference("/docs", o => o.WithTitle("Super App API"));
+            app.MapScalarApiReference("/docs", o => o.WithTitle("Super Malaab API"));
         }
         return app;
     }

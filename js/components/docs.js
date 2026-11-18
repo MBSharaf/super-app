@@ -1,6 +1,6 @@
 /**
  * PDF documents: booking invoice, shop order invoice, store order invoice / packing slip and the
- * partner's monthly statement. Prices on Super App include VAT, so every document shows the VAT
+ * partner's monthly statement. Prices on Super Malaab include VAT, so every document shows the VAT
  * that is inside each amount (rate from Platform settings, 14% by default).
  */
 (function (SA) {
@@ -19,7 +19,7 @@
   const header = (p, { title, subtitle, number, date }) => {
     p.rect(0, 0, p.W, 92, { fill: INK });
     p.logo(40, 30, 30);
-    p.text('SUPER APP', 80, 46, { size: 15, weight: 800, color: '#fff', spacing: 1 });
+    p.text('SUPER MALAAB', 80, 46, { size: 15, weight: 800, color: '#fff', spacing: 1 });
     p.text('Book · Play · Shop — Egypt', 80, 62, { size: 8.5, color: '#9FB3A9' });
     p.text(title, p.W - 40, 46, { size: 17, weight: 800, color: '#fff', align: 'right' });
     if (subtitle) p.text(subtitle, p.W - 40, 63, { size: 9, color: '#9FB3A9', align: 'right' });
@@ -46,7 +46,7 @@
   };
   const footer = (p, n, total, note) => {
     p.line(40, p.H - 46, p.W - 40, p.H - 46);
-    p.text(note || `Super App Egypt · ${HQ()?.email || ''} · Tax reg. no. ${HQ()?.taxId || '—'} (demo)`, 40, p.H - 30, { size: 7.5, color: SOFT, maxWidth: p.W - 140 });
+    p.text(note || `Super Malaab Egypt · ${HQ()?.email || ''} · Tax reg. no. ${HQ()?.taxId || '—'} (demo)`, 40, p.H - 30, { size: 7.5, color: SOFT, maxWidth: p.W - 140 });
     p.text(`Page ${n} of ${total}`, p.W - 40, p.H - 30, { size: 7.5, color: SOFT, align: 'right' });
   };
   const stamp = (p, text, color, x, y) => {
@@ -82,7 +82,7 @@
     const rows = [[`Pitch rental — ${pitch.name || b.pitchName}`, `${fmtDate(b.date, 'long')} · ${fmtRange(b.hour, b.duration)}`, m2(list / (1 + rate)), m2(vatIn(list)), m2(list)]];
     if (b.discountAmount) rows.push([`Weekly booking discount (${Math.round((b.discount || 0) * 100)}%)`, 'Applied to the pitch price', `−${m2(b.discountAmount / (1 + rate))}`, `−${m2(vatIn(b.discountAmount))}`, `−${m2(b.discountAmount)}`]);
     if (b.promo?.amount) rows.push([`Venue promo code ${b.promo.code}`, 'Discount from the venue', `−${m2(b.promo.amount / (1 + rate))}`, `−${m2(vatIn(b.promo.amount))}`, `−${m2(b.promo.amount)}`]);
-    if (b.fee) rows.push(['Super App service fee', 'Booking & secure payment', m2(b.fee / (1 + rate)), m2(vatIn(b.fee)), m2(b.fee)]);
+    if (b.fee) rows.push(['Super Malaab service fee', 'Booking & secure payment', m2(b.fee / (1 + rate)), m2(vatIn(b.fee)), m2(b.fee)]);
     const total = (b.total != null ? b.total : b.amount + (b.fee || 0));
     y = p.table(40, y, [{ label: 'Description', w: 170 }, { label: 'Details', w: 130 }, { label: 'Excl. VAT', w: 75, align: 'right' }, { label: `VAT ${Math.round(rate * 100)}%`, w: 68, align: 'right' }, { label: 'Amount', w: 72, align: 'right' }], rows, { rowH: 22 });
     y += 16;
@@ -101,7 +101,7 @@
       p.rect(40, y, 230, 112, { stroke: LINE, r: 8 });
       p.qr(SA.services.bookings.checkInCode(b.id), 52, y + 12, 88);
       p.text('Check-in code', 150, y + 30, { size: 10, weight: 700 });
-      p.wrap('Show this at reception. Staff scan it in the Super App partner dashboard.', 150, y + 46, 110, { size: 8, color: SOFT, lineHeight: 11 });
+      p.wrap('Show this at reception. Staff scan it in the Super Malaab partner dashboard.', 150, y + 46, 110, { size: 8, color: SOFT, lineHeight: 11 });
     }
     if (b.status === 'cancelled') stamp(p, 'CANCELLED', '#C62828', 160, y + 50);
     else if (start + b.duration * 36e5 < Date.now()) stamp(p, 'PLAYED', TURF, 160, y + 50);
@@ -109,7 +109,7 @@
     const pol = SA.services.pitches.policyOf(b.policy || pitch.cancelPolicy);
     p.text('Cancellation policy', 40, y, { size: 9, weight: 700 });
     y = p.wrap(`${pol.name}: ${pol.summary}`, 40, y + 14, p.W - 80, { size: 8.5, color: SOFT });
-    p.wrap(`All prices include VAT at ${Math.round(rate * 100)}%. The pitch rental is supplied by ${owner.company}; the service fee is supplied by Super App Egypt. This is a demo document — tax registration numbers are placeholders.`, 40, y + 8, p.W - 80, { size: 8, color: SOFT });
+    p.wrap(`All prices include VAT at ${Math.round(rate * 100)}%. The pitch rental is supplied by ${owner.company}; the service fee is supplied by Super Malaab Egypt. This is a demo document — tax registration numbers are placeholders.`, 40, y + 8, p.W - 80, { size: 8, color: SOFT });
     await finish(doc, [p], `super-app-invoice-${b.id}.pdf`);
   };
 
@@ -119,40 +119,40 @@
     const p = doc.page();
     const rate = vatRate();
     const u = SA.core.store.get().user || {};
-    let y = header(p, { title: 'TAX INVOICE', subtitle: 'Super App Shop order', number: invNo('INV', o.id, o.createdAt), date: fmtDate(new Date(o.createdAt), 'long') });
+    let y = header(p, { title: 'TAX INVOICE', subtitle: 'Super Malaab Shop order', number: invNo('INV', o.id, o.createdAt), date: fmtDate(new Date(o.createdAt), 'long') });
     p.text('Order', 360, 122, { size: 8, color: SOFT }); p.text(o.id, 360, 136, { size: 10.5, weight: 700 });
     y = Math.max(
       party(p, 40, y + 6, 'Billed to', [u.name || 'Customer', o.address?.line1 || '', `${o.address?.line2 ? `${o.address.line2}, ` : ''}${o.address?.city || ''}`, o.address?.phone || u.phone || '']),
-      party(p, 300, y + 6, 'Sold through', ['Super App Egypt', `Payment: ${o.payment?.label || '—'}`, `Delivery: ${o.delivery === 'express' ? 'Express' : 'Standard'}`, `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`]),
+      party(p, 300, y + 6, 'Sold through', ['Super Malaab Egypt', `Payment: ${o.payment?.label || '—'}`, `Delivery: ${o.delivery === 'express' ? 'Express' : 'Standard'}`, `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`]),
     ) + 22;
     const sellers = new Map((o.sellers || []).flatMap((g) => g.lines.map((l) => [l.index, g])));
     const rows = o.lines.map((l, i) => {
       const g = sellers.get(i);
       const gross = l.price * l.qty;
-      return [`${l.name}${g?.status === 'cancelled' ? ' (cancelled)' : ''}`, `${g?.storeName || 'Super App Store'} · ${l.variant?.size || ''}`, String(l.qty), m2(gross / (1 + rate)), m2(vatIn(gross)), m2(gross)];
+      return [`${l.name}${g?.status === 'cancelled' ? ' (cancelled)' : ''}`, `${g?.storeName || 'Super Malaab Store'} · ${l.variant?.size || ''}`, String(l.qty), m2(gross / (1 + rate)), m2(vatIn(gross)), m2(gross)];
     });
     if (o.shipping) rows.push(['Delivery', o.delivery === 'express' ? 'Express' : 'Standard', '1', m2(o.shipping / (1 + rate)), m2(vatIn(o.shipping)), m2(o.shipping)]);
     if (o.couponOff) rows.push([`Discount code ${o.coupon}`, '', '', `−${m2(o.couponOff / (1 + rate))}`, `−${m2(vatIn(o.couponOff))}`, `−${m2(o.couponOff)}`]);
     y = p.table(40, y, [{ label: 'Item', w: 150 }, { label: 'Seller · size', w: 110 }, { label: 'Qty', w: 28, align: 'right' }, { label: 'Excl. VAT', w: 78, align: 'right' }, { label: `VAT ${Math.round(rate * 100)}%`, w: 72, align: 'right' }, { label: 'Amount', w: 77, align: 'right' }], rows, { rowH: 21 });
     y += 16;
     totalsBox(p, y, [['Subtotal (excl. VAT)', m2(o.total / (1 + rate))], [`VAT ${Math.round(rate * 100)}%`, m2(vatIn(o.total))], ['Total', m2(o.total), true], ...(o.cancelledValue ? [['Cancelled by seller (refunded)', `−${m2(o.cancelledValue)}`]] : [])]);
-    p.wrap(`All prices include VAT at ${Math.round(rate * 100)}%. Items are sold by the store shown next to each line through Super App Egypt. Demo document — tax registration numbers are placeholders.`, 40, y + 120, 250, { size: 8, color: SOFT });
+    p.wrap(`All prices include VAT at ${Math.round(rate * 100)}%. Items are sold by the store shown next to each line through Super Malaab Egypt. Demo document — tax registration numbers are placeholders.`, 40, y + 120, 250, { size: 8, color: SOFT });
     await finish(doc, [p], `super-app-invoice-${o.id}.pdf`);
   };
 
-  /* ---------------- Payment advice: a withdrawal Super App sent ---------------- */
+  /* ---------------- Payment advice: a withdrawal Super Malaab sent ---------------- */
   const payoutAdvice = async (p) => {
     const acc = db().find('accounts', p.accountId) || (p.sellerId && db().find('accounts', db().find('sellers', p.sellerId)?.accountId)) || {};
     const seller = p.sellerId ? db().find('sellers', p.sellerId) : null;
     const doc = SA.core.pdf.create({ title: `Payment advice ${p.id}` });
     const pg = doc.page();
     let y = header(pg, { title: 'PAYMENT ADVICE', subtitle: seller ? 'Seller withdrawal' : p.settlement ? 'Factory settlement' : p.auto ? 'Weekly settlement' : 'Partner withdrawal', number: p.ref || p.id, date: fmtDate(new Date(p.paidAt || p.createdAt), 'long') });
-    y = Math.max(party(pg, 40, y + 6, 'Paid to', [seller?.name || acc.company || acc.name || '', acc.name || '', `${p.method} · ${p.detail || ''}`]), party(pg, 300, y + 6, 'Paid by', [HQ()?.company || 'Super App Egypt', 'Super App platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 22;
+    y = Math.max(party(pg, 40, y + 6, 'Paid to', [seller?.name || acc.company || acc.name || '', acc.name || '', `${p.method} · ${p.detail || ''}`]), party(pg, 300, y + 6, 'Paid by', [HQ()?.company || 'Super Malaab Egypt', 'Super Malaab platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 22;
     y = pg.table(40, y, [{ label: 'Description', w: 250 }, { label: 'Requested', w: 85 }, { label: 'Sent', w: 85 }, { label: 'Amount', w: 95, align: 'right' }],
       [[seller ? `Withdrawal of seller earnings — ${seller.name}` : p.settlement ? 'Settlement for printed and shipped items' : 'Withdrawal of booking and store earnings', fmtDate(new Date(p.createdAt)), fmtDate(new Date(p.paidAt || p.createdAt)), m2(p.amount)]], { rowH: 24 });
     y += 16;
     totalsBox(pg, y, [['Transfer reference', p.ref || '—'], ['Arrives by (latest)', p.arrivesBy ? fmtDate(new Date(p.arrivesBy), 'long') : '2 working days'], ['Amount sent', m2(p.amount), true]]);
-    pg.wrap('Super App sends withdrawals within 2 working days of approval (Friday and Saturday are not working days). If the money hasn’t arrived by the date above, contact Super App support with the transfer reference.', 40, y + 14, 250, { size: 8.5, color: SOFT });
+    pg.wrap('Super Malaab sends withdrawals within 2 working days of approval (Friday and Saturday are not working days). If the money hasn’t arrived by the date above, contact Super Malaab support with the transfer reference.', 40, y + 14, 250, { size: 8.5, color: SOFT });
     stamp(pg, 'PAID', TURF, pg.W - 120, 160);
     await finish(doc, [pg], `super-app-payment-${p.id}.pdf`);
   };
@@ -168,7 +168,7 @@
     const doc = SA.core.pdf.create({ title: `Statement ${s.name}` });
     const p = doc.page();
     let y = header(p, { title: 'EARNINGS STATEMENT', subtitle: s.name, number: invNo('SST', s.id, Date.now()), date: fmtDate(new Date(), 'long') });
-    y = Math.max(party(p, 40, y + 6, 'Seller', [s.name, account?.name || '', account?.email || '', `superapp.eg/s/${s.handle}`]), party(p, 300, y + 6, 'Paid by', [HQ()?.company || 'Super App Egypt', 'Super App platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 18;
+    y = Math.max(party(p, 40, y + 6, 'Seller', [s.name, account?.name || '', account?.email || '', `supermalaab.eg/s/${s.handle}`]), party(p, 300, y + 6, 'Paid by', [HQ()?.company || 'Super Malaab Egypt', 'Super Malaab platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 18;
     const rows = [
       ...pod.map((o) => ({ at: o.placedAt, cells: ['Printed', o.id, `${o.qty} × ${o.title} (${o.color}, ${o.size})`.slice(0, 44), o.status, m0(o.price * o.qty), ['refused', 'cancelled'].includes(o.status) ? m0(0) : m0(o.profit)] })),
       ...store.map((o) => ({ at: o.createdAt, cells: ['My product', o.orderId, `${o.units} item${o.units > 1 ? 's' : ''}`, o.status, m0(o.gross), m0(o.net)] })),
@@ -191,7 +191,7 @@
     const rate = vatRate();
     let y = header(p, { title, subtitle: sub, number: invNo(r.kind === 'refund' ? 'CRN' : 'RCP', r.id, r.at), date: fmtDate(new Date(r.at), 'long') });
     p.text('Reference', 360, 122, { size: 8, color: SOFT }); p.text(r.id, 360, 136, { size: 10.5, weight: 700 });
-    y = Math.max(party(p, 40, y + 6, r.kind === 'refund' ? 'Refunded to' : 'Paid by', [u.name || 'Customer', u.phone || '', u.email || '']), party(p, 300, y + 6, 'Received by', [HQ()?.company || 'Super App Egypt', 'Super App platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 22;
+    y = Math.max(party(p, 40, y + 6, r.kind === 'refund' ? 'Refunded to' : 'Paid by', [u.name || 'Customer', u.phone || '', u.email || '']), party(p, 300, y + 6, 'Received by', [HQ()?.company || 'Super Malaab Egypt', 'Super Malaab platform', `Tax reg. no. ${HQ()?.taxId || '—'} (demo)`])) + 22;
     y = p.table(40, y, [{ label: 'Description', w: 250 }, { label: 'Method', w: 140 }, { label: 'Date', w: 70 }, { label: 'Amount', w: 55, align: 'right' }],
       [[r.label, r.method || '—', fmtDate(new Date(r.at)), m0(r.amount)]], { rowH: 24 });
     y += 16;
@@ -221,7 +221,7 @@
     const list = games.reduce((t, g) => t + (g.listPrice || 0), 0), disc = games.reduce((t, g) => t + (g.discountAmount || 0), 0), fee = games.reduce((t, g) => t + (g.serviceFee || 0), 0);
     const total = games.reduce((t, g) => t + (g.total || 0), 0), refunded = games.reduce((t, g) => t + (g.refund || 0), 0);
     y += 16;
-    const yt = totalsBox(p, y, [['Pitch rental (list)', m2(list)], ...(disc ? [[`Weekly discount (${Math.round((b0.discount || 0) * 100)}%)`, `−${m2(disc)}`]] : []), ...(fee ? [['Super App service fee', m2(fee)]] : []),
+    const yt = totalsBox(p, y, [['Pitch rental (list)', m2(list)], ...(disc ? [[`Weekly discount (${Math.round((b0.discount || 0) * 100)}%)`, `−${m2(disc)}`]] : []), ...(fee ? [['Super Malaab service fee', m2(fee)]] : []),
       [`VAT ${Math.round(rate * 100)}% included`, m2(vatIn(total))], ['Total paid', m2(total), true], ...(refunded ? [['Refunded', `−${m2(refunded)}`]] : [])]);
     if (pk && !pk.expired) {
       p.rect(40, y, 230, 112, { stroke: LINE, r: 8 });
@@ -248,7 +248,7 @@
     const rows = o.lines.map((l) => [l.name, `${l.variant?.size || '—'} · ${l.variant?.color || '—'}`, String(l.qty), m2(l.price), m2(vatIn(l.total)), m2(l.total)]);
     y = p1.table(40, y, [{ label: 'Item', w: 165 }, { label: 'Size · colour', w: 100 }, { label: 'Qty', w: 30, align: 'right' }, { label: 'Unit price', w: 70, align: 'right' }, { label: `VAT ${Math.round(rate * 100)}%`, w: 70, align: 'right' }, { label: 'Amount', w: 80, align: 'right' }], rows, { rowH: 21 });
     y += 16;
-    totalsBox(p1, y, [['Subtotal (excl. VAT)', m2(o.gross / (1 + rate))], [`VAT ${Math.round(rate * 100)}%`, m2(vatIn(o.gross))], ['Total', m2(o.gross), true], ['Super App commission', `−${m2(o.commission)}`], ['Your net', m2(o.net)]]);
+    totalsBox(p1, y, [['Subtotal (excl. VAT)', m2(o.gross / (1 + rate))], [`VAT ${Math.round(rate * 100)}%`, m2(vatIn(o.gross))], ['Total', m2(o.gross), true], ['Super Malaab commission', `−${m2(o.commission)}`], ['Your net', m2(o.net)]]);
     p1.wrap(`Payment: ${o.payment}. Status: ${o.status}${o.courier ? ` · ${o.courier}${o.tracking ? ` ${o.tracking}` : ''}` : ''}.`, 40, y + 14, 240, { size: 8.5, color: SOFT });
     // Packing slip — goes in the box
     const p2 = doc.page();
@@ -291,19 +291,19 @@
     y = p.table(40, y, [{ label: 'Item', w: 380 }, { label: 'Amount', w: 135, align: 'right' }], [
       ['Gross pitch revenue (incl. VAT)', m2(s.gross)],
       [`   of which VAT ${Math.round(rate * 100)}% you declare`, m2(vatIn(s.gross))],
-      ['Collected online by Super App', m2(s.online)],
+      ['Collected online by Super Malaab', m2(s.online)],
       ['Collected by you at the venue (cash / card)', m2(s.cash)],
       ['Kept from late cancellations (policy)', m2(s.retained || 0)],
       ['Refunded to customers', m2(s.refunds)],
-      [`Super App commission (${Math.round(SA.services.dash.commission().bookings * 100)}% of app bookings)`, `−${m2(s.commission)}`],
+      [`Super Malaab commission (${Math.round(SA.services.dash.commission().bookings * 100)}% of app bookings)`, `−${m2(s.commission)}`],
     ], { totals: ['Net from bookings', m2(s.net)] }) + 14;
     sec('Store sales');
     y = p.table(40, y, [{ label: 'Item', w: 380 }, { label: 'Amount', w: 135, align: 'right' }], [
       ['Gross sales (incl. VAT)', m2(s.storeGross)],
       [`   of which VAT ${Math.round(rate * 100)}% you declare`, m2(vatIn(s.storeGross))],
-      [`Super App commission (${Math.round(SA.services.dash.commission().store * 100)}%)`, `−${m2(s.storeCommission)}`],
+      [`Super Malaab commission (${Math.round(SA.services.dash.commission().store * 100)}%)`, `−${m2(s.storeCommission)}`],
     ], { totals: ['Net from store', m2(s.storeNet)] }) + 14;
-    sec('Super App commission — tax invoice to you');
+    sec('Super Malaab commission — tax invoice to you');
     y = p.table(40, y, [{ label: 'Item', w: 380 }, { label: 'Amount', w: 135, align: 'right' }], [
       ['Commission (excl. VAT)', m2(commission / (1 + rate))],
       [`VAT ${Math.round(rate * 100)}% on commission (input VAT you can reclaim)`, m2(vatIn(commission))],

@@ -1,5 +1,5 @@
 /* ============================================================
-   Admin console (#/admin) — a separate system for the Super App team.
+   Admin console (#/admin) — a separate system for the Super Malaab team.
    Reuses the dashboard shell; the sidebar is darker with the blaze accent so it never looks like a partner's dashboard.
    ============================================================ */
 .dash.is-admin .dash-side, .dash-drawer.is-admin { background: radial-gradient(130% 70% at 0% 0%, #3a1a0b, #120d0b 55%, #0b0908); }

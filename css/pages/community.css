@@ -73,7 +73,7 @@
 .adm-report-body { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: var(--r-sm); background: var(--surface-2); border-inline-start: 3px solid var(--danger); }
 .adm-cm-feed .cm-post { box-shadow: none; }
 
-/* Rich cards for Super App links, free slots and games */
+/* Rich cards for Super Malaab links, free slots and games */
 .lk-list { display: grid; gap: 8px; }
 .lk-card { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface-2); transition: border-color 200ms, transform 250ms var(--ease); min-width: 0; }
 .lk-card:hover { border-color: var(--ink-3); transform: translateY(-1px); }
@@ -90,7 +90,7 @@
 @media (max-width: 520px) { .lk-card { flex-wrap: wrap; } .lk-cta { width: 100%; justify-content: center; } }
 .cm-badge.t-venue { background: var(--turf-fill); color: #fff; }
 
-/* Rich cards for Super App links, free slots and games */
+/* Rich cards for Super Malaab links, free slots and games */
 .lk-list { display: grid; gap: 8px; }
 .lk-card { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface-2); transition: border-color 200ms, transform 250ms var(--ease); min-width: 0; }
 .lk-card:hover { border-color: var(--ink-3); transform: translateY(-1px); }

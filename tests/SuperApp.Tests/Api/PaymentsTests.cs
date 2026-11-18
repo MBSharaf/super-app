@@ -174,7 +174,7 @@ public sealed class PaymentsTests(PaymobApiFactory api) : IClassFixture<PaymobAp
         refund.Status.ShouldBe(SuperApp.Domain.Enums.RefundStatus.Done);
         refund.Amount.ShouldBe(cents / 100m);
         receipt.ShouldBe(1);
-        ledgerLines.ShouldBe(0);                                             // nothing reached the venue or Super App
+        ledgerLines.ShouldBe(0);                                             // nothing reached the venue or Super Malaab
         notices.ShouldBe(1);
     }
 }

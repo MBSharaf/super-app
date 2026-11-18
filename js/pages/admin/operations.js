@@ -16,7 +16,7 @@
   const badge = (map, s) => { const [c, l] = map[s] || ['', s]; return `<span class="badge ${c}">${l}</span>`; };
 
   SA.pages.adminOrders = A.guard({
-    title: 'Orders & bookings — Super App Admin',
+    title: 'Orders & bookings — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const tab = q.tab || '';
@@ -62,7 +62,7 @@
         <section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table adm-rows">${table}
           ${count ? '' : `<tr><td colspan="7">${SA.ui.c.empty({ icon: 'ticket', title: 'Nothing found', text: 'Try another date range or filter.' })}</td></tr>`}</tbody></table></div>
           <div class="row-between" style="padding:12px 18px"><span class="xs muted">${count.toLocaleString()} result${count === 1 ? '' : 's'}${tab !== 'print' ? ' · click a row for details and actions' : ''}</span>${count > n ? `<a class="btn btn-outline btn-sm" href="${SA.core.router.href('/admin/orders', { ...q, n: n + 200 })}" data-replace>Show more</a>` : ''}</div></section>`;
-      return C.layout('orders', { title: 'Orders & bookings', subtitle: 'Every pitch booking, shop order and printed item on Super App — open one to cancel or refund', body });
+      return C.layout('orders', { title: 'Orders & bookings', subtitle: 'Every pitch booking, shop order and printed item on Super Malaab — open one to cancel or refund', body });
     },
     mount(el, ctx) {
       const tab = ctx.query.tab || '';
@@ -82,7 +82,7 @@
         }
         const cp = e.target.closest('[data-cancel-print]');
         if (cp) {
-          const r = await A.reason({ title: 'Cancel this printed item?', text: 'The customer is refunded if they paid online. If printing already started, the cost is on Super App.', label: 'Reason the seller and customer see', confirmLabel: 'Cancel item', danger: true });
+          const r = await A.reason({ title: 'Cancel this printed item?', text: 'The customer is refunded if they paid online. If printing already started, the cost is on Super Malaab.', label: 'Reason the seller and customer see', confirmLabel: 'Cancel item', danger: true });
           if (!r) return;
           try { await AD().cancelPrint(cp.dataset.cancelPrint, r.reason); toast('Item cancelled', 'info'); SA.app.rerender(); } catch (err) { toast(err.message, 'error'); }
           return;
@@ -98,7 +98,7 @@
   const TST = { open: ['badge-blaze', 'Waiting for us'], pending: ['badge-info', 'Waiting for them'], resolved: ['badge-turf', 'Resolved'] };
 
   SA.pages.adminSupport = A.guard({
-    title: 'Support & disputes — Super App Admin',
+    title: 'Support & disputes — Super Malaab Admin',
     render(ctx) {
       const q = ctx.query;
       const all = SUP().all();
@@ -110,7 +110,7 @@
           ${C.kpi({ label: 'Waiting for us', value: all.filter(F.open).length, ic: 'message', tone: all.some(F.open) ? 'k-blaze' : '' })}
           ${C.kpi({ label: 'Open disputes', value: all.filter(F.disputes).length, ic: 'alert' })}
           ${C.kpi({ label: 'Resolved', value: all.filter(F.resolved).length, ic: 'check', tone: 'k-turf' })}
-          ${C.kpi({ label: 'Refunded for disputes', value: money(refunds.reduce((t, x) => t + x.amount, 0)), ic: 'wallet', sub: `${refunds.filter((x) => x.bearer === 'platform').length} paid by Super App` })}
+          ${C.kpi({ label: 'Refunded for disputes', value: money(refunds.reduce((t, x) => t + x.amount, 0)), ic: 'wallet', sub: `${refunds.filter((x) => x.bearer === 'platform').length} paid by Super Malaab` })}
         </div>
         <section class="dash-card"><form class="adm-filters" data-s><label class="field grow"><span class="field-label">Search</span><input class="input" name="q" value="${esc(q.q || '')}" placeholder="Ticket, subject, name…" /></label><button class="btn btn-primary" type="submit" style="align-self:end">Search</button></form>
           ${A.tabs('/admin/support', [['open', 'Waiting for us', all.filter(F.open).length], ['pending', 'Waiting for them', all.filter(F.pending).length], ['disputes', 'Disputes', all.filter(F.disputes).length], ['resolved', 'Resolved', all.filter(F.resolved).length], ['all', 'All', all.length]], tab, { q: q.q })}</section>
@@ -128,7 +128,7 @@
   });
 
   SA.pages.adminTicket = A.guard({
-    title: 'Ticket — Super App Admin',
+    title: 'Ticket — Super Malaab Admin',
     render(ctx) {
       const t = SUP().get(ctx.params.id);
       if (!t) return C.layout('support', { title: 'Not found', body: `<div class="dash-card">${SA.ui.c.empty({ icon: 'message', title: 'This ticket doesn’t exist', action: '<a class="btn btn-primary" href="#/admin/support">All tickets</a>' })}</div>` });
@@ -138,8 +138,8 @@
       const [sc, sl] = TST[t.status];
       const body = `<div class="dash-grid g-2-1">
         <section class="dash-card"><div class="row-between wrap" style="--gap:8px"><div class="row wrap" style="--gap:6px"><span class="badge ${sc}">${sl}</span>${t.priority === 'high' ? '<span class="badge badge-danger">High priority</span>' : ''}<span class="badge">${esc(cat?.label || t.category)}</span></div><span class="xs muted">Opened ${timeAgo(t.createdAt)}</span></div>
-          <div class="tk-parties"><span><span class="xs muted">Opened by</span><b class="small">${esc(t.from.name)}</b> <span class="badge ${FROM[t.from.kind]?.[0] || ''}">${FROM[t.from.kind]?.[1] || ''}</span></span>${icon('arrowRight', 14)}<span><span class="xs muted">About</span>${against ? `<b class="small">${esc(against.company)}</b> <span class="badge ${FROM[SUP().accountKind(against.id)]?.[0] || ''}">${FROM[SUP().accountKind(against.id)]?.[1] || ''}</span>` : '<b class="small">Super App</b>'}</span></div>
-          <ol class="adm-thread">${t.messages.map((m) => `<li class="by-${m.by}"><div class="adm-bubble"><span class="xs strong">${esc(m.name)}${m.by === 'admin' ? ' · Super App' : ''}${m.private ? ` <span class="badge badge-gold">${m.by === 'admin' ? `To ${esc(against?.company || 'the partner')}` : `From ${esc(against?.company || 'the partner')}`} · customer can’t see</span>` : ''}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>
+          <div class="tk-parties"><span><span class="xs muted">Opened by</span><b class="small">${esc(t.from.name)}</b> <span class="badge ${FROM[t.from.kind]?.[0] || ''}">${FROM[t.from.kind]?.[1] || ''}</span></span>${icon('arrowRight', 14)}<span><span class="xs muted">About</span>${against ? `<b class="small">${esc(against.company)}</b> <span class="badge ${FROM[SUP().accountKind(against.id)]?.[0] || ''}">${FROM[SUP().accountKind(against.id)]?.[1] || ''}</span>` : '<b class="small">Super Malaab</b>'}</span></div>
+          <ol class="adm-thread">${t.messages.map((m) => `<li class="by-${m.by}"><div class="adm-bubble"><span class="xs strong">${esc(m.name)}${m.by === 'admin' ? ' · Super Malaab' : ''}${m.private ? ` <span class="badge badge-gold">${m.by === 'admin' ? `To ${esc(against?.company || 'the partner')}` : `From ${esc(against?.company || 'the partner')}`} · customer can’t see</span>` : ''}</span><p class="small">${esc(m.text)}</p><span class="xs muted">${fmtDate(new Date(m.at))} · ${new Date(m.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span></div></li>`).join('')}</ol>
           ${t.status !== 'resolved' ? `<form class="stack" style="--gap:10px;margin-top:16px" data-reply novalidate><label class="field-label" for="tk-r">Reply</label><textarea class="input" id="tk-r" name="text" rows="4" maxlength="2000" placeholder="Write to ${esc(t.from.name.split(' ')[0])}…"></textarea><p class="field-error" data-err="text"></p>
             <div class="row wrap" style="--gap:8px;justify-content:flex-end">${against ? `<button class="btn btn-ghost" type="submit" name="act" value="ask" title="Only ${esc(against.company)} sees it">${icon('message', 15)} Ask ${esc(against.company)}</button>` : ''}<button class="btn btn-outline" type="submit" name="act" value="send">Send reply</button><button class="btn btn-primary" type="submit" name="act" value="resolve">${icon('check', 15, 2.6)} Send and resolve</button></div></form>`
             : `<div class="row-between wrap" style="margin-top:16px"><span class="small muted">${icon('check', 14, 2.4)} Resolved ${timeAgo(t.resolvedAt || t.updatedAt)}</span><button class="btn btn-outline btn-sm" data-reopen>Reopen</button></div>`}
@@ -147,12 +147,12 @@
         <aside class="stack" style="--gap:18px">
           <section class="dash-card"><h2 class="h4">From</h2><p class="small" style="margin-top:8px"><b>${esc(t.from.name)}</b> <span class="badge ${FROM[t.from.kind]?.[0] || ''}">${FROM[t.from.kind]?.[1] || ''}</span></p>${t.from.phone ? `<p class="xs muted">${esc(t.from.phone)}</p>` : ''}<a class="btn btn-ghost btn-sm" href="${fromLink}" style="margin-top:8px">Open profile ${icon('arrowRight', 14)}</a></section>
           ${t.ref ? `<section class="dash-card"><h2 class="h4">About</h2><p class="small" style="margin-top:8px">${esc(t.ref.label || t.ref.id)}</p>${t.amount ? `<p class="xs muted">Paid: ${money(t.amount)}</p>` : ''}${against ? `<p class="xs muted" style="margin-top:6px">Involves: <b>${esc(against.company)}</b></p>` : ''}${t.ref.type === 'booking' && SA.services.dash.findBooking(t.ref.id) ? `<button class="btn btn-ghost btn-sm" data-open-booking="${esc(t.ref.id)}" style="margin-top:6px">Open booking</button>` : ''}</section>` : ''}
-          ${cat?.dispute ? `<section class="dash-card"><h2 class="h4">Refund</h2>${t.refund ? `<p class="small" style="margin-top:8px;color:var(--turf)">${icon('check', 14, 2.4)} ${money(t.refund.amount)} refunded ${timeAgo(t.refund.at)} — paid by ${t.refund.bearer === 'partner' ? esc(against?.company || 'the partner') : 'Super App'}.</p>`
+          ${cat?.dispute ? `<section class="dash-card"><h2 class="h4">Refund</h2>${t.refund ? `<p class="small" style="margin-top:8px;color:var(--turf)">${icon('check', 14, 2.4)} ${money(t.refund.amount)} refunded ${timeAgo(t.refund.at)} — paid by ${t.refund.bearer === 'partner' ? esc(against?.company || 'the partner') : 'Super Malaab'}.</p>`
             : `<form class="stack" style="--gap:10px;margin-top:10px" data-refund novalidate><div class="field"><label for="rf-a">Amount (EGP)</label><input class="input num" id="rf-a" name="amount" type="number" min="1" ${t.amount ? `max="${t.amount}" value="${Math.round(t.amount / 2)}"` : ''} /></div>
-              <fieldset class="field"><legend class="field-label">Who pays for it</legend><div class="seg"><label class="seg-opt"><input type="radio" name="bearer" value="platform" checked /><span>Super App</span></label>${against ? `<label class="seg-opt"><input type="radio" name="bearer" value="partner" /><span>${esc(against.company)}</span></label>` : ''}</div></fieldset>
+              <fieldset class="field"><legend class="field-label">Who pays for it</legend><div class="seg"><label class="seg-opt"><input type="radio" name="bearer" value="platform" checked /><span>Super Malaab</span></label>${against ? `<label class="seg-opt"><input type="radio" name="bearer" value="partner" /><span>${esc(against.company)}</span></label>` : ''}</div></fieldset>
               <div class="field"><label for="rf-n">Note (optional)</label><input class="input" id="rf-n" name="note" maxlength="140" /></div><p class="field-error" data-err="refund"></p>
               <button class="btn btn-blaze" type="submit">${icon('wallet', 15)} Send refund</button>
-              <p class="xs muted">The customer gets it in their Super App wallet. If the partner or seller pays, it’s taken from their balance with this ticket as the reason.</p></form>`}</section>` : ''}
+              <p class="xs muted">The customer gets it in their Super Malaab wallet. If the partner or seller pays, it’s taken from their balance with this ticket as the reason.</p></form>`}</section>` : ''}
           ${SUP().emails(t.id).length ? `<section class="dash-card"><h2 class="h4">${icon('message', 16)} Emails</h2><ul class="fac-list">${SUP().emails(t.id).map((m) => `<li><b class="small">${esc(m.subject)}</b><span class="xs muted" style="display:block">To ${esc(m.to)} · ${timeAgo(m.createdAt)} · ${esc(m.status)}</span></li>`).join('')}</ul><p class="xs muted">Sending is simulated until the backend; the support inbox is ${esc(SUP().inbox())}.</p></section>` : ''}
           <section class="dash-card"><h2 class="h4">Ticket</h2><div class="stack" style="--gap:10px;margin-top:10px">
             <label class="field"><span class="field-label">Priority</span><select class="select" data-priority><option value="normal" ${t.priority !== 'high' ? 'selected' : ''}>Normal</option><option value="high" ${t.priority === 'high' ? 'selected' : ''}>High</option></select></label>

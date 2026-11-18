@@ -5,7 +5,7 @@ using SuperApp.Domain.Entities.Money;
 namespace SuperApp.Infrastructure.Persistence;
 
 /// <summary>
-/// Wallet balances are running totals that many payments change at the same moment (Super App's revenue wallet is
+/// Wallet balances are running totals that many payments change at the same moment (Super Malaab's revenue wallet is
 /// touched by every booking). Instead of writing the new total (which made the later of two payments fail with
 /// 409 stale), a save adds this request's change to the stored total in one SQL statement:
 /// <c>AvailableBalance = AvailableBalance + @change</c>. The database check (no negative personal balance) still applies.

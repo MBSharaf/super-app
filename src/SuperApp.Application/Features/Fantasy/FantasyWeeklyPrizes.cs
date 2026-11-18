@@ -8,11 +8,11 @@ using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Fantasy;
 
-/// <summary>One of the gameweek's top 3 in the Super App League and the Super Points they won.</summary>
+/// <summary>One of the gameweek's top 3 in the Super Malaab League and the Super Points they won.</summary>
 public sealed record WeeklyWinner(int Place, long TeamId, Guid UserId, int GameweekPoints, int SuperPoints);
 
 /// <summary>
-/// The Super App League (owner's rule, 2026-11-03): every league is free, every team is in the Super App League, and the
+/// The Super Malaab League (owner's rule, 2026-11-03): every league is free, every team is in the Super Malaab League, and the
 /// three highest gameweek scores win Super Points after each gameweek — 1,500 / 1,000 / 500 by default (settings
 /// <c>fantasy.weekly.first</c>, <c>.second</c>, <c>.third</c>). Given once per team and gameweek, even on a re-score.
 /// </summary>
@@ -37,12 +37,12 @@ public sealed class FantasyWeeklyPrizes(ILoyaltyStore store, ISettingsReader set
             if (points > 0 && !await store.HasPointsForAsync(team.UserId, PointKind.FantasyWeekly, "Gameweek", gameweek.Id, ct))
             {
                 store.Add(new PointEntry { UserId = team.UserId, Points = points, Kind = PointKind.FantasyWeekly, RefType = "Gameweek", RefId = gameweek.Id,
-                    Reason = $"Super App League: #{i + 1} in gameweek {gameweek.Number}", CreatedAt = clock.UtcNow });
+                    Reason = $"Super Malaab League: #{i + 1} in gameweek {gameweek.Number}", CreatedAt = clock.UtcNow });
             }
         }
         await unitOfWork.SaveChangesAsync(ct);
         await notifier.NotifyManyAsync(winners.Where(w => w.SuperPoints > 0).Select(w => (w.UserId, new NotificationMessage(NotificationCategory.Fantasy,
-            $"You finished #{w.Place} in gameweek {gameweek.Number}", $"{w.SuperPoints:N0} Super Points added for the Super App League.", "#/wallet", NotificationTone.Success))).ToList(), ct);
+            $"You finished #{w.Place} in gameweek {gameweek.Number}", $"{w.SuperPoints:N0} Super Points added for the Super Malaab League.", "#/wallet", NotificationTone.Success))).ToList(), ct);
         return winners;
     }
 }

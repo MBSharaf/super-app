@@ -150,7 +150,7 @@
       <div class="fx-onboard">
         <div>
           <h2 class="h1">Build your ${esc(F().leagueInfo().label)} team</h2>
-          <p class="lead" style="margin-top:12px">Pick 15 players with a 100M budget. Score points every gameweek from their goals, assists and clean sheets — then beat your friends in private groups. Every league is free, and the top 3 of every gameweek in the Super App League win Super Points.</p>
+          <p class="lead" style="margin-top:12px">Pick 15 players with a 100M budget. Score points every gameweek from their goals, assists and clean sheets — then beat your friends in private groups. Every league is free, and the top 3 of every gameweek in the Super Malaab League win Super Points.</p>
           <ol class="fx-steps">
             ${[['Pick 15 players', '2 goalkeepers, 5 defenders, 5 midfielders, 3 forwards. Max 3 from one club.'], ['Set your starting XI', 'Choose a formation and a captain — captains score double.'], ['Join leagues', 'Create a private group for friends or enter an official prize league.'], ['Score every gameweek', 'Make a free transfer each week and climb the rankings.']].map(([t, d], i) => `<li><span class="flow-n">${i + 1}</span><div><b>${t}</b><p class="small soft">${d}</p></div></li>`).join('')}
           </ol>
@@ -161,7 +161,7 @@
     </div>`;
 
   SA.pages.fantasy = {
-    title: 'Fantasy — Super App',
+    title: 'Fantasy — Super Malaab',
     header, bindHeader, openPlayer, short,
     render() {
       const f = F(), team = f.team();
@@ -239,7 +239,7 @@
 
   /* ---------- Fixtures & league table ---------- */
   SA.pages.fantasyFixtures = {
-    title: 'Fixtures — Super App Fantasy',
+    title: 'Fixtures — Super Malaab Fantasy',
     render(ctx) {
       const f = F(), meta = f.meta();
       const gw = Math.min(meta.totalGW, Math.max(1, +ctx.query.gw || meta.gw));
@@ -270,7 +270,7 @@
   /* ---------- Player stats ---------- */
   const st = { pos: '', team: '', sort: 'total', q: '' };
   SA.pages.fantasyStats = {
-    title: 'Player stats — Super App Fantasy',
+    title: 'Player stats — Super Malaab Fantasy',
     render() {
       const f = F();
       return `${header('stats')}

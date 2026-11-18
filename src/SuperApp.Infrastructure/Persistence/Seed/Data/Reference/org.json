@@ -96,7 +96,7 @@
       "en": "Admin manager (HQ)",
       "ar": "مدير الإدارة (HQ)",
       "holder": "human",
-      "name": "Super App HQ",
+      "name": "Super Malaab HQ",
       "limit": 10000,
       "can": [
         "payout.approve",
@@ -207,7 +207,7 @@
       "duties": [
         "Sends printed orders to the factory",
         "Chases late jobs and quality problems",
-        "Keeps the Super App Store stocked"
+        "Keeps the Super Malaab Store stocked"
       ],
       "sort": 5
     },

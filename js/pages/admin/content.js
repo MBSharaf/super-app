@@ -10,7 +10,7 @@
   const media = SA.data.media;
   const toast = (m, type = 'success') => SA.ui.overlay.toast(m, { type });
 
-  /** Photo picker: the Super App library or an upload */
+  /** Photo picker: the Super Malaab library or an upload */
   const LIB = ['stadiumNight', 'nightMatch', 'litField', 'aerialPitch', 'birdsEyeLights', 'goalTrees', 'turfLine', 'ballsInGoal', 'stadium', 'kick16', 'kickDay', 'duel', 'menPlaying', 'greenTeam', 'womenPlaying', 'kidsTraining', 'teamLineup', 'trophy', 'footBall', 'cairoNile', 'nightGrass', 'photo-1529900748604-07564a03e7a6'].filter((k) => media.photos[k] || k.startsWith('photo-'));
   const picker = (name, cur) => `<div class="adm-pick" data-pick="${name}"><input type="hidden" name="${name}" value="${esc(cur || '')}" />
     <div class="adm-pick-grid">${LIB.map((k) => `<button type="button" class="adm-pick-item ${cur === k ? 'is-on' : ''}" data-img="${k}"><img src="${media.photo(k, 220, 160)}" alt="" loading="lazy" /></button>`).join('')}
@@ -61,7 +61,7 @@
   });
 
   SA.pages.adminContent = A.guard({
-    title: 'Site content — Super App Admin',
+    title: 'Site content — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || '';
       let section = '';
@@ -85,7 +85,7 @@
       } else if (tab === 'popups') {
         const cfg = CT().promoPops(), stats = CT().promoStats();
         const SH = { cube: 'Cube', coin: 'Coin', tee: '3D T-shirt' };
-        section = `<section class="dash-card"><h2 class="h4">Pop-up ads</h2><p class="small soft" style="margin-top:4px">Small cards with a 3D object for Super App’s own services and offers. They take turns on the public site — never on checkout, dashboards or the studio, never over a dialog, and never for the page the visitor is already on. Visitors can close one or turn offers off for 7 days.</p>
+        section = `<section class="dash-card"><h2 class="h4">Pop-up ads</h2><p class="small soft" style="margin-top:4px">Small cards with a 3D object for Super Malaab’s own services and offers. They take turns on the public site — never on checkout, dashboards or the studio, never over a dialog, and never for the page the visitor is already on. Visitors can close one or turn offers off for 7 days.</p>
           <form class="form-grid" data-popup-rhythm novalidate style="margin-top:14px">
             <label class="choice span-2"><input type="checkbox" name="on" ${cfg.on ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Show pop-ups</b></span></label>
             <div class="field"><label for="pr-f">First one after (seconds)</label><input class="input num" id="pr-f" name="first" type="number" min="2" max="120" value="${cfg.first}" /></div>

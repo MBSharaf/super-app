@@ -8,7 +8,7 @@ namespace SuperApp.Api.Controllers.Partner;
 
 /// <summary>
 /// The partner's staff accounts (API §3.2): managers, check-in staff and accountants. The owner and managers manage
-/// them; only the owner handles managers. The person needs a Super App account first (found by email or mobile).
+/// them; only the owner handles managers. The person needs a Super Malaab account first (found by email or mobile).
 /// </summary>
 [Route("api/v1/partner/staff")]
 [Authorize]

@@ -1,9 +1,9 @@
 /**
- * Communities (version 1): forum-style groups created by the Super App team — posts (text, photo, poll), comments, reactions,
+ * Communities (version 1): forum-style groups created by the Super Malaab team — posts (text, photo, poll), comments, reactions,
  * pinned posts and announcements. No live chat yet (that comes with the backend).
  *
  * Who can join depends on the community's audience: everyone, sellers, or Pro/Elite sellers. Badges are real: seller level,
- * store name, Super App team. Safety: reports, a banned-word filter (plus phone numbers and outside links), slow mode and
+ * store name, Super Malaab team. Safety: reports, a banned-word filter (plus phone numbers and outside links), slow mode and
  * muted members — all managed in the admin console (#/admin/community).
  *
  * Data: db.communities, db.communityPosts (comments inside), settings.community (filter); the shopper's memberships in the
@@ -33,7 +33,7 @@
   const access = (c) => {
     if (c.audience === 'everyone') return { ok: true };
     const s = seller();
-    if (!s) return { ok: false, reason: 'For sellers on Super App', action: ['#/sell', 'Start selling'] };
+    if (!s) return { ok: false, reason: 'For sellers on Super Malaab', action: ['#/sell', 'Start selling'] };
     if (s.status !== 'active') return { ok: false, reason: 'Your seller account isn’t active yet' };
     if (c.audience === 'sellers-pro' && SA.services.sellers.levelOf(s).index < 2) return { ok: false, reason: 'For Pro and Elite sellers', action: ['#/dash/seller', 'See your level'] };
     return { ok: true };
@@ -44,16 +44,16 @@
     return m || null;
   };
 
-  /** Reject banned words, phone numbers and outside links (keeps deals on Super App and stops spam) */
+  /** Reject banned words, phone numbers and outside links (keeps deals on Super Malaab and stops spam) */
   const clean = (text) => {
     const t = String(text || '');
     const low = t.toLowerCase();
     const bad = (cfg().bannedWords || []).find((w) => w && low.includes(w.toLowerCase()));
-    if (bad) throw new ApiError('Your post has words that aren’t allowed in Super App communities. Please edit it.', 'filtered');
+    if (bad) throw new ApiError('Your post has words that aren’t allowed in Super Malaab communities. Please edit it.', 'filtered');
     if (cfg().blockContacts !== false) {
-      if (/(\+?20|0)1[0125][\s-]?\d{3,4}[\s-]?\d{3,4}/.test(t.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))) throw new ApiError('Phone numbers can’t be shared in communities — keep deals and messages on Super App.', 'filtered');
+      if (/(\+?20|0)1[0125][\s-]?\d{3,4}[\s-]?\d{3,4}/.test(t.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)))) throw new ApiError('Phone numbers can’t be shared in communities — keep deals and messages on Super Malaab.', 'filtered');
       const outside = (t.match(/(?:https?:\/\/|www\.)[^\s]+/gi) || []).filter((u) => !community.isInternal(u));
-      if (outside.length) throw new ApiError('Outside links can’t be shared in communities — links to Super App pages are fine.', 'filtered');
+      if (outside.length) throw new ApiError('Outside links can’t be shared in communities — links to Super Malaab pages are fine.', 'filtered');
     }
     return t.trim();
   };
@@ -74,10 +74,10 @@
   const findPost = (id) => { const p = db().find('communityPosts', id); if (!p || p.deleted) throw new ApiError('This post is no longer available.', 'not_found'); return p; };
   const mustAccess = (c) => { const a = access(c); if (!a.ok) throw new ApiError(a.reason, 'forbidden'); };
 
-  /** The Super App team writes as "Super App Admin" */
-  const ADMIN = { kind: 'admin', id: 'acc-admin', name: 'Super App Admin', avatar: 7, badge: { label: 'Official', tone: 'team' } };
+  /** The Super Malaab team writes as "Super Malaab Admin" */
+  const ADMIN = { kind: 'admin', id: 'acc-admin', name: 'Super Malaab Admin', avatar: 7, badge: { label: 'Official', tone: 'team' } };
 
-  /** Links to Super App pages (shown as cards); anything else counts as an outside link */
+  /** Links to Super Malaab pages (shown as cards); anything else counts as an outside link */
   const ROUTES = [['slot', /^#\/book\/([\w-]+)\?(.*)$/], ['pitch', /^#\/pitches\/([\w-]+)/], ['game', /^#\/players\/(m-[\w-]+)/], ['product', /^#\/shop\/([\w:-]+)/], ['store', /^#\/s\/([\w-]+)/],
     ['tournament', /^#\/tournaments\/([\w-]+)/], ['post', /^#\/community\/([\w-]+)\/([\w-]+)/], ['community', /^#\/community\/([\w-]+)$/]];
   const hashOf = (u) => {
@@ -85,7 +85,7 @@
     try { const x = new URL(u.startsWith('www.') ? `https://${u}` : u); return `#${(x.pathname.replace(/^\/super-app(?=\/|$)/, '') || '/') + x.search}`.replace(/[.,!?)]+$/, ''); } catch { return ''; }
   };
   const isInternal = (u) => { if (/^#\//.test(u)) return true; try { const x = new URL(u.startsWith('www.') ? `https://${u}` : u); return (x.host === location.host || /superapp/i.test(x.host) || /mbsharaf\.github\.io$/i.test(x.host)) && (x.hash.startsWith('#/') || x.pathname.replace(/^\/super-app(?=\/|$)/, '').length > 1); } catch { return false; } };
-  /** Super App links found in a text → [{ type, id, hash }] (max 3) */
+  /** Super Malaab links found in a text → [{ type, id, hash }] (max 3) */
   const linksIn = (text) => {
     const found = String(text || '').match(/(?:https?:\/\/[^\s]+|www\.[^\s]+|#\/[^\s]+)/gi) || [];
     const out = [];
@@ -114,7 +114,7 @@
       return db().all('communityPosts').filter((p) => ids.has(p.communityId) && !p.hidden && !p.deleted).map(postView).sort((a, b) => b.at - a.at).slice(0, 30)
         .map((p) => ({ ...p, community: db().find('communities', p.communityId) }));
     },
-    post(id) { const p = findPost(id); if (p.hidden) throw new ApiError('This post was removed by the Super App team.', 'not_found'); return postView(p); },
+    post(id) { const p = findPost(id); if (p.hidden) throw new ApiError('This post was removed by the Super Malaab team.', 'not_found'); return postView(p); },
 
     createPost(communityId, { text, image = null, poll = [], card = null }) {
       SA.services.ceo?.assertOn('community');
@@ -216,20 +216,20 @@
     /** Seed data (fictional people and stores; Koora Ink, Nile Lines and Cairo Otaku are the demo sellers) */
     seed(now = Date.now()) {
       const C = (id, slug, name, about, audience, icon, color, cover, baseMembers, order, rules, slowMode = 0) => ({ id, slug, name, about, audience, icon, color, cover, baseMembers, order, rules, slowMode, status: 'active', createdAt: now - 40 * DAY, createdBy: 'acc-admin' });
-      const RULES = ['Be respectful — no insults, no fan fights.', 'No phone numbers or outside links: keep deals on Super App.', 'Only share work you made or have the rights to.', 'Report anything that breaks the rules — the Super App team checks every report.'];
+      const RULES = ['Be respectful — no insults, no fan fights.', 'No phone numbers or outside links: keep deals on Super Malaab.', 'Only share work you made or have the rights to.', 'Report anything that breaks the rules — the Super Malaab team checks every report.'];
       const communities = [
-        C('cm-creators', 'creators', 'Super App Creators', 'Print-on-demand sellers helping each other: design feedback, what sells, printing tips and news from the Super App team.', 'sellers', 'shirt', '#FF5B14', 'stadiumNight', 214, 1, RULES),
+        C('cm-creators', 'creators', 'Super Malaab Creators', 'Print-on-demand sellers helping each other: design feedback, what sells, printing tips and news from the Super Malaab team.', 'sellers', 'shirt', '#FF5B14', 'stadiumNight', 214, 1, RULES),
         C('cm-lounge', 'pro-lounge', 'Pro & Elite Lounge', 'For Pro and Elite sellers: early news on new products, bigger campaigns and talking shop with the top sellers.', 'sellers-pro', 'crown', '#C9920F', 'litField', 38, 2, RULES),
-        C('cm-players', 'players', 'Super App Players', 'Players across Egypt: find teammates, share pitch tips, ask anything about booking and playing.', 'everyone', 'users', '#0B6E4F', 'nightMatch', 1840, 3, RULES, 2),
+        C('cm-players', 'players', 'Super Malaab Players', 'Players across Egypt: find teammates, share pitch tips, ask anything about booking and playing.', 'everyone', 'users', '#0B6E4F', 'nightMatch', 1840, 3, RULES, 2),
         C('cm-fantasy', 'fantasy', 'Fantasy Talk', 'Captain picks, transfers and gameweek banter for the Egyptian league and the Premier League.', 'everyone', 'trophy', '#2459D6', 'stadium', 960, 4, RULES, 1),
       ];
       const A = (name, avatar, badge = null, id = `seed-${name.split(' ')[0].toLowerCase()}`) => ({ kind: 'user', id, name, avatar, badge });
-      const SAT = { kind: 'admin', id: 'acc-admin', name: 'Super App Admin', avatar: 7, badge: { label: 'Official', tone: 'team' } };
+      const SAT = { kind: 'admin', id: 'acc-admin', name: 'Super Malaab Admin', avatar: 7, badge: { label: 'Official', tone: 'team' } };
       const koora = A('Omar Hany', 2, { label: 'Elite seller · Koora Ink', tone: 'elite' }), nile = A('Salma Nabil', 11, { label: 'Pro seller · Nile Lines', tone: 'pro' }), otaku = A('Nour Khaled', 9, { label: 'Rising seller · Cairo Otaku', tone: 'rising' });
       const p = (communityId, au, text, ago, extra = {}) => ({ id: `cp-seed-${communityId}-${ago}`, communityId, author: au, text, image: null, poll: null, reactions: {}, seedReactions: Math.round(4 + (ago % 7) * 3), comments: [], pinned: false, announcement: false, at: now - ago * H, ...extra });
       const cmt = (au, text, ago) => ({ id: `cm-seed-${ago}-${au.name.length}`, author: au, text, at: now - ago * H });
       const posts = [
-        p('cm-creators', SAT, 'Welcome to Super App Creators! 👋 Introduce yourself: what do you design and which product sells best for you? Read the rules in “About” — no phone numbers or outside links, so deals stay safe on Super App.', 24 * 6, { pinned: true, announcement: true, seedReactions: 41 }),
+        p('cm-creators', SAT, 'Welcome to Super Malaab Creators! 👋 Introduce yourself: what do you design and which product sells best for you? Read the rules in “About” — no phone numbers or outside links, so deals stay safe on Super Malaab.', 24 * 6, { pinned: true, announcement: true, seedReactions: 41 }),
         p('cm-creators', SAT, 'Derby week is in 9 days. Designs with Cairo pride (not club logos!) sold 3× more last derby. Upload early: Pro sellers are reviewed first.', 30, { announcement: true, seedReactions: 26 }),
         p('cm-creators', otaku, 'Rate my next design honestly 🙏 Retro controller + “Press Start” on a hoodie. Should the text go on the back or the front?', 8, {
           poll: { options: [{ text: 'Front, big', votes: [], seed: 12 }, { text: 'Back, with a small logo on the front', votes: [], seed: 27 }, { text: 'Only the controller, no text', votes: [], seed: 6 }] },
@@ -266,7 +266,7 @@
     const now = Date.now();
     db().raw().communities.unshift({ id: 'cm-pitches', slug: 'pitches', name: 'Pitches & free slots', about: 'Free hours posted by verified venues — book them in one tap — and games looking for players. Filter by area and time.', audience: 'everyone',
       icon: 'pitch', color: '#0A3D2D', cover: 'aerialPitch', baseMembers: 2630, order: 0, slowMode: 0, status: 'active', createdAt: now, createdBy: 'acc-admin',
-      rules: ['Slot cards come only from verified venues on Super App.', 'Share your game as a card so players can ask to join and pay safely.', 'No phone numbers or outside links — book and pay on Super App.', 'Be on time: hosts rate players after every game.'] });
+      rules: ['Slot cards come only from verified venues on Super Malaab.', 'Share your game as a card so players can ask to join and pay safely.', 'No phone numbers or outside links — book and pay on Super Malaab.', 'Be on time: hosts rate players after every game.'] });
     db().raw().communityPosts.push({ id: 'cp-seed-pitches-welcome', communityId: 'cm-pitches', author: { ...community.ADMIN }, text: 'Welcome! Venues post free hours here (tap “Book now” on a card), and players share games that need people. Turn on alerts to hear about free slots near you first: #/alerts', image: null, poll: null, reactions: {}, seedReactions: 64, comments: [], pinned: true, announcement: true, at: now - 3 * 864e5 });
     try { db().touch('communities'); } catch { /* storage full */ }
     // A few real free slots from demo venues (posted after the pitch data is ready)

@@ -73,7 +73,7 @@ public sealed class SupportAdminService(
         if (!request.InternalNote)
         {
             await live.PublishAsync(ticket.Code, "message", dto with { IsMine = false }, ct);
-            await TellCustomerAsync(ticket, "The Super App team replied", PreviewOf(dto.Body), ct);
+            await TellCustomerAsync(ticket, "The Super Malaab team replied", PreviewOf(dto.Body), ct);
         }
         return dto;
     }
@@ -83,7 +83,7 @@ public sealed class SupportAdminService(
         var ticket = await TicketAsync(code, ct);
         if (request.UserId is { } to && !await repository.IsStaffAsync(to, ct))
         {
-            throw new BadRequestException("Tickets go to Super App team members.", "assignee");
+            throw new BadRequestException("Tickets go to Super Malaab team members.", "assignee");
         }
         ticket.AssignedToUserId = request.UserId;
         await unitOfWork.SaveChangesAsync(ct);
@@ -131,7 +131,7 @@ public sealed class SupportAdminService(
         await limits.EnsureRefundAsync(request.Refund, ct);
         var byVenue = string.Equals(request.PaidBy, "Partner", StringComparison.OrdinalIgnoreCase) && ticket.AgainstUserId is not null;
         await ledger.CreditAsync(ticket.OpenedById, request.Refund, byVenue ? ticket.AgainstUserId : null, "Ticket", ticket.Id, ct);
-        var decision = request.Refund > 0 ? $"Refund {request.Refund:0.##} EGP to the Super App wallet, paid by {(byVenue ? "the venue" : "Super App")}." : "No refund.";
+        var decision = request.Refund > 0 ? $"Refund {request.Refund:0.##} EGP to the Super Malaab wallet, paid by {(byVenue ? "the venue" : "Super Malaab")}." : "No refund.";
         repository.Add(new TicketMessage { TicketId = ticket.Id, SenderId = UserId, Body = $"Dispute decided: {decision} {request.Note.Trim()}", IsInternalNote = true });
         (ticket.Status, ticket.ResolvedAt) = (TicketStatus.Resolved, clock.UtcNow);
         await unitOfWork.SaveChangesAsync(ct);

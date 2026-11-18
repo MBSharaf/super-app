@@ -1,4 +1,4 @@
-/** Admin console: fantasy — free leagues (prizes, sponsor, cap), the Super App League's weekly points, sponsors and winners. */
+/** Admin console: fantasy — free leagues (prizes, sponsor, cap), the Super Malaab League's weekly points, sponsors and winners. */
 (function (SA) {
   const { esc, money, fmtDate, timeAgo, isoDate, addDays, today } = SA.core.utils;
   const { icon } = SA.ui;
@@ -27,7 +27,7 @@
     });
   };
   const sponsorDialog = (s = null) => SA.ui.overlay.open({
-    title: s ? `Edit ${esc(s.name)}` : 'New sponsor', subtitle: 'Sponsors provide the prizes — Super App never pays cash prizes.',
+    title: s ? `Edit ${esc(s.name)}` : 'New sponsor', subtitle: 'Sponsors provide the prizes — Super Malaab never pays cash prizes.',
     body: `<form class="form-grid" data-sponsor novalidate>
       <div class="field span-2"><label for="sp-n">Name</label><input class="input" id="sp-n" name="name" value="${esc(s?.name || '')}" /><p class="field-error" data-err="name"></p></div>
       <div class="field"><label for="sp-t">Tier</label><select class="select" id="sp-t" name="tier">${Object.entries(TIER).map(([k, [, l]]) => `<option value="${k}" ${s?.tier === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -99,7 +99,7 @@
   };
 
   SA.pages.adminFantasy = A.guard({
-    title: 'Fantasy — Super App Admin',
+    title: 'Fantasy — Super Malaab Admin',
     render(ctx) {
       const tab = ctx.query.tab || '';
       const LG = F().LEAGUES;
@@ -111,7 +111,7 @@
       let section = '';
       if (!tab) {
         section = Object.keys(LG).map((lg) => `<section class="dash-card table-card"><h2 class="h4" style="padding:18px 18px 0">${esc(LG[lg].label)}</h2><div class="table-wrap"><table class="table dash-table"><thead><tr><th>League</th><th>Type</th><th>Sponsor</th><th>1st prize</th><th class="r">Managers</th><th>Status</th><th></th></tr></thead><tbody>
-          ${F().allOfficial(lg).map((l) => `<tr class="${l.hidden ? 'is-dim' : ''}"><td class="small"><b>${esc(l.name)}</b><span class="xs muted" style="display:block">${esc(l.scope)}</span></td><td>${l.kind === 'official' ? '<span class="badge badge-ink">Super App · Free</span>' : '<span class="badge">Free</span>'}</td>
+          ${F().allOfficial(lg).map((l) => `<tr class="${l.hidden ? 'is-dim' : ''}"><td class="small"><b>${esc(l.name)}</b><span class="xs muted" style="display:block">${esc(l.scope)}</span></td><td>${l.kind === 'official' ? '<span class="badge badge-ink">Super Malaab · Free</span>' : '<span class="badge">Free</span>'}</td>
             <td class="small">${l.sponsor ? `<i class="adm-dot" style="background:${esc(l.sponsor.color)}"></i>${esc(l.sponsor.name)}` : '<span class="muted">—</span>'}</td><td class="small">${esc(l.prizes[0]?.[1] || '')}</td><td class="r num">${l.participants.toLocaleString()}${l.cap ? `<span class="xs muted"> / ${l.cap.toLocaleString()}</span>` : ''}</td>
             <td>${l.hidden ? '<span class="badge badge-danger">Hidden</span>' : '<span class="badge badge-turf">Live</span>'}</td>
             <td class="r"><div class="row" style="--gap:4px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" data-edit-league="${l.id}" data-lg="${lg}">Edit</button><button class="btn btn-outline btn-sm" data-winners="${l.id}" data-lg="${lg}">${icon('trophy', 13)} Announce winners</button></div></td></tr>`).join('')}
@@ -130,10 +130,10 @@
             <td>${r.delivered ? `<span class="badge badge-turf">${r.code ? 'Code sent' : 'Delivered'}</span>` : `<button class="btn btn-outline btn-sm" data-delivered="${w.id}" data-i="${i}">Mark delivered</button>`}</td></tr>`).join('')}
           </tbody></table></div></section>`).join('') || `<div class="dash-card">${SA.ui.c.empty({ icon: 'trophy', title: 'No winners announced yet', text: 'Announce winners from the Leagues tab when a round or a competition ends.' })}</div>`;
       } else {
-        // Super App League: the top 3 of every gameweek win Super Points (owner's rule, 2026-11-03)
+        // Super Malaab League: the top 3 of every gameweek win Super Points (owner's rule, 2026-11-03)
         const w = F().weeklyPoints();
-        section = `<div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">Super App League — weekly points</h2>
-            <p class="small soft" style="margin-top:6px">Every league is free. In the Super App League, the 3 highest gameweek scores win Super Points after each gameweek. The points go to their accounts automatically.</p>
+        section = `<div class="dash-grid g-1-1"><section class="dash-card"><h2 class="h4">Super Malaab League — weekly points</h2>
+            <p class="small soft" style="margin-top:6px">Every league is free. In the Super Malaab League, the 3 highest gameweek scores win Super Points after each gameweek. The points go to their accounts automatically.</p>
             <form class="form-grid" data-weekly style="margin-top:14px">${['1st', '2nd', '3rd'].map((p, i) => `<div class="field"><label for="fw-${i}">${p} place (points)</label><input class="input num" id="fw-${i}" name="p${i}" type="number" min="0" step="50" value="${w[i]}" /></div>`).join('')}
               <div class="span-2"><button class="btn btn-primary" type="submit">Save weekly points</button></div></form></section>
           <section class="dash-card"><h2 class="h4">Last 30 days</h2><dl class="kv" style="margin-top:12px"><div><dt>Gameweeks paid out</dt><dd class="num">${weekly.filter((x) => x.at >= addDays(today(), -29).getTime()).length}</dd></div><div><dt>Super Points given</dt><dd class="num">${weeklyGiven.toLocaleString()}</dd></div></dl>
@@ -149,14 +149,14 @@
           ${C.kpi({ label: 'Prizes to deliver', value: winners.reduce((t, w) => t + w.rows.filter((r) => !r.delivered).length, 0), ic: 'gift', tone: winners.some((w) => w.rows.some((r) => !r.delivered)) ? 'k-blaze' : '' })}
         </div>
         ${A.tabs('/admin/fantasy', [['', 'Leagues'], ['sponsors', 'Sponsors', sponsors.length], ['winners', 'Winners', winners.length], ['weekly', 'Weekly points', weekly.length], ['competitions', 'Competitions']], tab)}${tab === 'competitions' ? compsSection() : section}`;
-      return C.layout('fantasy', { title: 'Fantasy', subtitle: 'Free leagues, the Super App League’s weekly points, sponsors, winners and the competitions on the matches page', body });
+      return C.layout('fantasy', { title: 'Fantasy', subtitle: 'Free leagues, the Super Malaab League’s weekly points, sponsors, winners and the competitions on the matches page', body });
     },
     mount(el) {
       el.querySelector('[data-weekly]')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const v = [0, 1, 2].map((i) => Math.max(0, Math.round(+e.target[`p${i}`].value) || 0));
         db().setSettings({ fantasyWeekly: v });
-        db().log(SA.services.dash?.me?.()?.id || 'admin', 'settings.fantasy.weekly', `Super App League weekly points: ${v.join(' / ')}`);
+        db().log(SA.services.dash?.me?.()?.id || 'admin', 'settings.fantasy.weekly', `Super Malaab League weekly points: ${v.join(' / ')}`);
         toast('Weekly points saved'); SA.app.rerender();
       });
       el.addEventListener('click', async (e) => {

@@ -1,4 +1,4 @@
-# Super App API — try the endpoints from Visual Studio or VS Code (REST Client).
+# Super Malaab API — try the endpoints from Visual Studio or VS Code (REST Client).
 # Run the API first (https profile). Requests are sent in order with the same cookies.
 #
 # How changes work: every POST / PUT / PATCH needs the anti-forgery token from GET /auth/csrf in the
@@ -535,7 +535,7 @@ GET {{api}}/communities
 POST {{api}}/communities/fantasy/join
 X-CSRF-TOKEN: {{csrf}}
 
-### Communities: post with a poll (Super App links become cards)
+### Communities: post with a poll (Super Malaab links become cards)
 POST {{api}}/communities/fantasy/posts
 Content-Type: application/json
 X-CSRF-TOKEN: {{csrf}}
@@ -570,7 +570,7 @@ X-CSRF-TOKEN: {{csrf}}
 
 { "days": 3, "reason": "Selling is not allowed here." }
 
-### Admin community: post as Super App Admin (community.postAsAdmin)
+### Admin community: post as Super Malaab Admin (community.postAsAdmin)
 POST {{api}}/admin/communities/fantasy/posts
 Content-Type: application/json
 X-CSRF-TOKEN: {{csrf}}

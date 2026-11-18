@@ -28,7 +28,7 @@ public sealed class ExcelExporter(IClock clock) : IExcelExporter
         ws.Cell(1, 1).Value = d.Title;
         ws.Cell(1, 1).Style.Font.SetBold().Font.SetFontSize(18).Font.SetFontColor(Brand);
         ws.Cell(2, 1).Value = d.Subtitle;
-        ws.Cell(3, 1).Value = $"Super App · made {clock.UtcNow:yyyy-MM-dd HH:mm} UTC";
+        ws.Cell(3, 1).Value = $"Super Malaab · made {clock.UtcNow:yyyy-MM-dd HH:mm} UTC";
         ws.Cell(3, 1).Style.Font.SetFontColor(XLColor.Gray);
         for (var i = 0; i < d.Figures.Count; i++)
         {
