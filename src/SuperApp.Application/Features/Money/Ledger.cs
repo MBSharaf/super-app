@@ -68,6 +68,13 @@ public interface ILedger
     /// <summary>Adds the refund of <c>booking.RefundAmount</c> (nothing when 0 or the booking was not paid in the app).</summary>
     Task BookingRefundAsync(Booking booking, Guid requestedById, string reason, CancellationToken ct);
 
+    /// <summary>
+    /// A payment that arrived after its booking was already called off (paid after the 15 minutes): the whole amount goes
+    /// back to the card (<paramref name="gatewayRefundRef"/> set) or waits for the team (null → refund Requested),
+    /// with a refund receipt and the points taken back. Nothing reaches the venue or Super App. Saved by the caller.
+    /// </summary>
+    Task LatePaymentRefundAsync(Payment payment, long bookingId, string? gatewayRefundRef, CancellationToken ct);
+
     /// <summary>Something Super App sells itself (Fantasy Pass…): all of it to platform revenue, and a receipt.</summary>
     Task PlatformSaleAsync(Payment payment, string refType, long refId, CancellationToken ct);
 
@@ -174,6 +181,20 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, Sup
         payment.Status = booking.RefundAmount >= payment.Amount ? PaymentStatus.Refunded : PaymentStatus.PartlyRefunded;
         await ReceiptAsync(booking.CustomerId.Value, ReceiptKind.Refund, booking.RefundAmount, booking.Id, ct);
         await points.TakeBackAsync(booking.CustomerId.Value, booking.RefundAmount, "Booking", booking.Id, ct);
+    }
+
+    public async Task LatePaymentRefundAsync(Payment payment, long bookingId, string? gatewayRefundRef, CancellationToken ct)
+    {
+        var payer = payment.PayerUserId ?? throw new InvalidOperationException("A booking payment always has a payer.");
+        store.Add(new Refund
+        {
+            Payment = payment, Amount = payment.Amount, Destination = RefundDestination.OriginalMethod, PaidBy = RefundPayer.SuperApp,
+            Reason = "Paid after the booking had expired", ProviderRef = gatewayRefundRef,
+            Status = gatewayRefundRef is null ? RefundStatus.Requested : RefundStatus.Done, RequestedById = payer,
+        });
+        payment.Status = PaymentStatus.Refunded;
+        await ReceiptAsync(payer, ReceiptKind.Refund, payment.Amount, bookingId, ct);
+        await points.TakeBackAsync(payer, payment.Amount, SuperPoints.PaymentRef, payment.Id, ct);
     }
 
     public async Task PlatformSaleAsync(Payment payment, string refType, long refId, CancellationToken ct)

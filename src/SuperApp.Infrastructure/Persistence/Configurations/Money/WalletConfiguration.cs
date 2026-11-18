@@ -23,6 +23,8 @@ internal sealed class WalletConfiguration : IEntityTypeConfiguration<Wallet>
         builder.Property(x => x.AvailableBalance).HasPrecision(14, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.SettledTotal).HasPrecision(14, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.HasIndex(x => new { x.OwnerUserId, x.Type }).IsUnique().HasDatabaseName("UQ_Wallets_OwnerUserId_Type");
+        // Super App's own wallets have no owner: one per type (the index above skips rows without an owner)
+        builder.HasIndex(x => x.Type).IsUnique().HasFilter("[OwnerUserId] IS NULL").HasDatabaseName("UQ_Wallets_Platform_Type");
         builder.HasOne(x => x.OwnerUser).WithMany().HasForeignKey(x => x.OwnerUserId).OnDelete(DeleteBehavior.NoAction);
     }
 }

@@ -22,6 +22,16 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.HasSequence("ReceiptNumbers_PA", "money");
+
+            modelBuilder.HasSequence("ReceiptNumbers_RC", "money");
+
+            modelBuilder.HasSequence("ReceiptNumbers_RF", "money");
+
+            modelBuilder.HasSequence("ReceiptNumbers_ST", "money");
+
+            modelBuilder.HasSequence("ReceiptNumbers_TU", "money");
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -5516,6 +5526,11 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2(0)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Type")
+                        .IsUnique()
+                        .HasDatabaseName("UQ_Wallets_Platform_Type")
+                        .HasFilter("[OwnerUserId] IS NULL");
 
                     b.HasIndex("OwnerUserId", "Type")
                         .IsUnique()

@@ -153,7 +153,8 @@ public sealed class PaymentsService(
         }
         var paid = e.Success && e.Amount == payment.Amount;
         payment.RawWebhookJson = e.RawJson;
-        payment.ProviderRef ??= e.ProviderRef;
+        // Once paid, keep the gateway's transaction id: a refund (late payment, cancellation) is made against it
+        payment.ProviderRef = paid && e.TransactionId is { Length: > 0 } transaction ? transaction : payment.ProviderRef ?? e.ProviderRef;
         payment.Status = paid ? PaymentStatus.Paid : PaymentStatus.Failed;
         payment.PaidAt = paid ? clock.UtcNow : null;
         if (paid)

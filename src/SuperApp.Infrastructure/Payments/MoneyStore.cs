@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,6 +14,7 @@ using SuperApp.Domain.Entities.Pitches;
 using SuperApp.Domain.Entities.Money;
 using SuperApp.Domain.Enums;
 using SuperApp.Infrastructure.Persistence;
+using SuperApp.Infrastructure.Persistence.Configurations.Money;
 
 namespace SuperApp.Infrastructure.Payments;
 
@@ -24,8 +26,21 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
             ?? await db.Set<Wallet>().FirstOrDefaultAsync(w => w.OwnerUserId == ownerUserId && w.Type == type, ct);
         if (wallet is null)
         {
-            wallet = new Wallet { OwnerUserId = ownerUserId, Type = type };
-            db.Set<Wallet>().Add(wallet);
+            // Created at once on its own: when two payments make the same wallet together, the unique indexes
+            // (UQ_Wallets_OwnerUserId_Type, UQ_Wallets_Platform_Type) keep one and the other simply reads it
+            try
+            {
+                await db.Database.ExecuteSqlInterpolatedAsync($@"
+INSERT INTO [money].[Wallets] ([OwnerUserId], [Type])
+SELECT {ownerUserId}, {(byte)type}
+WHERE NOT EXISTS (SELECT 1 FROM [money].[Wallets]
+    WHERE [Type] = {(byte)type} AND ([OwnerUserId] = {ownerUserId} OR ([OwnerUserId] IS NULL AND {ownerUserId} IS NULL)))", ct);
+            }
+            catch (SqlException e) when (e.Number is 2601 or 2627)
+            {
+                // made by the other request a moment ago
+            }
+            wallet = await db.Set<Wallet>().FirstAsync(w => w.OwnerUserId == ownerUserId && w.Type == type, ct);
         }
         return wallet;
     }
@@ -36,14 +51,16 @@ public sealed class MoneyStore(AppDbContext db, IClock clock) : IMoneyStore
 
     public void Add(Receipt receipt) => db.Set<Receipt>().Add(receipt);
 
-    /// <summary>RC-2026-000123 (payment), RF- (refund), PA- (payout advice)…: year + running number of that kind.</summary>
+    /// <summary>
+    /// RC-2026-000123 (payment), RF- (refund), PA- (payout advice)…: year + running number of that kind.
+    /// The number comes from a SQL sequence per kind, so requests saving at the same moment never share a number.
+    /// </summary>
     public async Task<string> NewReceiptNumberAsync(ReceiptKind kind, CancellationToken ct)
     {
-        var prefix = kind switch { ReceiptKind.Refund => "RF", ReceiptKind.PayoutAdvice => "PA", ReceiptKind.TopUp => "TU", ReceiptKind.Statement => "ST", _ => "RC" };
-        var head = $"{prefix}-{clock.UtcNow.Year}-";
-        var saved = await db.Set<Receipt>().CountAsync(r => r.Number.StartsWith(head), ct);
-        var pending = db.Set<Receipt>().Local.Count(r => r.Id == 0 && r.Number.StartsWith(head, StringComparison.Ordinal));
-        return head + (saved + pending + 1).ToString("000000", CultureInfo.InvariantCulture);
+        var prefix = ReceiptSequences.Prefix(kind);
+        // ToListAsync runs the SQL as written (SingleAsync would wrap it in a sub-query, where NEXT VALUE FOR is not allowed)
+        var next = (await db.Database.SqlQueryRaw<long>(ReceiptSequences.NextValueSql(prefix)).ToListAsync(ct)).Single();
+        return $"{prefix}-{clock.UtcNow.Year}-" + next.ToString("000000", CultureInfo.InvariantCulture);
     }
 
     public Task<Guid> PitchOwnerAsync(long pitchId, CancellationToken ct) =>

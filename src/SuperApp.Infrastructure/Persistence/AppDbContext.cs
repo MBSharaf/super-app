@@ -14,11 +14,55 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<User, Role, Guid, IdentityUserClaim<Guid>, UserRole, IdentityUserLogin<Guid>,
         IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>(options)
 {
+    /// <summary>
+    /// Saves; wallet balances are added to the stored totals in the same transaction (see <see cref="WalletBalances"/>),
+    /// so payments changing one wallet at the same moment never overwrite each other.
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        var balances = WalletBalances.Take(ChangeTracker);
+        if (!balances.Any)
+        {
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+        try
+        {
+            var saved = Database.CurrentTransaction is not null
+                ? await SaveWithBalancesAsync(balances, cancellationToken)
+                : await Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+                {
+                    await using var transaction = await Database.BeginTransactionAsync(cancellationToken);
+                    var count = await SaveWithBalancesAsync(balances, cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+                    return count;
+                });
+            if (acceptAllChangesOnSuccess)
+            {
+                ChangeTracker.AcceptAllChanges();
+            }
+            await balances.RefreshAsync(cancellationToken);
+            return saved;
+        }
+        catch
+        {
+            balances.Restore();
+            throw;
+        }
+    }
+
+    private async Task<int> SaveWithBalancesAsync(WalletBalances balances, CancellationToken ct)
+    {
+        var saved = await base.SaveChangesAsync(acceptAllChangesOnSuccess: false, ct);
+        await balances.ApplyAsync(this, DateTime.UtcNow, ct);
+        return saved;
+    }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);                                  // Identity tables first
         builder.Ignore<IdentityPasskeyData>();                          // no passkeys table in schema version 2
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        Configurations.Money.ReceiptSequences.Apply(builder);          // receipt numbers (money schema)
         builder.ApplySharedConventions();                               // after every configuration
     }
 
