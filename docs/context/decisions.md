@@ -71,7 +71,7 @@ decisions here (with the date) from any window.
   - every export is Excel with a dashboard sheet
 
 ## Marketing
-- **Launch (2026-10-18):** the public launch is at the end of October 2026; the posting schedule assumes Sat 31 Oct (`marketing/SCHEDULE-2026-10.md`).
+- **Launch (2026-10-18):** the public launch was planned for the end of October 2026 (`marketing/SCHEDULE-2026-10.md`). As of 2026-11-18 the social links in `js/core/namespace.js` are still empty and the real launch date is not confirmed; marketing waits for the owner.
 
 ## Postponed
 - Freelancer services: after the launch. The owner has his own idea, so ask him first.
