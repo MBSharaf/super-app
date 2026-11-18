@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>Post 09 — دوري Super App: الجولة دي بس</title>
+<!-- Audience: Premier League fantasy players, including late joiners. Facts from main (2026-11-03): every league is free;
+     after each gameweek the top 3 by that gameweek's points win 1,500 / 1,000 / 500 Super Points. Points become vouchers
+     only (1,000 points = 50 EGP voucher), never cash. Gold is used because it is the brand's prize colour. -->
+<link rel="stylesheet" href="collage.css">
+<style>
+  .big { position: absolute; font: 900 350px/0.8 "Archivo", sans-serif; font-stretch: 125%; color: var(--gold); direction: ltr; letter-spacing: -.05em;
+    text-shadow: 0 30px 40px rgba(0,0,0,.35); }
+  .paper { position: absolute; background: #fff; color: var(--ink); box-shadow: 0 22px 30px -18px rgba(0,0,0,.6); }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 40px; padding: 10px 0; border-bottom: 3px solid rgba(13,20,17,.1); font-size: 34px; font-weight: 700; }
+  .row:last-child { border: 0; }
+  .row b { font: 800 46px "Archivo", sans-serif; direction: ltr; color: var(--ink); }
+  .row b small { font-size: 24px; font-weight: 700; color: var(--ink-2); }
+</style></head>
+<body class="bg-turf">
+  <div class="abs halftone"></div>
+  <div class="big" style="left:40px;top:250px;transform:rotate(-4deg)">1,500</div>
+
+  <div class="abs" style="left:64px;top:60px;display:flex;align-items:center;gap:14px;direction:ltr">
+    <svg width="64" height="64" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#0D1411"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>
+    <span class="handle" style="font-size:30px;font-weight:850;font-stretch:125%;color:#fff">SUPER APP</span>
+  </div>
+  <div class="abs tag" style="top:56px;right:64px"><i></i>فانتازي البريميرليج · مجاني</div>
+
+  <div class="abs" style="right:64px;top:590px;display:flex;flex-direction:column;align-items:flex-start;gap:14px">
+    <span class="block b-ink" style="font-size:96px;transform:rotate(1.5deg)">ترتيبك وحش؟</span>
+    <span class="block b-paper" style="font-size:72px;transform:rotate(-1deg)">الجايزة على الجولة دي بس.</span>
+  </div>
+
+  <div class="paper" style="right:64px;top:870px;width:600px;padding:18px 40px 18px;transform:rotate(-1.2deg)">
+    <div style="font-size:27px;font-weight:800;color:var(--turf);white-space:nowrap">دوري Super App · أعلى نقط في الجولة</div>
+    <div class="row"><span>الأول</span><b>1,500 <small>نقطة</small></b></div>
+    <div class="row"><span>التاني</span><b>1,000 <small>نقطة</small></b></div>
+    <div class="row"><span>التالت</span><b>500 <small>نقطة</small></b></div>
+  </div>
+  <div class="abs tape" style="right:560px;top:852px;transform:rotate(18deg);width:140px"></div>
+
+  <div class="abs" style="left:64px;top:960px;width:330px;color:#fff;font-size:28px;font-weight:700;line-height:1.5">
+    كل فريق داخل الدوري ده لوحده.<br>والجولة الجاية العدّاد بيبدأ من صفر.
+  </div>
+
+  <div class="abs" style="left:64px;top:1206px;width:360px;color:rgba(255,255,255,.85);font-size:22px;font-weight:700;line-height:1.5">
+    النقط بتتحول لقسايم في المحفظة<br>(1,000 نقطة = قسيمة 50 جنيه). مش فلوس.
+  </div>
+  <div class="abs" style="right:64px;top:1262px;z-index:6"><span class="cta" style="font-size:30px;height:66px;padding:0 30px 4px">اعمل فريقك قبل ماتش السبت</span></div>
+
+  <svg class="abs grain" width="1080" height="1350"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .05  0 0 0 0 .08  0 0 0 0 .06  0 0 0 .25 0"/></filter><rect width="1080" height="1350" filter="url(#n)"/></svg>
+</body></html>

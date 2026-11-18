@@ -49,4 +49,6 @@ Made in the design-system chat (branch `claude/design-system-extraction-9z03sr`)
 - *(empty)*
 
 ## Done
+- 2026-11-18: new content pack `marketing/CONTENT-2026-11.md` (posts 08–09 rendered in `marketing/posts/2026-11-19-new/`, ideas C–G), made with the `antialgorithm` skill (now in `.claude/skills/antialgorithm`). `PAGES.md` updated to the current product.
+- 2026-10-31: 30-day plan `marketing/PLAN-30-DAYS.md`.
 - 2026-10-17/18 (design-system chat): brand docs, posts 01–07, 2 carousels, reels 01–07 with covers, sound and voiceover, captions. See `marketing/HANDOFF.md`.

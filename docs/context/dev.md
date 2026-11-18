@@ -26,6 +26,7 @@
 
 ## Inbox (requests from other windows)
 - **2026-10-31, marketing window — Meta Pixel + Conversions API (needed before paid sign-up and booking campaigns, see `marketing/PLAN-30-DAYS.md` §6):** browser Pixel and server-side Conversions API sending the same events with one shared `event_id` for deduplication: `PageView`, `ViewContent` (pitch page), `Search` (pitch search), `CompleteRegistration`, `InitiateCheckout` (booking started), `Purchase` (booking paid through Paymob, with value and currency EGP), `Lead` (pitch-partner application). Pixel id and CAPI token come from the owner's `.env`; nothing fires until they are set. A cookie-consent check before firing. Later, the same events for GA4/GTM and the TikTok Pixel.
+- **2026-11-18, marketing window — `chatbot/knowledge.md` is out of date:** it still says fantasy covers the Egyptian Premier League (removed 2026-11-09), that vouchers start at 2,000 points (now 1,000 points = 50 EGP), and describes the shop as open (paused in production). The assistant will tell customers these things.
 
 ## Done
 - *(empty)*
