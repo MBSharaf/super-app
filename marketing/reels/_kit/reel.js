@@ -16,7 +16,7 @@ const MARK = '<svg width="120" height="120" viewBox="0 0 34 34"><rect width="34"
 
 function Reel({ dur = 15, T, caps, scene }) {
   const S = T.steps, n = S.length;
-  const brand = $('#brand'); if (brand && !brand.innerHTML.trim()) brand.innerHTML = `${MARK}<div class="wm">SUPER APP</div><div class="ln">قريب · كل الكورة في مكان واحد</div>`;
+  const brand = $('#brand'); if (brand && !brand.innerHTML.trim()) brand.innerHTML = `${MARK}<div class="wm">SUPER MALAAB</div><div class="ln">سوبر ملعب</div>`;
   window.ready = Promise.all($$('img').map((im) => im.decode().catch(() => {})));
   let capKey = -1;
   window.render = function (t) {
