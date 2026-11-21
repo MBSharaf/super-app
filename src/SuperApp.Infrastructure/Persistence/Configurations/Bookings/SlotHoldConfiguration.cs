@@ -13,7 +13,7 @@ internal sealed class SlotHoldConfiguration : IEntityTypeConfiguration<SlotHold>
     {
         builder.ToTable("SlotHolds", "booking", t =>
         {
-            t.HasCheckConstraint("CK_SlotHolds_Hour", "[Hour] <= 23");
+            t.HasCheckConstraint("CK_SlotHolds_Hour", "[Hour] <= 47");
         });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => new { x.PitchId, x.Date, x.Hour }).IsUnique().HasDatabaseName("UQ_SlotHolds_PitchId_Date_Hour");

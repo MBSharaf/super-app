@@ -4,7 +4,7 @@ using SuperApp.Domain.Entities.Pitches;
 
 namespace SuperApp.Domain.Entities.Bookings;
 
-/// <summary>A 10-minute hold on an hour while the customer pays. Table <c>booking.SlotHolds</c>.</summary>
+/// <summary>A 10-minute hold on an hour while the customer pays (a half-hour index on a padel court, like <see cref="BookingSlot"/>). Table <c>booking.SlotHolds</c>.</summary>
 public class SlotHold : Entity<long>
 {
     public long PitchId { get; set; }

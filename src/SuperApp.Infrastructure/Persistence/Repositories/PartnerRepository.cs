@@ -36,12 +36,13 @@ public sealed class PartnerRepository(AppDbContext db) : IPartnerRepository
             .Select(p => new
             {
                 p.Id, p.Slug, p.Name, p.VenueId, Venue = p.Venue.Name, p.Format, p.PricePerHour, p.PeakPricePerHour, p.Status, p.RejectReason,
-                p.Rating, p.ReviewsCount, p.PaymentMode,
+                p.Rating, p.ReviewsCount, p.PaymentMode, p.Sport, p.IsPanoramic,
                 Photo = p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => new { ph.FileId, ph.File.Container, ph.File.StorageKey }).FirstOrDefault(),
             })
             .ToListAsync(ct);
         return rows.Select(r => new MyPitchDto(r.Id, r.Slug, r.Name, r.VenueId, r.Venue, r.Format, r.PricePerHour, r.PeakPricePerHour, r.Status.ToString(),
-            r.RejectReason, r.Rating, r.ReviewsCount, r.Photo is null ? null : PitchesReader.Photo(r.Photo.Container, r.Photo.StorageKey, r.Photo.FileId), r.PaymentMode.ToString())).ToList();
+            r.RejectReason, r.Rating, r.ReviewsCount, r.Photo is null ? null : PitchesReader.Photo(r.Photo.Container, r.Photo.StorageKey, r.Photo.FileId), r.PaymentMode.ToString(),
+            r.Sport.ToString(), r.IsPanoramic)).ToList();
     }
 
     public async Task<PitchEditDto?> PitchForEditAsync(long partnerId, long pitchId, CancellationToken ct)
@@ -58,7 +59,8 @@ public sealed class PartnerRepository(AppDbContext db) : IPartnerRepository
         var photos = p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => { var x = PitchesReader.Photo(ph.File.Container, ph.File.StorageKey, ph.FileId); return new PartnerPhotoDto(ph.Id, x.Url, x.Key); }).ToList();
         return new PitchEditDto(p.Id, p.Slug, p.VenueId, p.Name, p.Format, p.Surface.ToString(), p.IsIndoor, p.PricePerHour, p.PeakPricePerHour, p.PeakFromHour,
             p.DescriptionEn, p.DescriptionAr, p.CancellationPolicy.Key, p.AllowCash, p.Facilities.OrderBy(f => f.Facility.SortOrder).Select(f => f.Facility.Key).ToList(),
-            hours, photos, p.Status.ToString(), p.RejectReason, Convert.ToBase64String(p.RowVersion), p.PaymentMode.ToString());
+            hours, photos, p.Status.ToString(), p.RejectReason, Convert.ToBase64String(p.RowVersion), p.PaymentMode.ToString(),
+            p.Sport.ToString(), p.IsPanoramic, p.Durations.ToMinutes(), p.RacketPrice, p.BallsPrice);
     }
 
     public Task<Pitch?> PitchAsync(long partnerId, long pitchId, CancellationToken ct) =>
@@ -97,8 +99,13 @@ public sealed class PartnerRepository(AppDbContext db) : IPartnerRepository
 
     public void RemoveClosure(Closure closure) => db.Set<Closure>().Remove(closure);
 
-    public Task<int> BookingsInRangeAsync(long pitchId, DateOnly from, DateOnly to, int? fromHour, int? toHour, CancellationToken ct) =>
-        db.Set<BookingSlot>()
-            .Where(s => s.PitchId == pitchId && s.IsActive && s.Date >= from && s.Date <= to && (fromHour == null || (s.Hour >= fromHour && s.Hour < toHour)))
+    /// <remarks>A padel court's slots hold half-hour indexes (hour × 2), so its hours are doubled to match.</remarks>
+    public async Task<int> BookingsInRangeAsync(long pitchId, DateOnly from, DateOnly to, int? fromHour, int? toHour, CancellationToken ct)
+    {
+        var scale = await db.Set<Pitch>().AnyAsync(p => p.Id == pitchId && p.Sport == Domain.Enums.Sport.Padel, ct) ? 2 : 1;
+        var (low, high) = (fromHour * scale, toHour * scale);
+        return await db.Set<BookingSlot>()
+            .Where(s => s.PitchId == pitchId && s.IsActive && s.Date >= from && s.Date <= to && (low == null || (s.Hour >= low && s.Hour < high)))
             .Select(s => s.BookingId).Distinct().CountAsync(ct);
+    }
 }

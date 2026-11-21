@@ -13,11 +13,14 @@ internal sealed class PitchConfiguration : IEntityTypeConfiguration<Pitch>
     {
         builder.ToTable("Pitches", "pitch", t =>
         {
-            t.HasCheckConstraint("CK_Pitches_Format", "[Format] IN (5, 7, 11)");
+            t.HasCheckConstraint("CK_Pitches_Format", "([Sport] = 0 AND [Format] IN (5, 7, 11)) OR ([Sport] = 1 AND [Format] = 2)");
             t.HasCheckConstraint("CK_Pitches_Surface", "[Surface] BETWEEN 0 AND 2");
             t.HasCheckConstraint("CK_Pitches_PricePerHour", "[PricePerHour] > 0");
             t.HasCheckConstraint("CK_Pitches_PeakPricePerHour", "[PeakPricePerHour] IS NULL OR [PeakPricePerHour] > 0");
             t.HasCheckConstraint("CK_Pitches_PeakFromHour", "[PeakFromHour] IS NULL OR [PeakFromHour] <= 23");
+            t.HasCheckConstraint("CK_Pitches_Sport", "[Sport] IN (0, 1)");
+            t.HasCheckConstraint("CK_Pitches_Durations", "([Sport] = 0 AND [Durations] = 0) OR ([Sport] = 1 AND [Durations] BETWEEN 1 AND 7)");
+            t.HasCheckConstraint("CK_Pitches_Extras", "([RacketPrice] IS NULL OR [RacketPrice] >= 0) AND ([BallsPrice] IS NULL OR [BallsPrice] >= 0)");
             t.HasCheckConstraint("CK_Pitches_Status", "[Status] BETWEEN 0 AND 4");
             t.HasCheckConstraint("CK_Pitches_Rating", "[Rating] BETWEEN 0 AND 5");
         });
@@ -32,6 +35,12 @@ internal sealed class PitchConfiguration : IEntityTypeConfiguration<Pitch>
         builder.Property(x => x.DescriptionAr).HasMaxLength(2000);
         builder.Property(x => x.AllowCash).HasDefaultValue(true).ValueGeneratedNever();
         builder.Property(x => x.PaymentMode).HasConversion<byte>().HasDefaultValue(PitchPaymentMode.Deposit).ValueGeneratedNever();
+        builder.Property(x => x.Sport).HasConversion<byte>().HasDefaultValue(Sport.Football).ValueGeneratedNever();
+        builder.Property(x => x.IsPanoramic).HasDefaultValue(false).ValueGeneratedNever();
+        builder.Property(x => x.Durations).HasConversion<byte>().HasDefaultValue(CourtDurations.None).ValueGeneratedNever();
+        builder.Property(x => x.RacketPrice).HasPrecision(12, 2);
+        builder.Property(x => x.BallsPrice).HasPrecision(12, 2);
+        builder.HasIndex(x => new { x.Sport, x.Status }).HasDatabaseName("IX_Pitches_Sport_Status");
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(PitchStatus.WaitingForReview).ValueGeneratedNever();
         builder.Property(x => x.RejectReason).HasMaxLength(400);
         builder.Property(x => x.Rating).HasPrecision(3, 2).HasDefaultValue(0m).ValueGeneratedNever();

@@ -39,7 +39,7 @@ public sealed class BookingsService(
     {
         await holdRules.ValidateAndThrowAsync(request, ct);
         await flags.EnsureOnAsync(KillSwitches.Bookings, ct);
-        var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
+        var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct, minute: request.Minute, minutes: request.Minutes, courts: true);
         var expires = await bookings.HoldAsync(plan.Pitch.Id, plan.Slots, Me(), ct);
         var split = await Deposits.SplitAsync(settings, plan.Total, plan.Pitch.PaymentMode, ct);
         return new HoldResponse(expires, plan.Lines, plan.PitchAmount, plan.ServiceFee, plan.Total, split.Deposit, split.BalanceDue);
@@ -59,7 +59,7 @@ public sealed class BookingsService(
         {
             throw new BusinessRuleException("Pitch bookings are paid in the app: a deposit or the full amount, as the pitch chooses.", "deposit_required");
         }
-        var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
+        var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct, minute: request.Minute, minutes: request.Minutes, courts: true);
         var discount = await loyalty.ForBookingAsync(me, request.PromoCode, request.VoucherCode, plan.Pitch.Id, plan.Pitch.OwnerUserId, plan.PitchAmount, plan.Total, ct);
         var booking = await NewBookingAsync(plan, request, me, ct);
         booking.DiscountAmount = discount.Total;
@@ -116,7 +116,10 @@ public sealed class BookingsService(
             return null;
         }
         var date = request.Hour >= 24 ? request.Date.AddDays(1) : request.Date;
-        var same = await bookings.RecentSameAsync(me, pitch.Id, date, request.Hour % 24, request.Duration, ct);
+        var court = pitch.Sport == Sport.Padel;
+        var minutes = court ? request.Minutes ?? request.Duration * 60 : 0;
+        var same = await bookings.RecentSameAsync(me, pitch.Id, date, request.Hour % 24, court ? (minutes + 59) / 60 : request.Duration, ct,
+            court ? request.Minute : 0, minutes);
         return same is null ? null : BookingMapper.ToResponse(same, pitch.Slug, pitch.Name, pitch.Address, qr.Create(same.Code));
     }
 
@@ -125,13 +128,16 @@ public sealed class BookingsService(
         var waiver = await legal.CurrentVersionIdAsync("waiver", ct);
         var commission = plan.Pitch.PartnerCommission ?? (await settings.DecimalAsync("commission.bookings", 0.10m, ct) * 100);
         var code = await bookings.NewCodeAsync(ct);
-        return new Booking
+        var (hour, minute) = plan.Start;
+        var booking = new Booking
         {
             Code = code, PitchId = plan.Pitch.Id, CustomerId = me, Source = BookingSource.App,
-            Date = plan.Lines[0].Date, StartHour = (byte)plan.Lines[0].CalendarHour, Duration = (byte)request.Duration,
+            Date = plan.Lines[0].Date, StartHour = hour, StartMinute = minute, Minutes = (short)plan.Minutes, Duration = plan.Hours(request.Duration),
             PitchAmount = plan.PitchAmount, ServiceFee = plan.ServiceFee, Total = plan.Total, CommissionRate = commission,
             PayAtVenue = request.PayAtVenue, PolicyKey = plan.Pitch.PolicyKey, WaiverVersionId = waiver, Status = BookingStatus.Confirmed,
         };
+        CourtExtras.Apply(booking, plan.Pitch, request.Rackets, request.Balls);
+        return booking;
     }
 
     private Guid Me() => currentUser.UserId ?? throw new UnauthorizedException();
@@ -144,6 +150,8 @@ public sealed class HoldRequestValidator : AbstractValidator<HoldRequest>
         RuleFor(x => x.PitchSlug).NotEmpty().MaximumLength(60);
         RuleFor(x => x.Hour).InclusiveBetween(0, 29);
         RuleFor(x => x.Duration).InclusiveBetween(1, 4).WithMessage("Book 1 to 4 hours in a row.");
+        RuleFor(x => x.Minute).Must(m => m is 0 or 30).WithMessage("Start on the hour or the half hour.");
+        RuleFor(x => x.Minutes).Must(m => m is null or 60 or 90 or 120).WithMessage("Book a court for 60, 90 or 120 minutes.");
     }
 }
 
@@ -174,6 +182,40 @@ public sealed class CreateBookingRequestValidator : AbstractValidator<CreateBook
         // Cash at the venue is refused by CreateAsync with 422 deposit_required (a clearer code for the site than "invalid").
         RuleFor(x => x.PayFromWallet).Equal(false).WithMessage("Pitch bookings are paid online by card only.");
         RuleFor(x => x.VoucherCode).MaximumLength(40);
+        // Padel courts (2026-11-21): half-hour starts, 60/90/120 minutes, rackets and balls rented at the club.
+        RuleFor(x => x.Minute).Must(m => m is 0 or 30).WithMessage("Start on the hour or the half hour.");
+        RuleFor(x => x.Minutes).Must(m => m is null or 60 or 90 or 120).WithMessage("Book a court for 60, 90 or 120 minutes.");
+        RuleFor(x => x.Rackets).InclusiveBetween(0, CourtExtras.MaxRackets).WithMessage($"Rent up to {CourtExtras.MaxRackets} rackets.");
+        RuleFor(x => x.Balls).InclusiveBetween(0, CourtExtras.MaxBalls).WithMessage($"Rent up to {CourtExtras.MaxBalls} tubes of balls.");
+    }
+}
+
+/// <summary>
+/// Padel extras (2026-11-21): rackets and tubes of balls the club rents out. They are paid at the club when the QR code is
+/// scanned, so they are kept apart from the booking's total, deposit and refunds.
+/// </summary>
+public static class CourtExtras
+{
+    public const int MaxRackets = 4;
+    public const int MaxBalls = 3;
+
+    public static void Apply(Booking booking, BookablePitch pitch, int rackets, int balls)
+    {
+        if (rackets == 0 && balls == 0)
+        {
+            return;
+        }
+        if (pitch.Sport != Sport.Padel)
+        {
+            throw new BusinessRuleException("Rackets and balls are rented on padel courts only.", "extras_not_offered");
+        }
+        if ((rackets > 0 && pitch.RacketPrice is null) || (balls > 0 && pitch.BallsPrice is null))
+        {
+            throw new BusinessRuleException("This club does not rent these out.", "extras_not_offered");
+        }
+        booking.Rackets = (byte)rackets;
+        booking.Balls = (byte)balls;
+        booking.ExtrasAmount = rackets * (pitch.RacketPrice ?? 0) + balls * (pitch.BallsPrice ?? 0);
     }
 }
 
@@ -183,5 +225,6 @@ public static class BookingMapper
     public static BookingResponse ToResponse(Booking b, string slug, string name, string address, string? qrToken, string? packageCode = null) => new(
         b.Code, slug, name, address, b.Date, b.StartHour, b.Duration, b.PitchAmount, b.ServiceFee, b.Total, b.PayAtVenue,
         b.Status.ToString(), b.PolicyKey, b.RefundAmount, b.CreatedAt, b.CancelledAt, qrToken, packageCode,
-        Deposit: b.Deposit, BalanceDue: b.BalanceDue, BalancePaidAt: b.BalancePaidAt, CheckedInAt: b.CheckedInAt);
+        Deposit: b.Deposit, BalanceDue: b.BalanceDue, BalancePaidAt: b.BalancePaidAt, CheckedInAt: b.CheckedInAt,
+        Sport: b.Minutes > 0 ? "Padel" : "Football", StartMinute: b.StartMinute, Minutes: b.Minutes, Rackets: b.Rackets, Balls: b.Balls, ExtrasAmount: b.ExtrasAmount);
 }

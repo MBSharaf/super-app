@@ -39,7 +39,7 @@ public sealed class PartnerPitchRemovalService(
         var pitch = await partners.PitchAsync(scope.PartnerId, pitchId, ct) ?? throw new NotFoundException("Pitch not found.");
         var now = CairoTime.Now(clock);
         var cancelled = (await partners.UpcomingBookingsAsync(pitchId, DateOnly.FromDateTime(now), ct))
-            .Where(b => b.Date.ToDateTime(new TimeOnly(b.StartHour, 0)) > now).ToList();
+            .Where(b => b.KickOff() > now).ToList();
         foreach (var b in cancelled)
         {
             b.Status = BookingStatus.CancelledByVenue;

@@ -79,7 +79,7 @@ public sealed class ReviewsService(
         await rules.ValidateAndThrowAsync(request, ct);
         var target = await OwnAsync(bookingCode, ct);
         var b = target.Booking;
-        var end = b.Date.ToDateTime(new TimeOnly(b.StartHour, 0)).AddHours(b.Duration);
+        var end = b.EndsAt();
         if (b.Status is BookingStatus.CancelledByCustomer or BookingStatus.CancelledByVenue or BookingStatus.NoShow || end > CairoTime.Now(clock))
         {
             throw new BusinessRuleException("You can review a pitch after you’ve played there.", "not_played");

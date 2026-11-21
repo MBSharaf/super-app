@@ -1087,6 +1087,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("BalancePaidAt")
                         .HasColumnType("datetime2(0)");
 
+                    b.Property<byte>("Balls")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
+
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("datetime2(0)");
 
@@ -1127,6 +1131,15 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("tinyint")
                         .HasDefaultValue((byte)1);
 
+                    b.Property<decimal>("ExtrasAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<short>("Minutes")
+                        .HasColumnType("smallint")
+                        .HasDefaultValue((short)0);
+
                     b.Property<long?>("PackageId")
                         .HasColumnType("bigint");
 
@@ -1161,6 +1174,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("varbinary(64)");
 
+                    b.Property<byte>("Rackets")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
+
                     b.Property<decimal>("RefundAmount")
                         .HasPrecision(12, 2)
                         .HasColumnType("decimal(12,2)")
@@ -1185,6 +1202,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.Property<byte>("StartHour")
                         .HasColumnType("tinyint");
+
+                    b.Property<byte>("StartMinute")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
 
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint")
@@ -1244,6 +1265,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("CK_Bookings_Duration", "[Duration] BETWEEN 1 AND 4");
 
+                            t.HasCheckConstraint("CK_Bookings_Extras", "[ExtrasAmount] >= 0");
+
+                            t.HasCheckConstraint("CK_Bookings_Minutes", "[Minutes] IN (0, 60, 90, 120)");
+
                             t.HasCheckConstraint("CK_Bookings_PitchAmount", "[PitchAmount] >= 0");
 
                             t.HasCheckConstraint("CK_Bookings_Refund", "[RefundAmount] >= 0 AND [RefundAmount] <= [Total]");
@@ -1253,6 +1278,8 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Bookings_Source", "[Source] BETWEEN 0 AND 5");
 
                             t.HasCheckConstraint("CK_Bookings_StartHour", "[StartHour] <= 23");
+
+                            t.HasCheckConstraint("CK_Bookings_StartMinute", "[StartMinute] IN (0, 30)");
 
                             t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 6");
 
@@ -1295,7 +1322,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("BookingSlots", "booking", t =>
                         {
-                            t.HasCheckConstraint("CK_BookingSlots_Hour", "[Hour] <= 23");
+                            t.HasCheckConstraint("CK_BookingSlots_Hour", "[Hour] <= 47");
                         });
                 });
 
@@ -1891,7 +1918,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("SlotHolds", "booking", t =>
                         {
-                            t.HasCheckConstraint("CK_SlotHolds_Hour", "[Hour] <= 23");
+                            t.HasCheckConstraint("CK_SlotHolds_Hour", "[Hour] <= 47");
                         });
                 });
 
@@ -7110,6 +7137,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<decimal?>("BallsPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
                     b.Property<int>("CancellationPolicyId")
                         .HasColumnType("int");
 
@@ -7128,6 +7159,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<byte>("Durations")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
+
                     b.Property<byte>("Format")
                         .HasColumnType("tinyint");
 
@@ -7136,6 +7171,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<bool>("IsIndoor")
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsPanoramic")
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
@@ -7156,6 +7195,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("decimal(12,2)");
 
                     b.Property<decimal>("PricePerHour")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal?>("RacketPrice")
                         .HasPrecision(12, 2)
                         .HasColumnType("decimal(12,2)");
 
@@ -7187,6 +7230,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(80)");
 
+                    b.Property<byte>("Sport")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
+
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint")
                         .HasDefaultValue((byte)0);
@@ -7216,12 +7263,19 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.HasIndex("Format", "PricePerHour")
                         .HasDatabaseName("IX_Pitches_Format_PricePerHour");
 
+                    b.HasIndex("Sport", "Status")
+                        .HasDatabaseName("IX_Pitches_Sport_Status");
+
                     b.HasIndex("Status", "VenueId")
                         .HasDatabaseName("IX_Pitches_Status_VenueId");
 
                     b.ToTable("Pitches", "pitch", t =>
                         {
-                            t.HasCheckConstraint("CK_Pitches_Format", "[Format] IN (5, 7, 11)");
+                            t.HasCheckConstraint("CK_Pitches_Durations", "([Sport] = 0 AND [Durations] = 0) OR ([Sport] = 1 AND [Durations] BETWEEN 1 AND 7)");
+
+                            t.HasCheckConstraint("CK_Pitches_Extras", "([RacketPrice] IS NULL OR [RacketPrice] >= 0) AND ([BallsPrice] IS NULL OR [BallsPrice] >= 0)");
+
+                            t.HasCheckConstraint("CK_Pitches_Format", "([Sport] = 0 AND [Format] IN (5, 7, 11)) OR ([Sport] = 1 AND [Format] = 2)");
 
                             t.HasCheckConstraint("CK_Pitches_PeakFromHour", "[PeakFromHour] IS NULL OR [PeakFromHour] <= 23");
 
@@ -7230,6 +7284,8 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Pitches_PricePerHour", "[PricePerHour] > 0");
 
                             t.HasCheckConstraint("CK_Pitches_Rating", "[Rating] BETWEEN 0 AND 5");
+
+                            t.HasCheckConstraint("CK_Pitches_Sport", "[Sport] IN (0, 1)");
 
                             t.HasCheckConstraint("CK_Pitches_Status", "[Status] BETWEEN 0 AND 4");
 

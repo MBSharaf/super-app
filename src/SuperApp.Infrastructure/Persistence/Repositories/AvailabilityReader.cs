@@ -14,7 +14,7 @@ public sealed class AvailabilityReader(AppDbContext db) : IAvailabilityReader
     {
         var pitch = await db.Set<Pitch>()
             .Where(p => p.Slug == slug && p.Status == PitchStatus.Live && p.Venue.Partner.Status == PartnerStatus.Active)
-            .Select(p => new { p.Id, p.PricePerHour, p.PeakPricePerHour, p.PeakFromHour })
+            .Select(p => new { p.Id, p.PricePerHour, p.PeakPricePerHour, p.PeakFromHour, p.Sport, p.Durations })
             .FirstOrDefaultAsync(ct);
         if (pitch is null)
         {
@@ -42,6 +42,7 @@ public sealed class AvailabilityReader(AppDbContext db) : IAvailabilityReader
             held.Select(s => (s.Date, (int)s.Hour)).ToHashSet(),
             closures, offers,
             holidays.GroupBy(h => h.Date).ToDictionary(g => g.Key, g => new HolidayBadgeDto(g.First().NameEn, g.First().NameAr, g.First().IsEstimated)),
-            waiting.ToDictionary(w => (w.Date, (int)w.Hour), w => w.Count));
+            waiting.ToDictionary(w => (w.Date, (int)w.Hour), w => w.Count),
+            pitch.Sport, pitch.Durations);
     }
 }

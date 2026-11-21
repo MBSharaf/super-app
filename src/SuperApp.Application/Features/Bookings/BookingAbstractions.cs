@@ -18,7 +18,8 @@ public interface IBookingRepository
     Task SaveAsync(Booking booking, IReadOnlyList<(DateOnly Date, int Hour)> slots, CancellationToken ct);
 
     /// <summary>The same person's booking of exactly these hours made in the last minutes (a repeated request).</summary>
-    Task<Booking?> RecentSameAsync(Guid userId, long pitchId, DateOnly date, int startHour, int duration, CancellationToken ct);
+    /// <remarks>Padel courts: <paramref name="startMinute"/> 0/30 and <paramref name="minutes"/> 60/90/120; football keeps both 0.</remarks>
+    Task<Booking?> RecentSameAsync(Guid userId, long pitchId, DateOnly date, int startHour, int duration, CancellationToken ct, int startMinute = 0, int minutes = 0);
 
     Task<Booking?> FindAsync(string code, CancellationToken ct);
 

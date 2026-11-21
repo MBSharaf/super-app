@@ -359,7 +359,7 @@ public sealed class GamesService(
     private Task Tell(Guid user, string title, Game game, CancellationToken ct) =>
         notifier.NotifyUserAsync(user, new NotificationMessage(NotificationCategory.Bookings, title, game.Title ?? game.Code, $"#/players/{game.Code}"), ct);
 
-    private static DateTime Start(Booking b) => b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
+    private static DateTime Start(Booking b) => b.KickOff();
 
     private DateOnly Today() => DateOnly.FromDateTime(CairoTime.Now(clock));
 
@@ -410,7 +410,7 @@ public sealed class GameSharePaymentListener(IGameRepository games, Money.ILedge
         if (await games.RequestByPaymentAsync(payment.Id, ct) is { } row && row.Status != GameRequestStatus.Withdrawn)
         {
             var b = row.Game.Booking;
-            await ledger.HeldShareAsync(payment, row.Game.HostId, "GameRequest", row.Id, CairoTime.ToUtc(b.Date.ToDateTime(new TimeOnly(b.StartHour, 0))), ct);
+            await ledger.HeldShareAsync(payment, row.Game.HostId, "GameRequest", row.Id, CairoTime.ToUtc(b.KickOff()), ct);
             await unitOfWork.SaveChangesAsync(ct);
         }
     }

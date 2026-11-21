@@ -23,7 +23,9 @@ public sealed record MyPitchDto(
     decimal Rating,
     int ReviewsCount,
     PhotoDto? Photo,
-    string PaymentMode = "Deposit");
+    string PaymentMode = "Deposit",
+    string Sport = "Football",
+    bool IsPanoramic = false);
 
 /// <summary>GET /partner/pitches/{id} — everything the edit form needs. Send <c>RowVersion</c> back with the edit.</summary>
 public sealed record PitchEditDto(
@@ -47,13 +49,21 @@ public sealed record PitchEditDto(
     string Status,
     string? RejectReason,
     string RowVersion,
-    string PaymentMode = "Deposit");
+    string PaymentMode = "Deposit",
+    string Sport = "Football",
+    bool IsPanoramic = false,
+    IReadOnlyList<int>? Durations = null,
+    decimal? RacketPrice = null,
+    decimal? BallsPrice = null);
 
 /// <summary>
 /// POST /partner/pitches (new pitch → waiting for review) and PUT /partner/pitches/{id} (edit; <c>RowVersion</c> from the
 /// GET is required, a newer change → 409 <c>stale</c>). <c>OpeningHours</c>: one row per weekday (0 = Sunday … 6),
 /// <c>CloseHour</c> up to 30 for after midnight (26 = 2 AM). <c>PaymentMode</c>: <c>Deposit</c> (a deposit in the app, the rest
 /// at the pitch) or <c>FullOnline</c> (everything in the app; Super Malaab pays the venue). A change applies to new bookings only.
+/// Padel courts (<c>Sport</c> = Padel, <c>Format</c> 2): <c>IsPanoramic</c> glass walls, <c>Durations</c> the lengths players can
+/// book (60, 90, 120 minutes; at least one), and the rental prices of a racket and a tube of balls (null = not rented).
+/// The sport is chosen when the pitch is added and cannot change later.
 /// </summary>
 public sealed record PitchRequest(
     long VenueId,
@@ -71,7 +81,12 @@ public sealed record PitchRequest(
     IReadOnlyList<string> Facilities,
     IReadOnlyList<OpeningHourDto> OpeningHours,
     string? RowVersion = null,
-    string PaymentMode = "Deposit");
+    string PaymentMode = "Deposit",
+    string Sport = "Football",
+    bool IsPanoramic = false,
+    IReadOnlyList<int>? Durations = null,
+    decimal? RacketPrice = null,
+    decimal? BallsPrice = null);
 
 /// <summary>A pitch photo in the dashboard: <c>Id</c> is used to delete or reorder it.</summary>
 public sealed record PartnerPhotoDto(long Id, string? Url, string? Key);

@@ -121,9 +121,9 @@ public sealed class CheckInService(
 
     private static bool Live(Booking b) => b.Status is not (BookingStatus.CancelledByCustomer or BookingStatus.CancelledByVenue);
 
-    private static DateTime Start(Booking b) => b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
+    private static DateTime Start(Booking b) => b.KickOff();
 
-    private static bool InWindow(Booking b, DateTime now) => now >= Start(b) - EarlyWindow && now < Start(b).AddHours(b.Duration);
+    private static bool InWindow(Booking b, DateTime now) => now >= Start(b) - EarlyWindow && now < b.EndsAt();
 
     private static string? MatchText(int? number, int? count) => number is null || count is null ? null : $"{number} of {count}";
 
@@ -136,8 +136,8 @@ public sealed class CheckInService(
         if (t.CustomerBlocked) { return QrScanResult.AccountBlocked; }
         if (b.Status is BookingStatus.CheckedIn or BookingStatus.Played || b.CheckedInAt is not null) { return QrScanResult.AlreadyUsed; }
         var now = CairoTime.Now(clock);
-        var start = b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
-        var end = start.AddHours(b.Duration);
+        var start = b.KickOff();
+        var end = b.EndsAt();
         if (now >= start - EarlyWindow && now < end) { return QrScanResult.Accepted; }
         var day = (now - EarlyWindow).Date == start.Date || now.Date == start.Date;
         return day ? QrScanResult.WrongHour : QrScanResult.WrongDay;
@@ -187,7 +187,8 @@ public sealed class CheckInService(
     {
         var time = Timing.Of(b, CairoTime.Now(clock));
         var left = time.LateMinutes > 0 ? $"{time.LateMinutes} min late · {time.MinutesLeft} min left" : "have a great game!";
-        return b.BalanceDue > 0 ? $"{b.Code} · {b.BalanceDue:0} EGP paid at the pitch · {left}" : $"{b.Code} · {left}";
+        var paid = b.BalanceDue + b.ExtrasAmount;
+        return paid > 0 ? $"{b.Code} · {paid:0} EGP paid at the {(b.Minutes > 0 ? "club" : "pitch")} · {left}" : $"{b.Code} · {left}";
     }
 
     private ScanResultDto Answer(QrScanResult result, ScanTarget? t, string? match = null)
@@ -201,15 +202,26 @@ public sealed class CheckInService(
         }
         return new ScanResultDto(result == QrScanResult.Accepted ? "accepted" : "rejected", reason, match is null ? message : $"{message} Match {match}.",
             b?.Code, t?.CustomerName, t?.PitchName, b?.Date, b?.StartHour, b?.Duration, match,
-            b?.Deposit ?? 0, b?.BalanceDue ?? 0, b?.BalancePaidAt, b?.CheckedInAt, time.LateMinutes, time.MinutesLeft, time.EndHour);
+            b?.Deposit ?? 0, b?.BalanceDue ?? 0, b?.BalancePaidAt, b?.CheckedInAt, time.LateMinutes, time.MinutesLeft, time.EndHour,
+            time.EndsAt, b?.StartMinute ?? 0, b?.Minutes ?? 0, b?.Rackets ?? 0, b?.Balls ?? 0, b?.ExtrasAmount ?? 0);
     }
 
     /// <summary>What the staff reads on an accepted scan: the cash to collect and, for a late player, the time left.</summary>
     private static string Collected(Booking b, Timing time, string message)
     {
         var cash = b.BalanceDue > 0 ? $" Collect {b.BalanceDue:0} EGP in cash (deposit {b.Deposit:0} EGP paid in the app)." : "";
-        var late = time.LateMinutes > 0 ? $" {time.LateMinutes} min late: {time.MinutesLeft} min left, ends at {time.EndHour:00}:00." : "";
-        return message + cash + late;
+        var extras = b.ExtrasAmount > 0 ? $" Hand over {Rented(b)} and collect {b.ExtrasAmount:0} EGP for them." : "";
+        var late = time.LateMinutes > 0 ? $" {time.LateMinutes} min late: {time.MinutesLeft} min left, ends at {time.EndsAt}." : "";
+        return message + cash + extras + late;
+    }
+
+    /// <summary>"2 rackets and 1 tube of balls".</summary>
+    private static string Rented(Booking b)
+    {
+        var parts = new List<string>();
+        if (b.Rackets > 0) { parts.Add(b.Rackets == 1 ? "1 racket" : $"{b.Rackets} rackets"); }
+        if (b.Balls > 0) { parts.Add(b.Balls == 1 ? "1 tube of balls" : $"{b.Balls} tubes of balls"); }
+        return string.Join(" and ", parts);
     }
 
     private static readonly Dictionary<QrScanResult, (string? Reason, string Message)> Reasons = new()

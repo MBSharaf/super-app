@@ -21,6 +21,19 @@ public class Pitch : BaseEntity, ISoftDelete, IHasRowVersion
     public int CancellationPolicyId { get; set; }
     public bool AllowCash { get; set; } = true;
     public PitchPaymentMode PaymentMode { get; set; }
+
+    /// <summary>Football pitch or padel court (owner, 2026-11-21). The fields below are for padel courts only.</summary>
+    public Sport Sport { get; set; }
+
+    /// <summary>Padel: a Panoramic court (all-glass walls) or a Classic one.</summary>
+    public bool IsPanoramic { get; set; }
+
+    /// <summary>Padel: the booking lengths offered (60 / 90 / 120 minutes).</summary>
+    public CourtDurations Durations { get; set; }
+
+    /// <summary>Padel: racket rental per racket, and a can of balls, paid at the club; null when not offered.</summary>
+    public decimal? RacketPrice { get; set; }
+    public decimal? BallsPrice { get; set; }
     public PitchStatus Status { get; set; }
     public Guid? ReviewedById { get; set; }
     public string? RejectReason { get; set; }

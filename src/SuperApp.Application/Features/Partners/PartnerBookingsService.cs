@@ -74,12 +74,14 @@ public sealed class PartnerBookingsService(
         await walkInRules.ValidateAndThrowAsync(request, ct);
         var scope = await access.DeskAsync(ct);
         var pitch = await repository.PitchAsync(scope.PartnerId, request.PitchId, ct) ?? throw new NotFoundException("Pitch not found.");
-        var plan = await planner.PlanAsync(pitch.Slug, request.Date, request.Hour, request.Duration, ct, allowStarted: true);
+        var plan = await planner.PlanAsync(pitch.Slug, request.Date, request.Hour, request.Duration, ct, allowStarted: true,
+            minute: request.Minute, minutes: request.Minutes, courts: true);
+        var (hour, minute) = plan.Start;
         var booking = new Booking
         {
             Code = await bookings.NewCodeAsync(ct), PitchId = plan.Pitch.Id, Source = BookingSource.WalkIn,
             WalkInName = request.Name.Trim(), WalkInPhone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
-            Date = plan.Lines[0].Date, StartHour = (byte)plan.Lines[0].CalendarHour, Duration = (byte)request.Duration,
+            Date = plan.Lines[0].Date, StartHour = hour, StartMinute = minute, Minutes = (short)plan.Minutes, Duration = plan.Hours(request.Duration),
             PitchAmount = plan.PitchAmount, Total = plan.PitchAmount, CommissionRate = 0, PayAtVenue = true,
             PolicyKey = plan.Pitch.PolicyKey, Status = BookingStatus.Confirmed,
         };
@@ -87,7 +89,7 @@ public sealed class PartnerBookingsService(
         if (!scope.IsOwner)
         {
             await notifier.NotifyUserAsync(scope.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings,
-                $"Walk-in booked at {pitch.Name}", $"{booking.WalkInName} · {booking.Date:ddd d MMM} {booking.StartHour:00}:00 · {booking.Total:0} EGP", "#/dash/bookings"), ct);
+                $"Walk-in booked at {pitch.Name}", $"{booking.WalkInName} · {booking.Date:ddd d MMM} {booking.StartHour:00}:{booking.StartMinute:00} · {booking.Total:0} EGP", "#/dash/bookings"), ct);
         }
         await audit.LogAsync(AuditSystem.Partner, "booking.walk_in", $"Walk-in {booking.Code} at {pitch.Name}", "Booking", booking.Code, ct: ct);
         return (await repository.GetAsync(scope.PartnerId, booking.Code, ct))!;
@@ -146,7 +148,7 @@ public sealed class PartnerBookingsService(
         }
     }
 
-    private static DateTime KickOff(Booking b) => b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
+    private static DateTime KickOff(Booking b) => b.KickOff();
 
     private DateOnly Today() => DateOnly.FromDateTime(CairoTime.Now(clock));
 }
@@ -170,6 +172,8 @@ public sealed class WalkInRequestValidator : AbstractValidator<WalkInRequest>
         RuleFor(x => x.PitchId).GreaterThan(0);
         RuleFor(x => x.Hour).InclusiveBetween(0, 29);
         RuleFor(x => x.Duration).InclusiveBetween(1, 4).WithMessage("Book 1 to 4 hours in a row.");
+        RuleFor(x => x.Minute).Must(m => m is 0 or 30).WithMessage("Start on the hour or the half hour.");
+        RuleFor(x => x.Minutes).Must(m => m is null or 60 or 90 or 120).WithMessage("Book a court for 60, 90 or 120 minutes.");
         RuleFor(x => x.Name).NotEmpty().Length(2, 80);
         RuleFor(x => x.Phone!).EgyptianMobile().When(x => !string.IsNullOrWhiteSpace(x.Phone));
     }

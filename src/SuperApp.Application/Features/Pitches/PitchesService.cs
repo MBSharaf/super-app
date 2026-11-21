@@ -40,7 +40,8 @@ public sealed class PitchSearchQueryValidator : AbstractValidator<PitchSearchQue
     public PitchSearchQueryValidator()
     {
         RuleFor(x => x.Q).MaximumLength(100);
-        RuleFor(x => x.Format).Must(f => f is null or 5 or 7 or 11).WithMessage("Format is 5, 7 or 11.");
+        RuleFor(x => x.Format).Must(f => f is null or 2 or 5 or 7 or 11).WithMessage("Format is 5, 7 or 11 (2 for padel).");
+        RuleFor(x => x.Sport).Must(s => s is null or "Football" or "Padel" or "All").WithMessage("Sport is Football, Padel or All.");
         RuleFor(x => x.MinPrice).GreaterThanOrEqualTo(0).When(x => x.MinPrice is not null);
         RuleFor(x => x.MaxPrice).GreaterThanOrEqualTo(x => x.MinPrice ?? 0).When(x => x.MaxPrice is not null).WithMessage("The highest price must be above the lowest.");
         RuleFor(x => x.Facilities).MaximumLength(200);

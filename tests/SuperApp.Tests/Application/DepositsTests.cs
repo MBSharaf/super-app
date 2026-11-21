@@ -36,6 +36,13 @@ public sealed class DepositsTests
     {
         var booking = new Booking { Date = new DateOnly(2026, 11, 5), StartHour = 17, Duration = 2 };
         var now = new DateTime(2026, 11, 5, hour, minute, 0);
-        Timing.Of(booking, now).ShouldBe(new Timing(late, left, 19));
+        Timing.Of(booking, now).ShouldBe(new Timing(late, left, 19, "19:00"));
+    }
+
+    [Fact]
+    public void A_padel_booking_ends_on_its_minutes()
+    {
+        var booking = new Booking { Date = new DateOnly(2026, 11, 5), StartHour = 19, StartMinute = 30, Minutes = 90, Duration = 2 };
+        Timing.Of(booking, new DateTime(2026, 11, 5, 20, 0, 0)).ShouldBe(new Timing(30, 60, 21, "21:00"));
     }
 }

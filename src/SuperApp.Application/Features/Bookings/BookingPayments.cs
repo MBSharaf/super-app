@@ -13,16 +13,17 @@ public sealed class BookingNotices(INotifier notifier, IAuditLogger audit, ICust
 {
     public async Task ConfirmedAsync(Booking booking, string pitchName, Guid ownerUserId, CancellationToken ct)
     {
-        var when = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{booking.Date:ddd d MMM} · {booking.StartHour:00}:00 · {booking.Duration} h");
+        var when = string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{booking.Date:ddd d MMM} · {booking.StartHour:00}:{booking.StartMinute:00} · {(booking.Minutes > 0 ? $"{booking.Minutes} min" : $"{booking.Duration} h")}");
+        var extras = booking.ExtrasAmount > 0 ? $" · rackets and balls {booking.ExtrasAmount:0} EGP at the club" : "";
         await notifier.NotifyUserAsync(booking.CustomerId!.Value, new NotificationMessage(NotificationCategory.Bookings,
-            $"Booking confirmed: {pitchName}", booking.BalanceDue > 0
+            $"Booking confirmed: {pitchName}", (booking.BalanceDue > 0
                 ? $"{when} · {booking.Code} · deposit {booking.Deposit:0} EGP paid · {booking.BalanceDue:0} EGP at the pitch"
-                : $"{when} · {booking.Code} · {booking.Deposit:0} EGP paid in full · nothing to pay at the pitch",
+                : $"{when} · {booking.Code} · {booking.Deposit:0} EGP paid in full · nothing to pay at the pitch") + extras,
             $"#/booking/{booking.Code}", NotificationTone.Success), ct);
         await notifier.NotifyUserAsync(ownerUserId, new NotificationMessage(NotificationCategory.Bookings,
-            $"New booking at {pitchName}", booking.BalanceDue > 0
+            $"New booking at {pitchName}", (booking.BalanceDue > 0
                 ? $"{when} · deposit {booking.Deposit:0} EGP paid in the app · collect {booking.BalanceDue:0} EGP at the pitch"
-                : $"{when} · paid in full in the app ({booking.Deposit:0} EGP) · nothing to collect · Super Malaab pays your share after the match", "#/dash/bookings", NotificationTone.Info), ct);
+                : $"{when} · paid in full in the app ({booking.Deposit:0} EGP) · nothing to collect · Super Malaab pays your share after the match") + extras, "#/dash/bookings", NotificationTone.Info), ct);
         await audit.LogAsync(AuditSystem.Site, "booking.created", $"Booking {booking.Code} at {pitchName}", "Booking", booking.Code,
             Details(booking, pitchName, await contacts.GetAsync(booking.CustomerId.Value, ct)), ct);
     }
@@ -31,6 +32,7 @@ public sealed class BookingNotices(INotifier notifier, IAuditLogger audit, ICust
     private static object Details(Booking b, string pitchName, CustomerContact customer) => new
     {
         b.Code, Pitch = pitchName, Date = b.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), b.StartHour, b.Duration,
+        Sport = b.Minutes > 0 ? "Padel" : "Football", b.StartMinute, b.Minutes, b.Rackets, b.Balls, b.ExtrasAmount,
         b.PitchAmount, b.DiscountAmount, b.ServiceFee, b.Total, b.Deposit, b.BalanceDue, PaymentMode = b.PaymentMode.ToString(), b.PayAtVenue, Source = b.Source.ToString(), b.CreatedAt,
         Customer = new { customer.Name, customer.Email, customer.Phone },
     };

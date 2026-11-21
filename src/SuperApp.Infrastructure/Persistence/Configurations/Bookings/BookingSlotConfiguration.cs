@@ -12,7 +12,7 @@ internal sealed class BookingSlotConfiguration : IEntityTypeConfiguration<Bookin
     {
         builder.ToTable("BookingSlots", "booking", t =>
         {
-            t.HasCheckConstraint("CK_BookingSlots_Hour", "[Hour] <= 23");
+            t.HasCheckConstraint("CK_BookingSlots_Hour", "[Hour] <= 47");
         });
         builder.HasKey(x => x.Id);
         builder.Property(x => x.IsActive).HasDefaultValue(true).ValueGeneratedNever();

@@ -105,7 +105,7 @@ public sealed class WaitlistService(
     public async Task HoursFreedAsync(Booking booking, string pitchName, string pitchSlug, CancellationToken ct)
     {
         var hours = Hours(booking);
-        if (booking.Date.ToDateTime(new TimeOnly(booking.StartHour, 0)) <= CairoTime.Now(clock))
+        if (booking.KickOff() <= CairoTime.Now(clock))
         {
             return;
         }
@@ -141,7 +141,8 @@ public sealed class WaitlistService(
     }
 
     /// <summary>The calendar hours of a booking (a game past midnight continues on the next date).</summary>
-    private static List<(DateOnly Date, int Hour)> Hours(Booking b) =>
+    /// <remarks>Padel courts have no waitlist (football only for now), so a court booking frees nothing here.</remarks>
+    private static List<(DateOnly Date, int Hour)> Hours(Booking b) => b.Minutes > 0 ? [] :
         Enumerable.Range(b.StartHour, b.Duration).Select(h => h >= 24 ? (b.Date.AddDays(1), h - 24) : (b.Date, h)).ToList();
 
     private Guid Me() => currentUser.UserId ?? throw new UnauthorizedException();

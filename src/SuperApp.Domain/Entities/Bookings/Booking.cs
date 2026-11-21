@@ -21,6 +21,18 @@ public class Booking : BaseEntity, IHasRowVersion
     public DateOnly Date { get; set; }
     public byte StartHour { get; set; }
     public byte Duration { get; set; } = (byte)1;
+
+    /// <summary>
+    /// Padel courts start every half hour and last 60, 90 or 120 minutes: <c>StartMinute</c> is 0 or 30 and <c>Minutes</c>
+    /// the length (then <c>Duration</c> is the length rounded up to whole hours). Football: 0 and 0 (whole hours).
+    /// </summary>
+    public byte StartMinute { get; set; }
+    public short Minutes { get; set; }
+
+    /// <summary>Padel extras paid at the club at check-in (not part of <c>Total</c>): rackets rented, cans of balls, their price.</summary>
+    public byte Rackets { get; set; }
+    public byte Balls { get; set; }
+    public decimal ExtrasAmount { get; set; }
     public decimal PitchAmount { get; set; }
     public decimal DiscountAmount { get; set; }
     public long? PromoCodeId { get; set; }
@@ -57,4 +69,13 @@ public class Booking : BaseEntity, IHasRowVersion
     public Payment? Payment { get; set; }
     public LegalVersion? WaiverVersion { get; set; }
     public ICollection<BookingSlot> Slots { get; set; } = [];
+
+    /// <summary>How long the booking lasts, in minutes.</summary>
+    public int LengthMinutes => Minutes > 0 ? Minutes : Duration * 60;
+
+    /// <summary>Kick-off, Cairo local time.</summary>
+    public DateTime KickOff() => Date.ToDateTime(new TimeOnly(StartHour, StartMinute));
+
+    /// <summary>The end of the booking, Cairo local time.</summary>
+    public DateTime EndsAt() => KickOff().AddMinutes(LengthMinutes);
 }

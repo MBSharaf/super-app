@@ -14,7 +14,8 @@ public sealed record ScanRequest(string? Token, string? Code, long? PitchId, str
 /// wrong_day, wrong_hour, cancelled, already_used, package_finished, account_blocked. <c>Match</c>: "3 of 8" for packages.
 /// <c>Deposit</c> was paid in the app; <c>BalanceDue</c> is what the venue collects in cash at the pitch (<c>BalancePaidAt</c>
 /// once collected). <c>LateMinutes</c> / <c>MinutesLeft</c> / <c>EndHour</c>: the booked time never moves, so a late
-/// player sees what is left of it.
+/// player sees what is left of it. Padel courts: <c>StartMinute</c>/<c>Minutes</c>/<c>EndsAt</c> ("HH:mm") and the rackets and
+/// balls rented, whose <c>ExtrasAmount</c> the club collects with the rest.
 /// </summary>
 public sealed record ScanResultDto(
     string Result,
@@ -33,18 +34,24 @@ public sealed record ScanResultDto(
     DateTime? CheckedInAt = null,
     int LateMinutes = 0,
     int MinutesLeft = 0,
-    int? EndHour = null);
+    int? EndHour = null,
+    string? EndsAt = null,
+    int StartMinute = 0,
+    int Minutes = 0,
+    int Rackets = 0,
+    int Balls = 0,
+    decimal ExtrasAmount = 0);
 
 /// <summary>Where "now" (Cairo time) sits in a booking's fixed slot.</summary>
-public readonly record struct Timing(int LateMinutes, int MinutesLeft, int? EndHour)
+public readonly record struct Timing(int LateMinutes, int MinutesLeft, int? EndHour, string? EndsAt = null)
 {
     public static Timing Of(Booking b, DateTime nowCairo)
     {
-        var start = b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
-        var end = start.AddHours(b.Duration);
+        var start = b.KickOff();
+        var end = b.EndsAt();
         var late = nowCairo > start ? (int)Math.Floor((Math.Min(nowCairo.Ticks, end.Ticks) - start.Ticks) / (double)TimeSpan.TicksPerMinute) : 0;
         var left = nowCairo >= end ? 0 : (int)Math.Ceiling((end - (nowCairo > start ? nowCairo : start)).TotalMinutes);
-        return new Timing(late, left, (b.StartHour + b.Duration) % 24);
+        return new Timing(late, left, end.Hour, end.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture));
     }
 }
 

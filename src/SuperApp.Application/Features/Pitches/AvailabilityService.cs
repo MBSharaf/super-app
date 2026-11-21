@@ -1,6 +1,7 @@
 using FluentValidation;
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Application.Common.Exceptions;
+using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Pitches;
 
@@ -27,7 +28,7 @@ public sealed class AvailabilityService(IAvailabilityReader reader, IClock clock
         var data = await reader.ReadAsync(slug, from, from.AddDays(query.Days), clock.UtcNow, ct)
             ?? throw new NotFoundException("This pitch does not exist or is not open for booking.");
         var days = Enumerable.Range(0, query.Days).Select(i => BuildDay(data, from.AddDays(i), now)).ToList();
-        return new AvailabilityDto(slug, days);
+        return new AvailabilityDto(slug, days, data.Sport.ToString(), data.Sport == Domain.Enums.Sport.Padel ? data.Durations.ToMinutes() : null);
     }
 
     /// <summary>One day of the grid from the opening hours of its weekday.</summary>
@@ -40,8 +41,30 @@ public sealed class AvailabilityService(IAvailabilityReader reader, IClock clock
         {
             return new DayDto(date, weekday, true, holiday, []);
         }
+        if (data.Sport == Domain.Enums.Sport.Padel)
+        {
+            var halves = Enumerable.Range(hours.OpenHour * 2, (hours.CloseHour - hours.OpenHour) * 2).Select(i => BuildHalf(data, date, i, nowCairo)).ToList();
+            return new DayDto(date, weekday, false, holiday, [], halves);
+        }
         var slots = Enumerable.Range(hours.OpenHour, hours.CloseHour - hours.OpenHour).Select(h => BuildSlot(data, date, h, nowCairo)).ToList();
         return new DayDto(date, weekday, false, holiday, slots);
+    }
+
+    /// <summary>A padel half hour: half the hour's price (peak and offers by the hour), its own booked / held state.</summary>
+    private static HalfHourDto BuildHalf(AvailabilityData data, DateOnly day, int gridHalf, DateTime nowCairo)
+    {
+        var (hour, minute) = (gridHalf / 2, gridHalf % 2 * 30);
+        var date = hour >= 24 ? day.AddDays(1) : day;
+        var calendarHour = hour % 24;
+        var index = calendarHour * 2 + minute / 30;
+        var basePrice = IsPeak(data, day, hour) ? data.PeakPrice!.Value : data.Price;
+        var offer = data.Offers.Where(o => Covers(o, day, hour)).Select(o => o.DiscountPercent).DefaultIfEmpty(0).Max();
+        var price = Math.Round(basePrice * (100 - offer) / 200, 2);
+        var status = date.ToDateTime(new TimeOnly(calendarHour, minute)) <= nowCairo ? "past"
+            : data.Closures.Any(c => date >= c.FromDate && date <= c.ToDate && (c.FromHour is null || (calendarHour >= c.FromHour && calendarHour < c.ToHour))) ? "closed"
+            : data.Booked.Contains((date, index)) ? "booked"
+            : data.Held.Contains((date, index)) ? "held" : "free";
+        return new HalfHourDto($"{calendarHour:00}:{minute:00}", hour, minute, date, index, status, price, basePrice != data.Price);
     }
 
     private static SlotDto BuildSlot(AvailabilityData data, DateOnly day, int hour, DateTime nowCairo)

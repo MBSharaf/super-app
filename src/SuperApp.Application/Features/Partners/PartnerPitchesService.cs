@@ -133,6 +133,23 @@ public sealed class PartnerPitchesService(
         pitch.PaymentMode = Enum.Parse<PitchPaymentMode>(r.PaymentMode);
         PitchChanges.SyncFacilities(pitch, facilities.Values.ToHashSet());
         PitchChanges.SyncHours(pitch, r.OpeningHours);
+        ApplyCourt(pitch, r);
+    }
+
+    /// <summary>The sport is set when the pitch is added; a padel court also keeps its glass, booking lengths and rental prices.</summary>
+    private static void ApplyCourt(Pitch pitch, PitchRequest r)
+    {
+        var sport = Enum.Parse<Sport>(r.Sport);
+        if (pitch.Id != 0 && sport != pitch.Sport)
+        {
+            throw new BusinessRuleException("A pitch keeps its sport. Add a new one for the other sport.", "sport_fixed");
+        }
+        pitch.Sport = sport;
+        var court = sport == Sport.Padel;
+        pitch.IsPanoramic = court && r.IsPanoramic;
+        pitch.Durations = court ? CourtDurationsExtensions.FromMinutes(r.Durations ?? []) : CourtDurations.None;
+        pitch.RacketPrice = court ? r.RacketPrice : null;
+        pitch.BallsPrice = court ? r.BallsPrice : null;
     }
 
     /// <summary>Finance settles with the venue by this choice, so they and the owner are told; bookings already made keep theirs.</summary>

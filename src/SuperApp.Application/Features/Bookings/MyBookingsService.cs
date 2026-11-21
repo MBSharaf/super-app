@@ -119,7 +119,7 @@ public sealed class MyBookingsService(
     /// <summary>Refund by the policy: full before its first limit, half before the second, nothing after.</summary>
     private RefundPreview Preview(Booking b, int fullHours, int halfHours)
     {
-        var kickOff = b.Date.ToDateTime(new TimeOnly(b.StartHour, 0));
+        var kickOff = b.KickOff();
         var hoursLeft = Math.Round((kickOff - CairoTime.Now(clock)).TotalHours, 1);
         var open = b.Status is BookingStatus.Confirmed or BookingStatus.AwaitingPayment && hoursLeft > 0;
         var percent = !open || b.Status == BookingStatus.AwaitingPayment ? 0 : hoursLeft >= fullHours ? 100 : hoursLeft >= halfHours ? 50 : 0;

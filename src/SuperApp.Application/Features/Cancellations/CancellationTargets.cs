@@ -58,7 +58,7 @@ public sealed class CancellationTargets(
     {
         var (b, pitch, preview) = await bookings.ForRequestAsync(code, customerId, ct);
         if (!preview.CanCancel) { throw new BusinessRuleException("This booking can no longer be cancelled.", "cannot_cancel"); }
-        return new CancellationSubject($"{pitch} · {b.Date:yyyy-MM-dd} {b.StartHour:00}:00", $"#/booking/{b.Code}", Deposits.PaidOnline(b), preview.RefundAmount,
+        return new CancellationSubject($"{pitch} · {b.Date:yyyy-MM-dd} {b.StartHour:00}:{b.StartMinute:00}", $"#/booking/{b.Code}", Deposits.PaidOnline(b), preview.RefundAmount,
             preview.RefundPercent == 100 ? "Full refund" : preview.RefundPercent == 50 ? "Half refund" : "No refund", null);
     }
 

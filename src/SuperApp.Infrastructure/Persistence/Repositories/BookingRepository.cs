@@ -24,7 +24,8 @@ public sealed class BookingRepository(AppDbContext db, IClock clock) : IBookingR
         db.Set<Pitch>()
             .Where(p => p.Slug == slug && p.Status == PitchStatus.Live && p.Venue.Partner.Status == PartnerStatus.Active)
             .Select(p => new BookablePitch(p.Id, p.Slug, p.Name, p.Venue.Address, p.Venue.Partner.UserId, p.AllowCash, p.CancellationPolicy.Key,
-                p.CancellationPolicy.FullRefundHours, p.CancellationPolicy.HalfRefundHours, p.Venue.Partner.BookingCommission, p.PaymentMode))
+                p.CancellationPolicy.FullRefundHours, p.CancellationPolicy.HalfRefundHours, p.Venue.Partner.BookingCommission, p.PaymentMode,
+                p.Sport, p.Durations, p.RacketPrice, p.BallsPrice))
             .FirstOrDefaultAsync(ct);
 
     public async Task<DateTime> HoldAsync(long pitchId, IReadOnlyList<(DateOnly Date, int Hour)> slots, Guid userId, CancellationToken ct)
@@ -64,10 +65,11 @@ public sealed class BookingRepository(AppDbContext db, IClock clock) : IBookingR
         await SaveOrConflictAsync("Someone just booked this hour. Please choose another one.", "slot_taken", ct);
     }
 
-    public Task<Booking?> RecentSameAsync(Guid userId, long pitchId, DateOnly date, int startHour, int duration, CancellationToken ct)
+    public Task<Booking?> RecentSameAsync(Guid userId, long pitchId, DateOnly date, int startHour, int duration, CancellationToken ct, int startMinute = 0, int minutes = 0)
     {
         var since = clock.UtcNow.AddMinutes(-10);
         return db.Set<Booking>().FirstOrDefaultAsync(b => b.CustomerId == userId && b.PitchId == pitchId && b.Date == date && b.StartHour == startHour
+            && b.StartMinute == startMinute && b.Minutes == minutes
             && b.Duration == duration && b.Status == BookingStatus.Confirmed && b.CreatedAt >= since, ct);
     }
 

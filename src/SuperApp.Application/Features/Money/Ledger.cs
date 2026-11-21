@@ -316,7 +316,7 @@ public sealed partial class Ledger(IMoneyStore store, ILoyaltyStore loyalty, Sup
     }
 
     private static DateTime Release(Booking b) =>
-        CairoTime.ToUtc(b.Date.ToDateTime(new TimeOnly(b.StartHour, 0))).AddHours(b.Duration) + HoldAfterKickOff;
+        CairoTime.ToUtc(b.EndsAt()) + HoldAfterKickOff;
 
     private void Post(Wallet wallet, decimal amount, LedgerBucket bucket, LedgerKind kind, Booking b, DateTime? availableAt, Guid group) =>
         PostRaw(wallet, amount, bucket, kind, "Booking", b.Id, availableAt, group);

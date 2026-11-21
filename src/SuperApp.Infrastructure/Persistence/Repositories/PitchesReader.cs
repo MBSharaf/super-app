@@ -39,7 +39,8 @@ public sealed class PitchesReader(AppDbContext db) : IPitchesReader
             pitch.OpeningHours.OrderBy(h => h.DayOfWeek).Select(h => new OpeningHourDto(h.DayOfWeek, h.OpenHour, h.CloseHour, h.IsClosed)).ToList(),
             pitch.PackageOptions.Where(o => o.Status == PackageOptionStatus.Approved).OrderBy(o => o.MatchCount)
                 .Select(o => new PackageOptionDto(o.Id, o.MatchCount, o.ApprovedDiscount ?? o.DiscountPercent)).ToList(),
-            pitch.Venue.Partner.BusinessName, pitch.PaymentMode.ToString());
+            pitch.Venue.Partner.BusinessName, pitch.PaymentMode.ToString(),
+            pitch.Sport == Sport.Padel ? pitch.Durations.ToMinutes() : null, pitch.RacketPrice, pitch.BallsPrice);
     }
 
     private IQueryable<Pitch> Live() =>
@@ -51,6 +52,14 @@ public sealed class PitchesReader(AppDbContext db) : IPitchesReader
         {
             q = q.Where(p => p.Name.Contains(f.Q) || p.Venue.Name.Contains(f.Q) || p.Venue.Area.NameEn.Contains(f.Q) || p.Venue.Area.NameAr.Contains(f.Q));
         }
+        q = f.Sport switch
+        {
+            "All" => q,
+            "Padel" => q.Where(p => p.Sport == Sport.Padel),
+            _ => q.Where(p => p.Sport == Sport.Football),
+        };
+        if (f.Panoramic is not null) { q = q.Where(p => p.IsPanoramic == f.Panoramic); }
+        if (f.Indoor is not null) { q = q.Where(p => p.IsIndoor == f.Indoor); }
         if (f.AreaId is not null) { q = q.Where(p => p.Venue.AreaId == f.AreaId); }
         if (f.GovernorateId is not null) { q = q.Where(p => p.Venue.Area.GovernorateId == f.GovernorateId); }
         if (f.Format is not null) { q = q.Where(p => p.Format == f.Format); }
@@ -76,7 +85,7 @@ public sealed class PitchesReader(AppDbContext db) : IPitchesReader
     /// <summary>The columns a card needs, read in one query.</summary>
     private sealed record CardData(string Slug, string Name, string VenueName, string AreaEn, string AreaAr, string GovEn, decimal Lat, decimal Lng,
         byte Format, PitchSurface Surface, bool IsIndoor, decimal Price, decimal? Peak, decimal Rating, int Reviews,
-        string? PhotoContainer, string? PhotoKey, long? PhotoId, List<string> Facilities);
+        string? PhotoContainer, string? PhotoKey, long? PhotoId, List<string> Facilities, Sport Sport, bool IsPanoramic);
 
     private static readonly System.Linq.Expressions.Expression<Func<Pitch, CardData>> CardRow = p => new CardData(
         p.Slug, p.Name, p.Venue.Name, p.Venue.Area.NameEn, p.Venue.Area.NameAr, p.Venue.Area.Governorate.NameEn, p.Venue.Lat, p.Venue.Lng,
@@ -84,12 +93,13 @@ public sealed class PitchesReader(AppDbContext db) : IPitchesReader
         p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => ph.File.Container).FirstOrDefault(),
         p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => ph.File.StorageKey).FirstOrDefault(),
         p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => (long?)ph.FileId).FirstOrDefault(),
-        p.Facilities.OrderBy(pf => pf.Facility.SortOrder).Select(pf => pf.Facility.Key).ToList());
+        p.Facilities.OrderBy(pf => pf.Facility.SortOrder).Select(pf => pf.Facility.Key).ToList(), p.Sport, p.IsPanoramic);
 
     private static PitchCardDto ToCard(CardData r, decimal? lat, decimal? lng) => new(
         r.Slug, r.Name, r.VenueName, r.AreaEn, r.AreaAr, r.GovEn, r.Lat, r.Lng, r.Format, r.Surface.ToString(), r.IsIndoor, r.Price, r.Peak,
         r.Rating, r.Reviews, r.PhotoId is null ? null : Photo(r.PhotoContainer!, r.PhotoKey!, r.PhotoId.Value), r.Facilities,
-        lat is null || lng is null ? null : Math.Round(Haversine((double)lat, (double)lng, (double)r.Lat, (double)r.Lng), 1));
+        lat is null || lng is null ? null : Math.Round(Haversine((double)lat, (double)lng, (double)r.Lat, (double)r.Lng), 1),
+        r.Sport.ToString(), r.IsPanoramic);
 
     /// <summary>Demo photos are external ids (the site builds their address); uploads are served by /files.</summary>
     internal static PhotoDto Photo(string container, string key, long fileId) =>

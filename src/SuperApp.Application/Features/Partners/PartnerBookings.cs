@@ -38,7 +38,8 @@ public sealed record PartnerBookingDto(
     DateTime? BalancePaidAt = null);
 
 /// <summary>POST /partner/bookings/walk-in — a booking taken at the venue (no service fee, no commission).</summary>
-public sealed record WalkInRequest(long PitchId, DateOnly Date, int Hour, int Duration, string Name, string? Phone);
+/// <remarks>Padel courts: <c>Minute</c> 0/30 and <c>Minutes</c> 60/90/120 (left out: whole hours).</remarks>
+public sealed record WalkInRequest(long PitchId, DateOnly Date, int Hour, int Duration, string Name, string? Phone, int Minute = 0, int? Minutes = null);
 
 /// <summary>POST /partner/bookings/{code}/cancel — the venue cancels; the customer gets everything back.</summary>
 public sealed record VenueCancelRequest(string Reason);

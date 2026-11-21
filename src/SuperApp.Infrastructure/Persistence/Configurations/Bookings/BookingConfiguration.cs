@@ -26,6 +26,9 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             t.HasCheckConstraint("CK_Bookings_Total", "[Total] >= 0");
             t.HasCheckConstraint("CK_Bookings_CommissionRate", "[CommissionRate] BETWEEN 0 AND 100");
             t.HasCheckConstraint("CK_Bookings_Status", "[Status] BETWEEN 0 AND 6");
+            t.HasCheckConstraint("CK_Bookings_StartMinute", "[StartMinute] IN (0, 30)");
+            t.HasCheckConstraint("CK_Bookings_Minutes", "[Minutes] IN (0, 60, 90, 120)");
+            t.HasCheckConstraint("CK_Bookings_Extras", "[ExtrasAmount] >= 0");
             t.HasCheckConstraint("CK_Bookings_Deposit", "[Deposit] >= 0 AND [BalanceDue] >= 0 AND [Deposit] + [BalanceDue] <= [Total]");
         });
         builder.HasKey(x => x.Id);
@@ -34,6 +37,11 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(x => x.WalkInPhone).HasMaxLength(20).IsUnicode(false);
         builder.Property(x => x.Source).HasConversion<byte>();
         builder.Property(x => x.Duration).HasDefaultValue((byte)1).ValueGeneratedNever();
+        builder.Property(x => x.StartMinute).HasDefaultValue((byte)0).ValueGeneratedNever();
+        builder.Property(x => x.Minutes).HasDefaultValue((short)0).ValueGeneratedNever();
+        builder.Property(x => x.Rackets).HasDefaultValue((byte)0).ValueGeneratedNever();
+        builder.Property(x => x.Balls).HasDefaultValue((byte)0).ValueGeneratedNever();
+        builder.Property(x => x.ExtrasAmount).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.PitchAmount).HasPrecision(12, 2);
         builder.Property(x => x.DiscountAmount).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.ServiceFee).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
