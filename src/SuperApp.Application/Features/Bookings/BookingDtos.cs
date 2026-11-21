@@ -1,3 +1,5 @@
+using SuperApp.Domain.Enums;
+
 namespace SuperApp.Application.Features.Bookings;
 
 /// <summary>
@@ -51,4 +53,4 @@ public sealed record MyBookingsQuery(string? Tab = null, int Page = 1, int PageS
 
 /// <summary>What the booking rules need about a pitch.</summary>
 public sealed record BookablePitch(long Id, string Slug, string Name, string Address, Guid OwnerUserId, bool AllowCash, string PolicyKey,
-    int FullRefundHours, int HalfRefundHours, decimal? PartnerCommission);
+    int FullRefundHours, int HalfRefundHours, decimal? PartnerCommission, PitchPaymentMode PaymentMode = PitchPaymentMode.Deposit);

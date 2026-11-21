@@ -1137,6 +1137,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<long?>("PaymentId")
                         .HasColumnType("bigint");
 
+                    b.Property<byte>("PaymentMode")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
+
                     b.Property<decimal>("PitchAmount")
                         .HasPrecision(12, 2)
                         .HasColumnType("decimal(12,2)");
@@ -7139,6 +7143,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
+
+                    b.Property<byte>("PaymentMode")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
 
                     b.Property<byte?>("PeakFromHour")
                         .HasColumnType("tinyint");

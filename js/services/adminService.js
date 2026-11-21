@@ -40,6 +40,47 @@
   };
   const passSales = (from, to) => [...days(from, to).flatMap(passesOn), ...(db().all('passSales') || []).filter((x) => inRange(x.at, from, to))].sort((a, b) => b.at - a.at);
 
+  /* ======================= Pitch accounts ======================= */
+  /**
+   * Each pitch's money in the range (bookings by match date), in the server's shape (GET /admin/settlements):
+   * how players pay there, what reached Super Malaab, what the venue takes at the pitch, our income and the venue's
+   * share of the app money; and per partner what is held, available, in payout and paid out today.
+   */
+  const settlements = ({ from, to, q = '' }) => {
+    me();
+    const s = D().summary({ from, to });
+    const rows = new Map();
+    s.ledger.forEach((b) => {
+      const p = db().find('pitches', b.pitchId);
+      const owner = db().find('accounts', b.ownerId || p?.ownerId);
+      const r = rows.get(b.pitchId) || { pitchId: b.pitchId, pitchName: p?.name || b.pitchName || 'Removed pitch', venueName: p?.area || '', partnerId: owner?.id || '', partnerName: owner?.company || owner?.name || '—',
+        paymentMode: p?.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit', bookings: 0, gross: 0, paidInApp: 0, cashAtPitch: 0, stillAtPitch: 0, ourIncome: 0, venueShareInApp: 0 };
+      rows.set(b.pitchId, r);
+      const m = b.money, fee = b.source === 'app' || !b.source ? b.fee || 0 : 0;
+      if (b.status === 'cancelled') { r.ourIncome += m.commission; r.venueShareInApp += m.online ? m.wallet : 0; return; }
+      const inApp = b.deposit != null ? b.deposit : m.online ? m.gross + fee : 0;
+      r.bookings++; r.gross += m.gross + fee; r.paidInApp += inApp; r.cashAtPitch += m.cash;
+      r.stillAtPitch += !m.collected && b.status === 'upcoming' ? m.cash : 0;
+      r.ourIncome += m.commission + fee; r.venueShareInApp += m.online ? m.wallet : 0;
+    });
+    const needle = q.trim().toLowerCase();
+    const pitches = [...rows.values()].map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === 'number' ? Math.round(v) : v])))
+      .filter((r) => !needle || [r.pitchName, r.venueName, r.partnerName].some((x) => String(x).toLowerCase().includes(needle)))
+      .sort((a, b) => b.gross - a.gross || a.pitchName.localeCompare(b.pitchName));
+    const partners = [...new Set(pitches.map((r) => r.partnerId))].filter(Boolean).map((id) => {
+      const mine = pitches.filter((r) => r.partnerId === id);
+      let w = null; try { w = D().wallet({ ownerId: id }); } catch { /* removed partner */ }
+      const held = Math.round(w?.bookings.pending || 0), available = Math.round(w?.balance || 0);
+      const paid = sumBy((w?.payouts || []).filter((x) => x.status === 'paid'), (x) => x.amount);
+      const asked = sumBy((w?.payouts || []).filter((x) => !['paid', 'rejected', 'failed'].includes(x.status)), (x) => x.amount);
+      return { partnerId: id, partnerName: mine[0].partnerName, pitches: mine.length, paymentModes: [...new Set(mine.map((r) => r.paymentMode))].join(' + '),
+        venueShareInApp: sumBy(mine, (r) => r.venueShareInApp), held, available, inPayout: Math.round(asked), paidOut: Math.round(paid), owed: held + available };
+    }).sort((a, b) => b.owed - a.owed || a.partnerName.localeCompare(b.partnerName));
+    const sum = (k) => sumBy(pitches, (r) => r[k]);
+    return { from, to, pitches, partners,
+      totals: { bookings: sum('bookings'), gross: sum('gross'), paidInApp: sum('paidInApp'), cashAtPitch: sum('cashAtPitch'), stillAtPitch: sum('stillAtPitch'), ourIncome: sum('ourIncome'), venueShareInApp: sum('venueShareInApp'), owed: sumBy(partners, (p) => p.owed) } };
+  };
+
   /* ======================= Revenue ======================= */
   const STREAMS = [
     ['bookings', 'Booking commission', 'turf'], ['fees', 'Booking service fees', 'info'], ['store', 'Store commission', 'blaze'],
@@ -212,7 +253,7 @@
   };
 
   const admin = {
-    me, log, alerts, revenue, passSales, audit, actorKind, STREAMS, COSTS,
+    me, log, alerts, revenue, settlements, passSales, audit, actorKind, STREAMS, COSTS,
     customers, customer, partners,
     /** Blocked customers can't book, order, join games or buy a Fantasy Pass */
     isBlocked: (id) => !!rec(id).blocked,

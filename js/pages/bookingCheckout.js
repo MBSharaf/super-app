@@ -33,12 +33,14 @@
       else if (held) { q = { ...held, perPlayer: Math.ceil(held.total / p.players) }; if (code) codeErr = 'Promo codes aren’t available yet. They arrive with online payments.'; }
       else if (weeks) q = S.bookings.quoteSeries({ pitchId: p.id, date, hour: +hour, duration: +dur || 1, weeks });
       else { try { q = S.bookings.quote({ pitchId: p.id, date, hour: +hour, duration: +dur || 1, code }); } catch (err) { codeErr = err.message; q = S.bookings.quote({ pitchId: p.id, date, hour: +hour, duration: +dur || 1 }); } }
-      if (q.deposit == null) Object.assign(q, S.bookings.depositFor(q.total));
+      if (q.deposit == null) Object.assign(q, S.bookings.depositFor(q.total, p.paymentMode));
+      // The pitch takes the full amount in the app (its owner's choice), or the total is under the minimum deposit
+      const full = !(q.payAtPitch > 0);
       const points = S.loyalty.estimate(q.total);
       const pol = S.pitches.policyOf(p.cancelPolicy);
       return `<div class="container narrow-checkout">
         <div class="page-head"><a class="back-link" href="#/pitches/${p.id}?date=${date}&hour=${hour}&dur=${dur}${weeks ? `&weeks=${weeks}` : ''}">${icon('chevronLeft', 16)} Change time</a>
-          <h1 class="h1" style="margin-top:10px">Review and pay the deposit</h1><div style="margin-top:14px">${c.steps(STEPS, 1)}</div></div>
+          <h1 class="h1" style="margin-top:10px">${full ? 'Review and pay' : 'Review and pay the deposit'}</h1><div style="margin-top:14px">${c.steps(STEPS, 1)}</div></div>
         <div class="checkout-layout">
           <form class="stack" style="--gap:20px" id="book-form" novalidate>
             <section class="panel panel-pad">
@@ -58,7 +60,9 @@
                 <span class="field-hint">Short on players? After booking you can post the match and players nearby can join.</span></div>
             </section>
             <section class="panel panel-pad">
-              <div class="notice turf deposit-note" style="margin-bottom:16px">${icon('wallet', 18)}<span><span>Pay now (deposit):</span> <b class="num">${money(q.deposit)}</b>. <span>Pay at the pitch:</span> <b class="num">${money(q.payAtPitch)}</b>. <span>You pay only a deposit online by card to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.</span></span></div>
+              <div class="notice turf deposit-note" style="margin-bottom:16px">${icon('wallet', 18)}${full
+                ? `<span><span>Pay now:</span> <b class="num">${money(q.deposit)}</b>. <span>Nothing to pay at the pitch.</span> <span>You pay the full amount online by card. At the pitch, just show your QR code.</span></span>`
+                : `<span><span>Pay now (deposit):</span> <b class="num">${money(q.deposit)}</b>. <span>Pay at the pitch:</span> <b class="num">${money(q.payAtPitch)}</b>. <span>You pay only a deposit online by card to hold the pitch. The rest is paid to the venue at the pitch when they scan your QR code.</span></span>`}</div>
               ${SA.ui.payment.render({ amount: q.deposit, onlineOnly: true, allowVoucher: true, name: 'bkpay' })}</section>
           </form>
           <aside class="panel panel-pad order-summary">
@@ -70,18 +74,18 @@
                   ${q.promo ? `<div><dt>Code ${esc(q.promo.code)} (${esc(q.promo.label)})</dt><dd class="num" style="color:var(--turf)">−${money(q.promo.amount)}</dd></div>` : ''}`}
               <div><dt>Service fee</dt><dd class="num">${money(q.serviceFee)}</dd></div>
               <div class="total"><dt>Total</dt><dd class="num">${money(q.total)}</dd></div>
-              <div class="deposit-row"><dt><b>Pay now — deposit</b><span class="xs muted" style="display:block">${weeks ? `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of each game, at least ${money(S.db.settings().deposit?.min ?? 100)}` : `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of the total, at least ${money(S.db.settings().deposit?.min ?? 100)}`}</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>
-              <div><dt>Pay at the pitch</dt><dd class="num">${money(q.payAtPitch)}</dd></div>
+              ${full ? `<div class="deposit-row"><dt><b>Pay now — full amount</b><span class="xs muted" style="display:block">Nothing to pay at the pitch</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>` : `<div class="deposit-row"><dt><b>Pay now — deposit</b><span class="xs muted" style="display:block">${weeks ? `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of each game, at least ${money(S.db.settings().deposit?.min ?? 100)}` : `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of the total, at least ${money(S.db.settings().deposit?.min ?? 100)}`}</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>
+              <div><dt>Pay at the pitch</dt><dd class="num">${money(q.payAtPitch)}</dd></div>`}
             </dl>
             <p class="xs muted" style="margin-top:6px">Prices include VAT ${Math.round(S.db.settings().vat * 100)}%. You can download the invoice after paying.</p>
-            <p class="xs muted">${weeks ? 'No online payment for the rest — you pay it at the pitch each week.' : 'No online payment for the rest — you pay it at the pitch.'}</p>
+            <p class="xs muted">${full ? 'Paid in full in the app — nothing to pay at the pitch.' : weeks ? 'No online payment for the rest — you pay it at the pitch each week.' : 'No online payment for the rest — you pay it at the pitch.'}</p>
             ${weeks ? `<p class="xs muted" style="margin-top:8px">${icon('tag', 12)} Promo codes can’t be combined with the weekly discount.</p>` : q.promo ? `<div class="coupon-on" style="margin-top:12px">${icon('tag', 16)}<span class="grow small"><b>${esc(q.promo.code)}</b> applied — you save ${money(q.promo.amount)}</span><a class="link xs" href="${SA.core.router.href(`/book/${p.id}`, { ...ctx.query, code: undefined })}" data-replace>Remove</a></div>`
               : `<form class="coupon" data-code-form style="margin-top:12px"><label class="field-label" for="bk-code">Promo code</label><div class="row" style="--gap:8px;margin-top:6px"><input class="input" id="bk-code" name="code" value="${esc(code)}" placeholder="e.g. TURF22" autocomplete="off" style="text-transform:uppercase" /><button class="btn btn-outline" type="submit">Apply</button></div><p class="field-error">${esc(codeErr)}</p></form>`}
-            <div class="points-earn">${icon('sparkle', 16)}<span>You’ll earn <b class="num">${points.toLocaleString()} Super Points</b> <span>(${S.loyalty.estimate(q.deposit).toLocaleString()} now for the deposit and ${S.loyalty.estimate(q.payAtPitch).toLocaleString()} when you pay the rest at the pitch).</span> <span>1 point for every 1 EGP you pay.</span></span></div>
-            <div class="notice turf" style="margin-top:16px">${icon('shield', 18)}<span><b>${esc(pol.name)} cancellation:</b> <span>${esc(pol.summary)}</span>${weeks ? ' <span>Applies to each game separately.</span>' : ''} <span>Refunds of your deposit go straight to your wallet.</span></span></div>
+            <div class="points-earn">${icon('sparkle', 16)}<span>You’ll earn <b class="num">${points.toLocaleString()} Super Points</b> ${full ? '<span>now.</span>' : `<span>(${S.loyalty.estimate(q.deposit).toLocaleString()} now for the deposit and ${S.loyalty.estimate(q.payAtPitch).toLocaleString()} when you pay the rest at the pitch).</span>`} <span>1 point for every 1 EGP you pay.</span></span></div>
+            <div class="notice turf" style="margin-top:16px">${icon('shield', 18)}<span><b>${esc(pol.name)} cancellation:</b> <span>${esc(pol.summary)}</span>${weeks ? ' <span>Applies to each game separately.</span>' : ''} <span>${full ? 'Refunds go straight to your wallet.' : 'Refunds of your deposit go straight to your wallet.'}</span></span></div>
             ${weeks && (q.booked < 2 || !q.sessions[0].available) ? `<p class="field-error" style="margin-top:12px">${!q.sessions[0].available ? 'The first game’s time was just booked by someone else.' : 'Fewer than two of those weeks are free.'} <a class="link" href="#/pitches/${p.id}?date=${date}">Pick another time</a></p>` : ''}
             <div style="margin-top:14px">${SA.ui.legal.field()}</div>
-            <button class="btn btn-blaze btn-lg btn-block" style="margin-top:8px" form="book-form" type="submit" ${weeks && (q.booked < 2 || !q.sessions[0].available) ? 'disabled' : ''}>${icon('lock', 16)} Pay deposit ${money(q.deposit)}</button>
+            <button class="btn btn-blaze btn-lg btn-block" style="margin-top:8px" form="book-form" type="submit" ${weeks && (q.booked < 2 || !q.sessions[0].available) ? 'disabled' : ''}>${icon('lock', 16)} ${full ? 'Pay' : 'Pay deposit'} ${money(q.deposit)}</button>
             <p class="xs muted" style="margin-top:10px;text-align:center">By paying you agree to the pitch rules, the cancellation policy and our <a class="link" href="#/legal/refunds" target="_blank" rel="noopener">refunds policy</a>.</p>
           </aside>
         </div>
@@ -149,6 +153,8 @@
       const myReview = S.bookings.reviewOf(b);
       const pol = S.pitches.policyOf(b.policy);
       const pk = b.seriesId ? S.bookings.packageStatus(b.seriesId) : null;
+      // A deposit booking leaves the rest for the pitch; a full-payment pitch (or a small total) leaves nothing
+      const restAtPitch = b.deposit != null && (pk ? series.some((x) => x.payAtPitch > 0) : b.payAtPitch > 0);
       // A weekly package has one QR code for all its games (it expires when none is left)
       const code = pk ? S.bookings.packageCode(b.seriesId) : S.bookings.checkInCode(b.id);
       const pkgPaid = pk ? series.reduce((t, x) => t + (x.total || 0), 0) : 0;
@@ -174,9 +180,9 @@
             <div><span class="xs muted">Time</span><b class="num">${fmtRange(b.hour, b.duration)}</b></div>
             <div><span class="xs muted">Pitch</span><b>${esc(b.format)} · ${b.players} players</b></div>
             <div><span class="xs muted">Payment</span><b>${esc(b.payment.label)}</b></div>
-            ${b.deposit != null ? `<div><span class="xs muted">${pk ? 'Deposits paid' : 'Deposit paid'}</span><b class="num">${money(pk ? series.reduce((t, x) => t + (x.deposit || 0), 0) : b.deposit)}</b><span class="xs muted">of ${money(pk ? pkgPaid : b.total)}${pk ? ' for the package' : ''}</span></div>
+            ${restAtPitch ? `<div><span class="xs muted">${pk ? 'Deposits paid' : 'Deposit paid'}</span><b class="num">${money(pk ? series.reduce((t, x) => t + (x.deposit || 0), 0) : b.deposit)}</b><span class="xs muted">of ${money(pk ? pkgPaid : b.total)}${pk ? ' for the package' : ''}</span></div>
             <div><span class="xs muted">${balancePaid ? 'Paid at the pitch' : 'Pay at the pitch'}</span><b class="num" style="color:${balancePaid ? 'var(--turf)' : 'var(--blaze)'}">${money(b.payAtPitch)}</b><span class="xs muted">${balancePaid ? 'Paid to the venue at check-in' : cancelled ? 'Not due — cancelled' : 'Cash to the venue when they scan your QR'}</span></div>` : ''}
-            <div ${b.deposit != null ? 'hidden' : ''}><span class="xs muted">${pk ? 'Package paid' : 'Amount paid'}</span><b class="num">${money(pk ? pkgPaid : b.total)}</b>${pk ? `<span class="xs muted">${pk.total} games${b.discountAmount ? ` · ${money(series.reduce((t, x) => t + (x.discountAmount || 0), 0))} weekly discount` : ''}</span>` : b.discountAmount ? `<span class="xs" style="color:var(--turf)">${money(b.discountAmount)} weekly discount</span>` : ''}</div>
+            <div ${restAtPitch ? 'hidden' : ''}><span class="xs muted">${pk ? 'Package paid' : b.deposit != null ? 'Paid in full' : 'Amount paid'}</span><b class="num">${money(pk ? pkgPaid : b.total)}</b>${b.deposit != null && !pk ? '<span class="xs muted">Nothing to pay at the pitch</span>' : ''}${pk ? `<span class="xs muted">${pk.total} games${b.discountAmount ? ` · ${money(series.reduce((t, x) => t + (x.discountAmount || 0), 0))} weekly discount` : ''}</span>` : b.discountAmount ? `<span class="xs" style="color:var(--turf)">${money(b.discountAmount)} weekly discount</span>` : ''}</div>
             <div><span class="xs muted">Status</span><b style="color:${cancelled ? 'var(--danger)' : 'var(--turf)'}">${statusLabel}${cancelled && b.refund ? ` · ${money(b.refund)} refunded` : ''}${checkedIn ? ` · ${new Date(venue.checkedInAt || Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}` : ''}</b></div>
           </div>
           ${pk ? `<div class="ticket-qr">
@@ -246,7 +252,7 @@
       });
       el.querySelector('[data-cancel]')?.addEventListener('click', async () => {
         const c0 = S.bookings.cancellationPolicy(b);
-        const text = c0.kind === 'full' ? `If it’s approved you get your full ${b.deposit != null ? 'deposit, ' : ''}${money(S.bookings.paidOnline(b))}, back in your wallet.`
+        const text = c0.kind === 'full' ? `If it’s approved you get your full ${b.deposit != null && b.payAtPitch > 0 ? 'deposit, ' : ''}${money(S.bookings.paidOnline(b))}, back in your wallet.`
           : c0.kind === 'half' ? `Under the ${c0.policy.name.toLowerCase()} policy you’d get 50% back (${money(c0.refund)}) because kick-off is less than ${c0.policy.full} hours away.`
           : `Under the ${c0.policy.name.toLowerCase()} policy there’s no refund less than ${c0.policy.half} hours before kick-off.`;
         await SA.ui.cancelRequest.ask({ kind: 'booking', refId: b.id, title: 'Cancel this booking?', text });

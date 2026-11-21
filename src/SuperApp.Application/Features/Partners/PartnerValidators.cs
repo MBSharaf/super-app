@@ -20,6 +20,8 @@ public sealed class PitchRequestValidator : AbstractValidator<PitchRequest>
         RuleFor(x => x.DescriptionEn).MaximumLength(2000);
         RuleFor(x => x.DescriptionAr).MaximumLength(2000);
         RuleFor(x => x.PolicyKey).NotEmpty().MaximumLength(30);
+        RuleFor(x => x.PaymentMode).NotEmpty().IsEnumName(typeof(PitchPaymentMode), caseSensitive: true)
+            .WithMessage("Choose how players pay: Deposit (the rest at the pitch) or FullOnline (everything in the app).");
         RuleFor(x => x.Facilities).NotNull().Must(f => f.Count <= 20).WithMessage("Up to 20 facilities.");
         RuleFor(x => x.OpeningHours).NotNull()
             .Must(h => h.Count == 7 && h.Select(d => d.DayOfWeek).Distinct().Count() == 7 && h.All(d => d.DayOfWeek is >= 0 and <= 6))

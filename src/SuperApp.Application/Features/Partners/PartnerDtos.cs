@@ -22,7 +22,8 @@ public sealed record MyPitchDto(
     string? RejectReason,
     decimal Rating,
     int ReviewsCount,
-    PhotoDto? Photo);
+    PhotoDto? Photo,
+    string PaymentMode = "Deposit");
 
 /// <summary>GET /partner/pitches/{id} — everything the edit form needs. Send <c>RowVersion</c> back with the edit.</summary>
 public sealed record PitchEditDto(
@@ -45,12 +46,14 @@ public sealed record PitchEditDto(
     IReadOnlyList<PartnerPhotoDto> Photos,
     string Status,
     string? RejectReason,
-    string RowVersion);
+    string RowVersion,
+    string PaymentMode = "Deposit");
 
 /// <summary>
 /// POST /partner/pitches (new pitch → waiting for review) and PUT /partner/pitches/{id} (edit; <c>RowVersion</c> from the
 /// GET is required, a newer change → 409 <c>stale</c>). <c>OpeningHours</c>: one row per weekday (0 = Sunday … 6),
-/// <c>CloseHour</c> up to 30 for after midnight (26 = 2 AM).
+/// <c>CloseHour</c> up to 30 for after midnight (26 = 2 AM). <c>PaymentMode</c>: <c>Deposit</c> (a deposit in the app, the rest
+/// at the pitch) or <c>FullOnline</c> (everything in the app; Super Malaab pays the venue). A change applies to new bookings only.
 /// </summary>
 public sealed record PitchRequest(
     long VenueId,
@@ -67,7 +70,8 @@ public sealed record PitchRequest(
     bool AllowCash,
     IReadOnlyList<string> Facilities,
     IReadOnlyList<OpeningHourDto> OpeningHours,
-    string? RowVersion = null);
+    string? RowVersion = null,
+    string PaymentMode = "Deposit");
 
 /// <summary>A pitch photo in the dashboard: <c>Id</c> is used to delete or reorder it.</summary>
 public sealed record PartnerPhotoDto(long Id, string? Url, string? Key);

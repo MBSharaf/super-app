@@ -63,6 +63,11 @@
             <h2 class="h3 sub-title">Cancellation policy</h2>
             ${policyBlock(S.pitches.policyOf(p.cancelPolicy))}
 
+            <h2 class="h3 sub-title">How you pay</h2>
+            <p class="small soft">${p.paymentMode === 'FullOnline'
+              ? `${icon('card', 16)} <b>Full payment in the app.</b> <span>You pay the whole amount online by card when you book. Nothing to pay at the pitch — just show your QR code.</span>`
+              : `${icon('wallet', 16)} <b>Deposit in the app, the rest at the pitch.</b> <span>You pay a deposit online to hold the pitch, and the rest to the venue when they scan your QR code.</span>`}</p>
+
             <h2 class="h3 sub-title">Location</h2>
             <div class="mini-map" id="detail-map" role="region" aria-label="Pitch location"></div>
             <p class="small soft" style="margin-top:10px">${esc(p.address)}, ${esc(p.area)}, ${esc(p.city)}</p>

@@ -41,7 +41,7 @@ public sealed class BookingsService(
         await flags.EnsureOnAsync(KillSwitches.Bookings, ct);
         var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
         var expires = await bookings.HoldAsync(plan.Pitch.Id, plan.Slots, Me(), ct);
-        var split = await Deposits.SplitAsync(settings, plan.Total, ct);
+        var split = await Deposits.SplitAsync(settings, plan.Total, plan.Pitch.PaymentMode, ct);
         return new HoldResponse(expires, plan.Lines, plan.PitchAmount, plan.ServiceFee, plan.Total, split.Deposit, split.BalanceDue);
     }
 
@@ -57,14 +57,14 @@ public sealed class BookingsService(
         }
         if (request.PayAtVenue)
         {
-            throw new BusinessRuleException("Pitch bookings pay a deposit in the app; the rest is paid at the pitch.", "deposit_required");
+            throw new BusinessRuleException("Pitch bookings are paid in the app: a deposit or the full amount, as the pitch chooses.", "deposit_required");
         }
         var plan = await planner.PlanAsync(request.PitchSlug, request.Date, request.Hour, request.Duration, ct);
         var discount = await loyalty.ForBookingAsync(me, request.PromoCode, request.VoucherCode, plan.Pitch.Id, plan.Pitch.OwnerUserId, plan.PitchAmount, plan.Total, ct);
         var booking = await NewBookingAsync(plan, request, me, ct);
         booking.DiscountAmount = discount.Total;
         booking.Total = plan.Total - discount.Total;
-        await Deposits.ApplyAsync(settings, booking, ct);
+        await Deposits.ApplyAsync(settings, booking, plan.Pitch.PaymentMode, ct);
         loyalty.Use(discount, booking);
         var paymentUrl = await PayAsync(booking, plan, me, fromWallet: false, ct);
         await bookings.SaveAsync(booking, plan.Slots, ct);

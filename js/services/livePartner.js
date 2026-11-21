@@ -58,7 +58,7 @@
       format: `${d.format}-a-side`, players: d.format * 2, surface: prev.surface && surfaceKey(prev.surface) === d.surface ? prev.surface : SURFACE[d.surface],
       indoor: d.isIndoor, price: +d.pricePerHour, peakPrice: +(d.peakPricePerHour ?? d.pricePerHour), open: today0 ? [today0.openHour, today0.closeHour] : [9, 24],
       openingHours: d.openingHours, images: d.photos.map(photoSrc), photoIds: Object.fromEntries(d.photos.map((ph) => [photoSrc(ph), ph.id])),
-      facilities: d.facilities, about: d.descriptionEn || '', tags: prev.tags || [], cancelPolicy: d.policyKey, allowCash: d.allowCash,
+      facilities: d.facilities, about: d.descriptionEn || '', tags: prev.tags || [], cancelPolicy: d.policyKey, allowCash: d.allowCash, paymentMode: d.paymentMode || 'Deposit',
       weekly: prev.weekly || { enabled: false, discount: 0.1 }, status: STATUS[d.status] || 'active', closedReason: d.status === 'ClosedByAdmin' ? 'Closed by Super Malaab' : prev.closedReason || '',
       review: REVIEW[d.status] || 'approved', reviewReason: d.rejectReason || '', rating: +(card?.rating || 0), reviews: card?.reviewsCount || 0,
       rowVersion: d.rowVersion, seed: false, deleted: false,
@@ -163,7 +163,7 @@
   const pitchBody = (d, venueId, prev) => ({
     venueId, name: d.name.trim(), format: parseInt(d.format, 10), surface: surfaceKey(d.surface), isIndoor: !!d.indoor, pricePerHour: Math.round(+d.price),
     peakPricePerHour: +d.peakPrice > +d.price ? Math.round(+d.peakPrice) : null, peakFromHour: +d.peakPrice > +d.price ? 18 : null,
-    descriptionEn: (d.about || '').trim(), descriptionAr: null, policyKey: d.cancelPolicy || 'standard', allowCash: prev?.allowCash ?? true,
+    descriptionEn: (d.about || '').trim(), descriptionAr: null, policyKey: d.cancelPolicy || 'standard', allowCash: prev?.allowCash ?? true, paymentMode: d.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit',
     facilities: d.facilities || [], openingHours: prev?.openingHours && prev.open[0] === +d.open[0] && prev.open[1] === +d.open[1] ? prev.openingHours : SEVEN([+d.open[0], +d.open[1]]),
   });
   const venueBody = (d) => ({ name: d.name.trim(), areaId: areaIdOf(d.area), address: d.address.trim(), lat: +(+d.lat).toFixed(6), lng: +(+d.lng).toFixed(6), phone: null });

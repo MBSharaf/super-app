@@ -37,6 +37,7 @@ public class Booking : BaseEntity, IHasRowVersion
     /// </summary>
     public decimal Deposit { get; set; }
     public decimal BalanceDue { get; set; }
+    public PitchPaymentMode PaymentMode { get; set; }
     public DateTime? BalancePaidAt { get; set; }
     public string PolicyKey { get; set; } = string.Empty;
     public long? WaiverVersionId { get; set; }

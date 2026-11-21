@@ -39,7 +39,7 @@ public sealed class PitchesReader(AppDbContext db) : IPitchesReader
             pitch.OpeningHours.OrderBy(h => h.DayOfWeek).Select(h => new OpeningHourDto(h.DayOfWeek, h.OpenHour, h.CloseHour, h.IsClosed)).ToList(),
             pitch.PackageOptions.Where(o => o.Status == PackageOptionStatus.Approved).OrderBy(o => o.MatchCount)
                 .Select(o => new PackageOptionDto(o.Id, o.MatchCount, o.ApprovedDiscount ?? o.DiscountPercent)).ToList(),
-            pitch.Venue.Partner.BusinessName);
+            pitch.Venue.Partner.BusinessName, pitch.PaymentMode.ToString());
     }
 
     private IQueryable<Pitch> Live() =>

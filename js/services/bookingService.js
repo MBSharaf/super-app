@@ -20,10 +20,14 @@
     if (payment?.method !== 'card' || (payment.voucher && !voucher)) throw new ApiError('Pitch bookings are paid online by card only.', 'card_only');
   };
   /**
-   * Owner's rule (2026-11-01): a pitch booking pays only a deposit in the app, 20% of the total with a minimum of 100 EGP
-   * (never more than the total). The rest is paid to the venue at the pitch and collected at check-in.
+   * Each pitch's owner chooses how players pay (owner's rule, 2026-11-21):
+   * - 'Deposit' (rule of 2026-11-01): a deposit in the app, 20% of the total with a minimum of 100 EGP (never more than
+   *   the total); the rest is paid to the venue at the pitch and collected at check-in.
+   * - 'FullOnline': everything in the app, nothing at the pitch; Super Malaab pays the venue its share after the match.
    */
-  const depositFor = (total) => {
+  const fullOnline = (p) => p?.paymentMode === 'FullOnline';
+  const depositFor = (total, mode) => {
+    if (mode === 'FullOnline') return { deposit: Math.max(0, Math.round(total)), payAtPitch: 0 };
     const cfg = SA.services.db.settings().deposit || { pct: 0.2, min: 100 };
     const deposit = Math.min(Math.max(0, Math.round(total)), Math.max(Math.round(total * cfg.pct), cfg.min));
     return { deposit, payAtPitch: Math.max(0, Math.round(total) - deposit) };
@@ -59,7 +63,7 @@
   };
 
   const bookingService = {
-    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode, depositFor,
+    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode, depositFor, fullOnline,
     /** What was paid in the app for a booking (the deposit; older bookings were paid in full) */
     paidOnline: (b) => (b.deposit != null ? b.deposit : b.total),
     /**
@@ -96,7 +100,7 @@
       const pitchTotal = list - off - (promo && !promo.platform ? promo.amount : 0);
       const serviceFee = Math.round(pitchTotal * SA.services.db.settings().serviceFee);
       const total = pitchTotal + serviceFee - (sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0);
-      return { listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...depositFor(total) };
+      return { listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...depositFor(total, p.paymentMode) };
     },
 
     /** Weekly booking: every session's availability and price, using the pitch's weekly discount */
@@ -124,7 +128,7 @@
       }
       const q = bookingService.quote({ pitchId, date, hour, duration, code });
       onlineOnly(payment, { voucher: true });
-      const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `Booking deposit — ${p.name}` });
+      const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `${q.payAtPitch > 0 ? 'Booking deposit' : 'Booking'} — ${p.name}` });
       return request(() => {
         const booking = bookingService._record(p, { date, hour, duration, players, q, paid });
         if (q.promo) SA.services.codes.use(q.promo.id, { discount: q.promo.amount, revenue: q.pitchTotal });
@@ -132,9 +136,9 @@
         store.set((s) => ({ bookings: [booking, ...s.bookings] }), 'booking:new');
         bookingService._toLedger(booking);
         db().log('customer', 'booking.created', `New app booking ${booking.id} at ${p.name}`, booking.id);
-        SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}. Deposit ${booking.deposit.toLocaleString()} EGP paid; pay ${booking.payAtPitch.toLocaleString()} EGP at the pitch.`, link: `/booking/${booking.id}` });
+        SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}. ${booking.payAtPitch > 0 ? `Deposit ${booking.deposit.toLocaleString()} EGP paid; pay ${booking.payAtPitch.toLocaleString()} EGP at the pitch.` : `Paid in full: ${booking.deposit.toLocaleString()} EGP. Nothing to pay at the pitch.`}`, link: `/booking/${booking.id}` });
         // The pitch partner is told too
-        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · deposit ${booking.deposit.toLocaleString()} EGP paid in the app · collect ${booking.payAtPitch.toLocaleString()} EGP at the pitch`, link: '#/dash/bookings' });
+        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · ${booking.payAtPitch > 0 ? `deposit ${booking.deposit.toLocaleString()} EGP paid in the app · collect ${booking.payAtPitch.toLocaleString()} EGP at the pitch` : `paid in full in the app (${booking.deposit.toLocaleString()} EGP) · nothing to collect · Super Malaab pays your share after the match`}`, link: '#/dash/bookings' });
         return booking;
       });
     },
@@ -151,7 +155,7 @@
       if (!q.sessions[0].available) throw new ApiError('Someone just booked the first session. Pick another slot.', 'slot_taken');
       if (q.booked < 2) throw new ApiError('Fewer than two of those weeks are free. Pick another time.', 'slot_taken');
       onlineOnly(payment, { voucher: true });
-      const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `Weekly booking deposit × ${q.booked} — ${p.name}` });
+      const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `${q.payAtPitch > 0 ? 'Weekly booking deposit' : 'Weekly booking'} × ${q.booked} — ${p.name}` });
       return request(() => {
         const u = store.get().user || {};
         const seriesId = 'WK-' + Math.random().toString(36).slice(2, 7).toUpperCase();

@@ -195,6 +195,23 @@
       return hit?.data || emptyRevenue(r);
     };
 
+    /** Pitch accounts (GET /admin/settlements): same loading pattern as revenue; the server's shape is the page's shape. */
+    const settleCache = new Map();
+    const emptySettlements = ({ from, to }) => ({ from, to, pitches: [], partners: [], loading: true,
+      totals: { bookings: 0, gross: 0, paidInApp: 0, cashAtPitch: 0, stillAtPitch: 0, ourIncome: 0, venueShareInApp: 0, owed: 0 } });
+    S.admin.settlements = (r) => {
+      if (!live() || !session().can('payouts.read')) return demo.admin.settlements(r);
+      const key = `${r.from}|${r.to}|${r.q || ''}`;
+      const hit = settleCache.get(key);
+      if (hit?.data && Date.now() - hit.at < 60000) return hit.data;
+      if (!hit?.loading) {
+        settleCache.set(key, { ...hit, loading: true });
+        api.get(`/admin/settlements?from=${r.from}&to=${r.to}${r.q ? `&q=${encodeURIComponent(r.q)}` : ''}`).then((d) => { settleCache.set(key, { data: { ...d, live: true }, at: Date.now() }); SA.app?.rerender?.(); },
+          (err) => { settleCache.set(key, { data: { ...emptySettlements(r), loading: false }, at: Date.now() }); SA.ui.overlay.toast(err.message, { type: 'error' }); });
+      }
+      return hit?.data || emptySettlements(r);
+    };
+
     S.admin.payoutDetail = (id) => {
       if (!serverRow(id)) return demo.admin.payoutDetail(id);
       const p = fromServer(serverRow(id));

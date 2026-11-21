@@ -60,6 +60,7 @@ public sealed class PartnerPitchesService(
         var scope = await access.ManageAsync(ct);
         var pitch = await partners.PitchAsync(scope.PartnerId, id, ct) ?? throw new NotFoundException("Pitch not found.");
         partners.ExpectVersion(pitch, version);
+        var mode = pitch.PaymentMode;
         await ApplyAsync(scope, pitch, request, ct);
         var resubmitted = pitch.Status == PitchStatus.Rejected;
         if (resubmitted)
@@ -75,6 +76,10 @@ public sealed class PartnerPitchesService(
         else
         {
             await audit.LogAsync(AuditSystem.Partner, "pitch.updated", $"{pitch.Name} edited", "Pitch", pitch.Slug, ct: ct);
+        }
+        if (mode != pitch.PaymentMode)
+        {
+            await PaymentModeChangedAsync(scope, pitch, ct);
         }
         return await GetAsync(pitch.Id, ct);
     }
@@ -125,8 +130,20 @@ public sealed class PartnerPitchesService(
         pitch.DescriptionAr = string.IsNullOrWhiteSpace(r.DescriptionAr) ? null : r.DescriptionAr.Trim();
         pitch.CancellationPolicyId = policyId;
         pitch.AllowCash = r.AllowCash;
+        pitch.PaymentMode = Enum.Parse<PitchPaymentMode>(r.PaymentMode);
         PitchChanges.SyncFacilities(pitch, facilities.Values.ToHashSet());
         PitchChanges.SyncHours(pitch, r.OpeningHours);
+    }
+
+    /// <summary>Finance settles with the venue by this choice, so they and the owner are told; bookings already made keep theirs.</summary>
+    private async Task PaymentModeChangedAsync(PartnerScope scope, Pitch pitch, CancellationToken ct)
+    {
+        var how = pitch.PaymentMode == PitchPaymentMode.FullOnline ? "full payment in the app" : "deposit in the app, the rest at the pitch";
+        await notifier.NotifyStaffAsync("payouts.read", new NotificationMessage(NotificationCategory.System,
+            $"{pitch.Name} now takes {how}", scope.BusinessName, "#/admin/settlements", NotificationTone.Info), ct);
+        await notifier.NotifyUserAsync(scope.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings,
+            $"{pitch.Name}: players now pay by {how}", "New bookings follow it. Bookings already made keep the way they were paid.", "#/dash/pitches"), ct);
+        await audit.LogAsync(AuditSystem.Partner, "pitch.payment_mode", $"{pitch.Name} payment: {pitch.PaymentMode}", "Pitch", pitch.Slug, ct: ct);
     }
 
     private async Task SentForReviewAsync(PartnerScope scope, Pitch pitch, string action, CancellationToken ct)

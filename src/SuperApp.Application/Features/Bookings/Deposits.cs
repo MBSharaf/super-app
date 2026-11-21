@@ -1,5 +1,6 @@
 using SuperApp.Application.Abstractions.Services;
 using SuperApp.Domain.Entities.Bookings;
+using SuperApp.Domain.Enums;
 
 namespace SuperApp.Application.Features.Bookings;
 
@@ -7,9 +8,13 @@ namespace SuperApp.Application.Features.Bookings;
 public readonly record struct DepositSplit(decimal Deposit, decimal BalanceDue);
 
 /// <summary>
-/// Owner's rule (2026-11-01): a pitch booking pays only a deposit online — <c>deposit.percent</c> of the total (20%) with a
-/// minimum of <c>deposit.min</c> (100 EGP), never more than the total. The rest is paid in cash to the venue at the pitch and
-/// recorded when the venue scans the QR. Weekly packages: the rule applies to each match.
+/// Each pitch's owner chooses how players pay (owner's rule, 2026-11-21, <see cref="PitchPaymentMode"/>):
+/// <list type="bullet">
+/// <item><c>Deposit</c> (rule of 2026-11-01): a deposit online — <c>deposit.percent</c> of the total (20%) with a minimum of
+/// <c>deposit.min</c> (100 EGP), never more than the total; the rest in cash at the pitch, recorded when the QR is scanned.</item>
+/// <item><c>FullOnline</c>: the whole total online, nothing at the pitch; Super Malaab pays the venue its share after the match.</item>
+/// </list>
+/// Weekly packages: the rule applies to each match.
 /// </summary>
 public static class Deposits
 {
@@ -26,13 +31,18 @@ public static class Deposits
         return new DepositSplit(deposit, total - deposit);
     }
 
-    public static async Task<DepositSplit> SplitAsync(ISettingsReader settings, decimal total, CancellationToken ct) =>
-        Split(total, await settings.DecimalAsync("deposit.percent", DefaultPercent, ct), await settings.DecimalAsync("deposit.min", DefaultMinimum, ct));
+    /// <summary>The split for a pitch's payment mode: paid in full online, or the deposit rule.</summary>
+    public static DepositSplit Split(decimal total, decimal percent, decimal minimum, PitchPaymentMode mode) =>
+        mode == PitchPaymentMode.FullOnline ? new DepositSplit(Math.Max(0, total), 0) : Split(total, percent, minimum);
 
-    /// <summary>Sets the deposit and the rest on a booking from its total.</summary>
-    public static async Task ApplyAsync(ISettingsReader settings, Booking booking, CancellationToken ct)
+    public static async Task<DepositSplit> SplitAsync(ISettingsReader settings, decimal total, PitchPaymentMode mode, CancellationToken ct) =>
+        Split(total, await settings.DecimalAsync("deposit.percent", DefaultPercent, ct), await settings.DecimalAsync("deposit.min", DefaultMinimum, ct), mode);
+
+    /// <summary>Sets the deposit and the rest on a booking from its total and its pitch's payment mode.</summary>
+    public static async Task ApplyAsync(ISettingsReader settings, Booking booking, PitchPaymentMode mode, CancellationToken ct)
     {
-        var split = await SplitAsync(settings, booking.Total, ct);
+        var split = await SplitAsync(settings, booking.Total, mode, ct);
+        booking.PaymentMode = mode;
         booking.Deposit = split.Deposit;
         booking.BalanceDue = split.BalanceDue;
     }

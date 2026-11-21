@@ -40,6 +40,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(x => x.Total).HasPrecision(12, 2);
         builder.Property(x => x.CommissionRate).HasPrecision(5, 2);
         builder.Property(x => x.PayAtVenue).HasDefaultValue(false).ValueGeneratedNever();
+        builder.Property(x => x.PaymentMode).HasConversion<byte>().HasDefaultValue(PitchPaymentMode.Deposit).ValueGeneratedNever();
         builder.Property(x => x.Deposit).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.BalanceDue).HasPrecision(12, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.PolicyKey).HasMaxLength(20).IsUnicode(false);

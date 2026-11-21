@@ -15,6 +15,7 @@
     { key: 'payouts', page: 'adminPayouts', label: 'Withdrawals', href: '#/admin/payouts', icon: 'wallet', badge: 'payouts' },
     { key: 'finance-approvals', page: 'adminFinanceApprovals', label: 'Finance approvals', href: '#/admin/finance-approvals', icon: 'check', badge: 'fapprovals' },
     { key: 'revenue', page: 'adminRevenue', label: 'Revenue', href: '#/admin/revenue', icon: 'percent' },
+    { key: 'settlements', page: 'adminSettlements', label: 'Pitch accounts', href: '#/admin/settlements', icon: 'pitch' },
     { group: 'People' },
     { key: 'customers', page: 'adminCustomers', label: 'Customers', href: '#/admin/customers', icon: 'user' },
     { key: 'partners', page: 'adminPartners', label: 'Pitch partners', href: '#/admin/partners', icon: 'pitch' },

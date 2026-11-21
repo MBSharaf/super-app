@@ -61,7 +61,7 @@
     Object.assign(p, {
       address: d.address, about: (ar() ? d.descriptionAr : d.descriptionEn) || d.descriptionEn || '',
       images: d.photos.length ? d.photos.map(photo) : p.images, cancelPolicy: d.cancellationPolicy.key,
-      open: openToday(d.openingHours), allowCash: d.allowCash, company: d.partnerName, ownerId: null,
+      open: openToday(d.openingHours), allowCash: d.allowCash, paymentMode: d.paymentMode || 'Deposit', company: d.partnerName, ownerId: null,
       // Weekly packages: the sizes the admin approved (each with its own discount)
       weekly: d.packageOptions.length
         ? { enabled: true, discount: Math.max(...d.packageOptions.map((o) => +o.discountPercent)) / 100, sizes: d.packageOptions.map((o) => o.matchCount), options: d.packageOptions }
@@ -181,7 +181,7 @@
     for (let h = hour; h < hour + duration; h++) list += slots.find((s) => s.hour === h)?.price ?? p.price;
     const serviceFee = Math.round(list * SA.services.db.settings().serviceFee);
     const total = list + serviceFee;
-    return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...B.depositFor(total) };
+    return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...B.depositFor(total, p.paymentMode) };
   };
 
   const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false, code }) => {
@@ -249,7 +249,7 @@
         list += s?.price ?? (h >= 18 || [5, 6].includes(parseISO(d).getDay()) ? p.peakPrice : p.price);
       }
       const pitchTotal = Math.round(list * (1 - discount)), serviceFee = Math.round(pitchTotal * rate);
-      sessions.push(free ? { date: d, available: true, listPrice: list, discountAmount: list - pitchTotal, pitchTotal, serviceFee, total: pitchTotal + serviceFee, ...B.depositFor(pitchTotal + serviceFee) } : { date: d, available: false });
+      sessions.push(free ? { date: d, available: true, listPrice: list, discountAmount: list - pitchTotal, pitchTotal, serviceFee, total: pitchTotal + serviceFee, ...B.depositFor(pitchTotal + serviceFee, p.paymentMode) } : { date: d, available: false });
     }
     return seriesTotals(sessions, discount);
   };
@@ -267,7 +267,7 @@
     const q = await api.get(`/packages/quote?pitchSlug=${slugOf(pitchId)}&optionId=${option.id}&startsOn=${date}&hour=${hour}&duration=${duration}`);
     const rate = SA.services.db.settings().serviceFee;
     const sessions = q.weeks.map((w) => (w.available
-      ? { date: w.date, available: true, listPrice: +w.listPrice, discountAmount: +w.listPrice - +w.price, pitchTotal: +w.price, serviceFee: Math.round(+w.price * rate), total: +w.price + Math.round(+w.price * rate), ...B.depositFor(+w.price + Math.round(+w.price * rate)) }
+      ? { date: w.date, available: true, listPrice: +w.listPrice, discountAmount: +w.listPrice - +w.price, pitchTotal: +w.price, serviceFee: Math.round(+w.price * rate), total: +w.price + Math.round(+w.price * rate), ...B.depositFor(+w.price + Math.round(+w.price * rate), pitches.get(pitchId)?.paymentMode) }
       : { date: w.date, available: false }));
     return { ...seriesTotals(sessions, +q.discountPercent / 100), listPrice: +q.listPrice, discountAmount: +q.discountAmount, serviceFee: +q.serviceFee, total: +q.total, pitchTotal: +q.listPrice - +q.discountAmount, deposit: +q.deposit, payAtPitch: +q.balanceDue };
   };

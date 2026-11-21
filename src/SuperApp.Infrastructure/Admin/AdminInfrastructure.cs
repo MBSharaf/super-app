@@ -27,6 +27,7 @@ public static class AdminInfrastructure
         services.AddScoped<Application.Features.AdminConsole.IPlatformSettingsRepository, PlatformSettingsRepository>();
         services.AddScoped<Application.Features.AdminConsole.IBroadcastRepository, BroadcastRepository>();
         services.AddScoped<Application.Features.AdminConsole.IReportsReader, ReportsReader>();
+        services.AddScoped<Application.Features.AdminConsole.ISettlementsReader, SettlementsReader>();
         services.AddHostedService<BroadcastScheduler>();
         services.Replace(ServiceDescriptor.Scoped<IAuditLogger, AgentAwareAuditLogger>());
         return services;

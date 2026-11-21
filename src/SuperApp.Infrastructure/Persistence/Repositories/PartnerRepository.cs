@@ -36,12 +36,12 @@ public sealed class PartnerRepository(AppDbContext db) : IPartnerRepository
             .Select(p => new
             {
                 p.Id, p.Slug, p.Name, p.VenueId, Venue = p.Venue.Name, p.Format, p.PricePerHour, p.PeakPricePerHour, p.Status, p.RejectReason,
-                p.Rating, p.ReviewsCount,
+                p.Rating, p.ReviewsCount, p.PaymentMode,
                 Photo = p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => new { ph.FileId, ph.File.Container, ph.File.StorageKey }).FirstOrDefault(),
             })
             .ToListAsync(ct);
         return rows.Select(r => new MyPitchDto(r.Id, r.Slug, r.Name, r.VenueId, r.Venue, r.Format, r.PricePerHour, r.PeakPricePerHour, r.Status.ToString(),
-            r.RejectReason, r.Rating, r.ReviewsCount, r.Photo is null ? null : PitchesReader.Photo(r.Photo.Container, r.Photo.StorageKey, r.Photo.FileId))).ToList();
+            r.RejectReason, r.Rating, r.ReviewsCount, r.Photo is null ? null : PitchesReader.Photo(r.Photo.Container, r.Photo.StorageKey, r.Photo.FileId), r.PaymentMode.ToString())).ToList();
     }
 
     public async Task<PitchEditDto?> PitchForEditAsync(long partnerId, long pitchId, CancellationToken ct)
@@ -58,7 +58,7 @@ public sealed class PartnerRepository(AppDbContext db) : IPartnerRepository
         var photos = p.Photos.OrderBy(ph => ph.SortOrder).Select(ph => { var x = PitchesReader.Photo(ph.File.Container, ph.File.StorageKey, ph.FileId); return new PartnerPhotoDto(ph.Id, x.Url, x.Key); }).ToList();
         return new PitchEditDto(p.Id, p.Slug, p.VenueId, p.Name, p.Format, p.Surface.ToString(), p.IsIndoor, p.PricePerHour, p.PeakPricePerHour, p.PeakFromHour,
             p.DescriptionEn, p.DescriptionAr, p.CancellationPolicy.Key, p.AllowCash, p.Facilities.OrderBy(f => f.Facility.SortOrder).Select(f => f.Facility.Key).ToList(),
-            hours, photos, p.Status.ToString(), p.RejectReason, Convert.ToBase64String(p.RowVersion));
+            hours, photos, p.Status.ToString(), p.RejectReason, Convert.ToBase64String(p.RowVersion), p.PaymentMode.ToString());
     }
 
     public Task<Pitch?> PitchAsync(long partnerId, long pitchId, CancellationToken ct) =>

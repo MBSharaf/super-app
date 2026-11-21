@@ -91,7 +91,12 @@
   });
 
   /* ======================= Editor ======================= */
-  const blank = () => ({ name: '', area: '', city: 'Cairo', address: '', lat: null, lng: null, format: '5-a-side', surface: 'Artificial turf', indoor: false, price: 600, peakPrice: 750, open: [9, 25], facilities: ['lights', 'water', 'wc'], images: [], about: '', tags: [], status: 'active', cancelPolicy: 'standard', weekly: { enabled: true, discount: 0.1 } });
+  const blank = () => ({ name: '', area: '', city: 'Cairo', address: '', lat: null, lng: null, format: '5-a-side', surface: 'Artificial turf', indoor: false, price: 600, peakPrice: 750, open: [9, 25], facilities: ['lights', 'water', 'wc'], images: [], about: '', tags: [], status: 'active', cancelPolicy: 'standard', paymentMode: 'Deposit', weekly: { enabled: true, discount: 0.1 } });
+  /** The owner chooses how players pay for each pitch (owner's rule, 2026-11-21) */
+  const PAY_MODES = [
+    { key: 'Deposit', icon: 'wallet', name: 'Deposit in the app, the rest at the pitch', summary: 'Players pay a deposit online to hold the pitch (20% of the total, at least 100 EGP). You collect the rest in cash when you scan their QR code.' },
+    { key: 'FullOnline', icon: 'card', name: 'Full payment in the app', summary: 'Players pay everything online. Nothing to collect at the pitch. Super Malaab pays your share, less the commission, to your balance after the match.' },
+  ];
   const hourOpts = (from, to, sel) => { let o = ''; for (let h = from; h <= to; h++) o += `<option value="${h}" ${h === sel ? 'selected' : ''}>${fmtHour(h)}${h >= 24 ? ' (next day)' : ''}</option>`; return o; };
 
   SA.pages.dashPitchEdit = C.guard({
@@ -133,6 +138,10 @@
             <p class="small soft" style="margin-top:6px">What players get back if they cancel. Shown on your pitch page and at checkout; each booking keeps the policy it was made under. If you cancel, players always get a full refund.</p>
             <div class="pol-grid" style="margin-top:12px">${Object.values(SA.services.pitches.POLICIES).map((pol) => `<label class="pol-opt"><input type="radio" name="cancelPolicy" value="${pol.key}" ${(p.cancelPolicy || 'standard') === pol.key ? 'checked' : ''} />
               <span><b>${pol.name}</b><span class="pol-bar" aria-hidden="true"><i style="--w:${Math.min(100, (pol.full / 48) * 100)}%"></i></span><span class="xs soft">${pol.summary}</span></span></label>`).join('')}</div></section>
+          <section class="dash-card"><h2 class="h4">How players pay</h2>
+            <p class="small soft" style="margin-top:6px">Choose how players pay for this pitch. Every booking keeps the way it was paid; a change applies to new bookings only.</p>
+            <div class="pol-grid" style="margin-top:12px">${PAY_MODES.map((m) => `<label class="pol-opt"><input type="radio" name="paymentMode" value="${m.key}" ${(p.paymentMode || 'Deposit') === m.key ? 'checked' : ''} />
+              <span><b>${icon(m.icon, 16)} ${m.name}</b><span class="xs soft">${m.summary}</span></span></label>`).join('')}</div></section>
           <section class="dash-card"><h2 class="h4">Weekly bookings</h2>
             <div class="form-grid" style="margin-top:12px">
               <label class="choice span-2"><input type="checkbox" name="weeklyEnabled" ${p.weekly?.enabled !== false ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Let players book the same time every week</b><span class="xs soft" style="display:block">They pay for 4, 8 or 12 weeks up front — regular income for you.</span></span>${icon('repeat', 18)}</label>
@@ -165,7 +174,7 @@
         return { name: fd.get('name') || '', area: fd.get('area') || '', city: fd.get('city'), address: fd.get('address') || '', lat, lng, format: fd.get('format'), surface: fd.get('surface'), indoor: !!fd.get('indoor'),
           price: +fd.get('price'), peakPrice: +fd.get('peakPrice'), open: [+fd.get('open0'), +fd.get('open1')], facilities: fd.getAll('facilities'), images: photos.get(), about: fd.get('about') || '',
           tags: (fd.get('tags') || '').split(',').map((t) => t.trim()).filter(Boolean), ownerId: fd.get('ownerId'),
-          cancelPolicy: fd.get('cancelPolicy') || 'standard', weeklyEnabled: !!fd.get('weeklyEnabled'), weeklyDiscount: fd.get('weeklyDiscount') };
+          cancelPolicy: fd.get('cancelPolicy') || 'standard', paymentMode: fd.get('paymentMode') || 'Deposit', weeklyEnabled: !!fd.get('weeklyEnabled'), weeklyDiscount: fd.get('weeklyDiscount') };
       };
       const preview = () => {
         const d = read();

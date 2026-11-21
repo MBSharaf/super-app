@@ -19,6 +19,7 @@ public static class AdminRegistration
         services.AddScoped<IIntegrationsService, IntegrationsService>();
         services.AddScoped<IAdminPeopleService, AdminPeopleService>();
         services.AddScoped<IAdminOpsService, AdminOpsService>();
+        services.AddScoped<ISettlementsService, SettlementsService>();
         services.AddScoped<IPlatformService, PlatformService>();
         return services;
     }

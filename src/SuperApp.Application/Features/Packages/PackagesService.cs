@@ -146,7 +146,7 @@ public sealed class PackagesService(
         var price = plans.Sum(p => Discounted(p.PitchAmount, discount));
         var fee = plans.Sum(p => Fee(Discounted(p.PitchAmount, discount), feeRate));
         var (percent, minimum) = (await settings.DecimalAsync("deposit.percent", Deposits.DefaultPercent, ct), await settings.DecimalAsync("deposit.min", Deposits.DefaultMinimum, ct));
-        var deposit = plans.Sum(p => Deposits.Split(MatchTotal(p.PitchAmount, discount, feeRate), percent, minimum).Deposit);
+        var deposit = plans.Sum(p => Deposits.Split(MatchTotal(p.PitchAmount, discount, feeRate), percent, minimum, p.Pitch.PaymentMode).Deposit);
         var quote = new PackageQuoteDto(option.Id, option.MatchCount, discount, weeks, weeks.Count(w => !w.Available), list, list - price, fee, price + fee,
             deposit, price + fee - deposit);
         return new PackagePlan(quote, plans, feeRate);
@@ -175,13 +175,13 @@ public sealed class PackagesService(
         var amount = Discounted(p.PitchAmount, plan.Quote.DiscountPercent);
         var fee = Fee(amount, plan.FeeRate);
         var commission = p.Pitch.PartnerCommission ?? (await settings.DecimalAsync("commission.bookings", 0.10m, ct) * 100);
-        var split = await Deposits.SplitAsync(settings, amount + fee, ct);
+        var split = await Deposits.SplitAsync(settings, amount + fee, p.Pitch.PaymentMode, ct);
         return new Booking
         {
             Code = await bookings.NewCodeAsync(ct), PitchId = p.Pitch.Id, CustomerId = me, Source = BookingSource.Package, Package = package,
             Date = p.Lines[0].Date, StartHour = (byte)p.Lines[0].CalendarHour, Duration = (byte)duration, PitchAmount = amount,
             DiscountAmount = p.PitchAmount - amount, ServiceFee = fee, Total = amount + fee, Deposit = split.Deposit, BalanceDue = split.BalanceDue,
-            CommissionRate = commission, PolicyKey = p.Pitch.PolicyKey, WaiverVersionId = waiver, Status = BookingStatus.Confirmed,
+            PaymentMode = p.Pitch.PaymentMode, CommissionRate = commission, PolicyKey = p.Pitch.PolicyKey, WaiverVersionId = waiver, Status = BookingStatus.Confirmed,
         };
     }
 

@@ -61,4 +61,5 @@ public sealed record PitchDetailsDto(
     PolicyDto CancellationPolicy,
     IReadOnlyList<OpeningHourDto> OpeningHours,
     IReadOnlyList<PackageOptionDto> PackageOptions,
-    string PartnerName);
+    string PartnerName,
+    string PaymentMode = "Deposit");

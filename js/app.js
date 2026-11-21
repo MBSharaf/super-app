@@ -142,6 +142,7 @@
     .add('/admin/returns', P.adminReturns)
     .add('/admin/cancellations', P.adminCancellations)
     .add('/admin/revenue', P.adminRevenue)
+    .add('/admin/settlements', P.adminSettlements)
     .add('/admin/notifications', P.dashNotifications)
     .add('/admin/designs', P.dashPodReview)
     .add('/admin/catalog', P.dashPodCatalog)

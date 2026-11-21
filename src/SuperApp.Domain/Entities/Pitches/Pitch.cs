@@ -20,6 +20,7 @@ public class Pitch : BaseEntity, ISoftDelete, IHasRowVersion
     public string? DescriptionAr { get; set; }
     public int CancellationPolicyId { get; set; }
     public bool AllowCash { get; set; } = true;
+    public PitchPaymentMode PaymentMode { get; set; }
     public PitchStatus Status { get; set; }
     public Guid? ReviewedById { get; set; }
     public string? RejectReason { get; set; }

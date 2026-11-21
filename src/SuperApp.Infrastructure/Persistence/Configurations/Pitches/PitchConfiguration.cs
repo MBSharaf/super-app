@@ -31,6 +31,7 @@ internal sealed class PitchConfiguration : IEntityTypeConfiguration<Pitch>
         builder.Property(x => x.DescriptionEn).HasMaxLength(2000);
         builder.Property(x => x.DescriptionAr).HasMaxLength(2000);
         builder.Property(x => x.AllowCash).HasDefaultValue(true).ValueGeneratedNever();
+        builder.Property(x => x.PaymentMode).HasConversion<byte>().HasDefaultValue(PitchPaymentMode.Deposit).ValueGeneratedNever();
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(PitchStatus.WaitingForReview).ValueGeneratedNever();
         builder.Property(x => x.RejectReason).HasMaxLength(400);
         builder.Property(x => x.Rating).HasPrecision(3, 2).HasDefaultValue(0m).ValueGeneratedNever();

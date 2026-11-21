@@ -24,7 +24,7 @@ public sealed class BookingRepository(AppDbContext db, IClock clock) : IBookingR
         db.Set<Pitch>()
             .Where(p => p.Slug == slug && p.Status == PitchStatus.Live && p.Venue.Partner.Status == PartnerStatus.Active)
             .Select(p => new BookablePitch(p.Id, p.Slug, p.Name, p.Venue.Address, p.Venue.Partner.UserId, p.AllowCash, p.CancellationPolicy.Key,
-                p.CancellationPolicy.FullRefundHours, p.CancellationPolicy.HalfRefundHours, p.Venue.Partner.BookingCommission))
+                p.CancellationPolicy.FullRefundHours, p.CancellationPolicy.HalfRefundHours, p.Venue.Partner.BookingCommission, p.PaymentMode))
             .FirstOrDefaultAsync(ct);
 
     public async Task<DateTime> HoldAsync(long pitchId, IReadOnlyList<(DateOnly Date, int Hour)> slots, Guid userId, CancellationToken ct)

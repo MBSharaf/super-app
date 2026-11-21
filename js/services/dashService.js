@@ -351,6 +351,7 @@
     price: Math.round(+d.price), peakPrice: Math.round(+d.peakPrice), open: [+d.open[0], +d.open[1]], images: d.images.slice(0, 6),
     facilities: (d.facilities || []).filter((f) => F[f]), about: d.about.trim(), tags: (d.tags || []).map((t) => t.trim()).filter(Boolean).slice(0, 3),
     cancelPolicy: PS.POLICIES[d.cancelPolicy] ? d.cancelPolicy : 'standard',
+    paymentMode: d.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit',
     weekly: { enabled: d.weeklyEnabled !== false && d.weeklyEnabled !== 'off', discount: Math.min(0.3, Math.max(0, Math.round(+(d.weeklyDiscount ?? 10)) / 100)) },
   });
 
@@ -599,6 +600,13 @@
       const out = db.update('pitches', id, { ...cleanPitch(d), ...(p.review === 'rejected' ? { review: 'pending', submittedAt: Date.now() } : {}) });
       if (p.review === 'rejected') SA.services.notify?.toAdmins({ cat: 'store', title: `Pitch sent again: ${out.name}`, body: me().company, link: '#/admin/approvals' });
       db.log(me().id, 'pitch.updated', `Updated pitch “${out.name}”`, id);
+      // Finance settles with the venue by this choice; bookings already made keep theirs
+      if ((p.paymentMode || 'Deposit') !== out.paymentMode) {
+        const how = out.paymentMode === 'FullOnline' ? 'full payment in the app' : 'deposit in the app, the rest at the pitch';
+        SA.services.notify?.toAdmins({ cat: 'store', title: `${out.name} now takes ${how}`, body: me().company, link: '#/admin/settlements' });
+        SA.services.notify?.toAccount(out.ownerId || me().id, { cat: 'bookings', title: `${out.name}: players now pay by ${how}`, body: 'New bookings follow it. Bookings already made keep the way they were paid.', link: '#/dash/pitches' });
+        db.log(me().id, 'pitch.payment_mode', `“${out.name}” payment: ${out.paymentMode}`, id);
+      }
       return out;
     },
     setPitchStatus(id, status, reason = '') {
