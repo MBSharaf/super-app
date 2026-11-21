@@ -43,7 +43,8 @@
       const t = r.total;
       const pending = AD().pendingPayouts ? AD().pendingPayouts() : [];
       const counts = {
-        pitches: db().all('pitches').filter((p) => !p.deleted && p.status === 'active').length, partners: db().all('accounts').filter((a) => a.role === 'owner').length,
+        pitches: db().all('pitches').filter((p) => !p.deleted && p.status === 'active' && p.sport !== 'padel').length,
+        courts: db().all('pitches').filter((p) => !p.deleted && p.status === 'active' && p.sport === 'padel').length, partners: db().all('accounts').filter((a) => a.role === 'owner').length,
         sellers: db().all('sellers').filter((s) => s.status === 'active').length, designs: db().all('designs').filter((d) => d.status === 'live').length,
         stores: db().all('stores').filter((s) => s.status === 'active').length, products: db().all('products').filter((p) => !p.deleted && p.status === 'active').length,
       };
@@ -67,7 +68,7 @@
           <section class="dash-card"><h2 class="h4">Where revenue comes from</h2><p class="xs muted" style="margin-top:4px">Last 30 days · costs: ${money(t.cost)} (refused print deliveries, refunds and promo codes paid by Super Malaab)</p>
             <ul class="adm-mix">${mix.map((x) => `<li><span class="row-between small"><span><i class="adm-dot" style="background:${TONE[x.tone]}"></i>${x.l}</span><b class="num">${money(x.v)}</b></span><span class="meter"><span style="width:${Math.max(2, (x.v / t.income) * 100)}%;background:${TONE[x.tone]}"></span></span></li>`).join('')}</ul></section>
           <section class="dash-card"><h2 class="h4">On the platform now</h2>
-            <div class="adm-counts">${[['pitch', counts.pitches, 'Live pitches', '#/admin/partners'], ['users', counts.partners, 'Pitch owners', '#/admin/partners'], ['shirt', counts.sellers, 'Active sellers', '#/admin/sellers'], ['image', counts.designs, 'Live designs', '#/admin/designs'], ['bag', counts.stores, 'Live stores', '#/admin/partners'], ['package', counts.products, 'Products for sale', '#/shop']].map(([ic, n, l, h]) => `<a href="${h}"><span class="kpi-ico">${icon(ic, 18)}</span><b class="h3 num">${n}</b><span class="xs muted">${l}</span></a>`).join('')}</div></section>
+            <div class="adm-counts">${[['pitch', counts.pitches, 'Football pitches', '#/admin/partners'], ...(counts.courts != null ? [['padel', counts.courts, 'Padel courts', '#/admin/partners']] : []), ['users', counts.partners, 'Pitch owners', '#/admin/partners'], ['shirt', counts.sellers, 'Active sellers', '#/admin/sellers'], ['image', counts.designs, 'Live designs', '#/admin/designs'], ['bag', counts.stores, 'Live stores', '#/admin/partners'], ['package', counts.products, 'Products for sale', '#/shop']].map(([ic, n, l, h]) => `<a href="${h}"><span class="kpi-ico">${icon(ic, 18)}</span><b class="h3 num">${n}</b><span class="xs muted">${l}</span></a>`).join('')}</div></section>
         </div>
         <section class="dash-card"><div class="row-between"><h2 class="h4">Latest activity</h2><a class="btn btn-ghost btn-sm" href="#/admin/audit">Audit log ${icon('arrowRight', 14)}</a></div>
           <ol class="activity" style="margin-top:10px">${recent.map((x, i) => `<li style="--i:${i}"><span class="ac-ico">${icon(x.kind === 'admin' ? 'shield' : x.kind === 'seller' ? 'shirt' : x.kind === 'customer' ? 'user' : 'clock', 15)}</span><span class="grow"><b class="small">${esc(x.text)}</b><span class="xs muted" style="display:block">${esc(x.actorName)} · ${timeAgo(x.at)}</span></span></li>`).join('')}</ol></section>`;

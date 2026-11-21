@@ -7,6 +7,9 @@
   const db = () => SA.services.db;
 
   const SURFACES = ['Artificial turf', 'Artificial turf (FIFA Quality)', 'Artificial turf (60 mm)', 'Natural grass', 'Futsal court', 'Indoor turf'];
+  /** Padel courts (2026-11-21): real padel terms — Panoramic glass or Classic walls, booked for 60/90/120 minutes */
+  const COURT_SURFACES = ['Artificial turf (sand-filled)', 'Artificial turf (textured)', 'Acrylic'];
+  const COURT_MINUTES = [60, 90, 120];
   const CITIES = ['Cairo', 'Giza', 'Alexandria', 'Port Said', 'Suez', 'Ismailia', 'Mansoura', 'Tanta', 'Hurghada', 'Sharm El Sheikh'];
   const PITCH_LIBRARY = ['nightMatch', 'litField', 'aerialPitch', 'birdsEyeLights', 'goalTrees', 'turfLine', 'turfKick', 'stringLights', 'turfGoal', 'indoorTurf', 'aerialField', 'futsalGoal', 'futsalArena', 'goalNet', 'fieldGoal', 'nightGrass', 'fieldLights', 'ballsInGoal'].map((k) => media.photos[k]);
 
@@ -27,7 +30,7 @@
         const up = D().upcomingFor(p.id).length;
         return `<article class="dp-card ${p.status === 'closed' ? 'is-closed' : ''}">
           <div class="dp-media media"><img src="${media.photo(p.images[0], 640, 400)}" alt="" loading="lazy" />
-            <span class="badge badge-glass dp-format">${esc(p.format)}${p.indoor ? ' · Indoor' : ''}</span>
+            <span class="badge badge-glass dp-format">${p.sport === 'padel' ? `${icon('padel', 12)} Padel · ${p.panoramic ? 'Panoramic' : 'Classic'}` : esc(p.format)}${p.indoor ? ' · Indoor' : ''}</span>
             ${p.review === 'pending' ? '<span class="dp-closed dp-review"><b>Waiting for Super Malaab review</b><span class="xs">We check new pitches within one working day. It goes live when approved.</span></span>' : p.review === 'rejected' ? `<span class="dp-closed"><b>Not approved</b><span class="xs">${esc(p.reviewReason || '')} — edit the pitch to send it again.</span></span>` : ''}
             ${p.status === 'closed' ? `<span class="dp-closed"><b>Closed for booking</b>${p.closedReason ? `<span class="xs">${esc(p.closedReason)}</span>` : ''}</span>` : ''}</div>
           <div class="dp-body">
@@ -49,7 +52,7 @@
       }).join('');
       return C.layout('pitches', {
         title: 'My pitches', subtitle: `${s.pitches.length} pitch${s.pitches.length === 1 ? '' : 'es'} · ${s.pitches.filter((p) => p.status === 'active').length} open for booking`,
-        actions: `<a class="btn btn-primary btn-sm" href="#/dash/pitches/new">${icon('plus', 15)} Add pitch</a>`,
+        actions: `<a class="btn btn-outline btn-sm" href="#/dash/pitches/new?sport=padel">${icon('padel', 15)} Add padel court</a><a class="btn btn-primary btn-sm" href="#/dash/pitches/new">${icon('plus', 15)} Add pitch</a>`,
         body: s.pitches.length ? `<div class="dp-grid">${cards}</div>` : `<div class="dash-card">${SA.ui.c.empty({ icon: 'pitch', title: 'No pitches yet', text: 'Add your first pitch with photos, prices and opening hours. It appears on Super Malaab as soon as you save it.', action: `<a class="btn btn-primary" href="#/dash/pitches/new">${icon('plus', 16)} Add a pitch</a>` })}</div>`,
       });
     },
@@ -91,7 +94,7 @@
   });
 
   /* ======================= Editor ======================= */
-  const blank = () => ({ name: '', area: '', city: 'Cairo', address: '', lat: null, lng: null, format: '5-a-side', surface: 'Artificial turf', indoor: false, price: 600, peakPrice: 750, open: [9, 25], facilities: ['lights', 'water', 'wc'], images: [], about: '', tags: [], status: 'active', cancelPolicy: 'standard', paymentMode: 'Deposit', weekly: { enabled: true, discount: 0.1 } });
+  const blank = (sport) => ({ sport: sport === 'padel' ? 'padel' : 'football', panoramic: true, durations: [60, 90], racketPrice: 50, ballsPrice: 100, name: '', area: '', city: 'Cairo', address: '', lat: null, lng: null, format: sport === 'padel' ? 'Padel' : '5-a-side', surface: 'Artificial turf', indoor: false, price: 600, peakPrice: 750, open: [9, 25], facilities: ['lights', 'water', 'wc'], images: [], about: '', tags: [], status: 'active', cancelPolicy: 'standard', paymentMode: 'Deposit', weekly: { enabled: true, discount: 0.1 } });
   /** The owner chooses how players pay for each pitch (owner's rule, 2026-11-21) */
   const PAY_MODES = [
     { key: 'Deposit', icon: 'wallet', name: 'Deposit in the app, the rest at the pitch', summary: 'Players pay a deposit online to hold the pitch (20% of the total, at least 100 EGP). You collect the rest in cash when you scan their QR code.' },
@@ -103,7 +106,8 @@
     title: 'Edit pitch — Super Malaab Partner',
     render(ctx) {
       const isNew = !ctx.params.id;
-      const p = isNew ? blank() : D().pitch(ctx.params.id);
+      const p = isNew ? blank(ctx.query.sport) : D().pitch(ctx.params.id);
+      const padel = p.sport === 'padel';
       this._p = p;
       const F = SA.data.pitches.facilities;
       const owners = D().isAdmin() ? db().all('accounts').filter((a) => a.role === 'owner') : [];
@@ -120,7 +124,22 @@
           <section class="dash-card"><div class="row-between"><h2 class="h4">Location on the map</h2><span class="xs muted" data-coords>${p.lat ? `${(+p.lat).toFixed(4)}, ${(+p.lng).toFixed(4)}` : 'Not set'}</span></div>
             <p class="small soft" style="margin-top:6px">Click the map where the pitch is. Players use this to find the closest pitches.</p>
             <div class="pe-map" id="pe-map"></div><span class="field-error" data-err="location"></span></section>
-          <section class="dash-card"><h2 class="h4">Pitch</h2>
+          <section class="dash-card"><h2 class="h4">Sport</h2>
+            ${isNew ? `<div class="seg" style="margin-top:12px">${[['football', 'pitch', 'Football pitch'], ['padel', 'padel', 'Padel court']].map(([k, ic, l]) => `<label class="seg-opt"><input type="radio" name="sport" value="${k}" ${p.sport === k ? 'checked' : ''} /><span>${icon(ic, 16)} ${l}</span></label>`).join('')}</div>
+              <p class="xs muted" style="margin-top:8px">A pitch keeps its sport. To list the other sport, add another one.</p>`
+              : `<input type="hidden" name="sport" value="${p.sport || 'football'}" /><p class="small soft" style="margin-top:8px">${icon(padel ? 'padel' : 'pitch', 16)} ${padel ? 'Padel court' : 'Football pitch'} · A pitch keeps its sport.</p>`}</section>
+          <section class="dash-card" data-for="padel" ${padel ? '' : 'hidden'}><h2 class="h4">Court</h2>
+            <div class="form-grid" style="margin-top:14px">
+              <fieldset class="field span-2"><legend class="field-label">Walls</legend><div class="seg">${[[true, 'Panoramic', 'All-glass walls'], [false, 'Classic', 'Glass behind, mesh on the sides']].map(([v, l, h]) => `<label class="seg-opt"><input type="radio" name="panoramic" value="${v ? '1' : ''}" ${!!p.panoramic === v ? 'checked' : ''} /><span>${l}<i class="xs">${h}</i></span></label>`).join('')}</div></fieldset>
+              <div class="field"><label for="pe-csurface">Surface</label><select class="select" id="pe-csurface" name="courtSurface">${COURT_SURFACES.map((x) => `<option ${x === p.surface ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+              <label class="choice" style="align-self:end"><input type="checkbox" name="courtIndoor" ${p.indoor ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Indoor</b><span class="xs soft" style="display:block">Unticked: Outdoor</span></span>${icon('ac', 18)}</label>
+              <fieldset class="field span-2"><legend class="field-label">Booking lengths players can choose</legend><div class="chips wrap" style="flex-wrap:wrap">${COURT_MINUTES.map((m) => `<label class="fac"><input type="checkbox" name="durations" value="${m}" ${(p.durations || []).includes(m) ? 'checked' : ''} /><span>${icon('clock', 16)} ${m} min</span></label>`).join('')}</div>
+                <span class="field-hint">Players start on the hour or the half hour.</span><span class="field-error" data-err="durations"></span></fieldset>
+              <div class="field"><label for="pe-racket">Racket rental, each (EGP)</label><input class="input num" id="pe-racket" name="racketPrice" type="number" min="0" step="5" value="${p.racketPrice ?? ''}" /><span class="field-hint">Leave empty if you don’t rent rackets</span><span class="field-error" data-err="racketPrice"></span></div>
+              <div class="field"><label for="pe-balls">Tube of balls (EGP)</label><input class="input num" id="pe-balls" name="ballsPrice" type="number" min="0" step="5" value="${p.ballsPrice ?? ''}" /><span class="field-hint">Leave empty if you don’t sell balls</span><span class="field-error" data-err="ballsPrice"></span></div>
+              <p class="xs muted span-2">Players add rackets and balls when they book and pay for them at the club, when you scan their QR code.</p>
+            </div></section>
+          <section class="dash-card" data-for="football" ${padel ? 'hidden' : ''}><h2 class="h4">Pitch</h2>
             <div class="form-grid" style="margin-top:14px">
               <fieldset class="field span-2"><legend class="field-label">Size</legend><div class="seg">${['5-a-side', '7-a-side', '11-a-side'].map((f) => `<label class="seg-opt"><input type="radio" name="format" value="${f}" ${p.format === f ? 'checked' : ''} /><span>${f}<i class="xs">${{ '5-a-side': 10, '7-a-side': 14, '11-a-side': 22 }[f]} players</i></span></label>`).join('')}</div></fieldset>
               <div class="field"><label for="pe-surface">Surface</label><select class="select" id="pe-surface" name="surface">${SURFACES.map((x) => `<option ${x === p.surface ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
@@ -142,7 +161,7 @@
             <p class="small soft" style="margin-top:6px">Choose how players pay for this pitch. Every booking keeps the way it was paid; a change applies to new bookings only.</p>
             <div class="pol-grid" style="margin-top:12px">${PAY_MODES.map((m) => `<label class="pol-opt"><input type="radio" name="paymentMode" value="${m.key}" ${(p.paymentMode || 'Deposit') === m.key ? 'checked' : ''} />
               <span><b>${icon(m.icon, 16)} ${m.name}</b><span class="xs soft">${m.summary}</span></span></label>`).join('')}</div></section>
-          <section class="dash-card"><h2 class="h4">Weekly bookings</h2>
+          <section class="dash-card" data-for="football" ${padel ? 'hidden' : ''}><h2 class="h4">Weekly bookings</h2>
             <div class="form-grid" style="margin-top:12px">
               <label class="choice span-2"><input type="checkbox" name="weeklyEnabled" ${p.weekly?.enabled !== false ? 'checked' : ''} /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>Let players book the same time every week</b><span class="xs soft" style="display:block">They pay for 4, 8 or 12 weeks up front — regular income for you.</span></span>${icon('repeat', 18)}</label>
               <div class="field"><label for="pe-wd">Weekly discount (%)</label><input class="input num" id="pe-wd" name="weeklyDiscount" type="number" min="0" max="30" step="1" value="${Math.round((p.weekly?.discount ?? 0.1) * 100)}" /><span class="field-hint">0–30% off every game in the series</span><span class="field-error" data-err="weeklyDiscount"></span></div>
@@ -161,7 +180,7 @@
         </aside>
         <div class="save-bar"><span class="small soft grow" data-dirty>${isNew ? 'New pitch — fill in the details and save.' : 'Changes go live on Super Malaab when you save.'}</span><a class="btn btn-outline" href="#/dash/pitches">Cancel</a><button class="btn btn-primary" type="submit">${icon('check', 16)} ${isNew ? 'Publish pitch' : 'Save changes'}</button></div>
       </form>`;
-      return C.layout('pitches', { title: isNew ? 'Add a pitch' : `Edit ${esc(p.name)}`, subtitle: isNew ? 'It appears on Super Malaab as soon as you publish it.' : `Last updated ${SA.core.utils.timeAgo(p.updatedAt)}`, actions: !isNew ? `<a class="btn btn-outline btn-sm" href="#/pitches/${p.id}" target="_blank" rel="noopener">${icon('eye', 15)} View on site</a>` : '', body });
+      return C.layout('pitches', { title: isNew ? (padel ? 'Add a padel court' : 'Add a pitch') : `Edit ${esc(p.name)}`, subtitle: isNew ? 'It appears on Super Malaab as soon as you publish it.' : `Last updated ${SA.core.utils.timeAgo(p.updatedAt)}`, actions: !isNew ? `<a class="btn btn-outline btn-sm" href="#/pitches/${p.id}" target="_blank" rel="noopener">${icon('eye', 15)} View on site</a>` : '', body });
     },
     mount(el, ctx) {
       const form = el.querySelector('#pitch-form');
@@ -171,14 +190,19 @@
 
       const read = () => {
         const fd = new FormData(form);
-        return { name: fd.get('name') || '', area: fd.get('area') || '', city: fd.get('city'), address: fd.get('address') || '', lat, lng, format: fd.get('format'), surface: fd.get('surface'), indoor: !!fd.get('indoor'),
+        const sport = fd.get('sport') === 'padel' ? 'padel' : 'football';
+        const court = sport === 'padel';
+        return { sport, panoramic: !!fd.get('panoramic'), durations: fd.getAll('durations').map(Number), racketPrice: fd.get('racketPrice') ?? '', ballsPrice: fd.get('ballsPrice') ?? '',
+          name: fd.get('name') || '', area: fd.get('area') || '', city: fd.get('city'), address: fd.get('address') || '', lat, lng, format: court ? 'Padel' : fd.get('format'),
+          surface: court ? fd.get('courtSurface') : fd.get('surface'), indoor: court ? !!fd.get('courtIndoor') : !!fd.get('indoor'),
           price: +fd.get('price'), peakPrice: +fd.get('peakPrice'), open: [+fd.get('open0'), +fd.get('open1')], facilities: fd.getAll('facilities'), images: photos.get(), about: fd.get('about') || '',
           tags: (fd.get('tags') || '').split(',').map((t) => t.trim()).filter(Boolean), ownerId: fd.get('ownerId'),
           cancelPolicy: fd.get('cancelPolicy') || 'standard', paymentMode: fd.get('paymentMode') || 'Deposit', weeklyEnabled: !!fd.get('weeklyEnabled'), weeklyDiscount: fd.get('weeklyDiscount') };
       };
       const preview = () => {
         const d = read();
-        const pv = { id: p.id || 'preview', name: d.name || 'Your pitch name', area: d.area || 'Area', city: d.city, format: d.format, indoor: d.indoor, price: d.price || 0, rating: p.rating || 5, reviews: p.reviews || 0, images: d.images.length ? d.images : ['turfLine'], tags: d.tags, distanceKm: 1.2, freeSlots: Math.max(0, d.open[1] - d.open[0]) };
+        el.querySelectorAll('[data-for]').forEach((s) => { s.hidden = s.dataset.for !== d.sport; });
+        const pv = { id: p.id || 'preview', sport: d.sport, panoramic: d.panoramic, name: d.name || (d.sport === 'padel' ? 'Your court name' : 'Your pitch name'), area: d.area || 'Area', city: d.city, format: d.format, indoor: d.indoor, price: d.price || 0, rating: p.rating || 5, reviews: p.reviews || 0, images: d.images.length ? d.images : ['turfLine'], tags: d.tags, distanceKm: 1.2, freeSlots: Math.max(0, d.open[1] - d.open[0]) };
         el.querySelector('[data-preview]').innerHTML = SA.ui.cards.pitch(pv).replace(/href="#\/pitches\/[^"]*"/, 'href="#" tabindex="-1"');
         const span = d.open[1] - d.open[0];
         el.querySelector('[data-hours-note]').textContent = span > 0 ? `Open ${span} hours a day · ${fmtHour(d.open[0])} to ${fmtHour(d.open[1])}${d.open[1] > 24 ? ' (after midnight)' : ''}.` : 'Closing time must be after opening time.';

@@ -14,7 +14,7 @@
       return `<article class="card card-link pitch-card ${compact ? 'is-compact' : ''}" data-pitch="${p.id}">
         <a href="${href}" class="pitch-card-link" aria-label="${esc(p.name)}, ${fmtKm(p.distanceKm)} away"></a>
         <div class="media pitch-card-media">
-          <img src="${media.photo(p.images[0], 720, 480)}" alt="${esc(p.name)} pitch" loading="lazy" />
+          <img src="${media.photo(p.images[0], 720, 480)}" alt="${esc(p.name)} ${p.sport === 'padel' ? 'padel court' : 'pitch'}" loading="lazy" />
           <div class="media-top">
             <span class="badge badge-glass">${icon('pin', 13, 2)} ${fmtKm(p.distanceKm)}</span>
             <button class="icon-btn fav-btn ${fav ? 'is-on' : ''}" data-action="fav-pitch" data-id="${p.id}" aria-pressed="${fav}" aria-label="${fav ? 'Remove from' : 'Save to'} favourites">${icon(fav ? 'heartFill' : 'heart', 18)}</button>
@@ -26,14 +26,14 @@
           <div class="row-between" style="align-items:flex-start">
             <div class="grow">
               <h3 class="h4 truncate">${esc(p.name)}</h3>
-              <p class="small muted truncate">${esc(p.area)}, ${esc(p.city)} · ${esc(p.format)}${p.indoor ? ' · Indoor' : ''}</p>
+              <p class="small muted truncate">${esc(p.area)}, ${esc(p.city)} · ${p.sport === 'padel' ? `Padel · ${p.panoramic ? 'Panoramic' : 'Classic'}${p.indoor ? ' · Indoor' : ' · Outdoor'}` : `${esc(p.format)}${p.indoor ? ' · Indoor' : ''}`}</p>
             </div>
             ${c.rating(p.rating, p.reviews, 13)}
           </div>
           <div class="pitch-card-foot">
             <div><span class="price">${money(p.price)}</span><span class="xs muted"> / hour</span></div>
             ${avail === null ? '' : avail > 0
-              ? `<span class="avail ${avail <= 3 ? 'is-low' : ''}"><i></i>${avail} slot${avail > 1 ? 's' : ''} today</span>`
+              ? `<span class="avail ${avail <= 3 ? 'is-low' : ''}"><i></i>${p.sport === 'padel' ? `${avail} start time${avail > 1 ? 's' : ''} today` : `${avail} slot${avail > 1 ? 's' : ''} today`}</span>`
               : `<span class="avail is-none"><i></i>${nextTxt ? 'Next: ' + nextTxt : 'Fully booked'}</span>`}
           </div>
         </div>
@@ -41,6 +41,12 @@
     },
 
     match(m) {
+      // Football: Beginner…Competitive. Padel: Level 1–7 (1–2 new, 3–4 club, 5–6 strong, 7 pro)
+      const levelBadge = (l) => {
+        const n = +String(l).replace('Level ', '');
+        if (n) return n <= 2 ? 'badge-turf' : n <= 4 ? 'badge-info' : n <= 6 ? 'badge-blaze' : 'badge-danger';
+        return l === 'Beginner' ? 'badge-turf' : l === 'Competitive' ? 'badge-danger' : l === 'Advanced' ? 'badge-blaze' : 'badge-info';
+      };
       const urgent = m.spotsLeft > 0 && m.spotsLeft <= 2;
       return `<article class="card card-link match-card" data-match="${m.id}">
         <a href="#/players/${m.id}" class="pitch-card-link" aria-label="${m.spotsLeft} spots at ${esc(m.pitch.name)}"></a>
@@ -51,7 +57,8 @@
         </div>
         <div class="match-main">
           <div class="row wrap" style="--gap:6px">
-            <span class="badge ${m.level === 'Beginner' ? 'badge-turf' : m.level === 'Competitive' ? 'badge-danger' : m.level === 'Advanced' ? 'badge-blaze' : 'badge-info'}">${m.level}</span>
+            ${m.sport === 'padel' ? `<span class="badge badge-ink">${icon('padel', 12, 2)} Padel</span>` : ''}
+            <span class="badge ${levelBadge(m.level)}">${m.level}</span>
             <span class="badge">${m.type}</span>
             ${m.gender !== 'Men' ? `<span class="badge">${m.gender}</span>` : ''}
             ${m.needsGK ? `<span class="badge badge-gold">${icon('glove', 12, 2)} Keeper wanted</span>` : ''}

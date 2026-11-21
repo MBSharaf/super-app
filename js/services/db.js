@@ -15,10 +15,10 @@
   const DAY = 864e5;
 
   const OWNERS = {
-    'acc-o1': ['p-zayed-22', 'p-october-dome', 'p-fifth-arena'],
+    'acc-o1': ['p-zayed-22', 'p-october-dome', 'p-fifth-arena', 'p-padel-smash-1', 'p-padel-smash-2'],
     'acc-o2': ['p-gezira-fives', 'p-dokki-river', 'p-helio-night'],
-    'acc-o3': ['p-maadi-cage', 'p-mokattam-hill', 'p-nasr-hub'],
-    'acc-o4': ['p-smouha-seven', 'p-rehab-club', 'p-madinaty-park'],
+    'acc-o3': ['p-maadi-cage', 'p-mokattam-hill', 'p-nasr-hub', 'p-padel-zayed-hub', 'p-padel-maadi-box'],
+    'acc-o4': ['p-smouha-seven', 'p-rehab-club', 'p-madinaty-park', 'p-padel-sidi-gaber'],
   };
   const ownerOf = (pitchId) => Object.keys(OWNERS).find((k) => OWNERS[k].includes(pitchId)) || 'acc-admin';
 
@@ -32,9 +32,9 @@
     const { seeded } = SA.core.utils;
     const taken = new Set(accounts.map((a) => a.name));
     const people = SA.data.matches.people.filter((n) => !taken.has(n));
-    const pool = SA.data.pitches.reviewPool;
     const out = [];
     pitches.filter((p) => p.seed).forEach((p) => {
+      const pool = p.sport === 'padel' ? SA.data.pitches.padelReviewPool : SA.data.pitches.reviewPool;
       // Each of an owner's pitches gets a different slice of the pool, so texts don't repeat for one partner
       const k = Math.max(0, (OWNERS[p.ownerId] || []).indexOf(p.id));
       const start = (k * 5 + Math.floor(seeded(p.ownerId) * pool.length)) % pool.length;
@@ -220,6 +220,17 @@
       (data.designs || []).forEach((d) => { if (caps.has(d.catalogId) && !d.deleted) { d.deleted = true; d.status = 'deleted'; } });
       data.settings.podV2 = 1; changed = true;
     }
+    // Padel (2026-11-21): the demo padel clubs join demo data saved on this device before they existed
+    if (!data.settings.padelV1) {
+      const since = Math.min(...data.pitches.filter((p) => p.seed).map((p) => p.createdAt || Date.now()));
+      const fresh = SA.data.pitches.list.filter((p) => p.sport === 'padel' && !data.pitches.some((x) => x.id === p.id)).map((p) => ({
+        ...structuredClone(p), ownerId: ownerOf(p.id), status: 'active', closedReason: '', seed: true, createdAt: since, updatedAt: since, cancelPolicy: 'standard', paymentMode: 'Deposit',
+        seedSnapshot: { price: p.price, peakPrice: p.peakPrice, open: p.open.slice() },
+      }));
+      data.pitches.push(...fresh);
+      if (Array.isArray(data.reviews)) data.reviews.push(...seedReviews(fresh, data.accounts));
+      data.settings.padelV1 = 1; changed = true;
+    }
     if (changed) persist();
   };
 
@@ -291,7 +302,8 @@
         customer: { id: u.id || 'u-001', name: u.name || 'Customer', phone: u.phone || '' }, source: 'app', payment: b.payment?.method === 'wallet' ? 'Wallet' : 'Card',
         status: b.status === 'cancelled' ? 'cancelled' : 'confirmed', refund: b.refund || 0, createdAt: b.createdAt || Date.now(),
         policy: b.policy || p?.cancelPolicy || 'standard', seriesId: b.seriesId || null, sessionNo: b.sessionNo || null, discount: b.discount || 0, promo: b.promo || null,
-        ...(b.deposit != null ? { deposit: b.deposit, payAtPitch: b.payAtPitch || 0, total: b.total } : {}) };
+        ...(b.deposit != null ? { deposit: b.deposit, payAtPitch: b.payAtPitch || 0, total: b.total } : {}),
+        ...(b.sport === 'padel' ? { sport: 'padel', minutes: b.minutes, rackets: b.rackets || 0, balls: b.balls || 0, extras: b.extras || 0 } : {}) };
     },
     subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
     raw: () => data,

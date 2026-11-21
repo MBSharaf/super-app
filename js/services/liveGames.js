@@ -21,6 +21,11 @@
 
   const LEVEL = { Any: 'All levels', Casual: 'Beginner', Intermediate: 'Intermediate', Competitive: 'Competitive' };
   const LEVEL_BACK = { Beginner: 'Casual', Intermediate: 'Intermediate', Advanced: 'Competitive', Competitive: 'Competitive' };
+  // Padel Open Matches: "Level 3" on the site is Level3 on the server
+  for (let n = 1; n <= 7; n += 1) { LEVEL[`Level${n}`] = `Level ${n}`; LEVEL_BACK[`Level ${n}`] = `Level${n}`; }
+  // The server keeps a short position code (10 characters at most)
+  const POS = { Goalkeeper: 'GK', Defender: 'DEF', Midfielder: 'MID', Winger: 'WING', Forward: 'FWD', 'Any position': 'Any' };
+  const POS_NAME = { ...Object.fromEntries(Object.entries(POS).map(([k, v]) => [v, k])), ...Object.fromEntries(SA.data.matches.padelSides) };
   const REQ = { Waiting: 'pending', Accepted: 'accepted', Waitlisted: 'waitlist', Declined: 'declined', Withdrawn: 'withdrawn', Removed: 'removed' };
   const games = new Map();   // code → hydrated game
   const details = new Map(); // code → server detail (players, requests, my status, host settings)
@@ -36,18 +41,21 @@
     const start = parseISO(g.date); start.setHours(0, 0, 0, 0);
     const players = d?.players || [];
     const host = { name: g.hostName, avatar: 0, role: 'Host', photo: false, isMe: g.hostId === myId() };
-    const participants = [host, ...players.map((r) => ({ name: r.playerName, avatar: 0, role: r.position || 'Player', photo: false, isMe: r.playerId === myId(), playerId: r.playerId }))];
+    const participants = [host, ...players.map((r) => ({ name: r.playerName, avatar: 0, role: POS_NAME[r.position] || r.position || 'Player', photo: false, isMe: r.playerId === myId(), playerId: r.playerId }))];
     const joinedCount = Math.max(g.joined, players.length);
     const loc = store.get().location || SA.config.fallbackLocation;
     const status = d?.myStatus || mineCache.joined.find((x) => x.game.code === g.code)?.myStatus;
+    const padel = g.sport === 'Padel';
+    const total = padel ? 4 : g.playersNeeded + 1, filled = padel ? 4 - g.playersNeeded + joinedCount : joinedCount + 1;
     return {
-      id: g.code, live: true, apiGame: g, pitchId: `p-${g.pitchSlug}`, date: g.date, hour: g.startHour, duration: g.duration,
+      id: g.code, live: true, apiGame: g, sport: padel ? 'padel' : 'football', pitchId: `p-${g.pitchSlug}`, date: g.date,
+      hour: g.startHour + (g.startMinute || 0) / 60, duration: g.minutes ? g.minutes / 60 : g.duration,
       pitch: { id: `p-${g.pitchSlug}`, name: g.pitchName, area: g.areaEn, city: p.city || '', image: p.images?.[0], lat: p.lat, lng: p.lng, format: p.format || '', surface: p.surface || '', address: p.address || '' },
       level: LEVEL[g.level] || g.level, type: type || '5 v 5', gender: gender || 'Mixed', needsGK: /goalkeeper/i.test(g.positions || ''), notes: g.notes || '',
-      total: g.playersNeeded + 1, filled: joinedCount + 1, spotsLeft: Math.max(0, g.playersNeeded - joinedCount), participants: d ? participants : [host],
+      total, filled, spotsLeft: Math.max(0, g.playersNeeded - joinedCount), participants: d ? participants : [host],
       pricePerPlayer: g.sharePrice, hostName: g.hostName, isMine: g.hostId === myId(), joined: status === 'Accepted', myStatus: status,
       autoAccept: !!d?.autoAccept, closed: g.requestsClosed, bookingId: d?.bookingCode || '', cancelled: g.status === 'Cancelled',
-      startsAt: start.getTime() + g.startHour * 36e5, distanceKm: p.lat ? haversineKm(loc, p) : 0,
+      startsAt: start.getTime() + (g.startHour + (g.startMinute || 0) / 60) * 36e5, distanceKm: p.lat ? haversineKm(loc, p) : 0,
     };
   };
   const keep = (g) => { const m = hydrate(g); games.set(g.code, m); return m; };
@@ -102,11 +110,12 @@
     if (!live()) return demo.matches.publish(data);
     const b = SA.services.bookings.getSync(data.bookingId);
     if (!b) throw new ApiError('Pick one of your upcoming bookings first.', 'no_booking');
-    const total = +data.total, have = +data.have;
+    const padel = b.sport === 'padel' || SA.services.pitches.getSync(b.pitchId)?.sport === 'padel';
+    const total = padel ? 4 : +data.total, have = +data.have;
     if (!(have >= 1 && have < total)) throw new ApiError('Players you already have must be fewer than the total.', 'invalid_counts');
     const d = await api.post('/games', {
       bookingCode: b.code || b.id, playersNeeded: total - have, level: LEVEL_BACK[data.level] || 'Any', positions: data.needsGK ? 'Goalkeeper' : null,
-      title: `${data.type} · ${data.gender}`, sharePrice: Math.ceil(b.total / total), autoAccept: !!data.autoAccept, notes: (data.notes || '').trim() || null,
+      title: `${padel ? 'Open Match' : data.type} · ${data.gender}`, sharePrice: Math.ceil(b.total / total), autoAccept: !!data.autoAccept, notes: (data.notes || '').trim() || null,
     });
     keepDetail(d);
     loadMine().catch(() => null);
@@ -143,7 +152,7 @@
     if (!isLive(id)) return demo.games.request(id, { position, message, payment, waiver });
     SA.services.legal?.requireWaiver(waiver, 'joining a game');
     if (!payment || payment.method === 'cash') throw new ApiError('Pay your share online — Super Malaab holds it until the host accepts.', 'invalid');
-    const d = await api.post(`/games/${id}/requests`, { position, message: String(message).trim().slice(0, 200) || null, payFromWallet: payment.method === 'wallet' });
+    const d = await api.post(`/games/${id}/requests`, { position: POS[position] || position || null, message: String(message).trim().slice(0, 200) || null, payFromWallet: payment.method === 'wallet' });
     keepDetail(d);
     await loadMine().catch(() => null);
     SA.services.liveMoney?.sync();

@@ -41,7 +41,7 @@
     </div>`;
 
   const services = [
-    { key: 'pitches', title: 'Book a pitch', text: 'Live availability for 5, 7 and 11-a-side pitches near you. Pay by Visa or wallet.', href: '#/pitches', icon: 'pitch', img: 'litField', cta: 'See pitches near me' },
+    { key: 'pitches', title: 'Book a pitch', text: 'Live availability for 5, 7 and 11-a-side pitches and padel courts near you. Pay by Visa or wallet.', href: '#/pitches', icon: 'pitch', img: 'litField', cta: 'See pitches near me' },
     { key: 'players', title: 'Find players', text: 'Short on numbers? Post your booking and players nearby join in minutes.', href: '#/players', icon: 'users', img: 'menPlaying', cta: 'Browse open games' },
     { key: 'fantasy', title: 'Play fantasy', text: 'Free fantasy leagues. The top 3 of every gameweek in the Super Malaab League win Super Points.', href: '#/fantasy', icon: 'trophy', img: 'stadiumNight', cta: 'Pick your team' },
     { key: 'shop', title: 'Shop gear', text: 'Boots, balls, kits and padel — original brands, delivered across Egypt.', href: '#/shop', icon: 'bag', img: 'goalTrees', productImg: 'photo-1511886929837-354d827aae26', cta: 'Shop now' },
@@ -66,7 +66,7 @@
       // Live activity ticker, built from real data in the app
       const people = SA.data.matches.people;
       const tickerItems = [
-        ...matches.filter((m) => m.spotsLeft > 0).slice(0, 4).map((m, i) => `<span><i></i><b>${esc(people[(i * 7 + 3) % people.length].split(' ')[0])}</b> joined a ${m.type} at ${esc(m.pitch.name)} — ${m.spotsLeft} spot${m.spotsLeft > 1 ? 's' : ''} left</span>`),
+        ...matches.filter((m) => m.spotsLeft > 0).slice(0, 4).map((m, i) => `<span><i></i><b>${esc(people[(i * 7 + 3) % people.length].split(' ')[0])}</b> joined ${m.sport === 'padel' ? 'an Open Match' : `a ${m.type}`} at ${esc(m.pitch.name)} — ${m.spotsLeft} spot${m.spotsLeft > 1 ? 's' : ''} left</span>`),
         ...nearby.filter((p) => p.freeSlots > 0).slice(0, 3).map((p) => `<span class="t-turf"><i></i><b>${esc(p.name)}</b> has ${p.freeSlots} free slots today from ${money(p.price)}</span>`),
         ...topPlayers.slice(0, 2).map((p) => `<span class="t-gold"><i></i><b>${esc(p.name)}</b> is the most transferred-in player this week</span>`),
         `<span class="t-gold"><i></i><b>${leagues[0]?.participants.toLocaleString()}</b> managers are playing for ${esc(leagues[0]?.prizes?.[0]?.[1] || '')} in ${esc(leagues[0]?.name || '')}</span>`,

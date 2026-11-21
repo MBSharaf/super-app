@@ -29,10 +29,13 @@
       const reviews = await S.pitches.reviews(p.id);
       this.title = `${p.name} — Book on Super Malaab`;
       const F = SA.data.pitches.facilities;
+      // Padel courts (2026-11-21): half-hour starts, the lengths the owner offers, 4 players, rackets and balls at the club
+      const court = S.pitches.isCourt(p);
+      const lengths = S.pitches.lengthsOf(p).map((v) => [v, `${v * 60} min`]);
       return `
       <div class="container has-action-bar">
         <div class="page-head" style="padding-bottom:16px">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a>${icon('chevronRight', 14)}<a href="#/pitches">Book a pitch</a>${icon('chevronRight', 14)}<span aria-current="page">${esc(p.name)}</span></nav>
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="#/">Home</a>${icon('chevronRight', 14)}${court ? `<a href="#/pitches?sport=padel">Book a padel court</a>` : '<a href="#/pitches">Book a pitch</a>'}${icon('chevronRight', 14)}<span aria-current="page">${esc(p.name)}</span></nav>
         </div>
         <div class="gallery">
           <button class="gallery-main media" data-gallery-open aria-label="View photos"><img src="${media.photo(p.images[0], 1400, 900)}" alt="${esc(p.name)}" data-main /></button>
@@ -41,7 +44,7 @@
 
         <div class="detail-layout">
           <div class="detail-main">
-            <div class="row wrap" style="--gap:8px">${p.tags.map((t) => `<span class="badge badge-ink">${esc(t)}</span>`).join('')}${p.tags.includes(p.format) ? '' : `<span class="badge">${esc(p.format)}</span>`}<span class="badge">${p.indoor ? 'Indoor' : 'Outdoor'}</span></div>
+            <div class="row wrap" style="--gap:8px">${p.tags.map((t) => `<span class="badge badge-ink">${esc(t)}</span>`).join('')}${court ? `<span class="badge badge-turf">${icon('padel', 12)} Padel</span><span class="badge">${p.panoramic ? 'Panoramic' : 'Classic'}</span>` : p.tags.includes(p.format) ? '' : `<span class="badge">${esc(p.format)}</span>`}<span class="badge">${p.indoor ? 'Indoor' : 'Outdoor'}</span></div>
             <h1 class="h1" style="margin-top:14px">${esc(p.name)}</h1>
             <div class="row wrap detail-meta">
               ${c.rating(p.rating, p.reviews)}
@@ -49,7 +52,11 @@
               <span class="small soft">${icon('locate', 15)} ${fmtKm(p.distanceKm)} away · about ${p.etaMin} min by car</span>
             </div>
             <div class="spec-grid">
-              <div><span class="xs muted">Format</span><b>${esc(p.format)} · ${p.players} players</b></div>
+              ${court ? `<div><span class="xs muted">Court</span><b>${p.panoramic ? 'Panoramic' : 'Classic'} · ${p.indoor ? 'Indoor' : 'Outdoor'}</b></div>
+              <div><span class="xs muted">Players</span><b>4 players · doubles</b></div>
+              <div><span class="xs muted">Booking lengths</span><b>${lengths.map(([, l]) => l).join(' · ')}</b></div>
+              ${p.racketPrice != null || p.ballsPrice != null ? `<div><span class="xs muted">Rentals at the club</span><b>${[p.racketPrice != null ? `Racket ${money(p.racketPrice)}` : '', p.ballsPrice != null ? `Balls ${money(p.ballsPrice)}` : ''].filter(Boolean).join(' · ')}</b></div>` : ''}`
+              : `<div><span class="xs muted">Format</span><b>${esc(p.format)} · ${p.players} players</b></div>`}
               <div><span class="xs muted">Surface</span><b>${esc(p.surface)}</b></div>
               <div><span class="xs muted">Opening hours</span><b>${fmtHour(p.open[0])} – ${fmtHour(p.open[1])}</b></div>
               <div><span class="xs muted">Price per hour</span><b>${money(p.price)} <span class="xs muted">· ${money(p.peakPrice)} after 6 PM & weekends</span></b></div>
@@ -87,10 +94,10 @@
             <h2 class="field-label" style="margin-top:18px">1. Pick a date</h2>
             <div class="date-strip compact date-month-grid" data-dates><span class="date-month">${MON[today().getMonth()]}</span>${monthDates()}</div>
             <h2 class="field-label" style="margin-top:18px">2. How long?</h2>
-            <div class="tabs dur-tabs" role="radiogroup" aria-label="Duration">${(S.api?.isLive() ? DURATIONS.filter(([v]) => Number.isInteger(v)) : DURATIONS).map(([v, l]) => `<button class="tab" role="radio" data-dur="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
+            <div class="tabs dur-tabs" role="radiogroup" aria-label="Duration">${(court ? lengths : S.api?.isLive() ? DURATIONS.filter(([v]) => Number.isInteger(v)) : DURATIONS).map(([v, l]) => `<button class="tab" role="radio" data-dur="${v}" aria-checked="false" aria-selected="false">${l}</button>`).join('')}</div>
             <div class="row-between" style="margin-top:18px"><h2 class="field-label">3. Choose a start time</h2><span class="xs muted" data-free></span></div>
-            <div class="slot-legend xs"><span><i class="lg-av"></i>Available</span><span><i class="lg-sel"></i>Selected</span><span><i class="lg-bk"></i>Booked — tap for waitlist</span>${S.pitches.activePromos(p).length ? '<span><i class="lg-deal"></i>Offer price</span>' : ''}</div>
-            <div class="slot-grid" data-slots role="listbox" aria-label="Start times"></div>
+            <div class="slot-legend xs"><span><i class="lg-av"></i>Available</span><span><i class="lg-sel"></i>Selected</span><span><i class="lg-bk"></i>${court ? 'Booked' : 'Booked — tap for waitlist'}</span>${S.pitches.activePromos(p).length ? '<span><i class="lg-deal"></i>Offer price</span>' : ''}</div>
+            <div class="slot-grid ${court ? 'is-halves' : ''}" data-slots role="listbox" aria-label="Start times"></div>
             <p class="field-error" data-slot-err style="margin-top:8px"></p>
             ${p.weekly?.enabled ? `<div class="repeat-box" data-repeat>
               <div class="row-between"><h2 class="field-label">4. Play every week?</h2>${p.weekly.discount ? `<span class="badge badge-turf">Save ${Math.round(p.weekly.discount * 100)}%</span>` : ''}</div>
@@ -104,7 +111,9 @@
     },
     mount(el, ctx) {
       const p = S.pitches.getSync(ctx.params.id);
-      const sel = { date: ctx.query.date || isoDate(today()), duration: +ctx.query.dur || 1, hour: ctx.query.hour ? +ctx.query.hour : null, weeks: +ctx.query.weeks || 0 };
+      const court = S.pitches.isCourt(p);
+      const lengths = S.pitches.lengthsOf(p);
+      const sel = { date: ctx.query.date || isoDate(today()), duration: court ? (lengths.includes(+ctx.query.dur) ? +ctx.query.dur : lengths.includes(1.5) ? 1.5 : lengths[0]) : +ctx.query.dur || 1, hour: ctx.query.hour ? +ctx.query.hour : null, weeks: +ctx.query.weeks || 0 };
       const pol = S.pitches.policyOf(p.cancelPolicy);
       const slotsEl = el.querySelector('[data-slots]');
       const err = el.querySelector('[data-slot-err]');
@@ -132,7 +141,8 @@
       });
 
       const fits = (slots, h) => {
-        for (let x = h; x < h + sel.duration; x++) { const s = slots.find((y) => y.hour === Math.floor(x)); if (!s || s.status !== 'available') return false; }
+        const step = court ? 0.5 : 1;
+        for (let x = h; x < h + sel.duration; x += step) { const s = slots.find((y) => y.hour === (court ? x : Math.floor(x))); if (!s || s.status !== 'available') return false; }
         return true;
       };
 
@@ -148,7 +158,7 @@
           const inSel = sel.hour != null && s.hour >= sel.hour && s.hour < sel.hour + sel.duration;
           const st = inSel ? 'selected' : s.status;
           const label = { available: 'Available', booked: 'Booked', past: 'Passed', yours: 'Your booking', selected: 'Selected', blocked: 'Unavailable', closed: 'Closed' }[st];
-          return `<button class="slot is-${st} ${s.deal && st === 'available' ? 'has-deal' : ''}" style="--i:${si}" role="option" data-hour="${s.hour}" aria-selected="${inSel}" ${['booked', 'blocked'].includes(s.status) ? `data-wait="1" aria-disabled="true"` : s.status !== 'available' ? 'disabled' : ''} aria-label="${fmtHour(s.hour)}, ${label}${['booked', 'blocked'].includes(s.status) ? ', tap to join the waitlist' : ''}${s.peak ? ', peak price' : ''}${s.deal ? `, ${s.deal}% off` : ''}">
+          return `<button class="slot is-${st} ${s.deal && st === 'available' ? 'has-deal' : ''}" style="--i:${si}" role="option" data-hour="${s.hour}" aria-selected="${inSel}" ${['booked', 'blocked'].includes(s.status) && !court ? `data-wait="1" aria-disabled="true"` : s.status !== 'available' ? 'disabled' : ''} aria-label="${fmtHour(s.hour)}, ${label}${['booked', 'blocked'].includes(s.status) && !court ? ', tap to join the waitlist' : ''}${s.peak ? ', peak price' : ''}${s.deal ? `, ${s.deal}% off` : ''}">
             ${['booked', 'blocked'].includes(s.status) && S.waitlist.entryFor(p.id, sel.date, s.hour) ? `<i class="wl-on" title="You’re on the waitlist">${icon('bell', 11, 2.4)}</i>` : ''}<b class="num">${fmtHour(s.hour)}</b><span class="xs">${st === 'available' ? (s.deal ? `<s>${money(s.base).replace(' EGP', '')}</s> ${money(s.price).replace(' EGP', '')}` : money(s.price).replace(' EGP', '')) : label}</span>${s.deal && st === 'available' ? `<i class="deal-tag">−${s.deal}%</i>` : s.peak && st === 'available' ? '<i class="peak" title="Peak price"></i>' : ''}</button>`;
         }).join('') || '<p class="small muted">Closed on this day.</p>';
         if (!free) slotsEl.insertAdjacentHTML('afterend', '');
@@ -185,8 +195,8 @@
         sum.innerHTML = `<div class="sel-card">
             <div class="row-between"><span class="small soft">${fmtDate(sel.date, 'long')}</span><button class="link small" data-clear>Change</button></div>
             <b class="h4 num">${fmtRange(sel.hour, sel.duration)}</b>
-            <dl class="kv" style="margin-top:12px"><div><dt>Pitch (${sel.duration * 60} min)</dt><dd class="num">${money(q.pitchTotal)}</dd></div><div><dt>Service fee</dt><dd class="num">${money(q.serviceFee)}</dd></div><div class="total"><dt>Total</dt><dd class="num">${money(q.total)}</dd></div></dl>
-            <p class="xs muted" style="margin-top:8px">≈ ${money(q.perPlayer)} each for ${p.players} players. Full refund if you cancel up to ${pol.full} hours before.</p>
+            <dl class="kv" style="margin-top:12px"><div><dt>${court ? 'Court' : 'Pitch'} (${sel.duration * 60} min)</dt><dd class="num">${money(q.pitchTotal)}</dd></div><div><dt>Service fee</dt><dd class="num">${money(q.serviceFee)}</dd></div><div class="total"><dt>Total</dt><dd class="num">${money(q.total)}</dd></div></dl>
+            <p class="xs muted" style="margin-top:8px">≈ ${money(q.perPlayer)} each for ${p.players} players.${court && (p.racketPrice != null || p.ballsPrice != null) ? ' Add rackets and balls at the next step.' : ''} Full refund if you cancel up to ${pol.full} hours before.</p>
           </div>
           ${c.cta('Review booking', { href, size: 'lg', attrs: 'style="width:100%;justify-content:space-between"' })}`;
         bar.innerHTML = `<div class="grow"><b class="num">${money(q.total)}</b><span class="xs muted" style="display:block">${fmtDate(sel.date)} · ${fmtRange(sel.hour, sel.duration)}</span></div>${c.cta('Review', { href })}`;

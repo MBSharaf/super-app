@@ -54,5 +54,26 @@
     'photo-1564564295391-7f24f26f568b', 'photo-1625241152315-4a698f74ceb7', 'photo-1600603406200-5b2a104684ac',
   ];
 
+  /**
+   * Padel courts (2026-11-21): a drawn court seen from above — glass walls all round (Panoramic) or glass at the back and mesh
+   * on the sides (Classic) — so a court always shows a court. Used as the first photo of the demo padel clubs.
+   */
+  const court = (panoramic, turf, light) => {
+    const glass = panoramic ? '<rect x="40" y="40" width="720" height="420" rx="6" fill="none" stroke="#d9f2ff" stroke-opacity=".85" stroke-width="10"/>'
+      : '<path d="M40 40h720M40 460h720" stroke="#d9f2ff" stroke-opacity=".85" stroke-width="10"/><path d="M40 40v420M760 40v420" stroke="#ffffff" stroke-opacity=".35" stroke-width="6" stroke-dasharray="4 7"/>';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${turf}"/></linearGradient>`
+      + `<radialGradient id="l" cx=".5" cy=".1" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>`
+      + `<rect width="800" height="500" fill="#0b1f17"/><rect x="40" y="40" width="720" height="420" fill="url(#g)"/>`
+      + `<g stroke="#fff" stroke-width="5" fill="none"><path d="M400 40v420"/><path d="M190 40v420M610 40v420"/><path d="M190 250h420"/></g>`
+      + `<path d="M400 34v432" stroke="#0b1f17" stroke-width="9"/><path d="M400 34v432" stroke="#fff" stroke-width="3" stroke-dasharray="2 6"/>${glass}`
+      + `<rect width="800" height="500" fill="url(#l)"/><circle cx="520" cy="170" r="9" fill="#e6ff3a" stroke="#0b1f17" stroke-width="2"/></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  };
+  Object.assign(photos, {
+    courtPanoramicBlue: court(true, '#1f5fbf', '#3f86e8'), courtPanoramicGreen: court(true, '#1f7a4c', '#2fa36a'),
+    courtClassicBlue: court(false, '#24508f', '#3a73c4'), courtClassicTerracotta: court(false, '#b5532f', '#d97447'),
+    padelRacket: 'photo-1612534847738-b3af9bc31f0c', padelRackets: 'photo-1657704358775-ed705c7388d2', padelSet: 'photo-1658723826297-fe4d1b1e6600',
+  });
+
   SA.data.media = { u, photos, avatars, photo: (key, w, h) => u(photos[key] || key, w, h), avatar: (i, w = 120) => u(avatars[i % avatars.length], w, w) };
 })(window.SA);

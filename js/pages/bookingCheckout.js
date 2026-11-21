@@ -38,6 +38,9 @@
       const full = !(q.payAtPitch > 0);
       const points = S.loyalty.estimate(q.total);
       const pol = S.pitches.policyOf(p.cancelPolicy);
+      // Padel courts (2026-11-21): rackets and balls are rented at the club, paid when the club scans the QR code
+      const court = S.pitches.isCourt(p);
+      const rentals = court ? [['rackets', 'Rackets', 'racket', p.racketPrice, S.bookings.MAX_RACKETS, 'each'], ['balls', 'Tubes of balls', 'ball', p.ballsPrice, S.bookings.MAX_BALLS, 'a tube']].filter((r) => r[3] != null) : [];
       return `<div class="container narrow-checkout">
         <div class="page-head"><a class="back-link" href="#/pitches/${p.id}?date=${date}&hour=${hour}&dur=${dur}${weeks ? `&weeks=${weeks}` : ''}">${icon('chevronLeft', 16)} Change time</a>
           <h1 class="h1" style="margin-top:10px">${full ? 'Review and pay' : 'Review and pay the deposit'}</h1><div style="margin-top:14px">${c.steps(STEPS, 1)}</div></div>
@@ -47,7 +50,7 @@
               <div class="review-pitch">
                 <div class="media review-thumb"><img src="${media.photo(p.images[0], 400, 300)}" alt="" /></div>
                 <div class="grow"><h2 class="h3">${esc(p.name)}</h2><p class="small soft">${esc(p.address)}, ${esc(p.area)} · ${fmtKm(p.distanceKm)}</p>
-                  <div class="row wrap" style="margin-top:10px;--gap:8px"><span class="badge">${esc(p.format)}</span><span class="badge">${esc(p.surface)}</span>${weeks ? `<span class="badge badge-turf">${icon('repeat', 12)} Weekly</span>` : ''}</div></div>
+                  <div class="row wrap" style="margin-top:10px;--gap:8px">${court ? `<span class="badge badge-turf">${icon('padel', 12)} Padel</span><span class="badge">${p.panoramic ? 'Panoramic' : 'Classic'}</span>` : `<span class="badge">${esc(p.format)}</span>`}<span class="badge">${esc(p.surface)}</span>${weeks ? `<span class="badge badge-turf">${icon('repeat', 12)} Weekly</span>` : ''}</div></div>
               </div>
               <div class="when-grid">
                 <div>${icon('calendar', 18)}<span><span class="xs muted">${weeks ? 'Starts' : 'Date'}</span><b>${fmtDate(date, 'long')}</b></span></div>
@@ -57,7 +60,11 @@
                 <ul>${q.sessions.map((s, i) => `<li class="${s.available ? '' : 'is-off'}" style="--i:${i}"><b class="num">${fmtDate(s.date)}</b><span class="xs">${s.available ? money(s.pitchTotal) : 'Taken — skipped'}</span></li>`).join('')}</ul></div>` : ''}
               <div class="field" style="margin-top:18px"><label for="bk-players">How many players are coming?</label>
                 <select class="select" id="bk-players" name="players">${Array.from({ length: p.players }, (_, i) => i + 2).filter((n) => n <= p.players).map((n) => `<option ${n === p.players ? 'selected' : ''}>${n}</option>`).join('')}</select>
-                <span class="field-hint">Short on players? After booking you can post the match and players nearby can join.</span></div>
+                <span class="field-hint">${court ? 'Short of a four? After booking, open it as an Open Match and players at your level can join.' : 'Short on players? After booking you can post the match and players nearby can join.'}</span></div>
+              ${rentals.length ? `<div class="field" style="margin-top:18px"><span class="field-label">${icon('padel', 16)} Rent at the club</span>
+                ${rentals.map(([k, l, ic, price, max, unit]) => `<div class="rent-row"><span>${icon(ic, 16)} <b>${l}</b> <span class="xs muted">${money(price)} ${unit}</span></span>
+                  <span class="stepper" data-stepper="${k}" data-max="${max}" data-price="${price}"><button type="button" data-step="-1" aria-label="Fewer ${l.toLowerCase()}">−</button><output name="${k}Out">0</output><input type="hidden" name="${k}" value="0" /><button type="button" data-step="1" aria-label="More ${l.toLowerCase()}">+</button></span></div>`).join('')}
+                <span class="field-hint">Paid at the club when they scan your QR code — not part of the online payment.</span></div>` : ''}
             </section>
             <section class="panel panel-pad">
               <div class="notice turf deposit-note" style="margin-bottom:16px">${icon('wallet', 18)}${full
@@ -74,8 +81,9 @@
                   ${q.promo ? `<div><dt>Code ${esc(q.promo.code)} (${esc(q.promo.label)})</dt><dd class="num" style="color:var(--turf)">−${money(q.promo.amount)}</dd></div>` : ''}`}
               <div><dt>Service fee</dt><dd class="num">${money(q.serviceFee)}</dd></div>
               <div class="total"><dt>Total</dt><dd class="num">${money(q.total)}</dd></div>
-              ${full ? `<div class="deposit-row"><dt><b>Pay now — full amount</b><span class="xs muted" style="display:block">Nothing to pay at the pitch</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>` : `<div class="deposit-row"><dt><b>Pay now — deposit</b><span class="xs muted" style="display:block">${weeks ? `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of each game, at least ${money(S.db.settings().deposit?.min ?? 100)}` : `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of the total, at least ${money(S.db.settings().deposit?.min ?? 100)}`}</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>
-              <div><dt>Pay at the pitch</dt><dd class="num">${money(q.payAtPitch)}</dd></div>`}
+              ${rentals.length ? `<div data-extras-row hidden><dt>Rackets and balls <span class="xs muted" style="display:block">Paid at the club</span></dt><dd class="num" data-extras>${money(0)}</dd></div>` : ''}
+              ${full ? `<div class="deposit-row"><dt><b>Pay now — full amount</b><span class="xs muted" style="display:block">${court ? 'Nothing to pay at the club' : 'Nothing to pay at the pitch'}</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>` : `<div class="deposit-row"><dt><b>Pay now — deposit</b><span class="xs muted" style="display:block">${weeks ? `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of each game, at least ${money(S.db.settings().deposit?.min ?? 100)}` : `${Math.round((S.db.settings().deposit?.pct ?? 0.2) * 100)}% of the total, at least ${money(S.db.settings().deposit?.min ?? 100)}`}</span></dt><dd class="num"><b>${money(q.deposit)}</b></dd></div>
+              <div><dt>${court ? 'Pay at the club' : 'Pay at the pitch'}</dt><dd class="num">${money(q.payAtPitch)}</dd></div>`}
             </dl>
             <p class="xs muted" style="margin-top:6px">Prices include VAT ${Math.round(S.db.settings().vat * 100)}%. You can download the invoice after paying.</p>
             <p class="xs muted">${full ? 'Paid in full in the app — nothing to pay at the pitch.' : weeks ? 'No online payment for the rest — you pay it at the pitch each week.' : 'No online payment for the rest — you pay it at the pitch.'}</p>
@@ -95,6 +103,14 @@
       const form = el.querySelector('#book-form');
       if (!form) return;
       SA.ui.payment.bind(form, { name: 'bkpay' });
+      // Padel rentals: steppers within the club's limits; the amount is shown, paid at the club
+      el.querySelectorAll('[data-stepper]').forEach((st) => st.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-step]'); if (!b) return;
+        const input = st.querySelector('input'), v = Math.max(0, Math.min(+st.dataset.max, +input.value + +b.dataset.step));
+        input.value = v; st.querySelector('output').textContent = v;
+        const extras = [...el.querySelectorAll('[data-stepper]')].reduce((t, x) => t + +x.querySelector('input').value * +x.dataset.price, 0);
+        const row = el.querySelector('[data-extras-row]'); row.hidden = !extras; row.querySelector('[data-extras]').textContent = SA.core.utils.money(extras);
+      }));
       const weeks = +ctx.query.weeks || 0;
       el.querySelector('[data-code-form]')?.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -106,7 +122,8 @@
         const aside = el.querySelector('.legal-consent')?.parentElement || form;
         if (!SA.ui.legal.check(aside)) return;
         const payment = SA.ui.payment.read(form, { name: 'bkpay' });
-        const args = { pitchId: ctx.params.id, date: ctx.query.date, hour: +ctx.query.hour, duration: +ctx.query.dur || 1, payment, players: +form.players.value, waiver: true };
+        const args = { pitchId: ctx.params.id, date: ctx.query.date, hour: +ctx.query.hour, duration: +ctx.query.dur || 1, payment, players: +form.players.value, waiver: true,
+          rackets: +(form.rackets?.value || 0), balls: +(form.balls?.value || 0) };
         try {
           if (weeks) {
             const r = await SA.ui.payment.process(() => S.bookings.createSeries({ ...args, weeks }), { root: form, label: `Booking ${weeks} weeks`, methodHint: payment.method });
@@ -178,10 +195,11 @@
           <div class="ticket-grid">
             <div><span class="xs muted">Date</span><b>${fmtDate(b.date, 'long')}</b></div>
             <div><span class="xs muted">Time</span><b class="num">${fmtRange(b.hour, b.duration)}</b></div>
-            <div><span class="xs muted">Pitch</span><b>${esc(b.format)} · ${b.players} players</b></div>
+            ${b.sport === 'padel' ? `<div><span class="xs muted">Court</span><b>Padel · ${Math.round(b.duration * 60)} min · ${b.players} players</b></div>` : `<div><span class="xs muted">Pitch</span><b>${esc(b.format)} · ${b.players} players</b></div>`}
             <div><span class="xs muted">Payment</span><b>${esc(b.payment.label)}</b></div>
+            ${b.extras > 0 ? `<div><span class="xs muted">Rent at the club</span><b class="num">${money(b.extras)}</b><span class="xs muted">${[b.rackets ? `${b.rackets} racket${b.rackets > 1 ? 's' : ''}` : '', b.balls ? `${b.balls} tube${b.balls > 1 ? 's' : ''} of balls` : ''].filter(Boolean).join(' · ')} · paid at the club</span></div>` : ''}
             ${restAtPitch ? `<div><span class="xs muted">${pk ? 'Deposits paid' : 'Deposit paid'}</span><b class="num">${money(pk ? series.reduce((t, x) => t + (x.deposit || 0), 0) : b.deposit)}</b><span class="xs muted">of ${money(pk ? pkgPaid : b.total)}${pk ? ' for the package' : ''}</span></div>
-            <div><span class="xs muted">${balancePaid ? 'Paid at the pitch' : 'Pay at the pitch'}</span><b class="num" style="color:${balancePaid ? 'var(--turf)' : 'var(--blaze)'}">${money(b.payAtPitch)}</b><span class="xs muted">${balancePaid ? 'Paid to the venue at check-in' : cancelled ? 'Not due — cancelled' : 'Cash to the venue when they scan your QR'}</span></div>` : ''}
+            <div><span class="xs muted">${b.sport === 'padel' ? (balancePaid ? 'Paid at the club' : 'Pay at the club') : balancePaid ? 'Paid at the pitch' : 'Pay at the pitch'}</span><b class="num" style="color:${balancePaid ? 'var(--turf)' : 'var(--blaze)'}">${money(b.payAtPitch)}</b><span class="xs muted">${balancePaid ? 'Paid to the venue at check-in' : cancelled ? 'Not due — cancelled' : 'Cash to the venue when they scan your QR'}</span></div>` : ''}
             <div ${restAtPitch ? 'hidden' : ''}><span class="xs muted">${pk ? 'Package paid' : b.deposit != null ? 'Paid in full' : 'Amount paid'}</span><b class="num">${money(pk ? pkgPaid : b.total)}</b>${b.deposit != null && !pk ? '<span class="xs muted">Nothing to pay at the pitch</span>' : ''}${pk ? `<span class="xs muted">${pk.total} games${b.discountAmount ? ` · ${money(series.reduce((t, x) => t + (x.discountAmount || 0), 0))} weekly discount` : ''}</span>` : b.discountAmount ? `<span class="xs" style="color:var(--turf)">${money(b.discountAmount)} weekly discount</span>` : ''}</div>
             <div><span class="xs muted">Status</span><b style="color:${cancelled ? 'var(--danger)' : 'var(--turf)'}">${statusLabel}${cancelled && b.refund ? ` · ${money(b.refund)} refunded` : ''}${checkedIn ? ` · ${new Date(venue.checkedInAt || Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}` : ''}</b></div>
           </div>

@@ -25,7 +25,14 @@
       host: 11, pricePerPlayer: 70, notes: 'Late game after work. We keep score and play to win, but respect first.', needsGK: false, postedHoursAgo: 4 },
     { id: 'm-1009', pitchId: 'p-smouha-seven', dayOffset: 1, hour: 21, duration: 1, total: 14, filled: 11, level: 'Intermediate', gender: 'Men', type: '7 v 7',
       host: 14, pricePerPlayer: 60, notes: 'Alexandria regulars, need three more. Meet 15 minutes early to warm up.', needsGK: false, postedHoursAgo: 2 },
+    // Padel Open Matches: always 4 players, level on the 1–7 scale, the court cost split by 4
+    { id: 'm-1101', sport: 'padel', pitchId: 'p-padel-smash-1', dayOffset: 0, hour: 20.5, duration: 1.5, total: 4, filled: 3, level: 'Level 4', gender: 'Mixed', type: 'Open Match',
+      host: 1, pricePerPlayer: 375, notes: 'Friendly Open Match on the panoramic court. We need one more around level 4, any side.', needsGK: false, postedHoursAgo: 2 },
+    { id: 'm-1102', sport: 'padel', pitchId: 'p-padel-zayed-hub', dayOffset: 1, hour: 19, duration: 1.5, total: 4, filled: 2, level: 'Level 3', gender: 'Mixed', type: 'Open Match',
+      host: 19, pricePerPlayer: 338, notes: 'Relaxed doubles after work. Rackets can be rented at the club.', needsGK: false, postedHoursAgo: 5 },
+    { id: 'm-1103', sport: 'padel', pitchId: 'p-padel-maadi-box', dayOffset: 2, hour: 21, duration: 1, total: 4, filled: 3, level: 'Level 6', gender: 'Men', type: 'Open Match',
+      host: 6, pricePerPlayer: 213, notes: 'Fast game, good lobs and smashes expected. Looking for a drive-side player.', needsGK: false, postedHoursAgo: 1 },
   ];
 
-  SA.data.matches = { list: matches, people, levels: ['Beginner', 'Intermediate', 'Advanced', 'Competitive'], genders: ['Mixed', 'Men', 'Women'] };
+  SA.data.matches = { list: matches, people, levels: ['Beginner', 'Intermediate', 'Advanced', 'Competitive'], padelLevels: ['Level 1', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6', 'Level 7'], padelSides: [['Either', 'Either side'], ['Drive', 'Drive side (right)'], ['Backhand', 'Backhand side (left)']], genders: ['Mixed', 'Men', 'Women'] };
 })(window.SA);

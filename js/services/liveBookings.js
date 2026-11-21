@@ -41,7 +41,8 @@
     const p = withDistance({
       ...prev, id: idOf(c.slug), slug: c.slug, live: true, status: 'active', name: c.name, venue: c.venueName,
       area: ar() ? c.areaAr : c.areaEn, city: c.governorateEn, lat: +c.lat, lng: +c.lng,
-      format: `${c.format}-a-side`, players: c.format * 2, surface: SURFACE[c.surface] || c.surface, indoor: c.isIndoor,
+      ...(c.sport === 'Padel' ? { sport: 'padel', format: 'Padel', players: 4, panoramic: !!c.isPanoramic } : { sport: 'football', format: `${c.format}-a-side`, players: c.format * 2 }),
+      surface: SURFACE[c.surface] || c.surface, indoor: c.isIndoor,
       price: +c.pricePerHour, peakPrice: +(c.peakPricePerHour ?? c.pricePerHour), rating: +c.rating, reviews: c.reviewsCount,
       images: prev.images || [photo(c.photo)], facilities: c.facilities || [], tags: prev.tags || [],
       weekly: { enabled: false }, open: prev.open || [9, 24],
@@ -62,8 +63,9 @@
       address: d.address, about: (ar() ? d.descriptionAr : d.descriptionEn) || d.descriptionEn || '',
       images: d.photos.length ? d.photos.map(photo) : p.images, cancelPolicy: d.cancellationPolicy.key,
       open: openToday(d.openingHours), allowCash: d.allowCash, paymentMode: d.paymentMode || 'Deposit', company: d.partnerName, ownerId: null,
+      durations: d.durations || [], racketPrice: d.racketPrice ?? null, ballsPrice: d.ballsPrice ?? null,
       // Weekly packages: the sizes the admin approved (each with its own discount)
-      weekly: d.packageOptions.length
+      weekly: d.packageOptions.length && d.card.sport !== 'Padel'
         ? { enabled: true, discount: Math.max(...d.packageOptions.map((o) => +o.discountPercent)) / 100, sizes: d.packageOptions.map((o) => o.matchCount), options: d.packageOptions }
         : { enabled: false, discount: 0 },
     });
@@ -73,11 +75,15 @@
   const STATUS = { free: 'available', booked: 'booked', held: 'booked', closed: 'blocked', past: 'past' };
   const mine = (pitchId, date, hour) => [...bookings.values()].some((b) => b.pitchId === pitchId && b.status === 'confirmed' && b.date === date && hour >= b.hour && hour < b.hour + b.duration);
 
-  /** One availability day → the site's slots */
-  const toSlots = (id, day) => day.hours.map((h) => {
+  /** One availability day → the site's slots (a padel court's are half hours: 19.5 = 7:30 PM, at half the hour's price) */
+  const toSlots = (id, day) => (day.halves?.length ? day.halves.map((h) => {
+    const t = h.hour + h.minute / 60;
+    const status = h.status === 'booked' && mine(id, h.date, h.index / 2) ? 'yours' : STATUS[h.status] || 'blocked';
+    return { hour: t, status, price: +h.price, base: +h.price, deal: 0, peak: h.isPeak, waiting: 0 };
+  }) : day.hours.map((h) => {
     const status = h.status === 'booked' && mine(id, h.date, h.calendarHour) ? 'yours' : STATUS[h.status] || 'blocked';
     return { hour: h.hour, status, price: +h.price, base: +h.basePrice, deal: Math.round(+h.offerPercent), peak: h.isPeak, waiting: h.waiting };
-  });
+  }));
 
   const loadDays = async (id, from = isoDate(today()), n = SA.config.bookingDays || 31) => {
     const r = await api.get(`/pitches/${slugOf(id)}/availability?from=${from}&days=${n}`);
@@ -101,6 +107,8 @@
     if (f.q) qs.set('q', f.q);
     if (f.maxPrice) qs.set('maxPrice', f.maxPrice);
     if (parseInt(f.format, 10)) qs.set('format', parseInt(f.format, 10));
+    if (f.sport === 'padel') qs.set('sport', 'Padel');
+    if (f.walls) qs.set('panoramic', f.walls === 'panoramic');
     const res = await api.get(`/pitches?${qs}`);
     let out = (res.items || res).map(fromCard);
     await Promise.all(out.map((p) => loadDays(p.id, date, 1).then(() => { p.freeSlots = (days.get(`${p.id}|${date}`) || []).filter((s) => s.status === 'available').length; }).catch(() => { p.freeSlots = null; })));
@@ -148,7 +156,8 @@
     const b = {
       id: r.code, code: r.code, live: true, pitchId: id, pitchName: r.pitchName, address: r.address,
       area: p.area || '', city: p.city || '', image: p.images?.[0] || 'nightMatch', format: p.format || '',
-      date: r.date, hour: r.startHour, duration: r.duration, players: prev.players || p.players || 10,
+      date: r.date, hour: r.startHour + (r.startMinute || 0) / 60, duration: r.minutes ? r.minutes / 60 : r.duration, players: prev.players || p.players || 10,
+      ...(r.sport === 'Padel' ? { sport: 'padel', minutes: r.minutes, rackets: r.rackets, balls: r.balls, extras: +r.extrasAmount } : {}),
       listPrice: +r.pitchAmount, pitchTotal: +r.pitchAmount, serviceFee: +r.serviceFee, total: +r.total,
       discount: 0, discountAmount: 0, promo: null, publishedMatchId: prev.publishedMatchId || null,
       payment: r.payAtVenue ? { method: 'cash', label: 'Pay at the venue' } : { method: 'card', label: +r.deposit > 0 ? 'Deposit paid in the app' : 'Paid in the app' },
@@ -167,27 +176,33 @@
     return b;
   };
 
+  /** Padel courts: the start's half hour and the length in minutes (a football pitch books whole hours) */
+  const timeOf = (pitchId, hour, duration) => (pitches.get(pitchId)?.sport === 'padel'
+    ? { hour: Math.floor(hour), minute: Math.round((hour % 1) * 60), minutes: Math.round(duration * 60), duration: Math.ceil(duration) }
+    : { hour, duration });
   const hold = async ({ pitchId, date, hour, duration }) => {
-    const h = await api.post('/bookings/hold', { pitchSlug: slugOf(pitchId), date, hour, duration });
-    return { listPrice: +h.pitchAmount, pitchTotal: +h.pitchAmount, serviceFee: +h.serviceFee, total: +h.total, deposit: +h.deposit, payAtPitch: +h.balanceDue, discount: 0, discountAmount: 0, promo: null, expiresAt: Date.parse(h.expiresAt) };
+    const h = await api.post('/bookings/hold', { pitchSlug: slugOf(pitchId), date, ...timeOf(pitchId, hour, duration) });
+    return { listPrice: +h.pitchAmount, pitchTotal: +h.pitchAmount, serviceFee: +h.serviceFee, total: +h.total, deposit: +h.deposit, payAtPitch: +h.balanceDue, discount: 0, discountAmount: 0, promo: null, expiresAt: Date.parse(h.expiresAt),
+      ...B.extrasFor(pitches.get(pitchId), 0, 0) };
   };
 
   /** Price from the hour grid (the server confirms it when the hours are held at checkout) */
-  const quote = ({ pitchId, date, hour, duration, code = '' }) => {
+  const quote = ({ pitchId, date, hour, duration, code = '', rackets = 0, balls = 0 }) => {
     if (code) throw new ApiError('Promo codes aren’t available yet. They arrive with online payments.', 'invalid');
     const p = pitches.get(pitchId);
     const slots = days.get(`${pitchId}|${date}`) || [];
     let list = 0;
-    for (let h = hour; h < hour + duration; h++) list += slots.find((s) => s.hour === h)?.price ?? p.price;
+    const step = p.sport === 'padel' ? 0.5 : 1;
+    for (let h = hour; h < hour + duration; h += step) list += slots.find((s) => s.hour === h)?.price ?? p.price * step;
     const serviceFee = Math.round(list * SA.services.db.settings().serviceFee);
     const total = list + serviceFee;
-    return { listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...B.depositFor(total, p.paymentMode) };
+    return { ...B.extrasFor(p, rackets, balls), listPrice: list, discountAmount: 0, discount: 0, promo: null, platformOff: 0, pitchTotal: list, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...B.depositFor(total, p.paymentMode) };
   };
 
-  const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false, code }) => {
+  const create = async ({ pitchId, date, hour, duration, payment, players, waiver = false, code, rackets = 0, balls = 0 }) => {
     SA.services.legal?.requireWaiver(waiver, 'booking');
     const r = await api.post('/bookings', {
-      pitchSlug: slugOf(pitchId), date, hour, duration, payAtVenue: false, acceptWaiver: !!waiver,
+      pitchSlug: slugOf(pitchId), date, ...timeOf(pitchId, hour, duration), rackets: +rackets || 0, balls: +balls || 0, payAtVenue: false, acceptWaiver: !!waiver,
       promoCode: code || undefined, payFromWallet: false, // deposit: online card payment; a Super Points voucher may pay first
       voucherCode: payment?.voucher || undefined,
     });

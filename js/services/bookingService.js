@@ -50,6 +50,31 @@
     return null;
   };
 
+  /**
+   * Padel courts (2026-11-21): a length the court offers, from the hour or the half hour, every half hour free.
+   * Rackets and balls are rented at the club: priced here, paid at the QR scan, kept out of the total and the deposit.
+   */
+  const MAX_RACKETS = 4, MAX_BALLS = 3;
+  const extrasFor = (p, rackets = 0, balls = 0) => {
+    const r = Math.max(0, Math.min(MAX_RACKETS, Math.round(+rackets || 0))), t = Math.max(0, Math.min(MAX_BALLS, Math.round(+balls || 0)));
+    if (!PS().isCourt(p)) return { rackets: 0, balls: 0, extras: 0 };
+    return { rackets: p.racketPrice != null ? r : 0, balls: p.ballsPrice != null ? t : 0, extras: (p.racketPrice != null ? r * p.racketPrice : 0) + (p.ballsPrice != null ? t * p.ballsPrice : 0) };
+  };
+  const checkCourtTime = (p, hour, duration) => {
+    if (!PS().isCourt(p)) return;
+    if (!PS().lengthsOf(p).includes(duration)) throw new ApiError(`This court is booked for ${PS().lengthsOf(p).map((d) => d * 60).join(', ')} minutes.`, 'duration_not_offered');
+    if ((hour * 2) % 1 !== 0) throw new ApiError('Start on the hour or the half hour.', 'invalid');
+  };
+  const rented = (b) => (b.extras > 0 ? ` · rackets and balls ${b.extras.toLocaleString()} EGP at the club` : '');
+  const freeFor = (p, slots, hour, duration) => {
+    const step = PS().isCourt(p) ? 0.5 : 1;
+    for (let h = hour; h < hour + duration; h += step) {
+      const s = slots.find((x) => x.hour === (step === 1 ? Math.floor(h) : h));
+      if (!s || s.status !== 'available') return false;
+    }
+    return true;
+  };
+
   const sessionsFor = (p, date, hour, duration, weeks) => {
     const out = [];
     for (let k = 0; k < weeks; k++) {
@@ -63,7 +88,7 @@
   };
 
   const bookingService = {
-    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode, depositFor, fullOnline,
+    WEEK_OPTIONS, checkInCode, parseCheckInCode, packageCode, depositFor, fullOnline, extrasFor, MAX_RACKETS, MAX_BALLS,
     /** What was paid in the app for a booking (the deposit; older bookings were paid in full) */
     paidOnline: (b) => (b.deposit != null ? b.deposit : b.total),
     /**
@@ -88,7 +113,7 @@
     },
 
     /** Price breakdown for a selection (pure — used by the UI before payment). */
-    quote({ pitchId, date, hour, duration, discount = 0, code = '' }) {
+    quote({ pitchId, date, hour, duration, discount = 0, code = '', rackets = 0, balls = 0 }) {
       const p = PS().getSync(pitchId);
       const hours = [];
       for (let h = hour; h < hour + duration; h += 0.5) hours.push(h);
@@ -100,7 +125,7 @@
       const pitchTotal = list - off - (promo && !promo.platform ? promo.amount : 0);
       const serviceFee = Math.round(pitchTotal * SA.services.db.settings().serviceFee);
       const total = pitchTotal + serviceFee - (sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0);
-      return { listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...depositFor(total, p.paymentMode) };
+      return { ...extrasFor(p, rackets, balls), listPrice: list, discountAmount: off, discount, promo, platformOff: sa ? Math.min(sa.amount, pitchTotal + serviceFee) : 0, pitchTotal, serviceFee, total, perPlayer: Math.ceil(total / p.players), ...depositFor(total, p.paymentMode) };
     },
 
     /** Weekly booking: every session's availability and price, using the pitch's weekly discount */
@@ -115,18 +140,15 @@
     },
 
     /** Checks the slot is still free, takes payment, creates the booking. */
-    async create({ pitchId, date, hour, duration, payment, players, code = '', waiver = false }) {
+    async create({ pitchId, date, hour, duration, payment, players, code = '', waiver = false, rackets = 0, balls = 0 }) {
       SA.services.legal?.requireWaiver(waiver, 'booking');
       SA.services.user.assertActive();
       SA.services.content?.assertOpen('bookings');
       const p = PS().getSync(pitchId);
       if (!PS().bookable(p)) throw new ApiError('This pitch isn’t taking bookings right now.', 'closed');
-      const slots = PS().slotsSync(pitchId, date);
-      for (let h = hour; h < hour + duration; h++) {
-        const s = slots.find((x) => x.hour === Math.floor(h));
-        if (!s || s.status !== 'available') throw new ApiError('Someone just booked part of this time. Pick another slot.', 'slot_taken');
-      }
-      const q = bookingService.quote({ pitchId, date, hour, duration, code });
+      checkCourtTime(p, hour, duration);
+      if (!freeFor(p, PS().slotsSync(pitchId, date), hour, duration)) throw new ApiError('Someone just booked part of this time. Pick another slot.', 'slot_taken');
+      const q = bookingService.quote({ pitchId, date, hour, duration, code, rackets, balls });
       onlineOnly(payment, { voucher: true });
       const paid = await SA.services.payment.charge({ ...payment, amount: q.deposit, label: `${q.payAtPitch > 0 ? 'Booking deposit' : 'Booking'} — ${p.name}` });
       return request(() => {
@@ -136,9 +158,9 @@
         store.set((s) => ({ bookings: [booking, ...s.bookings] }), 'booking:new');
         bookingService._toLedger(booking);
         db().log('customer', 'booking.created', `New app booking ${booking.id} at ${p.name}`, booking.id);
-        SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}. ${booking.payAtPitch > 0 ? `Deposit ${booking.deposit.toLocaleString()} EGP paid; pay ${booking.payAtPitch.toLocaleString()} EGP at the pitch.` : `Paid in full: ${booking.deposit.toLocaleString()} EGP. Nothing to pay at the pitch.`}`, link: `/booking/${booking.id}` });
+        SA.services.user.notify({ kind: 'booking', title: 'Booking confirmed', body: `${p.name}, ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)}. ${booking.payAtPitch > 0 ? `Deposit ${booking.deposit.toLocaleString()} EGP paid; pay ${booking.payAtPitch.toLocaleString()} EGP at the pitch.` : `Paid in full: ${booking.deposit.toLocaleString()} EGP. Nothing to pay at the pitch.`}${rented(booking)}`, link: `/booking/${booking.id}` });
         // The pitch partner is told too
-        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · ${booking.payAtPitch > 0 ? `deposit ${booking.deposit.toLocaleString()} EGP paid in the app · collect ${booking.payAtPitch.toLocaleString()} EGP at the pitch` : `paid in full in the app (${booking.deposit.toLocaleString()} EGP) · nothing to collect · Super Malaab pays your share after the match`}`, link: '#/dash/bookings' });
+        SA.services.notify?.toAccount(p.ownerId, { cat: 'bookings', tone: 'turf', title: `New booking at ${p.name}`, body: `${SA.core.store.get().user?.name || 'A customer'} · ${SA.core.utils.fmtDate(date)} at ${SA.core.utils.fmtHour(hour)} · ${booking.payAtPitch > 0 ? `deposit ${booking.deposit.toLocaleString()} EGP paid in the app · collect ${booking.payAtPitch.toLocaleString()} EGP at the pitch` : `paid in full in the app (${booking.deposit.toLocaleString()} EGP) · nothing to collect · Super Malaab pays your share after the match`}${rented(booking)}`, link: '#/dash/bookings' });
         return booking;
       });
     },
@@ -175,6 +197,7 @@
     _record(p, { date, hour, duration, players, q, paid, extra = {} }) {
       return {
         id: bookingId(), pitchId: p.id, pitchName: p.name, area: p.area, city: p.city, image: p.images[0], format: p.format,
+        ...(PS().isCourt(p) ? { sport: 'padel', minutes: Math.round(duration * 60), rackets: q.rackets || 0, balls: q.balls || 0, extras: q.extras || 0 } : {}),
         date, hour, duration, players: players || p.players, listPrice: q.listPrice, discount: q.discount || 0, discountAmount: q.discountAmount || 0, promo: q.promo ? { code: q.promo.code, amount: q.promo.amount } : null, pitchTotal: q.pitchTotal, serviceFee: q.serviceFee, total: q.total, perPlayer: q.perPlayer, deposit: q.deposit, payAtPitch: q.payAtPitch,
         payment: { method: paid.method, label: paid.label, ref: paid.id }, status: 'confirmed', createdAt: Date.now(), publishedMatchId: null, policy: p.cancelPolicy || 'standard', ...extra,
       };

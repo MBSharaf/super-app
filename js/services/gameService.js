@@ -114,7 +114,11 @@
       if (r.player.id === me().id) {
         store.set((s) => ({ joinedMatchIds: [...new Set([...s.joinedMatchIds, r.matchId])], matchRequests: { ...s.matchRequests, [r.matchId]: { status: 'joined', at: Date.now(), payment: 'Paid online' } } }), 'match');
         notifyMe({ title: by === 'auto' ? 'You’re in!' : 'The host accepted you', body: `${r.pitchName}, ${relDay(r.date)} at ${fmtHour(r.hour)}. Your share is paid.`, link: `/players/${r.matchId}` });
-      } else if (m?.isMine) addParticipant(r.matchId, r.player, r.position);
+      } else if (m?.isMine) {
+        addParticipant(r.matchId, r.player, r.position);
+        // The last spot is taken: the game closes and the host hears about it
+        if (m.spotsLeft - 1 <= 0) notifyMe({ title: m.sport === 'padel' ? 'Your Open Match is full' : 'Your game is full', body: `${m.total} of ${m.total} players at ${m.pitch.name}, ${relDay(m.date)} at ${fmtHour(m.hour)}. New requests go to the waitlist.`, link: `/players/${r.matchId}` });
+      }
       return db().find('gameRequests', r.id);
     },
     async decline(requestId, reason = '') {

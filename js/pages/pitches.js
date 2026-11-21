@@ -4,7 +4,12 @@
   const c = SA.ui.c;
   const S = SA.services;
 
-  const state = { q: '', format: '', indoor: '', maxPrice: '', minRating: '', sort: 'distance', date: '', onlyAvailable: false, view: 'list' };
+  const state = { sport: 'football', q: '', format: '', walls: '', indoor: '', maxPrice: '', minRating: '', sort: 'distance', date: '', onlyAvailable: false, view: 'list' };
+  const padel = () => state.sport === 'padel';
+  /** Football or padel (2026-11-21): one search, two sports */
+  const sportSwitch = () => `<nav class="sport-switch" aria-label="Sport">
+      <a href="#/pitches" ${padel() ? '' : 'aria-current="page"'}>${icon('pitch', 17)} Football</a>
+      <a href="#/pitches?sport=padel" ${padel() ? 'aria-current="page"' : ''}>${icon('padel', 17)} Padel</a></nav>`;
 
   const locBanner = (loc) => {
     if (!loc) return `<div class="loc-prompt">
@@ -23,12 +28,14 @@
 
   const filtersHTML = () => `
     <div class="filter-row">
-      <div class="chips" role="group" aria-label="Pitch size">${['', '5-a-side', '7-a-side', '11-a-side'].map((f) => `<button class="chip" data-f="format" data-v="${f}" aria-pressed="${state.format === f}">${f || 'All sizes'}</button>`).join('')}</div>
+      ${padel()
+        ? `<div class="chips" role="group" aria-label="Court walls">${[['', 'All courts'], ['panoramic', 'Panoramic'], ['classic', 'Classic']].map(([v, l]) => `<button class="chip" data-f="walls" data-v="${v}" aria-pressed="${state.walls === v}">${l}</button>`).join('')}</div>`
+        : `<div class="chips" role="group" aria-label="Pitch size">${['', '5-a-side', '7-a-side', '11-a-side'].map((f) => `<button class="chip" data-f="format" data-v="${f}" aria-pressed="${state.format === f}">${f || 'All sizes'}</button>`).join('')}</div>`}
       <div class="chips" role="group" aria-label="Setting">
         <button class="chip" data-f="indoor" data-v="indoor" aria-pressed="${state.indoor === 'indoor'}">${icon('ac', 15)} Indoor</button>
         <button class="chip" data-f="indoor" data-v="outdoor" aria-pressed="${state.indoor === 'outdoor'}">Outdoor</button>
         <button class="chip" data-f="minRating" data-v="4.6" aria-pressed="${state.minRating === '4.6'}">${icon('star', 13)} 4.6+</button>
-        <button class="chip" data-f="maxPrice" data-v="700" aria-pressed="${state.maxPrice === '700'}">Under 700 EGP</button>
+        ${padel() ? `<button class="chip" data-f="maxPrice" data-v="800" aria-pressed="${state.maxPrice === '800'}">Under 800 EGP</button>` : `<button class="chip" data-f="maxPrice" data-v="700" aria-pressed="${state.maxPrice === '700'}">Under 700 EGP</button>`}
         <button class="chip" data-f="onlyAvailable" data-v="1" aria-pressed="${state.onlyAvailable}">Free slots only</button>
       </div>
     </div>`;
@@ -36,16 +43,22 @@
   SA.pages.pitches = {
     title: 'Book a pitch — Super Malaab',
     render(ctx) {
+      const sport = ctx.query.sport === 'padel' ? 'padel' : 'football';
+      if (sport !== state.sport) Object.assign(state, { sport, format: '', walls: '', maxPrice: '' });
+      this.title = padel() ? 'Book a padel court — Super Malaab' : 'Book a pitch — Super Malaab';
       if (ctx.query.sort) state.sort = ctx.query.sort;
       if (ctx.query.q !== undefined) state.q = ctx.query.q;
       state.date ||= isoDate(today());
       return `
-        ${c.pageHead({ crumbs: [['Home', '#/'], ['Book a pitch']], title: 'Book a pitch', text: 'Live availability from pitches around you. Pick a time, pay, and you’re on.', actions: `<a class="btn btn-outline" href="#/bookings">${icon('ticket', 16)} My bookings</a>` })}
+        ${c.pageHead({ crumbs: [['Home', '#/'], [padel() ? 'Book a padel court' : 'Book a pitch']], title: padel() ? 'Book a padel court' : 'Book a pitch',
+          text: padel() ? 'Panoramic and classic courts near you. Book 60, 90 or 120 minutes from any half hour, then fill your four.' : 'Live availability from pitches around you. Pick a time, pay, and you’re on.',
+          actions: `<a class="btn btn-outline" href="#/bookings">${icon('ticket', 16)} My bookings</a>` })}
         <div class="container">
+          ${sportSwitch()}
           <div class="loc-slot">${locBanner(S.location.current())}</div>
           <div class="search-panel">
             <div class="search-box">
-              <div class="input-icon grow">${icon('search', 18)}<input class="input" id="pitch-search" type="search" placeholder="Search a pitch or area — e.g. Maadi, Zayed, New Cairo" value="${esc(state.q)}" autocomplete="off" aria-label="Search pitches or areas" /></div>
+              <div class="input-icon grow">${icon('search', 18)}<input class="input" id="pitch-search" type="search" placeholder="${padel() ? 'Search a club or area — e.g. New Cairo, Zayed' : 'Search a pitch or area — e.g. Maadi, Zayed, New Cairo'}" value="${esc(state.q)}" autocomplete="off" aria-label="Search pitches or areas" /></div>
               <div class="area-suggest" hidden></div>
             </div>
             <label class="sort-select"><span class="sr-only">Sort by</span>${icon('sort', 16)}<select class="select" id="pitch-sort">
@@ -78,8 +91,8 @@
         const items = await S.pitches.list({ ...state, maxPrice: +state.maxPrice || 0, minRating: +state.minRating || 0 });
         lastItems = items;
         list.classList.remove('is-loading');
-        count.textContent = `${plural(items.length, 'pitch', 'pitches')} · ${fmtDate(state.date, 'long')}`;
-        list.innerHTML = items.length ? items.map((p) => cards.pitch(p, { date: state.date })).join('') : c.empty({ icon: 'pitch', title: 'No pitches match these filters', text: 'Try another area, remove a filter or pick a different day.', action: '<button class="btn btn-outline" data-act="clear">Clear filters</button>' });
+        count.textContent = `${padel() ? plural(items.length, 'court', 'courts') : plural(items.length, 'pitch', 'pitches')} · ${fmtDate(state.date, 'long')}`;
+        list.innerHTML = items.length ? items.map((p) => cards.pitch(p, { date: state.date })).join('') : c.empty({ icon: padel() ? 'padel' : 'pitch', title: padel() ? 'No courts match these filters' : 'No pitches match these filters', text: 'Try another area, remove a filter or pick a different day.', action: '<button class="btn btn-outline" data-act="clear">Clear filters</button>' });
         SA.core.motion.enhance(list);
         if (map) {
           map.setUser(center());
@@ -109,12 +122,12 @@
         const a = e.target.closest('[data-act]');
         if (a?.dataset.act === 'gps') askGPS(a);
         if (a?.dataset.act === 'focus-search') el.querySelector('#pitch-search').focus();
-        if (a?.dataset.act === 'clear') { Object.assign(state, { q: '', format: '', indoor: '', maxPrice: '', minRating: '', onlyAvailable: false }); el.querySelector('#pitch-search').value = ''; el.querySelector('.filters-slot').innerHTML = filtersHTML(); load(); }
+        if (a?.dataset.act === 'clear') { Object.assign(state, { q: '', format: '', walls: '', indoor: '', maxPrice: '', minRating: '', onlyAvailable: false }); el.querySelector('#pitch-search').value = ''; el.querySelector('.filters-slot').innerHTML = filtersHTML(); load(); }
         const f = e.target.closest('[data-f]');
         if (f) {
           const k = f.dataset.f, v = f.dataset.v;
           if (k === 'onlyAvailable') state.onlyAvailable = !state.onlyAvailable;
-          else state[k] = state[k] === v && k !== 'format' ? '' : v;
+          else state[k] = state[k] === v && !['format', 'walls'].includes(k) ? '' : v;
           el.querySelector('.filters-slot').innerHTML = filtersHTML();
           load();
         }

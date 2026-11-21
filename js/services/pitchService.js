@@ -10,6 +10,13 @@
   const db = SA.services.db;
 
   const all = () => db.all('pitches').filter((p) => !p.deleted);
+  /**
+   * Padel courts (2026-11-21): booked from any half hour for the 60, 90 or 120 minutes the owner offers. Times are hours
+   * with halves (19.5 = 7:30 PM) and a booking's duration is in hours (1.5 = 90 minutes), so the same "covers" checks work.
+   */
+  const isCourt = (p) => p?.sport === 'padel';
+  const COURT_MINUTES = [60, 90, 120];
+  const courtBlock = 1.5; // demo bookings on padel courts come in 90-minute games
   // A pitch is listed when it is open and its owner's account isn't suspended by Super Malaab
   const ownerOk = (p) => db.find('accounts', p.ownerId)?.status !== 'suspended';
   const reviewed = (p) => !p.review || p.review === 'approved';
@@ -62,6 +69,10 @@
     if (!p.seed || !p.seedSnapshot) return false;
     const [o, c] = p.seedSnapshot.open;
     if (h < o || h >= c) return false;
+    if (isCourt(p)) {
+      h = o + Math.floor((h - o) / courtBlock) * courtBlock;   // the 90-minute game covering this half hour
+      if (h + courtBlock > c) return false;
+    }
     const d = parseISO(dateISO).getTime();
     if (d < db.raw().platformSince) return false;
     // New activity is modelled across the whole booking window (the coming month)
@@ -88,17 +99,21 @@
     const mine = store.get().bookings.filter((b) => b.pitchId === p.id && b.date === dateISO && b.status !== 'cancelled');
     const real = db.all('bookings').filter((b) => b.pitchId === p.id && b.date === dateISO && b.status !== 'cancelled');
     const slots = [];
-    for (let h = p.open[0]; h < p.open[1]; h++) {
+    const court = isCourt(p), step = court ? 0.5 : 1, part = court ? 2 : 1;
+    const nowH = now.getHours() + (court ? now.getMinutes() / 60 : 0);
+    for (let h = p.open[0]; h < p.open[1]; h += step) {
       let status = 'available', booking = null;
       const covering = real.find((b) => h >= b.hour && h < b.hour + b.duration);
+      const block = court ? p.open[0] + Math.floor((h - p.open[0]) / courtBlock) * courtBlock : h;
       if (p.status !== 'active') status = 'closed';
       else if (covering) { status = covering.customer?.id === me ? 'yours' : 'booked'; booking = covering.id; }
       else if (mine.some((b) => h >= b.hour && h < b.hour + b.duration)) status = 'yours';
-      else if (syntheticBooked(p, dateISO, h)) { status = 'booked'; booking = `SB-${p.id}-${dateISO}-${h}`; }
-      else if (closureFor(p, dateISO, h)) status = 'blocked';
-      if (status === 'available' && isToday && h <= now.getHours()) status = 'past';
-      const base = basePrice(dateISO, h, p), price = priceAt(p, dateISO, h);
-      slots.push({ hour: h, status, booking, price, base, deal: price < base ? Math.round((1 - price / base) * 100) : 0, peak: base === p.peakPrice && p.peakPrice !== p.price });
+      else if (syntheticBooked(p, dateISO, h)) { status = 'booked'; booking = `SB-${p.id}-${dateISO}-${block}`; }
+      else if (closureFor(p, dateISO, Math.floor(h))) status = 'blocked';
+      if (status === 'available' && isToday && h <= nowH) status = 'past';
+      // A padel half hour costs half the hour's price
+      const base = basePrice(dateISO, Math.floor(h), p) / part, price = priceAt(p, dateISO, Math.floor(h)) / part;
+      slots.push({ hour: h, status, booking, price, base, deal: price < base ? Math.round((1 - price / base) * 100) : 0, peak: base * part === p.peakPrice && p.peakPrice !== p.price });
     }
     return slots;
   };
@@ -114,13 +129,18 @@
   };
 
   const pitchService = {
-    priceAt, basePrice, promoAt, activePromos, syntheticBooked, closureFor, POLICIES, policyOf, refundShare,
+    priceAt, basePrice, promoAt, activePromos, syntheticBooked, closureFor, POLICIES, policyOf, refundShare, isCourt, COURT_MINUTES, courtBlock,
+    /** The lengths a court can be booked for, in hours (a football pitch: 1, 1.5 or 2 hours) */
+    lengthsOf: (p) => (isCourt(p) ? (p.durations?.length ? p.durations : [60, 90]).map((m) => m / 60) : [1, 1.5, 2]),
     /**
      * @param {{q?:string, format?:string, maxPrice?:number, minRating?:number, indoor?:'indoor'|'outdoor', date?:string, sort?:'distance'|'price'|'rating'|'availability'}} f
      */
     list: (f = {}) => request(() => {
       const date = f.date || isoDate(today());
-      let out = live().map((p) => ({ ...withDistance(p), freeSlots: availableCount(p, date), next: nextFree(p) }));
+      const sport = f.sport === 'padel' ? 'padel' : 'football';
+      let out = live().filter((p) => (isCourt(p) ? 'padel' : 'football') === sport).map((p) => ({ ...withDistance(p), freeSlots: availableCount(p, date), next: nextFree(p) }));
+      if (f.walls === 'panoramic') out = out.filter((p) => p.panoramic);
+      if (f.walls === 'classic') out = out.filter((p) => !p.panoramic);
       if (f.q) { const q = f.q.toLowerCase(); out = out.filter((p) => `${p.name} ${p.area} ${p.city} ${p.address}`.toLowerCase().includes(q)); }
       if (f.format) out = out.filter((p) => p.format === f.format);
       if (f.maxPrice) out = out.filter((p) => p.price <= f.maxPrice);
@@ -149,7 +169,7 @@
     slotsSync: (id, dateISO) => slotsFor(byId(id), dateISO),
     /** Latest reviews (with the owner's reply) — written by players after a played booking */
     reviews: (id, n = 6) => request(() => db.all('reviews').filter((r) => r.pitchId === id && !r.hidden).sort((a, b) => b.createdAt - a.createdAt).slice(0, n)),
-    nearest: (n = 4) => request(() => live().map((p) => ({ ...withDistance(p), freeSlots: availableCount(p, isoDate(today())) })).sort((a, b) => a.distanceKm - b.distanceKm).slice(0, n)),
+    nearest: (n = 4, sport = 'football') => request(() => live().filter((p) => (isCourt(p) ? 'padel' : 'football') === sport).map((p) => ({ ...withDistance(p), freeSlots: availableCount(p, isoDate(today())) })).sort((a, b) => a.distanceKm - b.distanceKm).slice(0, n)),
     toggleFavorite(id) { store.set((s) => ({ favoritesPitches: s.favoritesPitches.includes(id) ? s.favoritesPitches.filter((x) => x !== id) : [...s.favoritesPitches, id] })); },
     isFavorite: (id) => store.get().favoritesPitches.includes(id),
     facilities: () => SA.data.pitches.facilities,

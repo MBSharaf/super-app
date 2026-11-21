@@ -5,14 +5,15 @@
   const media = SA.data.media;
   const S = SA.services;
 
-  const state = { when: '', level: '', gender: '', gk: false, sort: 'soon' };
+  const state = { sport: '', when: '', level: '', gender: '', gk: false, sort: 'soon' };
 
   const filters = () => `<div class="filter-row">
     <div class="chips" role="group" aria-label="When">${[['', 'Any day'], ['today', 'Today'], ['tomorrow', 'Tomorrow'], ['week', 'Next 7 days']].map(([v, l]) => `<button class="chip" data-f="when" data-v="${v}" aria-pressed="${state.when === v}">${l}</button>`).join('')}</div>
-    <div class="chips" role="group" aria-label="Level">${SA.data.matches.levels.map((l) => `<button class="chip" data-f="level" data-v="${l}" aria-pressed="${state.level === l}">${l}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="Sport">${[['', 'All sports'], ['football', 'Football'], ['padel', 'Padel']].map(([v, l]) => `<button class="chip" data-f="sport" data-v="${v}" aria-pressed="${state.sport === v}">${v === 'padel' ? icon('padel', 14) + ' ' : ''}${l}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="Level">${(state.sport === 'padel' ? SA.data.matches.padelLevels : SA.data.matches.levels).map((l) => `<button class="chip" data-f="level" data-v="${l}" aria-pressed="${state.level === l}">${l}</button>`).join('')}</div>
     <div class="chips" role="group" aria-label="More filters">
       ${['Mixed', 'Women'].map((g) => `<button class="chip" data-f="gender" data-v="${g}" aria-pressed="${state.gender === g}">${g}</button>`).join('')}
-      <button class="chip" data-f="gk" data-v="1" aria-pressed="${state.gk}">${icon('glove', 14)} Keeper wanted</button>
+      ${state.sport === 'padel' ? '' : `<button class="chip" data-f="gk" data-v="1" aria-pressed="${state.gk}">${icon('glove', 14)} Keeper wanted</button>`}
     </div></div>`;
 
   /** Join flow modal (also used from cards anywhere in the app). */
@@ -25,13 +26,13 @@
       title: m.spotsLeft ? 'Ask to join this game' : 'Join the waitlist', subtitle: `${esc(m.pitch.name)} · ${relDay(m.date)}, ${fmtRange(m.hour, m.duration)}`,
       body: `<div class="join-summary">
           <div class="media join-thumb"><img src="${media.photo(m.pitch.image, 300, 220)}" alt="" /></div>
-          <div class="grow"><div class="row wrap" style="--gap:6px"><span class="badge badge-info">${m.level}</span><span class="badge">${m.type}</span><span class="badge">${m.gender}</span></div>
+          <div class="grow"><div class="row wrap" style="--gap:6px">${m.sport === 'padel' ? `<span class="badge badge-ink">Padel</span>` : ''}<span class="badge badge-info">${m.level}</span><span class="badge">${m.type}</span><span class="badge">${m.gender}</span></div>
             <div style="margin-top:10px">${c.spots(m.filled, m.total)}</div>
             <p class="small soft" style="margin-top:6px">${m.spotsLeft} of ${m.total} spots left · hosted by ${esc(m.hostName)}</p></div>
         </div>
         ${m.notes ? `<blockquote class="host-note">“${esc(m.notes)}”</blockquote>` : ''}
         <form id="join-form" class="stack" style="--gap:14px;margin-top:16px">
-          <div class="form-grid"><div class="field"><label for="jn-pos">Your position</label><select class="select" id="jn-pos" name="position">${S.games.POSITIONS.map((p) => `<option ${p === (m.needsGK ? 'Goalkeeper' : S.user.me().position) ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+          <div class="form-grid"><div class="field"><label for="jn-pos">${m.sport === 'padel' ? 'Your side' : 'Your position'}</label><select class="select" id="jn-pos" name="position">${(m.sport === 'padel' ? SA.data.matches.padelSides : S.games.POSITIONS.map((p) => [p, p])).map(([v, l]) => `<option value="${v}" ${v === (m.needsGK ? 'Goalkeeper' : S.user.me().position) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
             <div class="field"><label for="jn-msg">Message to the host <span class="muted">(optional)</span></label><input class="input" id="jn-msg" name="message" maxlength="200" placeholder="e.g. I can be there 15 minutes early" /></div></div>
           <div class="notice ${hs.autoAccept ? 'turf' : ''}">${icon(hs.autoAccept ? 'bolt' : 'shield', 18)}<span>${hs.autoAccept ? '<b>Instant:</b> this host accepts automatically — you’re in as soon as you pay.' : `<b>${esc(m.hostName)} decides.</b> Your share is held by Super Malaab and comes back in full if you’re not accepted.`} The host sees your record: ${rec.games} games${rec.attendance != null ? `, ${Math.round(rec.attendance * 100)}% attendance` : ''}${rec.rating ? `, ${rec.rating.toFixed(1)}★` : ''}.</span></div>
           ${SA.ui.payment.render({ amount: m.pricePerPlayer, allowCash: false, name: 'joinpay' })}
@@ -107,6 +108,7 @@
         const k = f.dataset.f;
         if (k === 'gk') state.gk = !state.gk;
         else state[k] = state[k] === f.dataset.v ? '' : f.dataset.v;
+        if (k === 'sport') { state.level = ''; if (state.sport === 'padel') state.gk = false; }
         el.querySelector('.filters-slot').innerHTML = filters();
         load();
       });

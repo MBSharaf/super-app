@@ -81,13 +81,15 @@
     const out = [];
     const snap = p.seedSnapshot;
     if (p.seed && snap) {
-      for (let h = snap.open[0]; h < snap.open[1]; h++) {
+      // Padel courts: 90-minute games, priced by the half hour
+      const court = PS.isCourt(p), len = court ? PS.courtBlock : 1;
+      for (let h = snap.open[0]; h + len <= snap.open[1]; h += len) {
         if (!PS.syntheticBooked(p, dateISO, h, { raw: true })) continue;
         const id = `SB-${p.id}-${dateISO}-${h}`;
         const r = seeded(`${id}|meta`);
-        const amount = PS.priceAt(p, dateISO, h, snap);
+        const amount = court ? [h, h + 0.5, h + 1].reduce((t, x) => t + PS.priceAt(p, dateISO, Math.floor(x), snap) / 2, 0) : PS.priceAt(p, dateISO, h, snap);
         const who = PEOPLE[Math.floor(r * PEOPLE.length)];
-        out.push({ id, pitchId: p.id, ownerId: p.ownerId, date: dateISO, hour: h, duration: 1, amount, fee: Math.round(amount * 0.03),
+        out.push({ id, pitchId: p.id, ownerId: p.ownerId, date: dateISO, hour: h, duration: len, ...(court ? { sport: 'padel', minutes: 90 } : {}), amount, fee: Math.round(amount * 0.03),
           customer: { id: `c-${Math.floor(r * 9000)}`, name: who, phone: `+20 1${Math.floor(r * 3)} •••• ${String(Math.floor(r * 1e4)).padStart(4, '0')}` },
           source: 'app', payment: payOf(seeded(`${id}|pay`)), synthetic: true, noShow: seeded(`${id}|ns`) < 0.025,
           createdAt: parseISO(dateISO).getTime() + h * 36e5 - (1 + Math.floor(r * 6)) * DAY });
@@ -336,7 +338,11 @@
     if (!d.area?.trim()) e.area = 'Enter the area or district.';
     if (!d.address?.trim()) e.address = 'Enter the street address.';
     if (!(d.lat > 22 && d.lat < 31.8 && d.lng > 24.6 && d.lng < 37)) e.location = 'Pick the pitch location on the map (inside Egypt).';
-    if (!['5-a-side', '7-a-side', '11-a-side'].includes(d.format)) e.format = 'Choose the pitch size.';
+    if (d.sport === 'padel') {
+      if (!(d.durations || []).some((m) => COURT_MINUTES.includes(+m))) e.durations = 'Choose how long players can book: 60, 90 and/or 120 minutes.';
+      if (d.racketPrice !== '' && d.racketPrice != null && !(+d.racketPrice >= 0 && +d.racketPrice <= 1000)) e.racketPrice = 'A racket rents for 0 to 1,000 EGP.';
+      if (d.ballsPrice !== '' && d.ballsPrice != null && !(+d.ballsPrice >= 0 && +d.ballsPrice <= 1000)) e.ballsPrice = 'A tube of balls costs 0 to 1,000 EGP.';
+    } else if (!['5-a-side', '7-a-side', '11-a-side'].includes(d.format)) e.format = 'Choose the pitch size.';
     if (!(d.price >= 50 && d.price <= 20000)) e.price = 'Price per hour must be between 50 and 20,000 EGP.';
     if (!(d.peakPrice >= d.price)) e.peakPrice = 'Peak price must be the same as or higher than the standard price.';
     if (!(d.open?.[0] >= 0 && d.open?.[1] <= 28 && d.open[1] - d.open[0] >= 2)) e.open = 'Opening hours must cover at least 2 hours.';
@@ -345,14 +351,19 @@
     if (d.weeklyDiscount !== undefined && d.weeklyDiscount !== '' && !(+d.weeklyDiscount >= 0 && +d.weeklyDiscount <= 30)) e.weeklyDiscount = 'Weekly discount must be between 0% and 30%.';
     return e;
   };
+  /** Padel courts (2026-11-21): booked for 60, 90 or 120 minutes, as the owner offers; rackets and balls rented at the club */
+  const COURT_MINUTES = [60, 90, 120];
+  const optPrice = (v) => (v === '' || v == null || Number.isNaN(+v) ? null : Math.round(+v));
+  const courtFields = (d) => (d.sport === 'padel'
+    ? { sport: 'padel', format: 'Padel', players: 4, panoramic: !!d.panoramic, durations: COURT_MINUTES.filter((m) => (d.durations || []).map(Number).includes(m)), racketPrice: optPrice(d.racketPrice), ballsPrice: optPrice(d.ballsPrice) }
+    : { sport: 'football', format: d.format, players: { '5-a-side': 10, '7-a-side': 14, '11-a-side': 22 }[d.format], panoramic: false, durations: [], racketPrice: null, ballsPrice: null });
   const cleanPitch = (d) => ({
-    name: d.name.trim(), area: d.area.trim(), city: d.city, address: d.address.trim(), lat: +d.lat, lng: +d.lng, format: d.format,
-    players: { '5-a-side': 10, '7-a-side': 14, '11-a-side': 22 }[d.format], surface: d.surface, indoor: !!d.indoor,
+    name: d.name.trim(), area: d.area.trim(), city: d.city, address: d.address.trim(), lat: +d.lat, lng: +d.lng, ...courtFields(d), surface: d.surface, indoor: !!d.indoor,
     price: Math.round(+d.price), peakPrice: Math.round(+d.peakPrice), open: [+d.open[0], +d.open[1]], images: d.images.slice(0, 6),
     facilities: (d.facilities || []).filter((f) => F[f]), about: d.about.trim(), tags: (d.tags || []).map((t) => t.trim()).filter(Boolean).slice(0, 3),
     cancelPolicy: PS.POLICIES[d.cancelPolicy] ? d.cancelPolicy : 'standard',
     paymentMode: d.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit',
-    weekly: { enabled: d.weeklyEnabled !== false && d.weeklyEnabled !== 'off', discount: Math.min(0.3, Math.max(0, Math.round(+(d.weeklyDiscount ?? 10)) / 100)) },
+    weekly: { enabled: d.sport !== 'padel' && d.weeklyEnabled !== false && d.weeklyEnabled !== 'off', discount: Math.min(0.3, Math.max(0, Math.round(+(d.weeklyDiscount ?? 10)) / 100)) },
   });
 
   const cancelBooking = async (id, { reason = 'Cancelled by the venue', refundShopper = true } = {}) => {
@@ -591,11 +602,13 @@
       const review = isAdmin(a) ? 'approved' : 'pending';
       const p = db.insert('pitches', { id: `p-${d.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${Math.random().toString(36).slice(2, 5)}`, ...cleanPitch(d), ownerId: owner, status: d.status === 'closed' ? 'closed' : 'active', closedReason: '', rating: 0, reviews: 0, seed: false, review, submittedAt: Date.now() });
       db.log(a.id, 'pitch.created', `Added pitch “${p.name}”${review === 'pending' ? ' — waiting for Super Malaab review' : ''}`, p.id);
-      if (review === 'pending') SA.services.notify?.toAdmins({ cat: 'store', title: `New pitch to approve: ${p.name}`, body: `${a.company} · ${p.area}, ${p.city}`, link: '#/admin/approvals' });
+      if (review === 'pending') SA.services.notify?.toAdmins({ cat: 'store', title: `${p.sport === 'padel' ? 'New padel court' : 'New pitch'} to approve: ${p.name}`, body: `${a.company} · ${p.area}, ${p.city}`, link: '#/admin/approvals' });
       return p;
     },
     updatePitch(id, d) {
-      const p = dash.pitch(id); const e = validatePitch(d); if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
+      const p = dash.pitch(id);
+      d = { ...d, sport: p.sport === 'padel' ? 'padel' : 'football' };   // a pitch keeps its sport (the server refuses a change too)
+      const e = validatePitch(d); if (Object.keys(e).length) throw new ApiError('Check the highlighted fields.', 'invalid', e);
       // A rejected pitch goes back to review when the owner fixes it
       const out = db.update('pitches', id, { ...cleanPitch(d), ...(p.review === 'rejected' ? { review: 'pending', submittedAt: Date.now() } : {}) });
       if (p.review === 'rejected') SA.services.notify?.toAdmins({ cat: 'store', title: `Pitch sent again: ${out.name}`, body: me().company, link: '#/admin/approvals' });

@@ -61,3 +61,4 @@
 .mg-row.is-past { opacity: .65; }
 .mg-when { display: grid; justify-items: center; min-width: 64px; padding: 6px 8px; border-radius: var(--r-sm); background: var(--surface-2); }
 @media (max-width: 560px) { .mg-row { flex-wrap: wrap; } }
+.qty.is-locked button { opacity: .35; pointer-events: none; }

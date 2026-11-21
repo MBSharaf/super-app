@@ -81,6 +81,40 @@
       tags: ['Alexandria'] },
   ];
 
+  /**
+   * Padel courts (2026-11-21), fictional clubs. A court is booked for the lengths its owner offers (minutes), from any half
+   * hour, for 4 players; rackets and balls are rented at the club (null = not rented).
+   */
+  const court = (c) => ({ sport: 'padel', format: 'Padel', players: 4, surface: 'Artificial turf (sand-filled)', weekly: { enabled: false, discount: 0 }, ...c });
+  const courts = [
+    court({ id: 'p-padel-smash-1', name: 'Smash Padel Club — Court 1', area: 'New Cairo', city: 'Cairo', address: '90th St South, Fifth Settlement',
+      lat: 30.0262, lng: 31.4693, panoramic: true, indoor: true, price: 800, peakPrice: 1000, rating: 4.9, reviews: 186, open: [8, 25],
+      durations: [60, 90, 120], racketPrice: 75, ballsPrice: 150, images: ['courtPanoramicBlue', 'padelRackets', 'padelSet'],
+      facilities: ['lights', 'parking', 'showers', 'lockers', 'cafe', 'ac', 'wc'],
+      about: 'Indoor panoramic court with full-glass walls and tournament lighting. Pro shop and coffee bar at the entrance.', tags: ['Panoramic'] }),
+    court({ id: 'p-padel-smash-2', name: 'Smash Padel Club — Court 2', area: 'New Cairo', city: 'Cairo', address: '90th St South, Fifth Settlement',
+      lat: 30.0264, lng: 31.4697, panoramic: false, indoor: false, price: 600, peakPrice: 800, rating: 4.7, reviews: 94, open: [8, 25],
+      durations: [60, 90], racketPrice: 75, ballsPrice: 150, images: ['courtClassicBlue', 'padelRacket'],
+      facilities: ['lights', 'parking', 'showers', 'cafe', 'wc'],
+      about: 'Outdoor classic court — glass at the back, mesh on the sides. Great value for evening Americano groups.', tags: [] }),
+    court({ id: 'p-padel-zayed-hub', name: 'Zayed Padel Hub', area: 'Sheikh Zayed', city: 'Giza', address: 'Al Mehwar Al Markazy, Zayed 2000',
+      lat: 30.0475, lng: 30.9768, panoramic: true, indoor: false, price: 700, peakPrice: 900, rating: 4.8, reviews: 132, open: [7, 24],
+      durations: [90, 120], racketPrice: 50, ballsPrice: 120, images: ['courtPanoramicGreen', 'padelSet'],
+      facilities: ['lights', 'parking', 'water', 'wc', 'seats'],
+      about: 'Outdoor panoramic court under floodlights, with seating for friends to watch. Sunset slots go first.', tags: ['Sunset games'] }),
+    court({ id: 'p-padel-maadi-box', name: 'Maadi Padel Box', area: 'Maadi', city: 'Cairo', address: 'Road 250, Degla',
+      lat: 29.9612, lng: 31.2589, panoramic: false, indoor: true, price: 650, peakPrice: 850, rating: 4.6, reviews: 71, open: [9, 24],
+      durations: [60, 90, 120], racketPrice: 60, ballsPrice: null, images: ['courtClassicTerracotta', 'padelRackets'],
+      facilities: ['lights', 'ac', 'lockers', 'wc', 'water'],
+      about: 'Air-conditioned indoor court in the heart of Degla. Bring your own balls; rackets to rent at the desk.', tags: ['Indoor'] }),
+    court({ id: 'p-padel-sidi-gaber', name: 'Sidi Gaber Padel', area: 'Sidi Gaber', city: 'Alexandria', address: 'Abou Qir St, Sidi Gaber',
+      lat: 31.2195, lng: 29.9425, panoramic: true, indoor: false, price: 600, peakPrice: 750, rating: 4.7, reviews: 58, open: [8, 24],
+      durations: [60, 90], racketPrice: 50, ballsPrice: 100, images: ['courtPanoramicBlue', 'padelRacket'],
+      facilities: ['lights', 'parking', 'cafe', 'wc'],
+      about: 'Panoramic court a few minutes from the Corniche — play in the sea breeze.', tags: ['Alexandria'] }),
+  ];
+  pitches.push(...courts);
+
   const reviewPool = [
     { name: 'Karim Adel', text: 'Turf is in great condition and the lights are properly bright. Booked the same slot every Thursday for two months.', rating: 5 },
     { name: 'Omar Hassan', text: 'Staff had bibs and two balls ready when we arrived. Showers were clean. Parking can fill up after 9 PM.', rating: 5 },
@@ -100,5 +134,14 @@
     { name: 'Islam Magdy', text: 'Music from the café was too loud during our game. The pitch itself is very good.', rating: 3 },
   ];
 
-  SA.data.pitches = { list: pitches, facilities: F, reviewPool };
+  const padelReviewPool = [
+    { name: '', text: 'Glass is spotless and the lighting has no shadows on the walls. Best panoramic court we’ve played on.', rating: 5 },
+    { name: '', text: 'Balls were new, the rental rackets were decent and the staff found us a fourth player in ten minutes.', rating: 5 },
+    { name: '', text: 'Good court, the sand on the turf needs topping up near the net. Still fast and fun.', rating: 4 },
+    { name: '', text: 'Booked 90 minutes from 7:30 — check-in with the QR took seconds. Will book again.', rating: 5 },
+    { name: '', text: 'Nice club, a bit hot in the afternoon. Book after sunset.', rating: 4 },
+    { name: '', text: 'Our Open Match filled up the same day with players at our level. Great way to meet people.', rating: 5 },
+  ];
+
+  SA.data.pitches = { list: pitches, facilities: F, reviewPool, padelReviewPool, courtIds: courts.map((c) => c.id) };
 })(window.SA);

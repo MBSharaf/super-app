@@ -18,7 +18,7 @@ a price, a date or a promise.
 
 ## What Super Malaab is
 
-An Egyptian sports app: book football pitches, find players for a game (or join someone's game), play fantasy football
+An Egyptian sports app: book football pitches and padel courts, find players for a game (or join someone's game), play fantasy football
 (Egyptian Premier League and English Premier League), and shop for sports gear from Super Malaab and approved sellers.
 Every account is one account for all of it, with one wallet and Super Points.
 
@@ -46,6 +46,21 @@ Every account is one account for all of it, with one wallet and Super Points.
 
 The refund is on what was paid online (the deposit) and goes back to the customer's Super Malaab wallet.
 
+## Padel courts (ملاعب البادل)
+
+- Open **Pitches** and switch to **Padel**. Courts are **Panoramic** (all-glass walls) or **Classic** (glass behind, mesh
+  on the sides), indoor or outdoor. A court is for doubles: 4 players.
+- A padel booking starts **on the hour or the half hour** (for example 7:30 PM) and lasts **60, 90 or 120 minutes**. Each
+  court shows only the lengths its owner offers.
+- The same rules as football: deposit online (or the full amount if the court asks for it), the rest at the club, the
+  court's cancellation policy, the QR code at the desk, and 1 Super Point per EGP paid.
+- **Rackets and balls** can be added while booking (up to 4 rackets and 3 tubes of balls). They are **paid at the club**
+  when the QR is scanned, not online, and the ticket shows how much.
+- **Open Match**: after booking a court, publish it as an Open Match to fill the four. It is always 4 players, the level
+  is from **Level 1** (new to padel) to **Level 7** (pro), each player pays a quarter of the court, and players pick a
+  side (drive / backhand / either). When the fourth player is in, the match closes and everyone is notified.
+- Weekly packages and the waitlist are for football pitches only for now.
+
 ## Cancelling anything that was paid for
 
 A customer never cancels a paid service straight away. Pressing **Cancel** on a pitch booking, a weekly package, a shop
@@ -59,7 +74,7 @@ The assistant can send this request for the customer (action `cancel`, after the
 ## Find players (دوّر على لاعيبة)
 
 - **Join a game**: open **Find players**, pick a game and ask to join. You pay your share of the pitch; it's held by Super
-  App until the host accepts. If the host declines, it comes back to your wallet. Some hosts accept automatically.
+  Malaab until the host accepts. If the host declines, it comes back to your wallet. Some hosts accept automatically.
 - **Publish your game**: after booking a pitch, publish the match from the booking (how many players you need, level,
   type, men / women / mixed, goalkeeper needed). Players ask to join and you accept or decline (or set auto-accept).
 - Your record (games played, attendance, rating) is shown to hosts.

@@ -15,7 +15,8 @@
     // Seeded participants (stable per match), then the user if they joined
     const participants = m.participants || Array.from({ length: m.filled }, (_, i) => {
       const idx = i === 0 ? m.host : Math.floor(seeded(m.id + i) * people.length);
-      return { name: people[idx], avatar: idx % 15, role: i === 0 ? 'Host' : (m.needsGK && i === 1 ? 'Defender' : ['Midfielder', 'Forward', 'Defender', 'Winger'][i % 4]), photo: (idx % 3) !== 1 };
+      const role = m.sport === 'padel' ? (i % 2 ? 'Backhand side (left)' : 'Drive side (right)') : (m.needsGK && i === 1 ? 'Defender' : ['Midfielder', 'Forward', 'Defender', 'Winger'][i % 4]);
+      return { name: people[idx], avatar: idx % 15, role: i === 0 ? 'Host' : role, photo: (idx % 3) !== 1 };
     });
     if (joined && !participants.some((x) => x.isMe)) participants.push({ name: me().name, avatar: me().avatar, role: me().position, photo: true, isMe: true });
     const filled = participants.length;
@@ -36,6 +37,7 @@
   const matchService = {
     list: (f = {}) => request(() => {
       let out = all();
+      if (f.sport) out = out.filter((m) => (m.sport || 'football') === f.sport);
       if (f.level) out = out.filter((m) => m.level === f.level);
       if (f.gender) out = out.filter((m) => m.gender === f.gender);
       if (f.when === 'today') out = out.filter((m) => m.date === isoDate(today()));
@@ -83,20 +85,24 @@
       SA.services.user.assertActive();
       const b = SA.services.bookings.getSync(data.bookingId);
       if (!b) throw new ApiError('Pick one of your upcoming bookings first.', 'no_booking');
-      const total = +data.total, have = +data.have;
-      if (!(have >= 1 && have < total)) throw new ApiError('Players you already have must be fewer than the total.', 'invalid_counts');
+      const padel = b.sport === 'padel';
+      // Padel Open Match: always 4 players on the 1–7 level scale, the court cost split by 4, no keeper
+      const total = padel ? 4 : +data.total, have = +data.have;
+      if (!(have >= 1 && have < total)) throw new ApiError(padel ? 'A padel Open Match is 4 players: you can already have 1 to 3.' : 'Players you already have must be fewer than the total.', 'invalid_counts');
+      if (padel && !SA.data.matches.padelLevels.includes(data.level)) throw new ApiError('Pick a padel level from 1 to 7.', 'invalid_level');
+      if (!padel && !SA.data.matches.levels.includes(data.level)) throw new ApiError('Pick a skill level.', 'invalid_level');
       const id = 'm-' + Math.floor(2000 + Math.random() * 7000);
       const user = me();
       const participants = [{ name: user.name, avatar: user.avatar, role: 'Host', photo: true, isMe: true },
         ...Array.from({ length: have - 1 }, (_, i) => ({ name: data.friends?.[i] || `Friend ${i + 1}`, avatar: (i + 4) % 15, role: 'Player', photo: false }))];
       const match = {
         id, pitchId: b.pitchId, date: b.date, hour: b.hour, duration: b.duration, total, filled: have, participants,
-        level: data.level, gender: data.gender, type: data.type, pricePerPlayer: Math.ceil(b.total / total), notes: data.notes?.trim() || '',
-        needsGK: data.needsGK === 'on' || data.needsGK === true, isMine: true, hostName: user.name, bookingId: b.id, postedAt: Date.now(), postedHoursAgo: 0,
+        level: data.level, gender: data.gender, type: padel ? 'Open Match' : data.type, pricePerPlayer: Math.ceil(b.total / total), notes: data.notes?.trim() || '',
+        sport: padel ? 'padel' : 'football', needsGK: !padel && (data.needsGK === 'on' || data.needsGK === true), isMine: true, hostName: user.name, bookingId: b.id, postedAt: Date.now(), postedHoursAgo: 0,
         autoAccept: !!data.autoAccept, closed: false,
       };
       store.set((s) => ({ publishedMatches: [match, ...s.publishedMatches], bookings: s.bookings.map((x) => (x.id === b.id ? { ...x, publishedMatchId: id } : x)) }), 'match:publish');
-      SA.services.user.notify({ kind: 'match', title: 'Your match is live', body: `Players nearby can now join your game at ${b.pitchName}.`, link: `/players/${id}` });
+      SA.services.user.notify({ kind: 'match', title: padel ? 'Your Open Match is live' : 'Your match is live', body: `Players nearby can now join your game at ${b.pitchName}.`, link: `/players/${id}` });
       return { id };
     }),
     unpublish: (id) => request(() => {

@@ -7,7 +7,7 @@
   const { icon } = SA.ui;
   const GROUPS = [
     { title: 'Site', icon: 'home', links: [
-      ['Home', '#/'], ['Pitches', '#/pitches'], ['Pitch page', '#/pitches/p-zayed-22'], ['Book a pitch', '#/book/p-zayed-22'], ['My bookings', '#/bookings'],
+      ['Home', '#/'], ['Pitches', '#/pitches'], ['Pitch page', '#/pitches/p-zayed-22'], ['Book a pitch', '#/book/p-zayed-22'], ['Padel courts', '#/pitches?sport=padel'], ['Padel court page', '#/pitches/p-padel-smash-1'], ['Book a padel court', '#/book/p-padel-smash-1'], ['Padel Open Match', '#/players/m-1101'], ['My bookings', '#/bookings'],
       ['Find players', '#/players'], ['Post a game', '#/players/new'], ['Matches', '#/matches'],
       ['Tournaments', '#/tournaments'], ['Tournament page', '#/tournaments/tr-autumn-cup'], ['Profile', '#/profile'], ['Wallet & points', '#/wallet'], ['Help & support', '#/support'],
     ] },
@@ -35,7 +35,7 @@
       ['Start selling', '#/sell'], ['Design studio', '#/sell/studio'], ['Store: Koora Ink', '#/s/koora-ink'], ['Store: Nile Lines', '#/s/nile-lines'], ['Store: Cairo Otaku', '#/s/cairo-otaku'],
     ] },
     { title: 'Pitch owner dashboard', icon: 'pitch', as: [['acc-o1', 'Karim · Turf 22'], ['acc-new', 'New partner']], links: [
-      ['Overview', '#/dash'], ['My pitches', '#/dash/pitches'], ['Add a pitch', '#/dash/pitches/new'], ['Availability', '#/dash/availability'], ['Check-in', '#/dash/checkin'], ['Bookings', '#/dash/bookings'],
+      ['Overview', '#/dash'], ['My pitches', '#/dash/pitches'], ['Add a pitch', '#/dash/pitches/new'], ['Add a padel court', '#/dash/pitches/new?sport=padel'], ['Availability', '#/dash/availability'], ['Check-in', '#/dash/checkin'], ['Bookings', '#/dash/bookings'],
       ['Teams', '#/dash/teams'], ['Reviews', '#/dash/reviews'], ['Tournaments', '#/dash/tournaments'], ['Finance', '#/dash/finance'], ['Wallet', '#/dash/wallet'], ['Forecast & offers', '#/dash/insights'],
       ['Discount codes', '#/dash/codes'], ['Sell on Super Malaab', '#/dash/sell'], ['Notifications', '#/dash/notifications'], ['Help & support', '#/dash/support'], ['Activity', '#/dash/activity'],
     ] },

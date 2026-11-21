@@ -64,7 +64,7 @@
   const pitchCard = (p, owner, liveTag = '') => `<article class="dash-card adm-approve">
             <div class="adm-approve-img">${(p.images || []).slice(0, 3).map((im) => `<img src="${media.photo(im, 360, 240)}" alt="" loading="lazy" />`).join('')}</div>
             <div class="row-between wrap" style="--gap:6px"><h2 class="h4">${esc(p.name)}</h2><span class="badge ${RV[p.review][0]}">${RV[p.review][1]}</span></div>
-            <p class="small soft">${esc(p.address)}, ${esc(p.area)}, ${esc(p.city)} · ${esc(p.format)} · ${p.indoor ? 'Indoor' : 'Outdoor'} · ${esc(p.surface)}</p>
+            <p class="small soft">${esc(p.address)}, ${esc(p.area)}, ${esc(p.city)} · ${p.sport === 'padel' || p.sport === 'Padel' ? `Padel court · ${p.panoramic || p.isPanoramic ? 'Panoramic' : 'Classic'}` : esc(p.format)} · ${p.indoor ? 'Indoor' : 'Outdoor'} · ${esc(p.surface)}</p>
             <dl class="kv"><div><dt>Owner</dt><dd>${esc(owner)}</dd></div><div><dt>Price</dt><dd class="num">${money(p.price)} · peak ${money(p.peakPrice)}</dd></div><div><dt>Hours</dt><dd class="num">${p.open[0]}:00 – ${p.open[1] % 24}:00</dd></div><div><dt>Sent</dt><dd>${timeAgo(p.submittedAt || p.createdAt)}</dd></div></dl>
             <p class="small">${esc(p.about)}</p>
             ${p.review === 'rejected' ? `<p class="xs" style="color:var(--danger)">${icon('alert', 12)} ${esc(p.reviewReason || '')}</p>` : ''}
@@ -73,7 +73,7 @@
   /** API mode: the server's pitch → the fields the card reads */
   const fromReview = (r) => {
     const d = r.pitch, day = d.openingHours.find((h) => !h.isClosed) || { openHour: 0, closeHour: 0 };
-    return { id: r.summary.id, name: d.name, address: r.address, area: r.summary.venueName, city: r.summary.areaEn, format: `${d.format}-a-side`, indoor: d.isIndoor,
+    return { id: r.summary.id, name: d.name, address: r.address, area: r.summary.venueName, city: r.summary.areaEn, format: `${d.format}-a-side`, sport: d.sport, isPanoramic: d.isPanoramic, indoor: d.isIndoor,
       surface: d.surface.replace(/([a-z])([A-Z])/g, '$1 $2'), images: d.photos.map((ph) => (ph.url ? `${location.origin}${ph.url}` : ph.key)),
       price: d.pricePerHour, peakPrice: d.peakPricePerHour ?? d.pricePerHour, open: [day.openHour, day.closeHour], submittedAt: Date.parse(r.summary.createdAt),
       about: d.descriptionEn || '', review: { WaitingForReview: 'pending', Rejected: 'rejected' }[d.status] || 'approved', reviewReason: d.rejectReason, lat: r.lat, lng: r.lng };

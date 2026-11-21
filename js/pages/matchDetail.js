@@ -63,7 +63,7 @@
         ${justPublished ? `<div class="notice turf published-note">${icon('check', 18)}<span><b>Your match is live.</b> Players near ${esc(m.pitch.area)} can now find it and join. Share the link to fill it faster.</span></div>` : ''}
         <div class="match-hero media"><img src="${media.photo(m.pitch.image, 1600, 700)}" alt="" />
           <div class="match-hero-copy">
-            <div class="row wrap" style="--gap:6px"><span class="badge badge-glass">${m.level}</span><span class="badge badge-glass">${m.type}</span><span class="badge badge-glass">${m.gender}</span>${m.needsGK ? `<span class="badge badge-gold">${icon('glove', 12, 2)} Keeper wanted</span>` : ''}</div>
+            <div class="row wrap" style="--gap:6px">${m.sport === 'padel' ? `<span class="badge badge-glass">${icon('padel', 12, 2)} Padel</span>` : ''}<span class="badge badge-glass">${m.level}</span><span class="badge badge-glass">${m.type}</span><span class="badge badge-glass">${m.gender}</span>${m.needsGK ? `<span class="badge badge-gold">${icon('glove', 12, 2)} Keeper wanted</span>` : ''}</div>
             <h1 class="h1" style="color:#fff;margin-top:12px">${relDay(m.date)}, ${fmtHour(m.hour)} at ${esc(m.pitch.name)}</h1>
             <p style="color:rgba(255,255,255,.8)">${esc(m.pitch.area)}, ${esc(m.pitch.city)} · ${fmtKm(m.distanceKm)} away</p>
           </div></div>

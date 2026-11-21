@@ -45,6 +45,8 @@
     shoe: '<path d="M3 15.5c0-3 1-7.5 1-7.5l4.5 1.5c1 2.5 4 3 6.5 3.5 3 .6 6 1.6 6 4.5v1H3v-3Z"/><path d="M3 18.5h18"/>',
     cone: '<path d="M10.5 4h3l4.5 14h-12L10.5 4Z"/><path d="M8 11h8M3.5 20.5h17"/>',
     racket: '<ellipse cx="13.5" cy="9" rx="6" ry="6.5"/><path d="M9.5 14 4 20.5"/><circle cx="11.5" cy="8" r=".6"/><circle cx="14.5" cy="8" r=".6"/><circle cx="13" cy="11" r=".6"/>',
+    padel: '<ellipse cx="13.5" cy="9" rx="6" ry="6.5"/><path d="M9.5 14 4 20.5"/><circle cx="11.5" cy="8" r=".6"/><circle cx="14.5" cy="8" r=".6"/><circle cx="13" cy="11" r=".6"/>',
+    court: '<rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 12h18M7.5 3v18" opacity=".5"/><path d="M16.5 3v18" opacity=".5"/><path d="M7.5 7.5h9M7.5 16.5h9"/>',
     whistle: '<circle cx="9" cy="14" r="5.5"/><path d="M12.5 9.8 21 8v4.5l-6.2 1.2M7 6l-1-2.5M11 5.5 12 3"/>',
     bolt: '<path d="M13 2.5 5 13.5h6l-1 8 8-11h-6l1-8Z"/>',
     flame: '<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.3 0-4.5 4.5-6.5 4.5-11.2 3 1.5 6.5 5 6.5 8.5 1-.6 1.6-1.6 1.8-2.8 1.4 1.5 2.2 3.4 2.2 5.4 0 3.8-3.2 6.4-8.5 6.4Z"/>',

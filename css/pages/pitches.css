@@ -205,3 +205,15 @@
 .pkg-list a { padding: 8px 10px; border-radius: var(--r-sm); }
 .pkg-list a:hover, .pkg-list li.is-me a { background: var(--surface-2); }
 @media (max-width: 480px) { .pkg-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Padel courts (2026-11-21): half-hour starts, sport switch, court badges ---------- */
+.slot-grid.is-halves { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); max-height: 360px; }
+.slot-grid.is-halves.animate .slot { animation-delay: calc(var(--i) * 12ms); }
+.sport-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface-2, rgba(0,0,0,.05)); margin: 4px 0 14px; }
+.sport-switch a { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; font-weight: 700; color: var(--ink-2, inherit); text-decoration: none; transition: background .2s, color .2s; }
+.sport-switch a[aria-current="page"] { background: var(--ink, #0b1f17); color: #fff; box-shadow: 0 6px 18px -10px rgba(0,0,0,.5); }
+.rent-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line, rgba(0,0,0,.08)); }
+.rent-row:first-of-type { border-top: 0; }
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper button { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line, rgba(0,0,0,.12)); background: var(--surface, #fff); font-weight: 700; }
+.stepper output { min-width: 22px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }

@@ -55,7 +55,9 @@
     return {
       ...prev, id: `p-${d.slug}`, live: true, apiId: d.id, slug: d.slug, venueId: d.venueId, ownerId: ACCOUNT,
       name: d.name, area: venue?.areaEn || prev.area || '', city: area?.city || prev.city || 'Cairo', address: venue?.address || '', lat: +(venue?.lat || 0), lng: +(venue?.lng || 0),
-      format: `${d.format}-a-side`, players: d.format * 2, surface: prev.surface && surfaceKey(prev.surface) === d.surface ? prev.surface : SURFACE[d.surface],
+      ...(d.sport === 'Padel'
+        ? { sport: 'padel', format: 'Padel', players: 4, panoramic: !!d.isPanoramic, durations: d.durations || [], racketPrice: d.racketPrice ?? null, ballsPrice: d.ballsPrice ?? null }
+        : { sport: 'football', format: `${d.format}-a-side`, players: d.format * 2, panoramic: false, durations: [], racketPrice: null, ballsPrice: null }), surface: prev.surface && surfaceKey(prev.surface) === d.surface ? prev.surface : SURFACE[d.surface],
       indoor: d.isIndoor, price: +d.pricePerHour, peakPrice: +(d.peakPricePerHour ?? d.pricePerHour), open: today0 ? [today0.openHour, today0.closeHour] : [9, 24],
       openingHours: d.openingHours, images: d.photos.map(photoSrc), photoIds: Object.fromEntries(d.photos.map((ph) => [photoSrc(ph), ph.id])),
       facilities: d.facilities, about: d.descriptionEn || '', tags: prev.tags || [], cancelPolicy: d.policyKey, allowCash: d.allowCash, paymentMode: d.paymentMode || 'Deposit',
@@ -161,7 +163,10 @@
 
   const SEVEN = (open) => Array.from({ length: 7 }, (_, day) => ({ dayOfWeek: day, openHour: open[0], closeHour: open[1], isClosed: false }));
   const pitchBody = (d, venueId, prev) => ({
-    venueId, name: d.name.trim(), format: parseInt(d.format, 10), surface: surfaceKey(d.surface), isIndoor: !!d.indoor, pricePerHour: Math.round(+d.price),
+    venueId, name: d.name.trim(), format: d.sport === 'padel' ? 2 : parseInt(d.format, 10),
+    sport: d.sport === 'padel' ? 'Padel' : 'Football', isPanoramic: d.sport === 'padel' && !!d.panoramic, durations: d.sport === 'padel' ? (d.durations || []).map(Number) : null,
+    racketPrice: d.sport === 'padel' && d.racketPrice !== '' && d.racketPrice != null ? Math.round(+d.racketPrice) : null,
+    ballsPrice: d.sport === 'padel' && d.ballsPrice !== '' && d.ballsPrice != null ? Math.round(+d.ballsPrice) : null, surface: surfaceKey(d.surface), isIndoor: !!d.indoor, pricePerHour: Math.round(+d.price),
     peakPricePerHour: +d.peakPrice > +d.price ? Math.round(+d.peakPrice) : null, peakFromHour: +d.peakPrice > +d.price ? 18 : null,
     descriptionEn: (d.about || '').trim(), descriptionAr: null, policyKey: d.cancelPolicy || 'standard', allowCash: prev?.allowCash ?? true, paymentMode: d.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit',
     facilities: d.facilities || [], openingHours: prev?.openingHours && prev.open[0] === +d.open[0] && prev.open[1] === +d.open[1] ? prev.openingHours : SEVEN([+d.open[0], +d.open[1]]),
