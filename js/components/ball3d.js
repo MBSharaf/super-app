@@ -1,5 +1,6 @@
 /**
- * 3D soccer ball that jumps from section to section as you scroll (home page only).
+ * 3D ball that jumps from section to section as you scroll (home page, wider screens only).
+ * Two looks: a football (kind 'football') and a padel ball (kind 'padel'), switched with SA.ui.ball3d.setKind().
  *
  * Rendering: a real truncated icosahedron mapped onto a sphere and ray-shaded per pixel on a
  * small canvas (no WebGL or library). Each pixel's surface normal is rotated into ball space and
@@ -83,8 +84,10 @@
       idx = Uint32Array.from(list);
     };
 
+    let kind = 'football';
     const draw = (R) => {
       const data = img.data;
+      if (kind === 'padel') return drawPadel(R, data);
       data.fill(0);
       // R^T n: rotate screen normal into ball space
       const r0 = R[0], r1 = R[1], r2 = R[2], r3 = R[3], r4 = R[4], r5 = R[5], r6 = R[6], r7 = R[7], r8 = R[8];
@@ -113,7 +116,26 @@
       }
       ctx.putImageData(img, 0, 0);
     };
-    return { resize, draw, size: () => D };
+    // Padel ball: optic yellow felt with the curved white seam (the saddle curve z = k(x² − y²) on the sphere)
+    const drawPadel = (R, data) => {
+      const r0 = R[0], r1 = R[1], r2 = R[2], r3 = R[3], r4 = R[4], r5 = R[5], r6 = R[6], r7 = R[7], r8 = R[8];
+      for (let k = 0; k < idx.length; k++) {
+        const i = idx[k];
+        const x = nx[i], y = ny[i], z = nz[i];
+        const bx = r0 * x + r3 * y + r6 * z, by = r1 * x + r4 * y + r7 * z, bz = r2 * x + r5 * y + r8 * z;
+        const f = Math.abs(bz - 0.9 * (bx * bx - by * by));
+        const seam = f < 0.085 ? 1 - f / 0.085 : 0;
+        const fuzz = 0.98 + 0.02 * Math.sin(bx * 90 + by * 70) * Math.cos(bz * 80);
+        const l = (0.32 + 0.75 * light[i]) * fuzz;
+        const s = spec[i] * 0.3 * 255;
+        const o = i * 4;
+        const c = seam > 0.3 ? [250, 250, 244] : [222, 245, 70];
+        data[o] = c[0] * l + s; data[o + 1] = c[1] * l + s; data[o + 2] = c[2] * l + s;
+        data[o + 3] = alpha[i] * 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    };
+    return { resize, draw, size: () => D, setKind: (k) => { kind = k; } };
   };
 
   // ---------- Scroll choreography ----------
@@ -123,8 +145,10 @@
    * mount(view, spots) — spots: [{ sel, x: 0..1 across the element, at: 'top' | 'center' }]
    * Returns a cleanup function.
    */
+  let current = null, kindNow = 'football';
+  const setKind = (k) => { kindNow = k; if (current) { current.renderer.setKind(k); current.redraw(); } };
   const mount = (view, spotsConfig) => {
-    if (!SA.core.motion.enabled()) return () => {};
+    if (!SA.core.motion.enabled() || innerWidth < 760) return () => {};   // phones: the hero stage is enough
     const resumed = Date.now() - lastUnmount < 1500 && saved;
 
     const wrap = document.createElement('div');
@@ -136,6 +160,7 @@
     const shadow = wrap.querySelector('.ball3d-shadow');
     const canvas = wrap.querySelector('canvas');
     const renderer = createRenderer(canvas);
+    renderer.setKind(kindNow);
 
     let radius = 0;
     const setSize = () => {
@@ -275,6 +300,7 @@
       if (dirty) { renderer.draw(R); dirty = false; }
     };
     raf = requestAnimationFrame(tick);
+    current = { renderer, redraw: () => { dirty = true; } };
 
     // Click the ball to kick it
     body.addEventListener('click', () => { if (kick.h === 0) { kick.v = 900; kick.h = 0.1; } });
@@ -284,10 +310,10 @@
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
-      saved = { R, P }; lastUnmount = Date.now();
+      saved = { R, P }; lastUnmount = Date.now(); current = null;
       wrap.remove();
     };
   };
 
-  SA.ui.ball3d = { mount };
+  SA.ui.ball3d = { mount, setKind };
 })(window.SA);

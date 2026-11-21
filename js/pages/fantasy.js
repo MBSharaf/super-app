@@ -10,7 +10,8 @@
   /* ---------- Shared header for all fantasy routes ---------- */
   const header = (active) => {
     const f = F(), meta = f.meta(), team = f.team(), tot = f.totals(), last = f.lastResult();
-    const nav = [['team', 'My team', '#/fantasy'], ['squad', team ? 'Transfers' : 'Pick squad', '#/fantasy/squad'], ['leagues', 'Leagues', '#/fantasy/leagues'], ['fixtures', 'Fixtures & table', '#/fantasy/fixtures'], ['stats', 'Player stats', '#/fantasy/stats']];
+    // Five clear sections, each with its own icon (a tab grid on phones)
+    const nav = [['team', 'My team', '#/fantasy', 'shirtPlain'], ['squad', team ? 'Transfers' : 'Pick squad', '#/fantasy/squad', team ? 'swap' : 'users'], ['leagues', 'Leagues', '#/fantasy/leagues', 'trophy'], ['fixtures', 'Table', '#/fantasy/fixtures', 'table'], ['stats', 'Stats', '#/fantasy/stats', 'chart']];
     return `<section class="fx-head">
       <div class="container">
         <div class="fx-head-top">
@@ -20,7 +21,7 @@
             <h1 class="h1 fx-title">${team ? esc(team.name) : 'Fantasy'}</h1>
           </div>
           <div class="fx-deadline">
-            <span class="xs fx-dim">Gameweek ${meta.gw} deadline · ${fmtDate(meta.deadline)}, ${meta.deadline.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
+            <span class="xs fx-dim">${icon('clock', 13)} Gameweek ${meta.gw} deadline · ${fmtDate(meta.deadline)}, ${meta.deadline.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
             ${c.countdown(meta.deadline)}
           </div>
         </div>
@@ -32,7 +33,7 @@
           <div><span class="fx-dim xs">Bank</span><b class="num">${fantasyPrice(meta.budget - f.cost(team.squad))}</b></div>
           <button class="btn btn-blaze fx-sim" data-simulate title="Plays every GW${meta.gw} fixture and scores your team">${icon('play', 16)} Simulate GW${meta.gw}</button>
         </div>` : ''}
-        <nav class="subnav fx-subnav" aria-label="Fantasy">${nav.map(([k, l, h]) => `<a href="${h}" ${k === active ? 'aria-current="page"' : ''}>${l}</a>`).join('')}</nav>
+        <nav class="fx-tabs" aria-label="Fantasy">${nav.map(([k, l, h, ic]) => `<a href="${h}" ${k === active ? 'aria-current="page"' : ''}>${icon(ic, 20)}<span>${l}</span></a>`).join('')}</nav>
       </div>
     </section>`;
   };
@@ -145,16 +146,23 @@
       <tbody>${team.xi.map((id) => row(id, 'Starting')).join('')}${team.bench.map((id) => row(id, 'Bench')).join('')}</tbody></table></div>`;
   };
 
+  /** First visit: one line, three icon steps, two buttons and a preview of a team — no wall of text */
   const onboarding = () => `
     <div class="container section-tight">
       <div class="fx-onboard">
-        <div>
-          <h2 class="h1">Build your ${esc(F().leagueInfo().label)} team</h2>
-          <p class="lead" style="margin-top:12px">Pick 15 players with a 100M budget. Score points every gameweek from their goals, assists and clean sheets — then beat your friends in private groups. Every league is free, and the top 3 of every gameweek in the Super Malaab League win Super Points.</p>
+        <div class="fx-onboard-copy">
+          <h2 class="h1">Build your dream team</h2>
+          <p class="lead">15 players · 100M budget · free leagues with prizes</p>
           <ol class="fx-steps">
-            ${[['Pick 15 players', '2 goalkeepers, 5 defenders, 5 midfielders, 3 forwards. Max 3 from one club.'], ['Set your starting XI', 'Choose a formation and a captain — captains score double.'], ['Join leagues', 'Create a private group for friends or enter an official prize league.'], ['Score every gameweek', 'Make a free transfer each week and climb the rankings.']].map(([t, d], i) => `<li><span class="flow-n">${i + 1}</span><div><b>${t}</b><p class="small soft">${d}</p></div></li>`).join('')}
+            ${[['users', 'Pick 15 players'], ['crown', 'Choose a captain'], ['trophy', 'Win every gameweek']].map(([ic, t], i) => `<li><span class="fx-step-ico">${icon(ic, 20)}</span><span><span class="xs muted">Step ${i + 1}</span><b>${t}</b></span></li>`).join('')}
           </ol>
-          <div class="row wrap" style="margin-top:24px">${c.cta('Pick my squad', { href: '#/fantasy/squad', size: 'lg' })}<button class="btn btn-outline btn-lg" data-autocreate>${icon('sparkle', 18)} Auto-pick for me</button></div>
+          <div class="fx-onboard-ctas">${c.cta('Pick my squad', { href: '#/fantasy/squad', size: 'lg' })}<button class="btn btn-outline btn-lg" data-autocreate>${icon('sparkle', 18)} Auto-pick</button></div>
+          <details class="fx-rules"><summary>${icon('info', 16)} How it works</summary><ul>
+            <li>2 goalkeepers, 5 defenders, 5 midfielders, 3 forwards. Max 3 from one club.</li>
+            <li>Choose a formation and a captain — captains score double.</li>
+            <li>Players score from goals, assists and clean sheets.</li>
+            <li>Every league is free. The top 3 of every gameweek in the Super Malaab League win Super Points.</li>
+          </ul></details>
         </div>
         <div class="fx-onboard-art">${(() => { const f = F(); const ids = f.autoPick('preview-team'); const { xi } = f.lineupFor(ids, '4-3-3'); return `<div class="fx-pitch is-preview">${['GK', 'DEF', 'MID', 'FWD'].map((pos) => `<div class="fx-row">${xi.filter((id) => f.byId[id].pos === pos).map((id) => `<span class="ptoken"><span class="ptoken-kit">${c.kit(f.teamById[f.byId[id].teamId], 46, pos === 'GK')}</span><span class="ptoken-name">${esc(short(f.byId[id].name))}</span></span>`).join('')}</div>`).join('')}</div>`; })()}</div>
       </div>

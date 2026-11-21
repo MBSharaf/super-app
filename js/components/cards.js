@@ -77,21 +77,24 @@
       </article>`;
     },
 
+    /** Shop card (storefront style): 4:5 photo on a soft background, small sale tag, round quick-add, brand · name · price */
     product(p, { size = '' } = {}) {
+      const off = p.was && p.was > p.price ? Math.round((1 - p.price / p.was) * 100) : 0;
       return `<article class="product-card ${size} ${p.pod ? 'is-pod' : ''}" data-product="${p.id}">
         <div class="media product-media">
-          <a href="#/shop/${p.id}" tabindex="-1" aria-hidden="true"><img src="${media.u(p.images[0], 640, 640)}" alt="" loading="lazy" data-fly /></a>
-          ${p.images[1] ? `<img class="alt" src="${media.u(p.images[1], 640, 640)}" alt="" loading="lazy" aria-hidden="true" />` : ''}
+          <a href="#/shop/${p.id}" tabindex="-1" aria-hidden="true"><img src="${media.u(p.images[0], 640, 800)}" alt="" loading="lazy" data-fly /></a>
+          ${p.images[1] ? `<img class="alt" src="${media.u(p.images[1], 640, 800)}" alt="" loading="lazy" aria-hidden="true" />` : ''}
           <div class="media-top">
-            ${p.soldOut ? '<span class="badge badge-ink">Sold out</span>' : p.discount ? `<span class="badge badge-danger">−${p.discount}%</span>` : p.badges?.[0] ? `<span class="badge badge-glass">${esc(p.badges[0])}</span>` : '<span></span>'}
+            ${p.soldOut ? '<span class="pc-tag is-ink">Sold out</span>' : off ? `<span class="pc-tag is-sale">−${off}%</span>` : p.badges?.[0] ? `<span class="pc-tag">${esc(p.badges[0])}</span>` : '<span></span>'}
             <button class="icon-btn fav-btn ${p.wished ? 'is-on' : ''}" data-action="wish" data-id="${p.id}" aria-pressed="${p.wished}" aria-label="${p.wished ? 'Remove from' : 'Add to'} wishlist">${icon(p.wished ? 'heartFill' : 'heart', 18)}</button>
           </div>
-          ${p.soldOut ? '' : `<button class="quick-add btn btn-primary btn-sm" data-action="quick-add" data-id="${p.id}">${icon('plus', 14, 2.4)} ${p.sizes.length > 1 ? 'Choose size' : 'Add to cart'}</button>`}
+          ${p.soldOut ? '' : `<button class="quick-add" data-action="quick-add" data-id="${p.id}" aria-label="${p.sizes.length > 1 ? 'Choose size' : 'Add to cart'}">${icon('plus', 18, 2.2)}<span>${p.sizes.length > 1 ? 'Choose size' : 'Add to cart'}</span></button>`}
         </div>
         <div class="product-body">
-          <p class="xs muted">${esc(p.brand)}</p>
+          <p class="pc-brand">${esc(p.brand)}</p>
           <h3 class="product-name"><a href="#/shop/${p.id}">${esc(p.name)}</a></h3>
-          <div class="row-between" style="margin-top:8px">${c.price(p.price, p.was)}${c.rating(p.rating, null, 12)}</div>
+          <div class="pc-price"><b class="${off ? 'is-sale' : ''}">${money(p.price)}</b>${off ? `<s>${money(p.was)}</s>` : ''}</div>
+          ${p.rating ? `<div class="pc-rating">${icon('star', 12)}<span>${Number(p.rating).toFixed(1)}</span>${p.reviews ? `<span class="muted">(${p.reviews})</span>` : ''}</div>` : ''}
         </div>
       </article>`;
     },

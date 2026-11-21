@@ -15,19 +15,20 @@
   // The whole site in three groups. The desktop dropdowns, the menu drawer and the home shortcuts all read from here.
   const L = (key, label, href, ic, text, re) => ({ key, label, href, icon: ic, text, match: (p) => re.test(p) });
   const LINKS = {
-    pitches: L('pitches', 'Book a pitch', '#/pitches', 'pitch', 'Live availability near you', /^\/(pitches|booking)/),
+    pitches: L('pitches', 'Book a pitch', '#/pitches', 'pitch', 'Live availability near you', /^\/(pitches(?!.*sport=padel)|booking)/),
+    padel: L('padel', 'Padel courts', '#/pitches?sport=padel', 'padel', 'Book a court or join an Open Match', /^\/pitches.*sport=padel/),
     players: L('players', 'Find players', '#/players', 'users', 'Join a game or fill your squad', /^\/players(?!\/new)/),
     post: L('post', 'Post a match', '#/players/new', 'plus', 'Short on players? Post your game', /^\/players\/new/),
-    tournaments: L('tournaments', 'Tournaments', '#/tournaments', 'trophy', 'Cups and leagues at pitches near you', /^\/tournaments/),
+    tournaments: L('tournaments', 'Tournaments', '#/tournaments', 'medal', 'Cups and leagues at pitches near you', /^\/tournaments/),
     community: L('community', 'Communities', '#/community', 'message', 'Talk football and find free slots', /^\/community/),
     matches: L('matches', 'Matches', '#/matches', 'calendar', 'Live scores and fixtures', /^\/matches/),
-    fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'star', 'Premier League fantasy and prizes', /^\/fantasy/),
+    fantasy: L('fantasy', 'Fantasy', '#/fantasy', 'trophy', 'Premier League fantasy and prizes', /^\/fantasy/),
     shop: L('shop', 'Shop', '#/shop', 'bag', 'Boots, kits and gear', /^\/(shop|cart|checkout|order\/)/),
     wishlist: L('wishlist', 'Wishlist', '#/wishlist', 'heart', 'Items you saved', /^\/wishlist/),
     sell: L('sell', 'Sell on Super Malaab', '#/sell', 'shirt', 'Sell your designs', /^\/(sell|s\/)/),
   };
   const GROUPS = [
-    { key: 'play', label: 'Play', items: ['pitches', 'players', 'post', 'tournaments', 'community'] },
+    { key: 'play', label: 'Play', items: ['pitches', 'padel', 'players', 'post', 'tournaments', 'community'] },
     { key: 'football', label: 'Football', items: ['matches', 'fantasy'] },
     { key: 'shop', label: 'Shop', items: ['shop', 'wishlist', 'sell'] },
   ].map((g) => ({ ...g, items: g.items.map((k) => LINKS[k]) }));
@@ -75,7 +76,7 @@
         <button class="icon-btn" data-action="open-notifications" aria-label="Notifications${unread ? `, ${unread} unread` : ''}">${icon('bell')}${unread ? `<span class="dot-count">${unread}</span>` : ''}</button>`}
         <a class="icon-btn" href="#/cart" data-cart-target aria-label="Cart${cartCount ? `, ${cartCount} items` : ''}">${icon('cart')}${cartCount ? `<span class="dot-count" data-cart-count>${cartCount}</span>` : ''}</a>
         ${signedOut() ? `<a class="btn btn-primary btn-sm hdr-signin" href="${signInHref(path)}">${icon('user', 15)} Sign in</a>` : `<a class="header-avatar" href="#/profile" aria-label="Your profile">${SA.ui.c.avatar(u)}</a>`}
-        <button class="icon-btn menu-btn" data-action="open-menu" aria-label="Open menu">${icon('grid')}</button>
+        <button class="icon-btn menu-btn" data-action="open-menu" aria-label="Open menu">${icon('menu', 22)}</button>
       </div>
     </div>`;
   };
@@ -97,6 +98,23 @@
     <div class="footer-legal"><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/refunds">Refunds & returns</a><a href="#/legal/waiver">Injury waiver</a><a href="#/legal/cookies">Cookies</a><button class="footer-link" data-cookie-settings>Cookie settings</button><a href="#/legal">All legal</a></div>
     <div class="footer-base"><span>© 2026 Super Malaab. Cairo, Egypt.</span><span>Frontend demo: payments, bookings and fantasy scores are simulated on this device.</span></div>
   </div>`;
+
+  /** Mobile menu: account card, an icon grid of everything you can do, your stuff, then settings. Short labels, no descriptions. */
+  const EXPLORE = [['pitches', 'Pitches'], ['padel', 'Padel'], ['players', 'Players'], ['fantasy', 'Fantasy'], ['matches', 'Matches'], ['shop', 'Shop'], ['tournaments', 'Cups'], ['community', 'Community']];
+  const MORE = [['#/players/new', 'plus', 'Post a match'], ['#/sell', 'shirtPlain', 'Sell on Super Malaab'], ['#/alerts', 'bell', 'Free-slot alerts'], ['#/help', 'help', 'Help center'], ['#/support', 'message', 'Contact support']];
+  const menuBody = (path, live) => {
+    const s = store.get(); const u = s.user;
+    const row = ([h, ic, l]) => `<a href="${h}" class="mnu-row" data-close><span class="mnu-row-ico">${icon(ic, 19)}</span><span class="grow">${l}</span>${icon('chevronRight', 16)}</a>`;
+    const account = signedOut()
+      ? `<div class="mnu-guest"><b>Welcome to Super Malaab</b><div class="mnu-guest-btns"><a class="btn btn-primary btn-sm" href="${signInHref(path)}" data-close>Sign in</a><a class="btn btn-outline btn-sm" href="#/auth/sign-up" data-close>Create an account</a></div></div>`
+      : `<a class="mnu-me" href="#/profile" data-close>${SA.ui.c.avatar(u)}<span class="grow"><b>${esc(u?.name || 'My account')}</b><span class="xs">View profile</span></span><span class="mnu-bal"><span class="xs">Wallet</span><b class="num">${money(s.wallet.balance)}</b></span></a>`;
+    return `${account}
+      <nav class="mnu-grid" aria-label="Explore">${EXPLORE.filter(([k]) => k !== 'shop' || SA.config.storeEnabled).map(([k, l]) => { const n = LINKS[k]; const on = n.match(path); return `<a href="${n.href}" class="mnu-tile ${on ? 'is-active' : ''}" data-close><span class="mnu-tile-ico">${icon(n.icon, 22)}${k === 'matches' && live ? `<span class="mnu-live">${live}</span>` : ''}</span><span>${l}</span></a>`; }).join('')}</nav>
+      ${signedOut() ? '' : `<section class="mnu-sec"><h3 class="mnu-h">My activity</h3><div class="mnu-list">${[MINE[0], MINE[1], MINE[2], MINE[3], ['#/wishlist', 'heart', 'Wishlist']].map(row).join('')}</div></section>`}
+      <section class="mnu-sec"><h3 class="mnu-h">More</h3><div class="mnu-list">${MORE.map(row).join('')}</div></section>
+      <a class="mnu-partner" href="#/dash" data-close><span class="mnu-row-ico">${icon('dashboard', 19)}</span><span class="grow"><b>Partner dashboard</b><span class="xs">Pitch owners, sellers and print partners</span></span>${icon('arrowUpRight', 16)}</a>
+      <div class="mnu-prefs"><button class="mnu-pref" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 18)}<span>${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</span></button><button class="mnu-pref" data-action="toggle-lang" data-i18n-skip>${icon('globe', 18)}<span>${SA.i18n.isAr ? 'English' : 'العربية'}</span></button></div>`;
+  };
 
   const openNotifications = () => {
     const list = store.get().notifications;
@@ -149,18 +167,7 @@
           e.preventDefault();
           const path = SA.core.router.current()?.path || '/';
           const live = liveCount();
-          let i = 0;
-          SA.ui.overlay.open({
-            drawer: true, title: 'Menu',
-            body: `<a href="#/" class="menu-item menu-home ${path === '/' ? 'is-active' : ''}" data-close><span class="menu-ico">${icon('home', 20)}</span><span class="grow">Home</span></a>
-              ${GROUPS.map((g) => `<section class="menu-group"><h3 class="menu-group-title">${g.label}</h3><nav class="menu-list" aria-label="${g.label}">${g.items.map((n) => `<a href="${n.href}" class="menu-item ${n.match(path) ? 'is-active' : ''}" style="--i:${i++}" data-close>
-                <span class="menu-ico">${icon(n.icon, 20)}</span><span class="grow menu-txt"><span>${n.label}</span><span class="xs muted">${n.text}</span></span>${linkBadge(n, live) || icon('chevronRight', 18)}</a>`).join('')}</nav></section>`).join('')}
-              ${signedOut() ? `<section class="menu-group"><h3 class="menu-group-title">My account</h3><div class="menu-prefs"><a class="btn btn-primary btn-sm" href="${signInHref(path)}" data-close>${icon('user', 16)} Sign in</a><a class="btn btn-outline btn-sm" href="#/auth/sign-up" data-close>Create an account</a></div></section>`
-                : `<section class="menu-group"><h3 class="menu-group-title">My account</h3><div class="menu-sub">${MINE.map(([h, ic, l]) => `<a href="${h}" data-close>${icon(ic, 18)} ${l}</a>`).join('')}</div></section>`}
-              <a class="menu-partner" href="#/dash" data-close>${icon('grid', 18)}<span class="grow"><b>Partner dashboard</b><span class="xs muted">For pitch owners, sellers and print partners</span></span>${icon('chevronRight', 16)}</a>
-              <div class="menu-prefs"><button class="btn btn-outline btn-sm" data-action="toggle-theme">${icon(SA.core.theme.current() === 'dark' ? 'sun' : 'moon', 16)} ${SA.core.theme.current() === 'dark' ? 'Light mode' : 'Dark mode'}</button><button class="btn btn-outline btn-sm" data-action="toggle-lang" data-i18n-skip>${icon('globe', 16)} ${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
-              ${SA.ui.social.render({ variant: 'light' })}`,
-          });
+          SA.ui.overlay.open({ drawer: true, title: 'Menu', body: menuBody(path, live) });
           break;
         }
         case 'toggle-theme': {

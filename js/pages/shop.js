@@ -18,6 +18,28 @@
     </div>`;
   };
 
+  /** Storefront landing: announcement bar, full-bleed banner, round categories, trust row, best sellers, two promo tiles, sale */
+  const rail = (title, href, items) => (items.length ? `<section class="container section-tight">
+      <div class="sec-head"><div><h2 class="h2">${title}</h2></div><a class="btn btn-ghost btn-sm" href="${href}">View all ${icon('arrowRight', 16)}</a></div>
+      <div class="scroller product-rail">${items.map((p) => cards.product(p)).join('')}</div></section>` : '');
+  const landing = (best, sale) => `
+      <div class="shop-announce" role="note"><div class="shop-announce-track">${[0, 1].map(() => `<span>${icon('truck', 15)} Free delivery over ${money(1500)}</span><span>${icon('shield', 15)} 100% original brands</span><span>${icon('refresh', 15)} 14-day easy returns</span><span>${icon('wallet', 15)} Pay by card, wallet or on delivery</span>`).join('')}</div></div>
+      <section class="container shop-banner">
+        <img src="${media.u('photo-1579952363873-27f3bade9f55', 1400, 1000)}" alt="Football boot resting on a match ball" />
+        <div class="shop-banner-copy">
+          <span class="shop-eyebrow">New season 2026</span>
+          <h1 class="shop-banner-title">Gear for every game.</h1>
+          <div class="shop-banner-btns"><a class="btn shop-btn-light" href="#/shop?cat=boots">Shop boots</a><a class="btn shop-btn-glass" href="#/shop?sale=1">${icon('percent', 16)} Sale</a></div>
+        </div>
+      </section>
+      <section class="container"><div class="cat-strip">${S.shop.categories().filter((cc) => cc.id !== 'services').map((cc) => `<a class="cat-tile" href="#/shop?cat=${cc.id}"><span class="media"><img src="${media.u(catImg[cc.id], 300, 300)}" alt="" loading="lazy" /></span><span class="cat-name">${esc(cc.name)}</span></a>`).join('')}</div></section>
+      ${rail('Best sellers', '#/shop?sort=rating', best)}
+      <section class="container section-tight"><div class="shop-tiles">
+        <a class="shop-tile" href="#/shop?cat=padel"><img src="${media.u(catImg.padel, 900, 900)}" alt="" loading="lazy" /><span><b>Padel</b><span class="link">Rackets & balls ${icon('arrowRight', 15)}</span></span></a>
+        <a class="shop-tile" href="#/shop?cat=kits"><img src="${media.u(catImg.kits, 900, 900)}" alt="" loading="lazy" /><span><b>Jerseys & kits</b><span class="link">Shop kits ${icon('arrowRight', 15)}</span></span></a>
+      </div></section>
+      ${rail('Deals', '#/shop?sale=1', sale)}`
+
   SA.pages.shop = {
     title: 'Shop — Super Malaab',
     async render(ctx) {
@@ -33,21 +55,17 @@
       const dcatBar = f.cat === 'designs' ? `<div class="container"><div class="chips dcat-bar" role="group" aria-label="Design sections">${[{ id: '', name: 'All designs' }, ...dcats].map((x) => `<a class="chip" href="${SA.core.router.href('/shop', { ...f, dcat: x.id || undefined })}" aria-pressed="${(f.dcat || '') === x.id}">${esc(x.name)}${x.count != null ? ` <span class="chip-count">${x.count}</span>` : ''}</a>`).join('')}</div>
         <div class="sell-banner"><span>${icon('sparkle', 18)}</span><p class="small"><b>Got a design?</b> Put it on a hoodie or tee and earn on every sale — no stock, no upfront cost.</p><a class="btn btn-sm btn-blaze" href="#/sell">Start selling</a></div></div>` : '';
       const isLanding = !f.cat && !f.q && !f.sale && !f.brand && !f.max && !f.store && !f.tag;
+      const best = isLanding ? (await S.shop.list({ sort: 'rating' })).filter((p) => !p.service && !p.pod).slice(0, 8) : [];
+      const sale = isLanding ? (await S.shop.list({ sale: '1', sort: 'discount' })).slice(0, 8) : [];
       if (f.tag) S.shop.trackTag(f.tag, 'view');
       const shopStore = f.store ? S.shop.storeInfo(f.store) : null;
       return `
-      ${isLanding ? `<section class="container shop-hero">
-        <div class="shop-hero-copy"><h1 class="display" style="font-size:clamp(2.4rem,1.4rem+4vw,4.4rem)">Gear for every game.</h1>
-          <p class="lead" style="margin-top:14px">Original boots, balls and kits from adidas, Nike, Puma and more — delivered across Egypt in 1–3 days. Free delivery over ${money(1500)}.</p>
-          <div class="row wrap" style="margin-top:22px">${c.cta('Shop boots', { href: '#/shop?cat=boots' })}<a class="btn btn-outline" href="#/shop?sale=1">${icon('percent', 16)} Sale</a></div></div>
-        <div class="shop-hero-art"><img src="${media.u('photo-1579952363873-27f3bade9f55', 1000, 1000)}" alt="Football boot resting on a match ball" /><span class="badge badge-glass shop-hero-tag">${icon('truck', 13)} Next-day delivery in Cairo</span></div>
-      </section>
-      <section class="container"><div class="cat-strip">${S.shop.categories().map((cc) => `<a class="cat-tile" href="#/shop?cat=${cc.id}"><span class="media"><img src="${media.u(catImg[cc.id], 300, 300)}" alt="" loading="lazy" /></span><span class="small strong">${esc(cc.name)}</span></a>`).join('')}</div></section>`
-      : shopStore ? `<section class="container storefront"><div class="sf-cover" style="background-image:url('${media.u(shopStore.cover, 1600, 560)}')"></div><div class="sf-info"><span class="sf-logo">${shopStore.logo ? `<img src="${shopStore.logo}" alt="" />` : icon('bag', 26)}</span><div class="grow"><span class="xs muted">Store on Super Malaab${shopStore.official ? ' · Official' : ''}</span><h1 class="h1">${esc(shopStore.name)}</h1><p class="soft">${esc(shopStore.description)}</p></div></div></section>`
+      ${isLanding ? landing(best, sale)       : shopStore ? `<section class="container storefront"><div class="sf-cover" style="background-image:url('${media.u(shopStore.cover, 1600, 560)}')"></div><div class="sf-info"><span class="sf-logo">${shopStore.logo ? `<img src="${shopStore.logo}" alt="" />` : icon('bag', 26)}</span><div class="grow"><span class="xs muted">Store on Super Malaab${shopStore.official ? ' · Official' : ''}</span><h1 class="h1">${esc(shopStore.name)}</h1><p class="soft">${esc(shopStore.description)}</p></div></div></section>`
       : c.pageHead({ crumbs: [['Shop', '#/shop'], [cat ? cat.name : f.tag ? `#${f.tag}` : f.q ? `Search “${f.q}”` : f.sale ? 'Sale' : 'All products']], title: cat ? esc(cat.name) : f.tag ? `#${esc(f.tag)}` : f.q ? `Results for “${esc(f.q)}”` : f.sale ? 'Sale' : 'All products' })}
       ${designStrip}${dcatBar}
 
-      <div class="container">
+      <div class="container shop-all">
+        ${isLanding ? '<div class="sec-head shop-all-head"><div><h2 class="h2">All products</h2></div></div>' : ''}
         <div class="shop-toolbar">
           <div class="input-icon grow">${icon('search', 18)}<input class="input" id="shop-q" type="search" placeholder="Search boots, balls, jerseys…" value="${esc(f.q || '')}" aria-label="Search products" /></div>
           <button class="btn btn-outline shop-filter-btn" data-open-filters>${icon('filter', 16)} Filters</button>
