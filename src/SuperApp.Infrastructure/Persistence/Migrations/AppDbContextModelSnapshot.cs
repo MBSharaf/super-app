@@ -1472,7 +1472,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("Games", "booking", t =>
                         {
-                            t.HasCheckConstraint("CK_Games_Level", "[Level] BETWEEN 0 AND 3");
+                            t.HasCheckConstraint("CK_Games_Level", "[Level] BETWEEN 0 AND 3 OR [Level] BETWEEN 11 AND 17");
 
                             t.HasCheckConstraint("CK_Games_PlayersNeeded", "[PlayersNeeded] BETWEEN 1 AND 21");
 

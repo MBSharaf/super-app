@@ -11,9 +11,13 @@ namespace SuperApp.Application.Features.Games;
 
 public sealed record GamesQuery(int? AreaId = null, DateOnly? Date = null, string? Level = null);
 
-/// <summary>An open game card. <c>Joined</c> counts accepted players; <c>Level</c>: Any, Casual, Intermediate, Competitive.</summary>
+/// <summary>
+/// An open game card. <c>Joined</c> counts accepted players; <c>Level</c>: Any, Casual, Intermediate, Competitive — or Level1…Level7 for a
+/// padel Open Match (<c>Sport</c> Padel: 4 players, the court cost split by 4; <c>StartMinute</c>/<c>Minutes</c> give its half-hour time).
+/// </summary>
 public sealed record GameDto(string Code, string? Title, string PitchSlug, string PitchName, string AreaEn, int AreaId, DateOnly Date, int StartHour, int Duration,
-    string Level, string? Positions, int PlayersNeeded, int Joined, decimal SharePrice, string Status, bool RequestsClosed, string HostName, Guid HostId, string? Notes = null);
+    string Level, string? Positions, int PlayersNeeded, int Joined, decimal SharePrice, string Status, bool RequestsClosed, string HostName, Guid HostId, string? Notes = null,
+    string Sport = "Football", int StartMinute = 0, int Minutes = 0);
 
 /// <summary>A request to join. Status: Waiting, Accepted, Declined, Withdrawn, Removed, Waitlisted.</summary>
 public sealed record GameRequestDto(long Id, Guid PlayerId, string PlayerName, string? Position, string? Message, string Status, DateTime CreatedAt,
@@ -123,6 +127,7 @@ public sealed class GamesService(
     IValidator<PostGameRequest> postRules,
     IValidator<EditGameRequest> editRules,
     IValidator<RatingsRequest> ratingRules,
+    IValidator<JoinGameRequest> joinRules,
     Payments.IPaymentsService payments,
     Money.ILedger ledger) : IGamesService
 {
@@ -157,10 +162,12 @@ public sealed class GamesService(
         {
             throw new ConflictException("This booking already has a game.", "game_exists");
         }
+        var level = OpenMatch.Check(booking.Pitch.Sport, request.PlayersNeeded, request.Level);
+        var share = booking.Pitch.Sport == Sport.Padel ? OpenMatch.Share(booking.Total) : request.SharePrice;
         var game = new Game
         {
             Code = await games.NewCodeAsync(ct), HostId = me, BookingId = booking.Id, Title = request.Title?.Trim(), PlayersNeeded = (byte)request.PlayersNeeded,
-            Positions = request.Positions?.Trim(), Level = Enum.Parse<GameLevel>(request.Level), SharePrice = request.SharePrice, AutoAccept = request.AutoAccept, Status = GameStatus.Open,
+            Positions = request.Positions?.Trim(), Level = level, SharePrice = share, AutoAccept = request.AutoAccept, Status = GameStatus.Open,
             Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
         };
         games.Add(game);
@@ -177,8 +184,9 @@ public sealed class GamesService(
         {
             throw new BusinessRuleException($"{accepted} players are already in. Remove some first.", "below_joined");
         }
+        var level = OpenMatch.Check(game.Booking.Pitch.Sport, request.PlayersNeeded, request.Level);
         (game.PlayersNeeded, game.Level, game.Positions, game.Title, game.RequestsClosed) =
-            ((byte)request.PlayersNeeded, Enum.Parse<GameLevel>(request.Level), request.Positions?.Trim(), request.Title?.Trim(), request.RequestsClosed);
+            ((byte)request.PlayersNeeded, level, request.Positions?.Trim(), request.Title?.Trim(), request.RequestsClosed);
         game.AutoAccept = request.AutoAccept ?? game.AutoAccept;
         game.Status = accepted >= game.PlayersNeeded ? GameStatus.Full : GameStatus.Open;
         await unitOfWork.SaveChangesAsync(ct);
@@ -187,6 +195,7 @@ public sealed class GamesService(
 
     public async Task<GameDetailDto> JoinAsync(string code, JoinGameRequest request, CancellationToken ct)
     {
+        await joinRules.ValidateAndThrowAsync(request, ct);
         var me = Me();
         var game = await games.FindAsync(code, ct) ?? throw new NotFoundException("This game does not exist.");
         if (game.HostId == me) { throw new BusinessRuleException("This is your own game.", "own_game"); }
@@ -203,6 +212,7 @@ public sealed class GamesService(
         var row = new GameRequest { GameId = game.Id, PlayerId = me, Position = request.Position?.Trim(), Message = request.Message?.Trim(), Status = status };
         games.AddRequest(row);
         var url = await PayShareAsync(row, game, me, code, request.PayFromWallet, ct);
+        var wasFull = game.Status == GameStatus.Full;
         Refill(game, status == GameRequestStatus.Accepted ? 1 : 0);
         await unitOfWork.SaveChangesAsync(ct);
         if (url is null && row.Payment is { } paid)
@@ -211,6 +221,7 @@ public sealed class GamesService(
             await unitOfWork.SaveChangesAsync(ct);
         }
         await Tell(game.HostId, status == GameRequestStatus.Accepted ? "A player joined your game" : "A player asked to join your game", game, ct);
+        await TellIfFullAsync(game, wasFull, ct);
         return await GetAsync(code, ct) with { PaymentUrl = url };
     }
 
@@ -252,9 +263,11 @@ public sealed class GamesService(
         {
             await RefundShareAsync(request, game.HostId, request.Status == GameRequestStatus.Declined ? "Declined by the host" : "Removed by the host", ct);
         }
+        var wasFull = game.Status == GameStatus.Full;
         Refill(game, 0);
         await unitOfWork.SaveChangesAsync(ct);
         await Tell(request.PlayerId, message, game, ct);
+        await TellIfFullAsync(game, wasFull, ct);
         return await GetAsync(code, ct);
     }
 
@@ -356,6 +369,20 @@ public sealed class GamesService(
         return game is not null && game.HostId == Me() ? game : throw new NotFoundException("This game does not exist.");
     }
 
+    /// <summary>When the last place is taken, the host and every player in the game hear that it is full.</summary>
+    private async Task TellIfFullAsync(Game game, bool wasFull, CancellationToken ct)
+    {
+        if (wasFull || game.Status != GameStatus.Full)
+        {
+            return;
+        }
+        var title = game.Booking.Pitch.Sport == Sport.Padel ? "Your Open Match is full — 4 of 4 players" : "Your game is full";
+        foreach (var user in game.Requests.Where(r => r.Status == GameRequestStatus.Accepted).Select(r => r.PlayerId).Append(game.HostId).Distinct())
+        {
+            await Tell(user, title, game, ct);
+        }
+    }
+
     private Task Tell(Guid user, string title, Game game, CancellationToken ct) =>
         notifier.NotifyUserAsync(user, new NotificationMessage(NotificationCategory.Bookings, title, game.Title ?? game.Code, $"#/players/{game.Code}"), ct);
 
@@ -372,11 +399,21 @@ public sealed class PostGameRequestValidator : AbstractValidator<PostGameRequest
     {
         RuleFor(x => x.BookingCode).NotEmpty().MaximumLength(20);
         RuleFor(x => x.PlayersNeeded).InclusiveBetween(1, 21);
-        RuleFor(x => x.Level).IsEnumName(typeof(GameLevel), caseSensitive: true).WithMessage("Level is Any, Casual, Intermediate or Competitive.");
+        RuleFor(x => x.Level).IsEnumName(typeof(GameLevel), caseSensitive: true).WithMessage("Level is Any, Casual, Intermediate or Competitive (padel: Level1 to Level7).");
         RuleFor(x => x.SharePrice).InclusiveBetween(0, 5000);
         RuleFor(x => x.Notes).MaximumLength(280);
         RuleFor(x => x.Title).MaximumLength(100);
         RuleFor(x => x.Positions).MaximumLength(100);
+    }
+}
+
+public sealed class JoinGameRequestValidator : AbstractValidator<JoinGameRequest>
+{
+    public JoinGameRequestValidator()
+    {
+        // Football: GK, DEF, MID, FWD, Any. Padel: Drive, Backhand, Either.
+        RuleFor(x => x.Position).MaximumLength(10);
+        RuleFor(x => x.Message).MaximumLength(300);
     }
 }
 
@@ -423,4 +460,35 @@ public sealed class GameSharePaymentListener(IGameRepository games, Money.ILedge
             await unitOfWork.SaveChangesAsync(ct);
         }
     }
+}
+
+/// <summary>
+/// Padel Open Match rules (owner, 2026-11-21): always 4 players, so the host needs 1 to 3 more; the level is on the padel 1–7 scale;
+/// each player's share is the court cost split by 4. Football games keep their own levels.
+/// </summary>
+public static class OpenMatch
+{
+    public const int Players = 4;
+
+    public static bool IsPadelLevel(GameLevel level) => level >= GameLevel.Level1;
+
+    public static GameLevel Check(Sport sport, int playersNeeded, string levelName)
+    {
+        var level = Enum.Parse<GameLevel>(levelName);
+        if (sport == Sport.Padel)
+        {
+            if (playersNeeded is < 1 or >= Players)
+            {
+                throw new BusinessRuleException("A padel Open Match is 4 players: you can look for 1 to 3.", "open_match_players");
+            }
+            if (!IsPadelLevel(level))
+            {
+                throw new BusinessRuleException("Pick a padel level from 1 to 7.", "padel_level");
+            }
+            return level;
+        }
+        return IsPadelLevel(level) ? throw new BusinessRuleException("Padel levels are for padel courts only.", "padel_level") : level;
+    }
+
+    public static decimal Share(decimal courtTotal) => Math.Ceiling(courtTotal / Players);
 }

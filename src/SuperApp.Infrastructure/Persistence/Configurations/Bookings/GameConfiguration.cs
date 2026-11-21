@@ -14,7 +14,7 @@ internal sealed class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.ToTable("Games", "booking", t =>
         {
             t.HasCheckConstraint("CK_Games_PlayersNeeded", "[PlayersNeeded] BETWEEN 1 AND 21");
-            t.HasCheckConstraint("CK_Games_Level", "[Level] BETWEEN 0 AND 3");
+            t.HasCheckConstraint("CK_Games_Level", "[Level] BETWEEN 0 AND 3 OR [Level] BETWEEN 11 AND 17");
             t.HasCheckConstraint("CK_Games_SharePrice", "[SharePrice] >= 0");
             t.HasCheckConstraint("CK_Games_Status", "[Status] BETWEEN 0 AND 3");
         });

@@ -24,7 +24,7 @@ public sealed class GameRepository(AppDbContext db) : IGameRepository
     public Task<GameDto?> CardAsync(string code, CancellationToken ct) => Cards(db.Set<Game>().Where(g => g.Code == code && !g.HiddenByAdmin)).FirstOrDefaultAsync(ct);
 
     public Task<Game?> FindAsync(string code, CancellationToken ct) =>
-        db.Set<Game>().Include(g => g.Booking).Include(g => g.Requests).ThenInclude(r => r.Payment).FirstOrDefaultAsync(g => g.Code == code && !g.HiddenByAdmin, ct);
+        db.Set<Game>().Include(g => g.Booking).ThenInclude(b => b.Pitch).Include(g => g.Requests).ThenInclude(r => r.Payment).FirstOrDefaultAsync(g => g.Code == code && !g.HiddenByAdmin, ct);
 
     public Task<GameRequest?> RequestByPaymentAsync(long paymentId, CancellationToken ct) =>
         db.Set<GameRequest>().Include(r => r.Payment).Include(r => r.Game).ThenInclude(g => g.Booking).FirstOrDefaultAsync(r => r.PaymentId == paymentId, ct);
@@ -48,7 +48,7 @@ public sealed class GameRepository(AppDbContext db) : IGameRepository
         return new MyGamesDto(hosting, joined);
     }
 
-    public Task<Booking?> BookingAsync(string code, CancellationToken ct) => db.Set<Booking>().FirstOrDefaultAsync(b => b.Code == code, ct);
+    public Task<Booking?> BookingAsync(string code, CancellationToken ct) => db.Set<Booking>().Include(b => b.Pitch).FirstOrDefaultAsync(b => b.Code == code, ct);
 
     public Task<bool> ExistsForBookingAsync(long bookingId, CancellationToken ct) => db.Set<Game>().AnyAsync(g => g.BookingId == bookingId, ct);
 
@@ -89,5 +89,6 @@ public sealed class GameRepository(AppDbContext db) : IGameRepository
     private static IQueryable<GameDto> Cards(IQueryable<Game> q) => q.Select(g => new GameDto(
         g.Code, g.Title, g.Booking.Pitch.Slug, g.Booking.Pitch.Name, g.Booking.Pitch.Venue.Area.NameEn, g.Booking.Pitch.Venue.AreaId,
         g.Booking.Date, g.Booking.StartHour, g.Booking.Duration, g.Level.ToString(), g.Positions, g.PlayersNeeded,
-        g.Requests.Count(r => r.Status == GameRequestStatus.Accepted), g.SharePrice, g.Status.ToString(), g.RequestsClosed, g.Host.FullName, g.HostId, g.Notes));
+        g.Requests.Count(r => r.Status == GameRequestStatus.Accepted), g.SharePrice, g.Status.ToString(), g.RequestsClosed, g.Host.FullName, g.HostId, g.Notes,
+        g.Booking.Pitch.Sport.ToString(), g.Booking.StartMinute, g.Booking.Minutes));
 }

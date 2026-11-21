@@ -121,8 +121,8 @@ public sealed class PadelTests(AccountsApiFactory api) : IClassFixture<AccountsA
         var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Cairo);
         var start = now.AddMinutes(-10);
         await api.DbAsync(db => db.Set<Booking>().Where(x => x.Code == code).ExecuteUpdateAsync(u => u
-            .SetProperty(x => x.Date, DateOnly.FromDateTime(start)).SetProperty(x => x.StartHour, (byte)start.Hour).SetProperty(x => x.StartMinute, (byte)0)));
-        var kickOff = new DateTime(start.Year, start.Month, start.Day, start.Hour, 0, 0);
+            .SetProperty(x => x.Date, DateOnly.FromDateTime(start)).SetProperty(x => x.StartHour, (byte)start.Hour).SetProperty(x => x.StartMinute, (byte)(start.Minute >= 30 ? 30 : 0))));
+        var kickOff = new DateTime(start.Year, start.Month, start.Day, start.Hour, start.Minute >= 30 ? 30 : 0, 0);   // at most 40 minutes ago, so the hour is still on
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/check-in/scan") { Content = JsonContent.Create(new { token = b.GetProperty("qrToken").GetString(), device = "Club desk" }) };
         request.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString("N"));
@@ -144,5 +144,36 @@ public sealed class PadelTests(AccountsApiFactory api) : IClassFixture<AccountsA
         var join = await player.PostAsync("/api/v1/waitlist", new { pitchSlug = slug, date = PartnerKit.Day(3), hour = 20 });
         join.Status.ShouldBe(HttpStatusCode.UnprocessableEntity, join.Body.ToString());
         join.Body.Code().ShouldBe("football_only");
+    }
+
+    [Fact]
+    public async Task An_open_match_is_four_players_on_the_padel_scale_and_everyone_hears_when_it_is_full()
+    {
+        var (_, _, slug) = await LiveCourtAsync(90);
+        var (host, hostId) = await kit.PersonAsync(partner: false);
+        var booking = (await host.PostAsync("/api/v1/bookings", Booking(slug, PartnerKit.Day(7), 19, 30, 90))).Body.Data();
+        var code = booking.GetProperty("code").GetString();
+        object Match(int needed, string level) => new { bookingCode = code, playersNeeded = needed, level, positions = (string?)null, title = (string?)null, sharePrice = 1m, autoAccept = true };
+
+        (await host.PostAsync("/api/v1/games", Match(4, "Level4"))).Body.Code().ShouldBe("open_match_players");
+        (await host.PostAsync("/api/v1/games", Match(1, "Casual"))).Body.Code().ShouldBe("padel_level");
+        var posted = await host.PostAsync("/api/v1/games", Match(1, "Level4"));
+        posted.Status.ShouldBe(HttpStatusCode.Created, posted.Body.ToString());
+        var game = posted.Body.Data().GetProperty("game");
+        game.GetProperty("sport").GetString().ShouldBe("Padel");
+        (game.GetProperty("startMinute").GetInt32(), game.GetProperty("minutes").GetInt32()).ShouldBe((30, 90));
+        game.GetProperty("level").GetString().ShouldBe("Level4");
+        game.GetProperty("sharePrice").GetDecimal().ShouldBe(Math.Ceiling(booking.GetProperty("total").GetDecimal() / 4));   // the court split by 4, whatever the app sent
+
+        var (player, playerId) = await kit.PersonAsync(partner: false);
+        (await player.PostAsync($"/api/v1/games/{game.GetProperty("code").GetString()}/requests", new { position = "Drive side (right)" })).Body.HasFieldError("position").ShouldBeTrue();
+        var join = await player.PostAsync($"/api/v1/games/{game.GetProperty("code").GetString()}/requests", new { position = "Drive" });
+        join.Status.ShouldBe(HttpStatusCode.Created, join.Body.ToString());
+        var joined = join.Body.Data();
+        joined.GetProperty("game").GetProperty("status").GetString().ShouldBe("Full");
+        foreach (var who in new[] { hostId, playerId })
+        {
+            (await api.DbAsync(db => db.Set<SuperApp.Domain.Entities.Notifications.Notification>().AnyAsync(n => n.UserId == who && n.Title.StartsWith("Your Open Match is full")))).ShouldBeTrue();
+        }
     }
 }
