@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <!-- Clean URLs (no "#"): the site lives in /super-app/ (GitHub Pages; tools/serve.ps1 does the same locally).
-       Every relative file and route is under this folder. On a custom domain at the root, change it to "/". -->
-  <base href="/super-app/" />
+  <!-- Clean URLs (no "#"). The same files run in two places: in /super-app/ (GitHub Pages and tools/serve.ps1)
+       and at the domain root (supermalaab.com). The base folder is picked from the address before anything loads. -->
+  <script>document.write('<base href="' + (/^\/super-app(\/|$)/.test(location.pathname) ? '/super-app/' : '/') + '" />');</script>
   <script>
-    /* 404.html sends deep links (/super-app/factory/jobs) here and remembers the path: put it back before the app starts */
+    /* 404.html sends deep links (/factory/jobs or /super-app/factory/jobs) here and remembers the path: put it back before the app starts */
     (function () { try { var r = sessionStorage.getItem('superapp.redirect'); if (r) { sessionStorage.removeItem('superapp.redirect'); history.replaceState(null, '', r); } } catch (e) {} })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
