@@ -3,6 +3,8 @@ Options -Indexes
 DirectoryIndex index.html
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # Let the free SSL check (AutoSSL / Let's Encrypt) reach its files over plain HTTP
+  RewriteRule ^\.well-known/ - [L]
   # Always HTTPS and no "www."
   RewriteCond %{HTTPS} !=on [OR]
   RewriteCond %{HTTP_HOST} ^www\. [NC]
@@ -10,6 +12,8 @@ DirectoryIndex index.html
   # Never serve source, planning or server files
   RewriteRule ^(\.git|docs|src|tests|tools|mobile|\.claude)(/|$) - [F,L]
   RewriteRule \.(md|sln|props|cs|csproj|ps1)$ - [F,L]
+  # No server on this hosting yet: /api/ answers 404 so the site runs in demo mode instead of loading index.html
+  RewriteRule ^api(/|$) - [R=404,L]
   # Any page address without a file (e.g. /fantasy/leagues) opens the app
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
