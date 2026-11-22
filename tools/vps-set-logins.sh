@@ -28,9 +28,9 @@ set_value() {   # replaces NAME=... in app.env, or adds it
   printf '%s=%s\n' "$name" "$value" >> "$tmp"
   cat "$tmp" > "$ENV"; rm -f "$tmp"
 }
-[ -n "$GOOGLE_ID" ] && set_value EXTERNALLOGINS__GOOGLE__CLIENTID "$GOOGLE_ID"
-[ -n "$FB_ID" ] && set_value EXTERNALLOGINS__FACEBOOK__APPID "$FB_ID"
-[ -n "$FB_SECRET" ] && set_value EXTERNALLOGINS__FACEBOOK__APPSECRET "$FB_SECRET"
+if [ -n "$GOOGLE_ID" ]; then set_value EXTERNALLOGINS__GOOGLE__CLIENTID "$GOOGLE_ID"; fi
+if [ -n "$FB_ID" ]; then set_value EXTERNALLOGINS__FACEBOOK__APPID "$FB_ID"; fi
+if [ -n "$FB_SECRET" ]; then set_value EXTERNALLOGINS__FACEBOOK__APPSECRET "$FB_SECRET"; fi
 chmod 600 "$ENV"
 unset FB_SECRET
 
