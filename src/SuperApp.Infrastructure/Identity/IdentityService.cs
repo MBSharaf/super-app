@@ -108,6 +108,48 @@ public sealed class IdentityService(UserManager<User> users, AppDbContext db, Pe
         IdentityErrors.Check(await users.UpdateAsync(user));
     }
 
+    public async Task<AccountSummary?> FindExternalAsync(ExternalProfile profile, CancellationToken ct)
+    {
+        var user = await users.FindByLoginAsync(profile.Provider, profile.ProviderKey);
+        if (user is null)
+        {
+            // Same email as an existing account: the provider proved the person owns that email, so the two are linked
+            user = await users.FindByEmailAsync(profile.Email);
+            if (user is null)
+            {
+                return null;
+            }
+            IdentityErrors.Check(await users.AddLoginAsync(user, new UserLoginInfo(profile.Provider, profile.ProviderKey, profile.Provider)));
+            if (!user.EmailConfirmed)
+            {
+                user.EmailConfirmed = true;
+                IdentityErrors.Check(await users.UpdateAsync(user));
+            }
+        }
+        return await SummaryAsync(user, ct);
+    }
+
+    public async Task<Guid> CreateExternalAsync(ExternalProfile profile, string language, CancellationToken ct)
+    {
+        await EnsureFreeAsync(profile.Email, null, null, ct);
+        var user = new User
+        {
+            UserName = profile.Email, Email = profile.Email, EmailConfirmed = true, FullName = ExternalName(profile),
+            Language = language, AccountType = AccountType.Person, Status = UserStatus.Active,
+        };
+        IdentityErrors.Check(await users.CreateAsync(user));
+        IdentityErrors.Check(await users.AddToRoleAsync(user, SystemRoles.Customer));
+        IdentityErrors.Check(await users.AddLoginAsync(user, new UserLoginInfo(profile.Provider, profile.ProviderKey, profile.Provider)));
+        return user.Id;
+    }
+
+    /// <summary>The name from the provider, else the part of the email before "@" (2 to 120 characters, as the table requires).</summary>
+    private static string ExternalName(ExternalProfile profile)
+    {
+        var name = string.IsNullOrWhiteSpace(profile.FullName) ? profile.Email.Split('@')[0] : profile.FullName.Trim();
+        return name.Length < 2 ? "Player" : name.Length > 120 ? name[..120] : name;
+    }
+
     public async Task AddRoleAsync(Guid userId, string role)
     {
         var user = await RequireAsync(userId);

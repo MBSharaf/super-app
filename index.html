@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <!-- Clean URLs (no "#"). The same files run in two places: in /super-app/ (GitHub Pages and tools/serve.ps1)
-       and at the domain root (supermalaab.com). The base folder is picked from the address before anything loads. -->
-  <script>document.write('<base href="' + (/^\/super-app(\/|$)/.test(location.pathname) ? '/super-app/' : '/') + '" />');</script>
+  <!-- Clean URLs (no "#"). The site lives in /super-app/ on GitHub Pages and on the API server; the copy on the
+       supermalaab.com hosting lives at the root, and tools/deploy-cpanel.sh writes href="/" there when it deploys.
+       A fixed tag (not one written by a script) lets the browser fetch the styles straight away. -->
+  <base href="/super-app/" />
   <script>
     /* 404.html sends deep links (/factory/jobs or /super-app/factory/jobs) here and remembers the path: put it back before the app starts */
     (function () { try { var r = sessionStorage.getItem('superapp.redirect'); if (r) { sessionStorage.removeItem('superapp.redirect'); history.replaceState(null, '', r); } } catch (e) {} })();
@@ -165,6 +166,7 @@
   <script src="js/services/shopService.js" defer></script>
   <script src="js/services/userService.js" defer></script>
   <script src="js/services/sessionService.js" defer></script>
+  <script src="js/services/socialLogin.js" defer></script>
   <script src="js/services/scheduleService.js" defer></script>
   <script src="js/services/dashService.js" defer></script>
   <script src="js/services/livePartner.js" defer></script>

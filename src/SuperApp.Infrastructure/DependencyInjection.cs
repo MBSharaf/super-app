@@ -77,6 +77,13 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<ITwoFactorService, TwoFactorService>();
+        // "Continue with Google / Facebook": tokens are checked with the providers themselves
+        services.Configure<Application.Common.Options.ExternalLoginOptions>(configuration.GetSection(Application.Common.Options.ExternalLoginOptions.Section));
+        services.AddHttpClient(Identity.External.GoogleLoginVerifier.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient(Identity.External.FacebookLoginVerifier.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddSingleton<Identity.External.GoogleKeyCache>();
+        services.AddScoped<IExternalLoginVerifier, Identity.External.GoogleLoginVerifier>();
+        services.AddScoped<IExternalLoginVerifier, Identity.External.FacebookLoginVerifier>();
         services.AddScoped<IStaffStore, StaffStore>();
         services.AddScoped<IEmailService, EmailService>();
         // EMAIL__MODE=Smtp sends real email; anything else saves each email as a file (development)

@@ -44,6 +44,35 @@
     R.go(nextOf(ctx), { replace: true });
   };
 
+  /* ---------- Continue with Google / Facebook (shown only when the server has the provider's ids) ---------- */
+  const social = () => `<div class="auth-social" data-social hidden>
+      <div class="auth-social-btns"><div class="auth-google" data-google hidden></div>
+        <button class="btn btn-outline btn-lg auth-wide auth-fb" type="button" data-facebook hidden><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v2.9h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z"/></svg> Continue with Facebook</button></div>
+      <p class="xs muted auth-social-terms">By continuing with Google or Facebook you agree to the <a class="link" href="#/legal/terms" target="_blank" rel="noopener">terms of use</a> and the <a class="link" href="#/legal/privacy" target="_blank" rel="noopener">privacy policy</a>.</p>
+      <div class="auth-or"><span>or</span></div></div>`;
+
+  const mountSocial = async (el, ctx) => {
+    const box = el.querySelector('[data-social]'); if (!box) return;
+    const { googleClientId, facebookAppId } = await S.session.providers();
+    if (!googleClientId && !facebookAppId) return;
+    box.hidden = false;
+    const finish = async (provider, token) => {
+      if (!token) return;
+      try { afterSignIn((await S.session.external(provider, token)).me, ctx); } catch (err) { toast(err.message, 'error'); }
+    };
+    if (googleClientId) {
+      const g = box.querySelector('[data-google]'); g.hidden = false;
+      S.socialLogin.google(g, googleClientId, (t) => finish('Google', t)).catch((err) => { g.hidden = true; toast(err.message, 'error'); });
+    }
+    if (facebookAppId) {
+      const fb = box.querySelector('[data-facebook]'); fb.hidden = false;
+      fb.addEventListener('click', async () => {
+        fb.disabled = true;
+        try { await finish('Facebook', await S.socialLogin.facebook(facebookAppId)); } catch (err) { toast(err.message, 'error'); } finally { fb.disabled = false; }
+      });
+    }
+  };
+
   const page = (title, render, mount) => ({
     title: `${title} — Super Malaab`,
     async render(ctx) { await S.api.ready; return S.api.isLive() ? render(ctx) : demoOnly(); },
@@ -51,14 +80,14 @@
   });
 
   SA.pages.authSignIn = page('Sign in', (ctx) => card('Sign in', 'Use your email or mobile number.',
-    `<form class="stack" style="--gap:12px" novalidate>${field('login', 'Email or mobile', 'text', 'autocomplete="username" dir="ltr"')}${field('password', 'Password', 'password', 'autocomplete="current-password" dir="ltr"')}
+    `${social()}<form class="stack" style="--gap:12px" novalidate>${field('login', 'Email or mobile', 'text', 'autocomplete="username" dir="ltr"')}${field('password', 'Password', 'password', 'autocomplete="current-password" dir="ltr"')}
       <button class="btn btn-primary btn-lg auth-wide" type="submit">${icon('lock', 18)} Sign in</button></form>`,
     `<a class="link" href="#${withNext('/auth/forgot', ctx)}">Forgot your password?</a> · New here? <a class="link" href="#${withNext('/auth/sign-up', ctx)}">Create an account</a>`),
-  (el, ctx) => onSubmit(el, async (d) => {
+  (el, ctx) => { mountSocial(el, ctx); onSubmit(el, async (d) => {
     const r = await S.session.signIn(d.login, d.password);
     if (r.requires2fa) return R.go(withNext('/auth/2fa', ctx), { replace: true });
     afterSignIn(r.me, ctx);
-  }));
+  }); });
 
   SA.pages.authTwoFactor = page('Two-step sign-in', (ctx) => card('Enter your code', 'Open your authenticator app and type the 6-digit code for Super Malaab.',
     `<form class="stack" style="--gap:12px" novalidate>${field('code', 'Code', 'text', 'inputmode="numeric" autocomplete="one-time-code" maxlength="20" dir="ltr"')}
@@ -68,17 +97,17 @@
   (el, ctx) => onSubmit(el, async (d, form) => afterSignIn(await S.session.verify2fa(d.code, form.recovery.checked), ctx)));
 
   SA.pages.authSignUp = page('Create an account', (ctx) => card('Create your account', 'Book pitches, join games, shop and play fantasy with one account.',
-    `<form class="stack" style="--gap:12px" novalidate>${field('fullName', 'Full name', 'text', 'autocomplete="name" maxlength="120"')}${field('email', 'Email', 'email', 'autocomplete="email" dir="ltr"')}
+    `${social()}<form class="stack" style="--gap:12px" novalidate>${field('fullName', 'Full name', 'text', 'autocomplete="name" maxlength="120"')}${field('email', 'Email', 'email', 'autocomplete="email" dir="ltr"')}
       ${field('phone', 'Mobile', 'tel', 'autocomplete="tel" inputmode="tel" dir="ltr" placeholder="010 1234 5678"')}${field('password', 'Password', 'password', 'autocomplete="new-password" dir="ltr"')}
       <p class="xs muted" style="margin-top:-6px">At least 8 characters, with a number.</p>
       <label class="choice"><input type="checkbox" name="acceptTerms" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow small">I agree to the <a class="link" href="#/legal/terms" target="_blank" rel="noopener">terms of use</a> and the <a class="link" href="#/legal/privacy" target="_blank" rel="noopener">privacy policy</a></span></label><p class="field-error" data-err="acceptTerms"></p>
       <button class="btn btn-blaze btn-lg auth-wide" type="submit">${icon('sparkle', 18)} Create my account</button></form>`,
     `Already have an account? <a class="link" href="#${withNext('/auth/sign-in', ctx)}">Sign in</a>`),
-  (el, ctx) => onSubmit(el, async (d, form) => {
+  (el, ctx) => { mountSocial(el, ctx); onSubmit(el, async (d, form) => {
     const me = await S.session.signUp({ fullName: d.fullName, email: d.email, phone: d.phone, password: d.password, acceptTerms: form.acceptTerms.checked, language: SA.i18n?.lang || 'ar' });
     toast('Your account is ready — check your email to confirm it');
     afterSignIn(me, ctx);
-  }));
+  }); });
 
   SA.pages.authForgot = page('Forgot password', (ctx) => card('Forgot your password?', 'Enter your email and we’ll send you a link to choose a new one.',
     `<form class="stack" style="--gap:12px" novalidate>${field('email', 'Email', 'email', 'autocomplete="email" dir="ltr"')}<button class="btn btn-primary btn-lg auth-wide" type="submit">${icon('message', 18)} Send the link</button></form>`,

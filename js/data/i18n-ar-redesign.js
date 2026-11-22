@@ -11,6 +11,14 @@
     'Help center': 'مركز المساعدة', 'Contact support': 'كلّم الدعم', 'Partner dashboard': 'لوحة الشريك', 'Pitch owners, sellers and print partners': 'أصحاب الملاعب والبياعين وشركاء الطباعة',
     'Light mode': 'الوضع الفاتح', 'Dark mode': 'الوضع الغامق', 'My bookings': 'حجوزاتي', 'My games': 'ماتشاتي', 'Orders': 'طلباتي',
 
+    /* ---------- Continue with Google / Facebook ---------- */
+    'Continue with Facebook': 'كمّل بفيسبوك', 'or': 'أو',
+    'By continuing with Google or Facebook you agree to the': 'لما تكمّل بجوجل أو فيسبوك تبقى موافق على', 'terms of use': 'شروط الاستخدام', 'and the': 'و', 'privacy policy': 'سياسة الخصوصية',
+    'Could not reach the sign-in service. Check your connection and try again.': 'مقدرناش نوصل لخدمة الدخول. اتأكد من النت وجرب تاني.',
+    'Welcome to Super Malaab!': 'أهلاً بيك في سوبر ملعب!',
+    'Team accounts sign in with their password and authenticator code.': 'حسابات الفريق بتدخل بالباسورد وكود التطبيق بس.',
+    'Please accept the terms of use to create your account.': 'لازم توافق على شروط الاستخدام عشان تعمل حسابك.',
+
     /* ---------- Staff areas on the public domain ---------- */
     'This area isn’t open yet': 'المكان ده لسه مش متاح', 'Dashboards for staff and partners open with secure sign-in when Super Malaab launches.': 'لوحات التحكم للفريق والشركاء هتفتح بتسجيل دخول آمن لما سوبر ملعب يبدأ رسمي.',
 

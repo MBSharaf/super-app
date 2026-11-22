@@ -23,3 +23,6 @@ public sealed record MeResponse(
 
 /// <summary>GET /auth/csrf — the anti-forgery token to send in the X-CSRF-TOKEN header.</summary>
 public sealed record CsrfResponse(string Token, string HeaderName);
+
+/// <summary>GET /auth/providers — which "Continue with …" buttons to show, with the public ids their scripts need.</summary>
+public sealed record ExternalProvidersResponse(string? GoogleClientId, string? FacebookAppId);

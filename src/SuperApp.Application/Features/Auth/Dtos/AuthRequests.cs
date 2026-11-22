@@ -23,3 +23,9 @@ public sealed record UpdateMeRequest(string? FullName, string? Phone, string? La
 
 /// <summary>POST /auth/accept-invite — a new admin chooses their first password from the invitation link.</summary>
 public sealed record AcceptInviteRequest(Guid UserId, string Token, string Password);
+
+/// <summary>
+/// POST /auth/external — "Continue with Google / Facebook". <see cref="Token"/> is the Google ID token or the Facebook
+/// access token the browser got; the server checks it with the provider. A new account needs <see cref="AcceptTerms"/>.
+/// </summary>
+public sealed record ExternalSignInRequest(string Provider, string Token, bool AcceptTerms, bool Remember = true, string Language = "ar");

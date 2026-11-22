@@ -11,7 +11,7 @@ namespace SuperApp.Api.Controllers;
 /// <summary>Sign-up, sign-in and the emailed links (API §2.1). After sign-in or sign-out, call GET csrf again.</summary>
 [Route("api/v1/auth")]
 [EnableRateLimiting(RateLimitPolicies.Auth)]
-public sealed class AuthController(IAuthService auth, IAntiforgery antiforgery) : ApiControllerBase
+public sealed class AuthController(IAuthService auth, IExternalSignInService external, IAntiforgery antiforgery) : ApiControllerBase
 {
     /// <summary>Anti-forgery token for the site; send it as X-CSRF-TOKEN on every change.</summary>
     [HttpGet("csrf")]
@@ -32,6 +32,19 @@ public sealed class AuthController(IAuthService auth, IAntiforgery antiforgery) 
         var result = await auth.SignInAsync(request, ct);
         return Ok(result, result.Requires2fa ? "Enter the 6-digit code from your authenticator app." : "Welcome back!");
     }
+
+    /// <summary>Which "Continue with Google / Facebook" buttons the site shows (only providers with their ids set).</summary>
+    [HttpGet("providers")]
+    [DisableRateLimiting]
+    public ActionResult<object> Providers() => Ok(external.Providers());
+
+    /// <summary>
+    /// "Continue with Google / Facebook": the browser sends the provider's token, the server checks it with the provider.
+    /// A first sign-in opens a customer account (needs acceptTerms; 400 terms_required otherwise). Team accounts get 403.
+    /// </summary>
+    [HttpPost("external")]
+    public async Task<ActionResult<object>> External(ExternalSignInRequest request, CancellationToken ct) =>
+        Ok(await external.SignInAsync(request, ct), "Welcome to Super Malaab!");
 
     [HttpPost("sign-out")]
     [Authorize]

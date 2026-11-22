@@ -27,6 +27,15 @@ public interface IIdentityService
 
     Task UpdateProfileAsync(Guid userId, string? fullName, string? phone, string? language, CancellationToken ct);
 
+    /// <summary>
+    /// The account for a Google or Facebook sign-in: the one already linked to it, else the account with the same
+    /// verified email (linked now). Null when there is none yet.
+    /// </summary>
+    Task<AccountSummary?> FindExternalAsync(ExternalProfile profile, CancellationToken ct);
+
+    /// <summary>A new customer account from a Google or Facebook sign-in: email confirmed, no password, linked to the provider.</summary>
+    Task<Guid> CreateExternalAsync(ExternalProfile profile, string language, CancellationToken ct);
+
     /// <summary>Adds a role (e.g. PitchOwner after approval); the open session picks it up at its next refresh (within a minute).</summary>
     Task AddRoleAsync(Guid userId, string role);
 }

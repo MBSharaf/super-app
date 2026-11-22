@@ -36,6 +36,25 @@ public sealed class SessionService(SignInManager<User> signIn, UserManager<User>
         return result.RequiresTwoFactor ? SignInOutcome.RequiresTwoFactor : result.Succeeded ? SignInOutcome.Succeeded : SignInOutcome.Failed;
     }
 
+    public async Task<SignInOutcome> ExternalSignInAsync(Guid userId, bool remember)
+    {
+        var user = await users.FindByIdAsync(userId.ToString());
+        if (user is null || user.Status == UserStatus.Suspended || user.IsDeleted)
+        {
+            return SignInOutcome.NotAllowed;
+        }
+        if (await users.IsLockedOutAsync(user))
+        {
+            return SignInOutcome.LockedOut;
+        }
+        if (user.TwoFactorEnabled)
+        {
+            return SignInOutcome.RequiresTwoFactor;
+        }
+        await signIn.SignInAsync(user, remember, authenticationMethod: "external");
+        return SignInOutcome.Succeeded;
+    }
+
     public Task SignOutAsync() => signIn.SignOutAsync();
 
     public async Task SignOutEverywhereAsync(Guid userId)

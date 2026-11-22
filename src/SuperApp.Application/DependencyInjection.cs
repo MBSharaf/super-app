@@ -22,6 +22,7 @@ public static class DependencyInjection
         ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IExternalSignInService, ExternalSignInService>();
         services.AddScoped<IMeService, MeService>();
         services.AddScoped<IAdminAccountsService, AdminAccountsService>();
         services.AddScoped<IApplicationsService, ApplicationsService>();

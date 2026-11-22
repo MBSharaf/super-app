@@ -78,3 +78,14 @@ public sealed class AcceptInviteRequestValidator : AbstractValidator<AcceptInvit
         RuleFor(x => x.Password).NewPassword();
     }
 }
+
+public sealed class ExternalSignInRequestValidator : AbstractValidator<ExternalSignInRequest>
+{
+    public ExternalSignInRequestValidator()
+    {
+        RuleFor(x => x.Provider).Must(p => SuperApp.Application.Abstractions.Identity.ExternalProviders.All.Contains(p))
+            .WithMessage("Choose Google or Facebook.");
+        RuleFor(x => x.Token).NotEmpty().WithMessage("The sign-in was cancelled. Please try again.").MaximumLength(4096);
+        RuleFor(x => x.Language).Language();
+    }
+}

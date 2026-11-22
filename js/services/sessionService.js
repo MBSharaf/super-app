@@ -9,6 +9,7 @@
   const subs = new Set();
   let me = null;
   let loaded = false;
+  let providersCache = null;
 
   const emit = () => subs.forEach((fn) => { try { fn(me); } catch (e) { console.error(e); } });
 
@@ -50,6 +51,18 @@
       const r = await api().post('/auth/sign-up', data);
       await api().refreshCsrf();
       return set(r);
+    },
+    /** Which "Continue with …" buttons the server offers: { googleClientId, facebookAppId } (null ids = hidden) */
+    providers() {
+      providersCache ||= api().get('/auth/providers').catch(() => ({ googleClientId: null, facebookAppId: null }));
+      return providersCache;
+    },
+    /** "Continue with Google / Facebook": the server checks the provider's token → { signedIn, me } */
+    async external(provider, token) {
+      const r = await api().post('/auth/external', { provider, token, acceptTerms: true, remember: true, language: SA.i18n?.lang || 'ar' });
+      await api().refreshCsrf();
+      if (r.signedIn) set(r.me);
+      return r;
     },
     async signOut(everywhere = false) {
       await api().post(everywhere ? '/auth/sign-out-everywhere' : '/auth/sign-out');

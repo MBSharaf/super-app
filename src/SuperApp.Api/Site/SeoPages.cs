@@ -91,7 +91,7 @@ public sealed class SeoPages(IPitchesService pitches)
         string A(string s) => WebUtility.HtmlEncode(s);
         var html = indexHtml
             .Replace("<title>Super Malaab — Book, play, compete</title>", $"<title>{A(page.Title)}</title>", StringComparison.Ordinal)
-            .Replace("https://mbsharaf.github.io/super-app/\" />", $"{A(url)}\" />", StringComparison.Ordinal);
+            .Replace("https://supermalaab.com/\" />", $"{A(url)}\" />", StringComparison.Ordinal);
         html = ReplaceMeta(html, "name=\"description\"", page.Description);
         html = ReplaceMeta(html, "property=\"og:title\"", page.Title);
         html = ReplaceMeta(html, "property=\"og:description\"", page.Description);
