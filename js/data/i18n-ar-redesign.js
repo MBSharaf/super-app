@@ -11,6 +11,9 @@
     'Help center': 'مركز المساعدة', 'Contact support': 'كلّم الدعم', 'Partner dashboard': 'لوحة الشريك', 'Pitch owners, sellers and print partners': 'أصحاب الملاعب والبياعين وشركاء الطباعة',
     'Light mode': 'الوضع الفاتح', 'Dark mode': 'الوضع الغامق', 'My bookings': 'حجوزاتي', 'My games': 'ماتشاتي', 'Orders': 'طلباتي',
 
+    /* ---------- Staff areas on the public domain ---------- */
+    'This area isn’t open yet': 'المكان ده لسه مش متاح', 'Dashboards for staff and partners open with secure sign-in when Super Malaab launches.': 'لوحات التحكم للفريق والشركاء هتفتح بتسجيل دخول آمن لما سوبر ملعب يبدأ رسمي.',
+
     /* ---------- Home ---------- */
     '{0} spot open': '{0} مكان فاضي', '{0} slot today': '{0} معاد فاضي النهارده', 'Sport': 'الرياضة', 'Football': 'كورة', 'Book.': 'احجز.', 'Play.': 'العب.', 'Win.': 'اكسب.',
     'Pitches, padel courts, players for your game and Premier League fantasy — in one app.': 'ملاعب كورة وبادل، لاعيبة لماتشك وفانتازي الدوري الإنجليزي — في أبلكيشن واحد.',

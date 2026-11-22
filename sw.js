@@ -7,7 +7,7 @@
  * - The API (/api/…), sign-in, payments and anything that is not a GET never go through the cache.
  * Bump VERSION to drop the old copies after a release.
  */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `superapp-${VERSION}`;
 const OFFLINE = 'offline.html';
 const PRECACHE = [OFFLINE, 'icons/icon-192.png', 'manifest.json'];

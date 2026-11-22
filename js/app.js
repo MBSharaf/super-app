@@ -211,9 +211,28 @@
     .add('/factory/activity', P.factoryActivity)
     .add('*', P.notFound);
 
+  /* ---------- Business areas on the public domain ----------
+     On supermalaab.com the staff and partner areas (CEO system, admin console, partner, seller and factory dashboards)
+     open only when the real server answers: it checks the account, the role and the 2-factor code on every request.
+     Without it (static hosting, demo data in the browser) a PIN in the page is no protection, so the areas stay closed.
+     GitHub Pages and local copies keep the demo PINs for testing. */
+  const BUSINESS_PATHS = /^\/(ceo|admin|dash|seller|factory)(\/|$)/;
+  const PUBLIC_HOST = /(^|\.)supermalaab\.com$/i.test(location.hostname);
+  P.businessLocked = {
+    title: 'Staff area — Super Malaab',
+    render: () => `<div class="container section-tight"><section class="panel panel-pad" style="text-align:center;max-width:560px;margin:48px auto">
+      <span class="service-ico" style="margin:0 auto">${SA.ui.icon('lock', 26)}</span>
+      <h1 class="h2" style="margin-top:16px">This area isn’t open yet</h1>
+      <p class="lead soft" style="margin-top:10px">Dashboards for staff and partners open with secure sign-in when Super Malaab launches.</p>
+      <div class="row wrap" style="--gap:10px;justify-content:center;margin-top:20px"><a class="btn btn-primary" href="#/pitches">Book a pitch</a><a class="btn btn-outline" href="#/">Home</a></div></section></div>`,
+  };
+  const lockedHere = async (path) => PUBLIC_HOST && BUSINESS_PATHS.test(path) && (await SA.services.api.ready) !== 'api';
+  if (PUBLIC_HOST) document.head.insertAdjacentHTML('beforeend', '<style>html:not([data-backend="api"]) :is(a[href^="#/ceo"],a[href^="#/admin"],a[href^="#/dash"],a[href^="#/seller"],a[href^="#/factory"]){display:none!important}</style>');
+
   const render = async (match, { keepScroll = false } = {}) => {
     const token = ++renderToken;
-    const page = match.route.page;
+    const page = (await lockedHere(match.path)) ? P.businessLocked : match.route.page;
+    if (token !== renderToken) return;
     const ctx = { params: match.params, query: match.query, path: match.path };
     SA.ui.shell.render(match.path);
     document.body.classList.add('is-loading');
