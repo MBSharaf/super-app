@@ -4,3 +4,4 @@
 */.frames/
 */still-*.png
 _kit/__pycache__/
+_app/__pycache__/
