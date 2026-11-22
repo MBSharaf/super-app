@@ -76,7 +76,8 @@ cat > /usr/local/bin/supermalaab-migrate <<'EOF'
 #!/usr/bin/env bash
 # Applies the waiting database updates to the live database, then restarts the site.
 set -euo pipefail
-set -a; . /etc/supermalaab/app.env; set +a
+# Read only the connection string (app.env is a systemd file, not a shell script)
+export CONNECTIONSTRINGS__DEFAULT="$(grep '^CONNECTIONSTRINGS__DEFAULT=' /etc/supermalaab/app.env | cut -d= -f2-)"
 /opt/supermalaab/migrate-bundle --connection "$CONNECTIONSTRINGS__DEFAULT"
 systemctl restart supermalaab
 echo "Database is up to date."
