@@ -1,0 +1,54 @@
+/* App-promo reel kit (reference style 2026-11-22: solid colour sections, short headline, one phone with the real
+   site, touch dot, punch-in zooms, clean end card). 1080×1920; safe zone for the IG UI: keep text above y=1500. */
+@font-face { font-family: "Archivo"; src: url(../../../vendor/fonts/archivo-latin.woff2) format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; }
+@font-face { font-family: "Cairo"; src: url(../../../vendor/fonts/cairo-arabic.woff2) format("woff2"); font-weight: 400 800; }
+:root { --ink: #0D1411; --turf: #0B6E4F; --turf-2: #128A63; --blaze: #FF5B14; --padel: #1F5FBF; --paper: #F1F2EE; --gold: #C9920F; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; }
+body { font-family: "Cairo", "Archivo", sans-serif; background: var(--ink); color: #fff; position: relative; }
+.abs { position: absolute; }
+#bg { inset: 0; }
+#bg2 { inset: 0; clip-path: circle(0 at 50% 50%); }
+
+/* headline (doubles as the burned-in voiceover caption) */
+#title { left: 70px; right: 70px; top: 150px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 30; }
+#title .t { font-weight: 800; font-size: 82px; line-height: 1.12; letter-spacing: 0; }
+#title .t b { font-weight: 800; }
+#title .s { font-weight: 700; font-size: 40px; opacity: .85; margin-top: 10px; }
+
+/* hook card: full screen text before the phone arrives */
+#hook { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 40; padding: 0 60px; }
+#hook .h1 { font-weight: 800; font-size: 170px; line-height: 1.02; }
+#hook .h2 { font-weight: 800; font-size: 96px; line-height: 1.1; margin-top: 10px; }
+
+/* the phone */
+#phone { left: 260px; top: 450px; width: 560px; height: 1236px; border-radius: 84px; background: #0B0F0D; padding: 16px; z-index: 20;
+  box-shadow: 0 60px 90px -30px rgba(0,0,0,.55), inset 0 0 0 3px #2B332F; transform-origin: 50% 50%; }
+#phone .scr { position: relative; width: 528px; height: 1204px; border-radius: 68px; overflow: hidden; background: #F1F2EE; }
+#phone .scr > * { position: absolute; left: 0; top: 56px; width: 528px; }
+#phone .scr > .sb { top: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 6px 44px 0; font: 700 24px "Archivo", sans-serif; color: #0D1411; background: #F1F2EE; direction: ltr; z-index: 4; }
+#phone .scr img.full { height: 1148px; object-fit: cover; object-position: top; }
+#phone .island { position: absolute; left: 50%; top: 12px; width: 140px; height: 38px; margin-left: -70px; border-radius: 24px; background: #000; z-index: 5; }
+.tall { height: 1148px; overflow: hidden; }
+.tall .mid { position: absolute; left: 0; width: 528px; }
+.tall .top, .tall .bot { position: absolute; left: 0; width: 528px; z-index: 2; }
+.tall .top { top: 0; } .tall .bot { bottom: 0; }
+
+/* touch dot */
+#tap { width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%; background: rgba(255,255,255,.55); border: 4px solid rgba(255,255,255,.95);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); z-index: 25; pointer-events: none; }
+
+/* small overlays (chips, numbers) */
+.chip { display: inline-flex; align-items: center; gap: 14px; padding: 16px 30px 20px; border-radius: 999px; background: #fff; color: var(--ink); font-weight: 800; font-size: 44px; box-shadow: 0 20px 40px -18px rgba(0,0,0,.5); white-space: nowrap; }
+.chip.dark { background: var(--ink); color: #fff; } .chip.blaze { background: var(--blaze); color: #fff; } .chip.turf { background: var(--turf); color: #fff; } .chip.padel { background: var(--padel); color: #fff; }
+.num { font: 800 120px/1 "Archivo", sans-serif; direction: ltr; }
+
+/* end card */
+#end { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; z-index: 50; background: var(--ink); text-align: center; }
+#end .wm { font: 850 64px "Archivo", sans-serif; font-stretch: 125%; letter-spacing: .02em; direction: ltr; }
+#end .ar { font-weight: 800; font-size: 60px; margin-top: -14px; }
+#end .url { margin-top: 30px; padding: 22px 46px 28px; border-radius: 999px; background: #fff; color: var(--ink); font: 800 64px "Archivo", sans-serif; direction: ltr; }
+#end .plat { display: flex; gap: 22px; margin-top: 10px; }
+#end .plat span { display: inline-flex; align-items: center; gap: 14px; padding: 16px 30px 20px; border-radius: 999px; border: 3px solid rgba(255,255,255,.35); font-weight: 800; font-size: 42px; }
+#end .line { font-weight: 700; font-size: 40px; opacity: .8; }
+#phone .scr > #tap { width: 92px; height: 92px; z-index: 6; }
