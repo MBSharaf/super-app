@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel 13 — 4 ضغطات وملعبك اتحجز</title>
+<!-- Super Malaab reel 13 · players · 14.4 s · reference style (tap counter, punch-in on the pay button, success screen).
+     Real captures: pitch page and hours from supermalaab.com; review, payment success (165 Super Points, PDF receipt) and
+     the QR ticket from a local demo copy of the same code (simulated payment, n8n webhooks blocked). -->
+<link rel="stylesheet" href="../_app/app.css">
+<style>
+  #cnt { left: 0; right: 0; top: 64px; display: flex; justify-content: center; z-index: 45; }
+  #cnt .chip { font-size: 40px; padding: 12px 30px 16px; }
+  #cnt .dots { display: inline-flex; gap: 10px; margin-inline-start: 8px; } #cnt .dots i { width: 22px; height: 22px; border-radius: 50%; background: #D8DDD9; } #cnt .dots i.on { background: #FF5B14; }
+</style>
+</head>
+<body>
+<div class="abs" id="bg"></div><div class="abs" id="bg2"></div>
+
+<div class="abs" id="hook"><div class="h1" style="color:#FF7A3D">4 ضغطات</div><div class="h2">…وملعبك اتحجز.</div></div>
+<div class="abs" id="title"></div>
+<div class="abs" id="cnt"><span class="chip"><span id="cntT">ضغطة 0 من 4</span><span class="dots"><i></i><i></i><i></i><i></i></span></span></div>
+
+<div class="abs" id="phone"><div class="scr">
+  <img data-s="pitch" class="full" src="../_app/shots/pitch.jpg">
+  <img data-s="sb" class="full" src="../_app/shots/slots-before.jpg">
+  <img data-s="sp" class="full" src="../_app/shots/slots-picked.jpg">
+  <img data-s="rp" class="full" src="../_app/shots/review-pay.jpg">
+  <img data-s="paid" class="full" src="../_app/shots/paid.jpg">
+  <img data-s="tq" class="full" src="../_app/shots/ticket-qr.jpg">
+  <div class="abs" id="tap"></div>
+  <div class="island"></div>
+</div></div>
+
+<div class="abs" id="end"></div>
+<script src="../_app/app.js"></script>
+<script>
+const TAPS = [3.35, 4.95, 7.0, 7.55];
+AppReel({
+  dur: 14.4, vo: .15,
+  hook: { until: 2.45 },
+  lines: [
+    [0, 2.33, ''], [2.9, 3.49, 'اختار الملعب.'], [3.99, 5.0, 'اختار اليوم والساعة.'], [5.5, 6.39, 'ادفع العربون بس،'],
+    [6.62, 7.26, 'والباقي في الملعب.'], [7.8, 8.38, 'وخلاص:'], [8.61, 10.91, 'QR في إيدك،<br>ونقط على كل جنيه.'],
+  ],
+  scenes: [
+    { t: 0, bg: '#0D1411', screen: 'pitch' },
+    { t: 2.45, bg: '#0B6E4F', screen: 'pitch' },
+    { t: 3.85, bg: '#F1F2EE', fg: '#0D1411', screen: 'sb' },
+    { t: 5.1, bg: '#F1F2EE', fg: '#0D1411', screen: 'sp' },
+    { t: 5.6, bg: '#FF5B14', screen: 'rp' },
+    { t: 7.55, bg: '#0B6E4F', screen: 'paid' },
+    { t: 9.4, bg: '#0B6E4F', screen: 'tq' },
+  ],
+  phone: [[0, { y: 0, s: 1 }], [5.6, { y: 0, s: 1 }], [6.0, { y: 300, s: 1.4, d: .5 }], [7.1, { y: 300, s: 1.4 }], [7.55, { y: 0, s: 1 }], [9.4, { y: 0, s: 1 }], [10.2, { y: 0, s: 1.05, r: -2 }]],
+  taps: [[3.35, 70, 725], [4.95, 90, 460], [7.0, 195, 423]],
+  end: { at: 11.4, line: 'كورة · بادل · فانتازي' },
+  custom(t) {
+    const n = TAPS.filter((x) => t >= x).length;
+    $('#cntT').textContent = n >= 4 ? 'اتحجز ✓' : `ضغطة ${n} من 4`;
+    $$('#cnt .dots i').forEach((d, i) => d.classList.toggle('on', i < n));
+    $('#cnt').style.display = t > 2.45 && t < 11.4 ? 'flex' : 'none';
+    const p = spring(prog(t, TAPS.filter((x) => t >= x).pop() || 0, .3));
+    $('#cnt .chip').style.transform = `scale(${n ? lerp(1.25, 1, p) : 1})`;
+  },
+});
+</script>
+</body>
+</html>

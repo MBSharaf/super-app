@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel covers</title>
+<!-- One template for the 8 reel covers (08–15). 1080×1920; everything that matters sits inside the centre 1080×1350
+     (y 285–1635) so the profile grid crop keeps it. Open covers.html?r=11 etc.; covers.js screenshots each one. -->
+<link rel="stylesheet" href="app.css">
+<style>
+  body { background: var(--c-bg); color: var(--c-fg); }
+  .no { position: absolute; top: 320px; right: 70px; padding: 12px 26px 16px; border-radius: 999px; background: var(--c-fg); color: var(--c-bg); font: 800 34px "Archivo", sans-serif; direction: ltr; z-index: 5; }
+  .brand { position: absolute; top: 320px; left: 70px; display: flex; align-items: center; gap: 14px; direction: ltr; z-index: 5; }
+  .brand b { font: 850 30px "Archivo", sans-serif; font-stretch: 125%; }
+  .hook { position: absolute; left: 60px; right: 60px; top: 420px; text-align: center; font-weight: 800; font-size: 96px; line-height: 1.1; z-index: 5; }
+  .hook em { font-style: normal; color: var(--c-acc); white-space: nowrap; }
+  .stage { position: absolute; left: 0; right: 0; top: 800px; height: 835px; overflow: hidden; }
+  .ph { position: absolute; left: 50%; top: 0; width: 520px; margin-left: -260px; border-radius: 78px; background: #0B0F0D; padding: 15px; box-shadow: 0 50px 80px -30px rgba(0,0,0,.6); transform: rotate(-4deg); }
+  .ph img { display: block; width: 490px; border-radius: 63px; }
+  .card { position: absolute; left: 50%; top: 10px; width: 560px; margin-left: -280px; border-radius: 40px; overflow: hidden; box-shadow: 0 50px 80px -30px rgba(0,0,0,.6); transform: rotate(-3deg); border: 10px solid #fff; }
+  .card img { display: block; width: 100%; }
+  .url { position: absolute; left: 50%; top: 1500px; transform: translateX(-50%); padding: 16px 36px 20px; border-radius: 999px; background: #fff; color: #0D1411; font: 800 46px "Archivo", sans-serif; direction: ltr; z-index: 6; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const LOGO = (bg, fg) => `<svg width="64" height="64" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="${bg}"/><svg x="8" y="8" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${fg}" stroke-width="2.6" stroke-linecap="round"><path d="M17 7.2C15.9 6 14.3 5.4 12.4 5.4c-2.7 0-4.5 1.4-4.5 3.4 0 4.6 9.2 2.6 9.2 7 0 2-1.9 3.4-4.8 3.4-2.1 0-3.9-.7-5.3-2"/></svg><circle cx="24" cy="10" r="4" fill="#FF5B14"/></svg>`;
+// bg, fg, accent, hook, media: ['phone', shot] or ['card', frame]
+const C = {
+  '08': ['#0D1411', '#fff', '#FF7A3D', 'أنهي صورة فيهم<br>كانت <em>عربون الماتش؟</em>', ['card', 'covers/f08c.jpg']],
+  '09': ['#070B09', '#fff', '#FFE9A8', 'كل كشاف طافي…<br><em>ساعة ضايعة</em>', ['card', 'covers/f09c.jpg']],
+  '10': ['#C8CDC9', '#0D1411', '#FF5B14', 'براندك بيبيع<br>على <em>الإنستجرام؟</em>', ['card', 'covers/f10c.jpg']],
+  '11': ['#0B6E4F', '#fff', '#9CC2FF', 'كورة…<br>ولا <em>بادل؟</em>', ['phone', 'shots/home-padel.jpg']],
+  '12': ['#1F5FBF', '#fff', '#FFB38A', 'ناقصك واحد<br><em>في البادل؟</em>', ['phone', 'shots/padel-match-2.jpg']],
+  '13': ['#FF5B14', '#fff', '#0D1411', '4 ضغطات…<br><em>وملعبك اتحجز</em>', ['phone', 'shots/paid.jpg']],
+  '14': ['#F1F2EE', '#0D1411', '#0B6E4F', 'موقع ولا تطبيق؟<br><em>الاتنين.</em>', ['phone', 'shots/home-football.jpg'], true],
+  '15': ['#0D1411', '#fff', '#FF7A3D', 'الساعة 9…<br><em>وناقصك 2؟</em>', ['phone', 'shots/players-view.jpg']],
+};
+const id = new URLSearchParams(location.search).get('r') || '11', [bg, fg, acc, hook, [kind, src], url] = C[id];
+const r = document.documentElement.style; r.setProperty('--c-bg', bg); r.setProperty('--c-fg', fg); r.setProperty('--c-acc', acc);
+document.getElementById('root').innerHTML = `
+  <div class="brand">${LOGO(fg, bg)}<b>SUPER MALAAB</b></div>
+  <div class="no">REEL ${id}</div>
+  <div class="hook">${hook}</div>
+  <div class="stage">${kind === 'phone' ? `<div class="ph"><img src="${src}"></div>` : `<div class="card"><img src="${src}"></div>`}</div>
+  ${url ? '<div class="url">supermalaab.com</div>' : ''}`;
+window.ready = Promise.all([...document.images].map((im) => im.decode().catch(() => {}))).then(() => document.fonts.ready);
+</script>
+</body>
+</html>

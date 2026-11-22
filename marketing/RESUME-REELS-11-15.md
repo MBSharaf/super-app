@@ -1,4 +1,9 @@
-# Resume point — reels 11–15 + 8 covers (saved 2026-11-22 13:15 Cairo)
+# Reels 11–15 + 8 covers — DONE 2026-11-22 (this file was the resume point)
+
+All five reels and the eight covers are finished: `marketing/reels/1[1-5]-*/reel-*.mp4`, each reel folder has `cover.png`
+(1080×1920) and `cover-grid.jpg` (centre 1080×1350). Covers: `node marketing/reels/_app/covers.js`. Site bugs went to the dev inbox.
+Still open: store badges (owner to send Google Play / App Store links).
+
 
 The owner's request (2026-11-22): five new reels in the style of their 5 reference videos, plus covers for the 5 new reels
 and the 3 old ones (08–10). The owner judged reels 08–10 "not what I asked" but will use them, so they get covers only.

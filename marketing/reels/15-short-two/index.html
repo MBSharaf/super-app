@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Reel 15 — الساعة 9 وناقصك 2؟</title>
+<!-- Super Malaab reel 15 · captains · 12.8 s · reference style (punch-in zooms on the match card). Real captures of the
+     players page from supermalaab.com. Joiners pay their share when they ask to join; the host accepts (or auto-accepts).
+     The join-request chips at the end are drawn here (names are made up). Only the top of the list is scrolled: further
+     down, the live page's cards are wider than the phone (bug reported to the dev window). -->
+<link rel="stylesheet" href="../_app/app.css">
+<style>
+  .hookdots { display: flex; gap: 14px; margin-top: 50px; } .hookdots i { width: 58px; height: 58px; border-radius: 50%; background: #34C88E; } .hookdots i.e { background: transparent; border: 7px solid #FF5B14; }
+  #reqs { left: 90px; right: 90px; top: 1250px; display: flex; flex-direction: column; gap: 18px; z-index: 30; }
+  .req { display: flex; align-items: center; gap: 20px; background: #fff; color: #0D1411; border-radius: 30px; padding: 20px 26px; font-size: 38px; font-weight: 800; box-shadow: 0 24px 40px -20px rgba(0,0,0,.6); }
+  .req .av { width: 70px; height: 70px; border-radius: 50%; background: #E1F0E8; color: #0B6E4F; display: grid; place-items: center; font: 800 32px Archivo, sans-serif; }
+  .req .ok { margin-inline-start: auto; padding: 12px 26px 16px; border-radius: 999px; background: #0B6E4F; color: #fff; font-size: 32px; }
+</style>
+</head>
+<body>
+<div class="abs" id="bg"></div><div class="abs" id="bg2"></div>
+
+<div class="abs" id="hook"><div class="h1" style="font-size:150px">الساعة 9…</div><div class="h2" style="color:#FF7A3D;font-size:120px">وناقصك 2؟</div>
+  <div class="hookdots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="e"></i><i class="e"></i></div></div>
+<div class="abs" id="title"></div>
+
+<div class="abs" id="phone"><div class="scr">
+  <img data-s="pv" class="full" src="../_app/shots/players-view.jpg">
+  <div data-s="pl" class="tall"><img class="top" src="../_app/shots/players-top.jpg"><img class="mid" style="top:81px" src="../_app/shots/players-tall.jpg"><img class="bot" src="../_app/shots/players-bot.jpg"></div>
+  <div class="abs" id="tap"></div>
+  <div class="island"></div>
+</div></div>
+
+<div class="abs" id="reqs">
+  <div class="req" id="r1"><span class="av">K</span>كريم طلب ينضم · دفع نصيبه<span class="ok">✓ اتقبل</span></div>
+  <div class="req" id="r2"><span class="av">Y</span>يوسف طلب ينضم · دفع نصيبه<span class="ok">✓ اتقبل</span></div>
+</div>
+
+<div class="abs" id="end"></div>
+<script src="../_app/app.js"></script>
+<script>
+AppReel({
+  dur: 12.8, vo: .15,
+  hook: { until: 2.45 },
+  lines: [
+    [0, 1.13, ''], [1.44, 2.3, ''], [2.96, 4.37, 'انشر ماتشك<br>على سوبر ملعب،'], [4.58, 5.9, 'واللاعيبة اللي حواليك<br>يشتركوا.'],
+    [6.26, 8.06, 'كل واحد بيدفع نصيبه<br>وهو بينضم،'], [8.37, 9.09, 'وإنت بس اقبل.'],
+  ],
+  scenes: [
+    { t: 0, bg: '#0D1411', screen: 'pv' },
+    { t: 2.45, bg: '#FF5B14', screen: 'pv' },
+    { t: 4.6, bg: '#0B6E4F', screen: 'pl' },
+    { t: 6.35, bg: '#F1F2EE', fg: '#0D1411', screen: 'pl' },
+    { t: 8.45, bg: '#0D1411', screen: 'pl' },
+  ],
+  phone: [[0, { y: 0, s: 1 }], [4.6, { y: 0, s: 1 }], [5.6, { y: 0, s: 1 }], [6.35, { y: 420, s: 1.6, d: .5 }], [8.2, { y: 420, s: 1.6 }], [8.45, { y: -120, s: .9 }]],
+  taps: [[3.3, 310, 272]],
+  scroll: { pl: [[4.8, 5.9, 0, 470]] },
+  pops: [{ id: 'r1', t0: 8.6, t1: 9.66 }, { id: 'r2', t0: 9.0, t1: 9.66 }],
+  end: { at: 9.66, line: 'كورة · بادل · فانتازي' },
+});
+</script>
+</body>
+</html>

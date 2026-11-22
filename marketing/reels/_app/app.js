@@ -61,8 +61,8 @@ function AppReel(cfg) {
     const sNow = scenes[sIdx].screen, sPrev = sIdx > 0 ? scenes[sIdx - 1].screen : sNow, sw = ease(prog(t, scenes[sIdx].t, .35));
     $$('#phone .scr > [data-s]').forEach((el) => {
       const id = el.dataset.s;
-      if (id === sNow) { el.style.display = 'block'; el.style.zIndex = 2; el.style.transform = sPrev !== sNow ? `translateX(${(1 - sw) * -528}px)` : 'none'; }
-      else if (id === sPrev && sw < 1 && sPrev !== sNow) { el.style.display = 'block'; el.style.zIndex = 1; el.style.transform = `translateX(${sw * 160}px)`; }
+      if (id === sNow) { el.style.display = ''; el.style.zIndex = 2; el.style.transform = sPrev !== sNow ? `translateX(${(1 - sw) * -528}px)` : 'none'; }
+      else if (id === sPrev && sw < 1 && sPrev !== sNow) { el.style.display = ''; el.style.zIndex = 1; el.style.transform = `translateX(${sw * 160}px)`; }
       else el.style.display = 'none';
     });
     // tall pages scroll: scroll[id] = [[t0, t1, y0, y1], ...] in site CSS px
