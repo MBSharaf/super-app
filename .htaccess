@@ -24,6 +24,10 @@ DirectoryIndex index.html
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
+  # Pages, scripts and styles are checked with the server on every visit, so an update shows at once
+  <FilesMatch "\.(html|js|css|json|xml|txt)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
 </IfModule>
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
