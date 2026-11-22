@@ -6,6 +6,7 @@
 # Each backup is one folder in /var/backups/supermalaab/<date-time>/ (root only):
 #   SuperMalaab.bak.gz  full SQL Server backup (checked with RESTORE VERIFYONLY)
 #   files.tar.gz        uploaded files (storage) and data-protection keys (logins survive a restore)
+#   n8n.tar.gz          n8n data + its encryption key (when n8n is installed)
 # Backups older than KEEP_DAYS (default 14) are deleted. Restoring is done by the owner with supermalaab-restore.
 set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "Run as root"; exit 1; }
@@ -56,6 +57,9 @@ backup() {
   docker exec mssql rm -f "$inside"
   gzip -6 "$dir/$DB.bak"
   tar -czf "$dir/files.tar.gz" -C /opt/supermalaab storage keys 2>/dev/null || tar -czf "$dir/files.tar.gz" -C /opt/supermalaab storage
+  if docker volume inspect n8n_data >/dev/null 2>&1; then   # n8n workflows, credentials and its key
+    tar -czf "$dir/n8n.tar.gz" -C /var/lib/docker/volumes/n8n_data _data -C /etc/supermalaab n8n.env
+  fi
   chmod -R go-rwx "$dir"
   find "$DEST" -mindepth 1 -maxdepth 1 -type d -mtime +"$KEEP_DAYS" -exec rm -rf {} +
   echo "Backup OK: $dir ($(du -sh "$dir" | cut -f1)) — database verified"
