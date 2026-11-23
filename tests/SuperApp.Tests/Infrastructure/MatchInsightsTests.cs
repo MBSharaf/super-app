@@ -70,6 +70,7 @@ public sealed class MatchInsightsTests
         facts.Events.Count.ShouldBe(4);
         facts.Events[0].ShouldBe(new(23, null, "card", "home", "Marwan Attia", "Yellow", null, null, null, null));
         facts.Events[1].Detail.ShouldBe("Penalty");
+        (facts.Events[1].HomeScore, facts.Events[1].AwayScore).ShouldBe((0, 1));
         (facts.Events[2].PlayerIn, facts.Events[2].PlayerOut).ShouldBe(("Taher Mohamed", "Achraf Bencharki"));
         (facts.Events[3].Minute, facts.Events[3].Added, facts.Events[3].AwayScore).ShouldBe((90, 3, 2));
 

@@ -229,6 +229,7 @@ public static class FotMobParse
             return [];
         }
         var list = new List<MatchEventDto>();
+        var (homeGoals, awayGoals) = (0, 0);   // the score after each goal, counted here (the feed's is the score before it)
         foreach (var e in events.EnumerateArray())
         {
             var type = Str(e, "type");
@@ -241,7 +242,8 @@ public static class FotMobParse
                 case "Goal":
                     var detail = e.TryGetProperty("ownGoal", out var og) && og.ValueKind == JsonValueKind.True ? "Own goal"
                         : Str(e, "goalDescriptionKey") == "penalty" || Str(e, "suffix") == "Pen" ? "Penalty" : null;
-                    list.Add(new MatchEventDto(minute, added, "goal", side, player ?? Str(e, "nameStr"), detail, null, null, Int(e, "homeScore"), Int(e, "awayScore")));
+                    (homeGoals, awayGoals) = side == "home" ? (homeGoals + 1, awayGoals) : (homeGoals, awayGoals + 1);
+                    list.Add(new MatchEventDto(minute, added, "goal", side, player ?? Str(e, "nameStr"), detail, null, null, homeGoals, awayGoals));
                     break;
                 case "Card":
                     list.Add(new MatchEventDto(minute, added, "card", side, player ?? Str(e, "nameStr"), Str(e, "card") is "Red" or "YellowRed" ? "Red" : "Yellow", null, null, null, null));

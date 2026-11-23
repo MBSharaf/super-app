@@ -20,6 +20,8 @@
     'Conference League Qualification': 'تأهل لدوري المؤتمر', 'Relegation': 'هبوط', 'Relegation playoff': 'ملحق الهبوط', 'Promotion': 'صعود', 'Promotion playoff': 'ملحق الصعود',
     'Qualification': 'تأهل', 'Playoff': 'ملحق', 'Playoffs': 'الملحق', 'Knockout phase': 'الأدوار الإقصائية', 'Knockout phase playoffs': 'ملحق الأدوار الإقصائية',
     'Championship round': 'مجموعة البطولة', 'Relegation round': 'مجموعة الهبوط', 'CAF Confederation Cup qualification': 'تأهل لكأس الكونفدرالية',
+    'Championship playoff': 'ملحق البطولة', 'Relegation qualification': 'ملحق الهبوط', 'Qualification to 1/8 finals': 'تأهل لدور الـ16',
+    'Qualification to 1/16 finals': 'تأهل للملحق (دور الـ32)', 'Qualification next stage': 'تأهل للدور التالي', 'Possible qualification next stage': 'تأهل محتمل للدور التالي',
     'Group A': 'المجموعة A', 'Group B': 'المجموعة B', 'Group C': 'المجموعة C', 'Group D': 'المجموعة D',
     // Match centre
     Stats: 'الإحصائيات', Timeline: 'الأحداث', 'Line-ups': 'التشكيل', Substitutes: 'البدلاء', 'Coach:': 'المدرب:',
