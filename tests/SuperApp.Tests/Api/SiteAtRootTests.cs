@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
 namespace SuperApp.Tests.Api;
@@ -127,4 +128,34 @@ public sealed class SiteAtRootTests(RootSiteApiFactory api) : IClassFixture<Root
     [InlineData("GET", "/api/v1/pitchesx", false)]
     public void Only_public_catalogue_answers_are_compressed(string method, string path, bool compressed) =>
         SuperApp.Api.Middlewares.PublicJsonCompressionMiddleware.IsPublicCatalogue(method, path).ShouldBe(compressed);
+
+    [Fact]
+    public async Task Pages_load_one_joined_script_and_one_joined_style_file_kept_for_a_year()
+    {
+        (await api.Services.GetRequiredService<SuperApp.Api.Site.SiteBundles>().Ready).ShouldBeTrue();
+        var html = await (await Client().GetAsync("/pitches")).Content.ReadAsStringAsync();
+        html.ShouldNotContain("src=\"js/app.js\"");
+        html.ShouldNotContain("href=\"css/tokens.css\"");
+        html.ShouldContain("src=\"vendor/leaflet/leaflet.js\"");
+        var js = System.Text.RegularExpressions.Regex.Match(html, "src=\"(js/bundle-[0-9a-f]+\\.js)\"").Groups[1].Value;
+        var css = System.Text.RegularExpressions.Regex.Match(html, "href=\"(css/bundle-[0-9a-f]+\\.css)\"").Groups[1].Value;
+        js.ShouldNotBeEmpty();
+        css.ShouldNotBeEmpty();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/" + js);
+        request.Headers.AcceptEncoding.ParseAdd("br");
+        var response = await Client().SendAsync(request);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentEncoding.ShouldContain("br");
+        response.Headers.CacheControl!.ToString().ShouldContain("immutable");
+        var plain = await Client().GetStringAsync("/" + css);
+        plain.ShouldContain("/* css/tokens.css */");
+        (await Client().GetAsync("/js/bundle-000000000000.js")).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData("/** doc */\n(function (SA) {\n  const x = 1;\n})(window.SA);\n", true)]
+    [InlineData("// note\n(() => { go(); })();", true)]
+    [InlineData("const SA = { a: 1 };\n(function () {})();", false)]
+    public void Only_self_contained_scripts_get_their_own_try_catch(string code, bool wrapped) =>
+        SuperApp.Api.Site.SiteBundles.IsWrapped(code).ShouldBe(wrapped);
 }

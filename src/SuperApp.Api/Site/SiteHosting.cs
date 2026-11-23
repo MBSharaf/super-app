@@ -32,6 +32,7 @@ public static class SiteHosting
         }
         var basePath = BasePathOf(app.Configuration);
         RedirectWwwToMainDomain(app);
+        MapBundles(app, root, basePath);
         var types = new FileExtensionContentTypeProvider();
         types.Mappings[".glb"] = "model/gltf-binary";
         types.Mappings.Remove(".py");
@@ -62,6 +63,32 @@ public static class SiteHosting
         app.MapGet("/", () => Results.Redirect($"{basePath}/")).ExcludeFromDescription();
         app.MapGet($"{basePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, basePath, path, seo, ct)).ExcludeFromDescription();
         return app;
+    }
+
+    /// <summary>The joined script and style files (SiteBundles): built once in the background, kept by browsers for a year.</summary>
+    private static void MapBundles(WebApplication app, string root, string basePath)
+    {
+        var bundles = app.Services.GetRequiredService<SiteBundles>();
+        bundles.Start(root, app.Configuration.GetValue("Site:BundleAssets", true));
+        IResult Serve(HttpContext http, string kind, string hash)
+        {
+            if (bundles.Find($"{kind}/bundle-{hash}.{kind}") is not { } b)
+            {
+                return Results.NotFound();
+            }
+            var accept = http.Request.Headers.AcceptEncoding.ToString();
+            var (body, encoding) = accept.Contains("br", StringComparison.OrdinalIgnoreCase) ? (b.Brotli, "br")
+                : accept.Contains("gzip", StringComparison.OrdinalIgnoreCase) ? (b.Gzip, "gzip") : (b.Raw, null);
+            http.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+            http.Response.Headers.Vary = "Accept-Encoding";
+            if (encoding is not null)
+            {
+                http.Response.Headers.ContentEncoding = encoding;
+            }
+            return Results.Bytes(body, b.ContentType);
+        }
+        app.MapGet($"{basePath}/js/bundle-{{hash}}.js", (HttpContext http, string hash) => Serve(http, "js", hash)).ExcludeFromDescription();
+        app.MapGet($"{basePath}/css/bundle-{{hash}}.css", (HttpContext http, string hash) => Serve(http, "css", hash)).ExcludeFromDescription();
     }
 
     /// <summary>
@@ -130,6 +157,7 @@ public static class SiteHosting
         }
         index = index.Replace($"<base href=\"{DefaultBasePath}/\" />", $"<base href=\"{basePath}/\" />", StringComparison.Ordinal);
         var html = page is null ? index : SeoPages.Render(index, page, $"{http.Request.Scheme}://{http.Request.Host}{basePath}");
+        html = http.RequestServices.GetRequiredService<SiteBundles>().Rewrite(html);
         return Results.Content(WithFeatures(html, http.RequestServices.GetRequiredService<IConfiguration>()), "text/html; charset=utf-8");
     }
 

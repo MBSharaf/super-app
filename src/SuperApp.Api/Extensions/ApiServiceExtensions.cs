@@ -17,6 +17,7 @@ public static class ApiServiceExtensions
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped<Site.SeoPages>();
+        services.AddSingleton<Site.SiteBundles>();
         services.AddScoped<IRequestInfo, RequestInfo>();
         services.Configure<SiteOptions>(configuration.GetSection(SiteOptions.Section));
 

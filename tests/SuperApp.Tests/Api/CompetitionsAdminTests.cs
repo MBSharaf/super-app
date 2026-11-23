@@ -17,7 +17,7 @@ public sealed class CompetitionsAdminTests(AccountsApiFactory api) : IClassFixtu
     {
         var ceo = await api.CeoAsync();
         var list = (await ceo.GetAsync("/api/v1/admin/football/competitions")).Body.Data();
-        list.GetArrayLength().ShouldBe(13);
+        list.GetArrayLength().ShouldBe(15);
         list.EnumerateArray().Single(c => c.GetProperty("key").GetString() == "epl").GetProperty("fantasyEnabled").GetBoolean().ShouldBeTrue();
         list.EnumerateArray().Single(c => c.GetProperty("key").GetString() == "egy").GetProperty("fantasyEnabled").GetBoolean().ShouldBeFalse();
 
@@ -25,7 +25,7 @@ public sealed class CompetitionsAdminTests(AccountsApiFactory api) : IClassFixtu
         var added = await ceo.PostAsync("/api/v1/admin/football/competitions", Saudi());
         added.Status.ShouldBe(HttpStatusCode.Created, added.Body.ToString());
         (added.Body.Data().GetProperty("provider").GetString(), added.Body.Data().GetProperty("fantasyEnabled").GetBoolean(), added.Body.Data().GetProperty("sortOrder").GetInt32())
-            .ShouldBe(("thesportsdb", false, 14));
+            .ShouldBe(("thesportsdb", false, 16));
         (await ceo.PostAsync("/api/v1/admin/football/competitions", Saudi())).Body.Code().ShouldBe("competition_exists");
         (await (await api.ClientAsync()).GetAsync("/api/v1/matches/competitions")).Body.Data().EnumerateArray().ShouldContain(c => c.GetProperty("key").GetString() == "saudi");
 

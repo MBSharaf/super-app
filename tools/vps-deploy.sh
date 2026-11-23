@@ -154,6 +154,14 @@ fi
 # Sign-in answers carry several cookies (session, antiforgery, remember-me): the default nginx header buffer is too
 # small and answers "502 upstream sent too big header", so the buffers are raised for the whole server
 printf 'proxy_buffer_size 32k;\nproxy_buffers 8 32k;\nproxy_busy_buffers_size 64k;\n' > /etc/nginx/conf.d/supermalaab-buffers.conf
+# HTTP/2: the browser gets the site's files in parallel over one connection (certbot writes "listen 443 ssl;").
+# The old file is kept and put back if nginx does not accept the change.
+NGX=/etc/nginx/sites-available/supermalaab
+if grep -q 'listen 443 ssl;' $NGX; then
+  cp $NGX /root/supermalaab-nginx.before-http2
+  sed -i 's/listen 443 ssl;/listen 443 ssl http2;/; s/listen \[::\]:443 ssl ipv6only=on;/listen [::]:443 ssl http2 ipv6only=on;/' $NGX
+  nginx -t -q 2>/dev/null || cp /root/supermalaab-nginx.before-http2 $NGX
+fi
 grep -q 'server_tokens off' /etc/nginx/nginx.conf || sed -i 's/# server_tokens off;/server_tokens off;/' /etc/nginx/nginx.conf
 nginx -t -q && systemctl reload nginx
 

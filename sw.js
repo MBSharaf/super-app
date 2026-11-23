@@ -6,8 +6,10 @@
  * - Page addresses come from the network; offline they show offline.html.
  * - The API (/api/…), sign-in, payments and anything that is not a GET never go through the cache.
  * Bump VERSION to drop the old copies after a release.
+ * - The server's joined files (js/bundle-<hash>.js, css/bundle-<hash>.css) get a new name each release: when a new one is
+ *   kept, the older ones of the same kind are dropped, so the cache never fills up with old releases.
  */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = `superapp-${VERSION}`;
 const OFFLINE = 'offline.html';
 const PRECACHE = [OFFLINE, 'icons/icon-192.png', 'manifest.json'];
@@ -23,12 +25,21 @@ self.addEventListener('activate', (event) => {
     .then(() => self.clients.claim()));
 });
 
+/** A new joined file (bundle-<hash>.js / .css) replaces the older ones of the same kind */
+const dropOldBundles = async (cache, url) => {
+  const kind = /\/bundle-[^/]+\.(js|css)$/.exec(new URL(url).pathname);
+  if (!kind) return;
+  const same = new RegExp(`/bundle-[^/]+\\.${kind[1]}$`);
+  const old = (await cache.keys()).filter((k) => k.url !== url && same.test(new URL(k.url).pathname));
+  await Promise.all(old.map((k) => cache.delete(k)));
+};
+
 /** Network first; a good answer is kept for later, the kept copy answers when the network fails */
 const networkFirst = async (request) => {
   const cache = await caches.open(CACHE);
   try {
     const response = await fetch(request);
-    if (response.ok && response.type === 'basic') cache.put(request, response.clone());
+    if (response.ok && response.type === 'basic') cache.put(request, response.clone()).then(() => dropOldBundles(cache, request.url));
     return response;
   } catch (err) {
     const kept = await cache.match(request);
