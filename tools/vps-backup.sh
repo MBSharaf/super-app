@@ -3,16 +3,24 @@
 #   supermalaab-backup             make a backup now
 #   supermalaab-backup --install   install this command + a daily timer (03:30 Cairo)
 #   supermalaab-backup --list      show the backups on this server
+#   supermalaab-backup --offsite-setup   connect Google Drive once (owner pastes one address; nothing secret is shown)
+#   supermalaab-backup --show-key  print the off-site encryption key (owner keeps it outside the server)
 # Each backup is one folder in /var/backups/supermalaab/<date-time>/ (root only):
 #   SuperMalaab.bak.gz  full SQL Server backup (checked with RESTORE VERIFYONLY)
 #   files.tar.gz        uploaded files (storage) and data-protection keys (logins survive a restore)
 #   n8n.tar.gz          n8n data + its encryption key (when n8n is installed)
 # Backups older than KEEP_DAYS (default 14) are deleted. Restoring is done by the owner with supermalaab-restore.
+# Off-site copy: when Google Drive is connected (--offsite-setup), each backup is also copied, encrypted with
+# rclone crypt, to the Drive folder SuperMalaab-backups/<date-time>; copies older than OFFSITE_DAYS (30) are deleted.
+# Without the key in /etc/supermalaab/backup-offsite.key the Drive copies cannot be read: keep it somewhere safe.
 set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "Run as root"; exit 1; }
 DEST=/var/backups/supermalaab
 KEEP_DAYS="${KEEP_DAYS:-14}"
 DB=SuperMalaab
+OFFSITE_DAYS="${OFFSITE_DAYS:-30}"
+KEY=/etc/supermalaab/backup-offsite.key
+RC=/root/.config/rclone/rclone.conf
 sql() { docker exec mssql bash -c '/opt/mssql-tools18/bin/sqlcmd -C -I -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -b -h -1 -W -Q "$0"' "$1"; }
 
 install_self() {
@@ -44,6 +52,44 @@ list_backups() {
   ls -1 "$DEST" 2>/dev/null | while read -r d; do echo "$d  $(du -sh "$DEST/$d" | cut -f1)"; done
 }
 
+offsite_setup() {
+  command -v rclone >/dev/null || curl -fsSL https://rclone.org/install.sh | bash >/dev/null
+  install -d -m 700 /etc/supermalaab /root/.config/rclone
+  [ -s "$KEY" ] || { openssl rand -base64 32 | tr -d '\n' > "$KEY"; chmod 600 "$KEY"; }
+  local log; log="$(mktemp)"
+  rclone authorize drive --auth-no-open-browser > "$log" 2>&1 &
+  local pid=$!
+  for _ in $(seq 1 20); do grep -q 'http://127.0.0.1:53682/auth' "$log" && break; sleep 1; done
+  echo
+  echo "1) Open this address in Chrome, choose the Super Malaab Google account and press Allow:"
+  grep -o 'http://127.0.0.1:53682/auth[^ ]*' "$log" | head -1 | sed 's#^#   #'
+  echo "   (it redirects to Google; after Allow the page shows 'This site can't be reached' — that is expected)"
+  echo "2) Copy the whole address from Chrome's address bar (it starts with http://127.0.0.1:53682/?state=)"
+  read -r -p "   and paste it here, then press Enter: " back
+  curl -s "$back" >/dev/null || true
+  wait "$pid" || true
+  local token; token="$(sed -n '/Paste the following/,/End paste/p' "$log" | grep -o '{.*}' | head -1)"
+  rm -f "$log"
+  [ -n "$token" ] || { echo "Google Drive was not connected (no token). Run --offsite-setup again."; exit 1; }
+  rclone config create gdrive drive token "$token" --non-interactive >/dev/null
+  rclone config create offsite crypt remote gdrive:SuperMalaab-backups password "$(rclone obscure "$(cat "$KEY")")" \
+    filename_encryption off directory_name_encryption false --non-interactive >/dev/null
+  chmod 600 "$RC"
+  rclone mkdir offsite: && echo "Google Drive connected. Making a backup now…" && backup
+  echo; echo "IMPORTANT: run  supermalaab-backup --show-key  and keep the key outside this server (password manager)."
+}
+
+offsite_copy() {   # never fails the local backup
+  local dir="$1" stamp="$2"
+  [ -f "$RC" ] && rclone listremotes 2>/dev/null | grep -qx 'offsite:' || { echo "Off-site: not connected (supermalaab-backup --offsite-setup)"; return 0; }
+  if rclone copy "$dir" "offsite:$stamp" --retries 3 2>/tmp/supermalaab-offsite.err; then
+    rclone delete offsite: --min-age "${OFFSITE_DAYS}d" 2>/dev/null; rclone rmdirs offsite: --leave-root 2>/dev/null
+    echo "Off-site: copied to Google Drive (SuperMalaab-backups/$stamp, encrypted)"
+  else
+    echo "Off-site: FAILED — $(tail -1 /tmp/supermalaab-offsite.err)"
+  fi
+}
+
 backup() {
   local stamp dir inside
   stamp="$(date +%Y%m%d-%H%M)"
@@ -63,11 +109,14 @@ backup() {
   chmod -R go-rwx "$dir"
   find "$DEST" -mindepth 1 -maxdepth 1 -type d -mtime +"$KEEP_DAYS" -exec rm -rf {} +
   echo "Backup OK: $dir ($(du -sh "$dir" | cut -f1)) — database verified"
+  offsite_copy "$dir" "$stamp"
 }
 
 case "${1:-}" in
   --install) install_self ;;
   --list) list_backups ;;
+  --offsite-setup) offsite_setup ;;
+  --show-key) cat "$KEY"; echo ;;
   "") backup ;;
-  *) echo "Usage: supermalaab-backup [--install|--list]"; exit 1 ;;
+  *) echo "Usage: supermalaab-backup [--install|--list|--offsite-setup|--show-key]"; exit 1 ;;
 esac
