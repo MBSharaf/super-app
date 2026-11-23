@@ -151,6 +151,9 @@ EOF
   ln -sf /etc/nginx/sites-available/supermalaab /etc/nginx/sites-enabled/supermalaab
   rm -f /etc/nginx/sites-enabled/default
 fi
+# Sign-in answers carry several cookies (session, antiforgery, remember-me): the default nginx header buffer is too
+# small and answers "502 upstream sent too big header", so the buffers are raised for the whole server
+printf 'proxy_buffer_size 32k;\nproxy_buffers 8 32k;\nproxy_busy_buffers_size 64k;\n' > /etc/nginx/conf.d/supermalaab-buffers.conf
 grep -q 'server_tokens off' /etc/nginx/nginx.conf || sed -i 's/# server_tokens off;/server_tokens off;/' /etc/nginx/nginx.conf
 nginx -t -q && systemctl reload nginx
 
