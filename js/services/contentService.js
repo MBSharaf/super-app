@@ -42,7 +42,7 @@
     promoPops() {
       // Tournaments, news and communities were removed from the site: old pop-ups that point there are dropped
       const cfg = settings().promoPops || {};
-      return { on: cfg.on ?? true, first: cfg.first ?? 6, interval: Math.max(5, cfg.interval ?? 10), stay: Math.max(4, cfg.stay ?? 7), max: cfg.max ?? 6, items: (cfg.items || structuredClone(PROMO_DEFAULTS)).filter((x) => !GONE.test(x.link || '')).map(noEgyFantasy) };
+      return { on: cfg.on ?? true, first: cfg.first ?? 6, interval: Math.max(5, cfg.interval ?? 30), stay: Math.max(4, cfg.stay ?? 7), max: cfg.max ?? 6, items: (cfg.items || structuredClone(PROMO_DEFAULTS)).filter((x) => !GONE.test(x.link || '')).map(noEgyFantasy) };
     },
     promoStat(id, kind) {
       const st = { ...(settings().promoStats || {}) };

@@ -56,7 +56,7 @@ public sealed class ContentService(
     public async Task<PopupsDto> PopupsAsync(CancellationToken ct)
     {
         var seller = currentUser.UserId is { } id && await content.IsSellerAsync(id, ct);
-        var timing = Read<PopupTimingDto>(await content.SettingAsync("popups.timing", ct)) ?? new PopupTimingDto(true, 6, 10, 7, 6);
+        var timing = Read<PopupTimingDto>(await content.SettingAsync("popups.timing", ct)) ?? new PopupTimingDto(true, 6, 30, 7, 6);
         return new PopupsDto(timing, timing.On ? await content.PopupsAsync(true, seller, ct) : []);
     }
 

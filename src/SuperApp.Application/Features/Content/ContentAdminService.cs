@@ -74,7 +74,7 @@ public sealed class ContentAdminService(
 
     public async Task<PopupsDto> PopupsAsync(CancellationToken ct)
     {
-        var timing = ContentService.Read<PopupTimingDto>(await content.SettingAsync("popups.timing", ct)) ?? new PopupTimingDto(true, 6, 10, 7, 6);
+        var timing = ContentService.Read<PopupTimingDto>(await content.SettingAsync("popups.timing", ct)) ?? new PopupTimingDto(true, 6, 30, 7, 6);
         return new PopupsDto(timing, await content.PopupsAsync(false, false, ct));
     }
 

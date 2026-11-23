@@ -3,7 +3,7 @@
  * tournaments… One small card at a time slides in with a 3D flip, tilts toward the pointer (layers at different depths)
  * and carries a 3D object: a spinning cube with icons, a discount coin with thickness, or the real 3D T-shirt (three.js).
  *
- * Rhythm (set in the admin console, Site content → Pop-ups): first one after a few seconds, then one every `interval`
+ * Rhythm (set in the admin console, Site content → Pop-ups): first one after a few seconds, then one every `interval` (default 30)
  * seconds, each stays `stay` seconds, at most `max` per visit. Never on checkout, dashboards or the studio, never over a
  * dialog, never while the tab is hidden, never an ad for the page you're on. "Don't show offers" mutes them for 7 days.
  * Respects reduced motion (no spin, a plain fade).
