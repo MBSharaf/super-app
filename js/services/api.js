@@ -37,7 +37,9 @@
     if (body !== undefined && !form) headers['Content-Type'] = 'application/json';
     const res = await fetch(`${BASE}${path}`, { method, credentials: 'same-origin', headers, body: body === undefined ? undefined : form ? body : JSON.stringify(body) });
     const text = await res.text();
-    const json = text ? JSON.parse(text) : null;
+    // A gateway page (e.g. a 502 from nginx while the server restarts) is HTML: show the usual message, not a parse error
+    let json = null;
+    try { json = text ? JSON.parse(text) : null; } catch { if (res.ok) throw toError(502, null); }
     // The anti-forgery token is tied to the signed-in person: after a sign-in elsewhere it is refreshed once
     if (res.status === 400 && json?.errors?.code?.[0] === 'csrf' && retry) { await refreshCsrf(); return call(method, path, body, { form, retry: false, headers: extra }); }
     if (!res.ok || json?.success === false) throw toError(res.status, json);
