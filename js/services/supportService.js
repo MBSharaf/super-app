@@ -127,5 +127,5 @@
   };
   SA.services.support = support;
   // First run on this device: a few requests so the admin console has history
-  if (!db().all('tickets')) { db().raw().tickets = support.seed(); try { db().touch('tickets'); } catch { /* storage full */ } }
+  if (!db().all('tickets')) { db().raw().tickets = SA.config.realData ? [] : support.seed(); try { db().touch('tickets'); } catch { /* storage full */ } }
 })(window.SA);

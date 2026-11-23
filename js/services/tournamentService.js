@@ -291,7 +291,7 @@
   const seedTeams = (key, n, start, online) => Array.from({ length: n }, (_, i) => ({ id: `tm-${key}-${i}`, name: NAMES[(i * 5 + key.length) % NAMES.length], captain: PEOPLE[(i * 7 + key.length) % PEOPLE.length], phone: `+20 10${i} ${100 + i * 37} ${4000 + i * 211}`, players: 0, paid: true, payment: i < online ? 'Card' : 'Cash at venue', userId: null, createdAt: start - (n - i) * 2 * DAY }));
   const score = (s) => [Math.floor(seeded(s + 'h') * 5), Math.floor(seeded(s + 'a') * 4)];
   const seed = () => {
-    if (db.settings().seededTournaments) return;
+    if (db.settings().seededTournaments || SA.config.realData) return; // the server's site: real tournaments only
     const now = Date.now();
     const list = [];
     // 1) Open knockout cup at Turf 22 Arena, two Fridays from now, 5 of 8 teams in

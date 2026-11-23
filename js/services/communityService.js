@@ -256,7 +256,7 @@
   SA.services.community = community;
   // First run on this device: create the communities and demo posts
   if (!db().all('communities')) {
-    const s = community.seed();
+    const s = SA.config.realData ? { communities: [], posts: [] } : community.seed(); // the server's site loads real ones
     db().raw().communities = s.communities; db().raw().communityPosts = s.posts;
     if (!db().settings().community) db().raw().settings.community = { bannedWords: ['scam', 'fake', 'نصاب', 'حرامي'], blockContacts: true, muted: [] };
     try { db().touch('communities'); } catch { /* storage full */ }

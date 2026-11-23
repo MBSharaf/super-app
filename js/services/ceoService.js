@@ -84,7 +84,7 @@
     const since = d.platformSince || now - 200 * DAY;
     const addAcc = (a) => { if (!d.accounts.some((x) => x.id === a.id)) { d.accounts.push({ joinedAt: since, createdAt: since, updatedAt: now, ...a }); changed = true; } };
     addAcc({ id: CEO_ID, role: 'admin', teamRole: 'ceo', name: 'Sharaf', company: 'Super Malaab Egypt', email: 'ceo@superapp.example', phone: '+20 2 2735 0001', avatar: 4 });
-    addAcc({ id: 'acc-cfo', role: 'admin', teamRole: 'cfo', name: 'Laila Mansour', company: 'Super Malaab Egypt', email: 'finance@superapp.example', phone: '+20 2 2735 0002', avatar: 9 });
+    if (!SA.config.realData) addAcc({ id: 'acc-cfo', role: 'admin', teamRole: 'cfo', name: 'Laila Mansour', company: 'Super Malaab Egypt', email: 'finance@superapp.example', phone: '+20 2 2735 0002', avatar: 9 });
     ORG().ROLES.filter((r) => r.holder === 'ai').forEach((r, i) => addAcc({ id: agentAcc(r.id), role: 'admin', teamRole: r.id, agent: true, name: `${r.name} (AI)`, company: 'Super Malaab Egypt', email: `${r.id}@agents.superapp.example`, avatar: (i * 3) % 12 }));
     const hq = d.accounts.find((a) => a.id === 'acc-admin');
     if (hq && !hq.teamRole) { hq.teamRole = 'hq'; changed = true; }
@@ -92,6 +92,8 @@
       d.settings.ceo = { limits: { ...LIMITS }, agents: {}, budgets: { ...BUDGETS }, switches: {}, briefingAt: 0 };
       changed = true;
     }
+    // The server's site starts with no demo goals, deadlines or expenses: the CEO adds the real ones
+    if (SA.config.realData) { if (changed) db().touch('accounts'); return; }
     if (!d.ceoGoals.length) { GOALS.forEach((g) => d.ceoGoals.push({ ...g, createdAt: now, updatedAt: now })); changed = true; }
     if (!d.ceoCalendar.length) {
       CAL.forEach(([title, dept, owner, every, note, inDays], i) => d.ceoCalendar.push({ id: `cal-${i + 1}`, title, dept, owner, every, note, due: isoDate(addDays(today(), inDays)), done: false, createdAt: now, updatedAt: now }));
