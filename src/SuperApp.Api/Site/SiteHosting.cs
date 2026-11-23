@@ -109,7 +109,7 @@ public static class SiteHosting
         return Results.Content(WithFeatures(html, http.RequestServices.GetRequiredService<IConfiguration>()), "text/html; charset=utf-8");
     }
 
-    /// <summary>Marks the &lt;html&gt; tag with the store, print-on-demand, tournament-registration, store-payment and club-logo switches.</summary>
+    /// <summary>Marks the &lt;html&gt; tag with the store, print-on-demand, tournament-registration, store-payment, club-logo and fantasy switches (the demo-site closures in namespace.js never apply here).</summary>
     public static string WithFeatures(string html, IConfiguration configuration)
     {
         static string OnOff(bool on) => on ? "on" : "off";
@@ -117,9 +117,10 @@ public static class SiteHosting
         var pod = OnOff(configuration.GetValue("Features:PodEnabled", false));
         var tournaments = configuration.GetValue("Features:TournamentsOpen", false) ? "open" : "soon";
         var logos = OnOff(configuration.GetValue("Features:ClubLogos", true));
+        var fantasy = OnOff(configuration.GetValue("Features:FantasyEnabled", true));
         var shopPay = (configuration["Features:ShopPayment"] ?? "online").Trim().ToLowerInvariant() switch { "cod" => "cod", "both" => "both", _ => "online" };
         return html.Replace("<html lang=\"en\">",
-            $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\" data-tournaments=\"{tournaments}\" data-shop-pay=\"{shopPay}\" data-logos=\"{logos}\">", StringComparison.Ordinal);
+            $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\" data-tournaments=\"{tournaments}\" data-shop-pay=\"{shopPay}\" data-logos=\"{logos}\" data-fantasy=\"{fantasy}\">", StringComparison.Ordinal);
     }
 
     private static string ContentType(string name) => Path.GetExtension(name).ToLowerInvariant() switch
