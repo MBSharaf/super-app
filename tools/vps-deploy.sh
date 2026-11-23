@@ -34,7 +34,8 @@ HTTPS_PORT=443
 DOTNET_CLI_TELEMETRY_OPTOUT=1
 CONNECTIONSTRINGS__DEFAULT=Server=127.0.0.1,1433;Database=SuperMalaab;User Id=supermalaab_app;Password=$DBPASS;TrustServerCertificate=True;Encrypt=True
 SITE__ROOT=$BASE/site
-SITE__PUBLICURL=https://supermalaab.com/super-app/
+SITE__PUBLICURL=https://supermalaab.com/
+SITE__BASEPATH=/
 ALLOWEDHOSTS=supermalaab.com;www.supermalaab.com;localhost;127.0.0.1
 SECURITY__DATA_PROTECTION_KEYS_PATH=$BASE/keys
 STORAGE__LOCAL_ROOT=$BASE/storage
@@ -62,8 +63,10 @@ FOOTBALL__THESPORTSDB__KEY=123
 EOF
   chmod 600 /etc/supermalaab/app.env
 fi
-# The public address used in e-mail links (reset password, confirm e-mail), the sitemap and robots.txt
-grep -q '^SITE__PUBLICURL=' /etc/supermalaab/app.env || echo 'SITE__PUBLICURL=https://supermalaab.com/super-app/' >> /etc/supermalaab/app.env
+# The site lives at the domain root (supermalaab.com/pitches); old /super-app/ links redirect there.
+# The public address is used in e-mail links (reset password, confirm e-mail), the sitemap and robots.txt.
+sed -i '/^SITE__PUBLICURL=/d;/^SITE__BASEPATH=/d' /etc/supermalaab/app.env
+printf 'SITE__PUBLICURL=https://supermalaab.com/\nSITE__BASEPATH=/\n' >> /etc/supermalaab/app.env
 
 step "Build the API"
 cd $BASE/src
@@ -155,5 +158,5 @@ step "Check"
 for _ in $(seq 1 40); do curl -fs http://127.0.0.1:5000/health >/dev/null 2>&1 && break; sleep 3; done
 echo "service: $(systemctl is-active supermalaab)"
 echo "health:  $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5000/health)"
-echo "page:    $(curl -s -o /dev/null -w '%{http_code}' -H 'Host: supermalaab.com' -H 'X-Forwarded-Proto: https' http://127.0.0.1/super-app/)"
+echo "page:    $(curl -s -o /dev/null -w '%{http_code}' -H 'Host: supermalaab.com' -H 'X-Forwarded-Proto: https' http://127.0.0.1/)"
 echo "SUPERMALAAB_DEPLOY_DONE"

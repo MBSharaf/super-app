@@ -65,7 +65,7 @@ public sealed class SeoPages(IPitchesService pitches)
         var about = d.DescriptionEn ?? $"{c.Format}-a-side {c.Surface} pitch in {c.AreaEn}.";
         var body = $"<h1>{E(c.Name)}</h1><p>{E(c.Format.ToString(CultureInfo.InvariantCulture))}-a-side · {E(c.AreaEn)}, {E(c.GovernorateEn)} · {price} per hour · rated {c.Rating.ToString("0.0", CultureInfo.InvariantCulture)} from {c.ReviewsCount} reviews</p>"
             + $"<p>{E(d.Address)}</p><p>{E(about)}</p><h2>Facilities</h2><ul>{string.Concat(c.Facilities.Select(f => $"<li>{E(f)}</li>"))}</ul>"
-            + $"<p><a href=\"/super-app/pitches\">More pitches</a></p>";
+            + $"<p><a href=\"pitches\">More pitches</a></p>";
         var ld = new Dictionary<string, object>
         {
             ["@context"] = "https://schema.org", ["@type"] = "SportsActivityLocation", ["name"] = c.Name, ["description"] = about, ["priceRange"] = price,
@@ -80,14 +80,15 @@ public sealed class SeoPages(IPitchesService pitches)
     }
 
     private static string PitchList(IEnumerable<PitchCardDto> items) =>
-        "<ul>" + string.Concat(items.Select(p => $"<li><a href=\"/super-app/pitches/p-{E(p.Slug)}\">{E(p.Name)}</a> — {E(p.AreaEn)}, {p.PricePerHour.ToString("0", CultureInfo.InvariantCulture)} EGP / hour</li>")) + "</ul>";
+        "<ul>" + string.Concat(items.Select(p => $"<li><a href=\"pitches/p-{E(p.Slug)}\">{E(p.Name)}</a> — {E(p.AreaEn)}, {p.PricePerHour.ToString("0", CultureInfo.InvariantCulture)} EGP / hour</li>")) + "</ul>";
 
     private static string E(string? text) => WebUtility.HtmlEncode(text ?? "");
 
-    /// <summary>Writes the page into index.html: title, description, canonical, share tags, JSON-LD and the content.</summary>
-    public static string Render(string indexHtml, SeoPage page, string origin)
+    /// <summary>Writes the page into index.html: title, description, canonical, share tags, JSON-LD and the content.
+    /// <paramref name="siteUrl"/> is where the site lives, without a trailing slash (https://supermalaab.com or …/super-app).</summary>
+    public static string Render(string indexHtml, SeoPage page, string siteUrl)
     {
-        var url = $"{origin}/super-app/{page.Path}";
+        var url = $"{siteUrl}/{page.Path}";
         string A(string s) => WebUtility.HtmlEncode(s);
         var html = indexHtml
             .Replace("<title>Super Malaab — Book, play, compete</title>", $"<title>{A(page.Title)}</title>", StringComparison.Ordinal)

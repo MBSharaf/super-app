@@ -45,6 +45,13 @@ public sealed class PaymobGateway(HttpClient http, IConfiguration configuration)
 
     private string Setting(string key) => configuration[$"Payments:Paymob:{key}"] ?? string.Empty;
 
+    /// <summary>The site's address with a trailing slash: Site:PublicUrl when set (https://supermalaab.com/), else {site}/super-app/.</summary>
+    private string SitePage(string site)
+    {
+        var url = configuration["Site:PublicUrl"];
+        return string.IsNullOrWhiteSpace(url) ? $"{site}/super-app/" : url.TrimEnd('/') + "/";
+    }
+
     public async Task<GatewaySession> StartAsync(GatewayStart request, CancellationToken ct)
     {
         var site = (configuration["Payments:PublicBaseUrl"] ?? "https://localhost:7254").TrimEnd('/');
@@ -59,7 +66,7 @@ public sealed class PaymobGateway(HttpClient http, IConfiguration configuration)
                 apartment = "NA", street = "NA", building = "NA", floor = "NA", city = "NA", country = "EG" },
             special_reference = request.MerchantRef,
             notification_url = $"{site}/api/v1/webhooks/payments/paymob",
-            redirection_url = $"{site}/super-app/{request.ReturnPath}",
+            redirection_url = $"{SitePage(site)}{request.ReturnPath}",
         };
         using var message = new HttpRequestMessage(HttpMethod.Post, "v1/intention/") { Content = JsonContent.Create(body) };
         message.Headers.TryAddWithoutValidation("Authorization", $"Token {Setting("SecretKey")}");

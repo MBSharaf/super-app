@@ -11,10 +11,14 @@ namespace SuperApp.Api.Site;
 /// Page addresses without a file extension (e.g. /super-app/factory/jobs) return index.html (clean URLs).
 /// The page tells the site which parts are open: <c>&lt;html data-store="on|off" data-pod="on|off"&gt;</c> from the settings
 /// <c>Features:StoreEnabled</c> and <c>Features:PodEnabled</c> (no script needed; GitHub Pages keeps both off).
+/// On a real domain set <c>Site:BasePath</c> to empty: the site is then served at the domain root (supermalaab.com/pitches)
+/// and every old /super-app/… address answers with a permanent redirect to the same page without the folder.
 /// </summary>
 public static class SiteHosting
 {
-    public const string BasePath = "/super-app";
+    /// <summary>The folder the site lives in when Site:BasePath is not set (local runs, tests, GitHub Pages).</summary>
+    public const string DefaultBasePath = "/super-app";
+    private const string LegacyBasePath = "/super-app";
     private static readonly string[] Folders = ["css", "js", "models", "vendor", "icons"];
     private static readonly string[] RootFiles = ["index.html", "404.html", "og-image.png", "robots.txt", "sitemap.xml", "manifest.json", "sw.js", "offline.html"];
 
@@ -26,6 +30,7 @@ public static class SiteHosting
             app.Logger.LogWarning("Site files not found — the API runs without the site.");
             return app;
         }
+        var basePath = BasePathOf(app.Configuration);
         var types = new FileExtensionContentTypeProvider();
         types.Mappings[".glb"] = "model/gltf-binary";
         types.Mappings.Remove(".py");
@@ -34,25 +39,46 @@ public static class SiteHosting
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(root, folder)),
-                RequestPath = $"{BasePath}/{folder}",
+                RequestPath = $"{basePath}/{folder}",
                 ContentTypeProvider = types,
                 ServeUnknownFileTypes = false,
                 // The browser checks with the server before reusing a file (a cheap 304), so updates show up at once
                 OnPrepareResponse = ctx => ctx.Context.Response.Headers.CacheControl = "no-cache",
             });
         }
-        app.MapGet("/", () => Results.Redirect($"{BasePath}/")).ExcludeFromDescription();
         // Search engines read these two only from the domain root; both are built from live data (ContentService)
         app.MapGet("/robots.txt", (IContentService content) => Results.Text(content.Robots(), "text/plain; charset=utf-8")).ExcludeFromDescription();
         app.MapGet("/sitemap.xml", async (IContentService content, CancellationToken ct) => Results.Text(await content.SitemapAsync(ct), "application/xml; charset=utf-8")).ExcludeFromDescription();
-        app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, path, seo, ct)).ExcludeFromDescription();
+        if (basePath.Length == 0)
+        {
+            // The site is at the domain root: old /super-app/… links (emails, shares, search results) move there for good
+            app.MapGet($"{LegacyBasePath}/{{**path}}", (HttpContext http, string? path) =>
+                Results.Redirect($"/{path}{http.Request.QueryString}", permanent: true)).ExcludeFromDescription();
+            app.MapGet(LegacyBasePath, () => Results.Redirect("/", permanent: true)).ExcludeFromDescription();
+            app.MapGet("/{**path}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, basePath, path, seo, ct)).ExcludeFromDescription();
+            return app;
+        }
+        app.MapGet("/", () => Results.Redirect($"{basePath}/")).ExcludeFromDescription();
+        app.MapGet($"{basePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, basePath, path, seo, ct)).ExcludeFromDescription();
         return app;
     }
 
-    private static async Task<IResult> ServePageAsync(HttpContext http, string root, string? path, SeoPages seo, CancellationToken ct)
+    /// <summary>Site:BasePath without the trailing slash: "" for the domain root, "/super-app" by default.</summary>
+    public static string BasePathOf(IConfiguration configuration)
+    {
+        var value = configuration["Site:BasePath"];
+        return value is null ? DefaultBasePath : value.Trim().TrimEnd('/') is { Length: > 0 } b ? "/" + b.TrimStart('/') : "";
+    }
+
+    private static async Task<IResult> ServePageAsync(HttpContext http, string root, string basePath, string? path, SeoPages seo, CancellationToken ct)
     {
         http.Response.Headers.CacheControl = "no-cache";
         var name = string.IsNullOrEmpty(path) ? "index.html" : path;
+        // Server addresses (API, live hubs) never fall back to the page
+        if (name.StartsWith("api/", StringComparison.OrdinalIgnoreCase) || name.StartsWith("hubs/", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.NotFound();
+        }
         if (name is "robots.txt" or "sitemap.xml")
         {
             return Results.Redirect($"/{name}", permanent: true);
@@ -78,7 +104,8 @@ public static class SiteHosting
             // The site never breaks because of search-engine extras: without them the page is served as before
             http.RequestServices.GetRequiredService<ILogger<SeoPages>>().LogWarning(ex, "SEO content skipped for {Path}", name);
         }
-        var html = page is null ? index : SeoPages.Render(index, page, $"{http.Request.Scheme}://{http.Request.Host}");
+        index = index.Replace($"<base href=\"{DefaultBasePath}/\" />", $"<base href=\"{basePath}/\" />", StringComparison.Ordinal);
+        var html = page is null ? index : SeoPages.Render(index, page, $"{http.Request.Scheme}://{http.Request.Host}{basePath}");
         return Results.Content(WithFeatures(html, http.RequestServices.GetRequiredService<IConfiguration>()), "text/html; charset=utf-8");
     }
 
