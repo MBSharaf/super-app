@@ -9,8 +9,8 @@ namespace SuperApp.Tests.Application;
 public sealed class FantasyRulesTests
 {
     private static StatLine Line(int minutes = 90, int goals = 0, int assists = 0, int saves = 0, bool cleanSheet = false, int yellow = 0, bool red = false,
-        int ownGoals = 0, int penSaved = 0, int penMissed = 0, int bonus = 0) =>
-        new(minutes, goals, assists, saves, ownGoals, penSaved, penMissed, yellow, red, cleanSheet, bonus);
+        int ownGoals = 0, int penSaved = 0, int penMissed = 0, int bonus = 0, int conceded = 0, int defensive = 0) =>
+        new(minutes, goals, assists, saves, ownGoals, penSaved, penMissed, yellow, red, cleanSheet, bonus, conceded, defensive);
 
     [Fact]
     public void Player_points_follow_the_rules_table()
@@ -23,6 +23,30 @@ public sealed class FantasyRulesTests
         FantasyScoring.PlayerPoints(PlayerPosition.Defender, Line(minutes: 45, cleanSheet: true)).ShouldBe(1);   // clean sheet needs 60 minutes
         FantasyScoring.PlayerPoints(PlayerPosition.Goalkeeper, Line(saves: 7, cleanSheet: true, penSaved: 1, bonus: 3)).ShouldBe(2 + 2 + 4 + 5 + 3);
         FantasyScoring.PlayerPoints(PlayerPosition.Forward, Line(red: true, ownGoals: 1, penMissed: 1)).ShouldBe(2 - 3 - 2 - 2);
+    }
+
+    [Fact]
+    public void Official_rules_since_2025_goalkeeper_goals_goals_conceded_and_defensive_contribution()
+    {
+        FantasyScoring.PlayerPoints(PlayerPosition.Goalkeeper, Line(goals: 1)).ShouldBe(2 + 10);
+        FantasyScoring.PlayerPoints(PlayerPosition.Defender, Line(conceded: 3)).ShouldBe(2 - 1);           // every 2 conceded −1
+        FantasyScoring.PlayerPoints(PlayerPosition.Goalkeeper, Line(conceded: 4)).ShouldBe(2 - 2);
+        FantasyScoring.PlayerPoints(PlayerPosition.Midfielder, Line(conceded: 4)).ShouldBe(2);              // only GK and DEF lose points
+        FantasyScoring.PlayerPoints(PlayerPosition.Defender, Line(defensive: 10)).ShouldBe(2 + 2);
+        FantasyScoring.PlayerPoints(PlayerPosition.Defender, Line(defensive: 25)).ShouldBe(2 + 2);           // once a match
+        FantasyScoring.PlayerPoints(PlayerPosition.Midfielder, Line(defensive: 11)).ShouldBe(2);            // midfielders need 12
+        FantasyScoring.PlayerPoints(PlayerPosition.Forward, Line(defensive: 12)).ShouldBe(2 + 2);
+        FantasyScoring.PlayerPoints(PlayerPosition.Goalkeeper, Line(defensive: 20)).ShouldBe(2);            // never for goalkeepers
+    }
+
+    [Fact]
+    public void A_sale_keeps_half_of_a_rise_and_all_of_a_fall()
+    {
+        SquadRules.SellingPrice(7.5m, 7.8m).ShouldBe(7.6m);
+        SquadRules.SellingPrice(7.5m, 7.6m).ShouldBe(7.5m);
+        SquadRules.SellingPrice(7.5m, 7.2m).ShouldBe(7.2m);
+        SquadRules.SellingPrice(null, 9.1m).ShouldBe(9.1m);
+        SquadRules.MaxSavedFreeTransfers.ShouldBe(5);
     }
 
     [Fact]

@@ -16,7 +16,7 @@ public sealed record KnownPlayer(long Id, long ClubId, PlayerPosition Position);
 
 /// <summary>One statistics row ready to save, points already calculated.</summary>
 public sealed record StatToSave(long PlayerId, int Minutes, int Goals, int Assists, int Saves, int OwnGoals, int PenaltiesSaved, int PenaltiesMissed,
-    int YellowCards, bool RedCard, bool CleanSheet, int GoalsConceded, int Bonus, int Points);
+    int YellowCards, bool RedCard, bool CleanSheet, int GoalsConceded, int Bonus, int Points, int DefensiveContribution = 0);
 
 /// <summary>What one sync did, per competition (shown to the admin who forced it).</summary>
 public sealed record SyncResult(string Competition, string Provider, int Season, int Clubs, int Players, int Fixtures, int StatsRead, IReadOnlyList<int> GameweeksScored, string? Skipped);

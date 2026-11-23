@@ -15,24 +15,36 @@ public sealed partial class FantasyTeamService
         var swaps = request.Transfers.Select(t => (t.Out, t.In)).ToList();
         var squadIds = e.Picks.Select(p => p.PlayerId).ToList();
         var players = await repository.PlayersAsync(e.Season.SeasonId, squadIds.Concat(swaps.Select(s => s.In)).ToList(), ct);
-        var bank = CheckTransfers(e, squadIds, swaps, players);
+        var paid = Paid(e.Picks);
+        var sell = swaps.ToDictionary(s => s.Out, s => players.TryGetValue(s.Out, out var p) ? SquadRules.SellingPrice(paid.GetValueOrDefault(s.Out), p.Price) : 0m);
+        var bank = CheckTransfers(e, squadIds, swaps, players, sell);
         var row = await repository.GameweekRowAsync(e.Team.Id, e.Open.Id, ct);
-        var wildcard = row.ChipPlayed == FantasyScoring.WildcardChip;
-        var hits = SquadRules.Hits(swaps.Count, e.Team.FreeTransfers, wildcard);
+        // Free: a wildcard or free hit, or a team before its first deadline (unlimited changes, as in the official game)
+        var free = row.ChipPlayed is FantasyScoring.WildcardChip or FantasyScoring.FreeHitChip || !await repository.PlayedBeforeAsync(e.Team.Id, e.Open.Number, ct);
+        if (!free && (await repository.TransfersAsync(e.Team.Id, e.Open.Id, ct)).Count + swaps.Count > SquadRules.MaxTransfersPerGameweek)
+        {
+            throw new BusinessRuleException($"At most {SquadRules.MaxTransfersPerGameweek} transfers a gameweek (a wildcard or free hit has no limit).", "too_many_transfers");
+        }
+        var hits = free ? 0 : SquadRules.Hits(swaps.Count, e.Team.FreeTransfers, false);
         repository.AddTransfers(swaps.Select((s, i) => new Transfer
         {
-            TeamId = e.Team.Id, GameweekId = e.Open.Id, PlayerOutId = s.Out, PlayerInId = s.In, PriceOut = players[s.Out].Price, PriceIn = players[s.In].Price,
-            PointsHit = (byte)(wildcard || i < e.Team.FreeTransfers ? 0 : SquadRules.TransferHit),
+            TeamId = e.Team.Id, GameweekId = e.Open.Id, PlayerOutId = s.Out, PlayerInId = s.In, PriceOut = sell[s.Out], PriceIn = players[s.In].Price,
+            PointsHit = (byte)(free || i < e.Team.FreeTransfers ? 0 : SquadRules.TransferHit),
         }));
         e.Team.Bank = bank;
-        e.Team.FreeTransfers = (byte)(wildcard ? e.Team.FreeTransfers : Math.Max(0, e.Team.FreeTransfers - swaps.Count));
+        e.Team.FreeTransfers = (byte)(free ? e.Team.FreeTransfers : Math.Max(0, e.Team.FreeTransfers - swaps.Count));
         row.TransfersCost = (byte)Math.Min(255, row.TransfersCost + hits);
-        await repository.ReplacePicksAsync(e.Team.Id, e.Open.Id, Picks(SquadRules.ApplyTransfers(CurrentLineup(e.Picks), swaps), e.Team.Id, e.Open.Id), ct);
+        foreach (var s in swaps)
+        {
+            paid[s.In] = players[s.In].Price;
+        }
+        await repository.ReplacePicksAsync(e.Team.Id, e.Open.Id, Picks(SquadRules.ApplyTransfers(CurrentLineup(e.Picks), swaps), e.Team.Id, e.Open.Id, paid), ct);
         return new TransfersResultDto(swaps.Count, hits, await ToDtoAsync(e.Season, e.Team, ct));
     }
 
-    /// <summary>Checks the transfers and returns the bank after them.</summary>
-    private static decimal CheckTransfers(Editable e, List<long> squadIds, List<(long Out, long In)> swaps, IReadOnlyDictionary<long, SquadPlayer> players)
+    /// <summary>Checks the transfers and returns the bank after them (players leave at their selling price).</summary>
+    private static decimal CheckTransfers(Editable e, List<long> squadIds, List<(long Out, long In)> swaps, IReadOnlyDictionary<long, SquadPlayer> players,
+        Dictionary<long, decimal> sell)
     {
         if (swaps.Any(s => !squadIds.Contains(s.Out) || squadIds.Contains(s.In)))
         {
@@ -42,7 +54,7 @@ public sealed partial class FantasyTeamService
         {
             throw new BusinessRuleException("A player can only be replaced by a player in the same position.", "transfer_position");
         }
-        var bank = e.Team.Bank + swaps.Sum(s => players[s.Out].Price - players[s.In].Price);
+        var bank = e.Team.Bank + swaps.Sum(s => sell[s.Out] - players[s.In].Price);
         if (bank < 0)
         {
             throw new BusinessRuleException($"Over budget by {-bank:0.0}M.", "over_budget");
@@ -78,13 +90,20 @@ public sealed partial class FantasyTeamService
         var picks = season.Open is null ? [] : await repository.PicksAsync(team.Id, season.Open.Id, ct);
         var prices = await repository.PlayersAsync(season.SeasonId, picks.Select(p => p.PlayerId).ToList(), ct);
         var (chip, cost) = season.Open is null ? (null, 0) : await repository.GameweekStateAsync(team.Id, season.Open.Id, ct);
+        decimal Sell(Pick p) => prices.TryGetValue(p.PlayerId, out var now) ? SquadRules.SellingPrice(p.PurchasePrice, now.Price) : 0m;
         return new TeamDto(team.Id, team.Name, season.Key, season.Open?.Number, season.Open?.Deadline, team.Bank,
-            prices.Values.Sum(p => p.Price) + team.Bank, team.FreeTransfers, cost, team.TotalPoints, team.OverallRank, Chips(team), chip,
-            picks.OrderBy(p => p.Slot).Select(p => new PickDto(p.PlayerId, p.Slot, p.IsCaptain, p.IsViceCaptain, p.Multiplier, p.Points)).ToList());
+            picks.Sum(Sell) + team.Bank, team.FreeTransfers, cost, team.TotalPoints, team.OverallRank, Chips(team), chip,
+            picks.OrderBy(p => p.Slot).Select(p => new PickDto(p.PlayerId, p.Slot, p.IsCaptain, p.IsViceCaptain, p.Multiplier, p.Points,
+                Sell(p), p.PurchasePrice ?? (prices.TryGetValue(p.PlayerId, out var now) ? now.Price : 0m))).ToList());
     }
 
+    /// <summary>Chips played, as "wildcard1" … "triplecaptain2" (older rows said "benchboost" / "triplecaptain" for the first half).</summary>
     private static List<string> Chips(FantasyTeam team) =>
-        string.IsNullOrWhiteSpace(team.ChipsUsed) ? [] : [.. team.ChipsUsed.Split(',', StringSplitOptions.RemoveEmptyEntries)];
+        string.IsNullOrWhiteSpace(team.ChipsUsed) ? [] : [.. team.ChipsUsed.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(c => c is FantasyScoring.BenchBoostChip or FantasyScoring.TripleCaptainChip ? c + "1" : c).Distinct()];
+
+    /// <summary>What the team paid for each player in the squad (null = bought before purchase prices were kept).</summary>
+    private static Dictionary<long, decimal?> Paid(List<Pick> picks) => picks.ToDictionary(p => p.PlayerId, p => p.PurchasePrice);
 
     private static Lineup ToLineup(LineupRequest r) => new(r.Starters, r.Bench, r.CaptainId, r.ViceCaptainId);
 
@@ -95,12 +114,12 @@ public sealed partial class FantasyTeamService
             ordered.First(p => p.IsCaptain).PlayerId, ordered.First(p => p.IsViceCaptain).PlayerId);
     }
 
-    /// <summary>Picks in slot order: 1–11 the starters, 12–15 the bench.</summary>
-    private static List<Pick> Picks(Lineup lineup, long teamId, long gameweekId) =>
+    /// <summary>Picks in slot order: 1–11 the starters, 12–15 the bench; each keeps what the team paid for him.</summary>
+    private static List<Pick> Picks(Lineup lineup, long teamId, long gameweekId, IReadOnlyDictionary<long, decimal?> paid) =>
         lineup.Starters.Concat(lineup.Bench).Select((id, i) => new Pick
         {
             TeamId = teamId, GameweekId = gameweekId, PlayerId = id, Slot = (byte)(i + 1),
-            IsCaptain = id == lineup.CaptainId, IsViceCaptain = id == lineup.ViceCaptainId,
+            IsCaptain = id == lineup.CaptainId, IsViceCaptain = id == lineup.ViceCaptainId, PurchasePrice = paid.GetValueOrDefault(id),
         }).ToList();
 }
 

@@ -28,6 +28,7 @@ internal sealed class PlayerFixtureStatConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.CleanSheet).HasDefaultValue(false).ValueGeneratedNever();
         builder.Property(x => x.GoalsConceded).HasDefaultValue((byte)0).ValueGeneratedNever();
         builder.Property(x => x.Bonus).HasDefaultValue((byte)0).ValueGeneratedNever();
+        builder.Property(x => x.DefensiveContribution).HasDefaultValue((byte)0).ValueGeneratedNever();
         builder.Property(x => x.Points).HasDefaultValue((short)0).ValueGeneratedNever();
         builder.HasIndex(x => new { x.PlayerId, x.FixtureId }).IsUnique().HasDatabaseName("UQ_PlayerFixtureStats_PlayerId_FixtureId");
         builder.HasOne(x => x.Player).WithMany().HasForeignKey(x => x.PlayerId).OnDelete(DeleteBehavior.NoAction);

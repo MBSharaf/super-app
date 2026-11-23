@@ -149,6 +149,11 @@ public sealed class FantasyTests(FantasyApiFactory api) : IClassFixture<FantasyA
         long Mine(string position, int skip = 0) => squad.Where(p => p.GetProperty("position").GetString() == position).Skip(skip).First().Id();
 
         (await client.PostAsync("/api/v1/fantasy/EPL/team/transfers", new { transfers = new[] { new { @out = Mine("GK"), @in = Spare("FWD") } } })).Body.Code().ShouldBe("transfer_position");
+        // Before its first deadline a team changes for free (official rule)
+        var early = (await client.PostAsync("/api/v1/fantasy/EPL/team/transfers", new { transfers = new[] { new { @out = Mine("MID", 4), @in = Spare("MID", 3) } } })).Body.Data();
+        (early.GetProperty("hits").GetInt32(), early.GetProperty("team").GetProperty("freeTransfers").GetInt32()).ShouldBe((0, 1));
+        (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/freehit")).Body.Code().ShouldBe("freehit_first_week");
+        await PassADeadlineAsync(userId);
         var first = (await client.PostAsync("/api/v1/fantasy/EPL/team/transfers", new { transfers = new[] { new { @out = Mine("MID"), @in = Spare("MID") } } })).Body.Data();
         (first.GetProperty("hits").GetInt32(), first.GetProperty("team").GetProperty("freeTransfers").GetInt32()).ShouldBe((0, 0));
         var second = (await client.PostAsync("/api/v1/fantasy/EPL/team/transfers", new { transfers = new[] { new { @out = Mine("FWD"), @in = Spare("FWD") } } })).Body.Data();
@@ -163,8 +168,58 @@ public sealed class FantasyTests(FantasyApiFactory api) : IClassFixture<FantasyA
         free.GetProperty("hits").GetInt32().ShouldBe(0);
         (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/benchboost")).Body.Code().ShouldBe("chip_this_week");
         (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/wildcard")).Body.Code().ShouldBe("chip_used");
-        (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/freehit")).Body.Code().ShouldBe("unknown_chip");
+        (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/allin")).Body.Code().ShouldBe("unknown_chip");
     }
+
+    [Fact]
+    public async Task A_free_hit_lasts_one_gameweek_then_the_squad_and_bank_from_before_come_back()
+    {
+        var (client, userId) = await kit.PersonAsync(partner: false);
+        var boot = await BootstrapAsync(client);
+        var squad = FantasyKit.CheapSquad(boot);
+        (await client.PostAsync("/api/v1/fantasy/EPL/team", NewTeam(squad, "Free Hitters"))).Status.ShouldBe(HttpStatusCode.Created);
+        await PassADeadlineAsync(userId);
+        var mine = squad.Where(p => p.GetProperty("position").GetString() == "FWD").First().Id();
+        var spare = boot.GetProperty("players").EnumerateArray().Where(p => p.GetProperty("position").GetString() == "FWD"
+            && squad.All(s => s.GetProperty("clubId").GetInt64() != p.GetProperty("clubId").GetInt64())).OrderBy(p => p.GetProperty("price").GetDecimal()).First().Id();
+        (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/freehit")).Body.Data().GetProperty("activeChip").GetString().ShouldBe("freehit");
+        var bankBefore = (await client.GetAsync("/api/v1/fantasy/EPL/team")).Body.Data().GetProperty("bank").GetDecimal();
+        var made = (await client.PostAsync("/api/v1/fantasy/EPL/team/transfers", new { transfers = new[] { new { @out = mine, @in = spare } } })).Body.Data();
+        made.GetProperty("hits").GetInt32().ShouldBe(0);
+
+        // The deadline passes: the next gameweek opens with the squad and bank from before the free hit
+        var open = await api.DbAsync(db => db.Set<Pick>().Where(p => p.Team.UserId == userId).OrderByDescending(p => p.Gameweek.Number)
+            .Select(p => new { p.GameweekId, p.Gameweek.Deadline }).FirstAsync());
+        await api.DbAsync(db => db.Set<Gameweek>().Where(g => g.Id == open.GameweekId).ExecuteUpdateAsync(u => u.SetProperty(g => g.Deadline, DateTime.UtcNow.AddMinutes(-1))));
+        try
+        {
+            var next = (await client.GetAsync("/api/v1/fantasy/EPL/team")).Body.Data();
+            var ids = next.GetProperty("picks").EnumerateArray().Select(p => p.GetProperty("playerId").GetInt64()).ToList();
+            ids.ShouldContain(mine);
+            ids.ShouldNotContain(spare);
+            next.GetProperty("bank").GetDecimal().ShouldBe(bankBefore);
+            (await client.PostAsync("/api/v1/fantasy/EPL/team/chips/freehit")).Body.Code().ShouldBeOneOf("chip_used", "freehit_consecutive");
+        }
+        finally
+        {
+            await api.DbAsync(db => db.Set<Gameweek>().Where(g => g.Id == open.GameweekId).ExecuteUpdateAsync(u => u.SetProperty(g => g.Deadline, open.Deadline)));
+        }
+    }
+
+    /// <summary>Gives the team picks in the gameweek before the open one, as if it had played a deadline already.</summary>
+    private Task<int> PassADeadlineAsync(Guid userId) => api.DbAsync(async db =>
+    {
+        var team = await db.Set<FantasyTeam>().SingleAsync(t => t.UserId == userId);
+        var picks = await db.Set<Pick>().AsNoTracking().Where(p => p.TeamId == team.Id).Select(p => new { p.PlayerId, p.Slot, p.IsCaptain, p.IsViceCaptain, p.Gameweek.Number })
+            .ToListAsync();
+        var open = picks.Max(p => p.Number);
+        var before = await db.Set<Gameweek>().Where(g => g.SeasonId == team.SeasonId && g.Number == open - 1).SingleAsync();
+        db.Set<Pick>().AddRange(picks.Where(p => p.Number == open).Select(p => new Pick
+        {
+            TeamId = team.Id, GameweekId = before.Id, PlayerId = p.PlayerId, Slot = p.Slot, IsCaptain = p.IsCaptain, IsViceCaptain = p.IsViceCaptain,
+        }));
+        return await db.SaveChangesAsync();
+    });
 
     [Fact]
     public async Task The_fantasy_kill_switch_stops_changes()

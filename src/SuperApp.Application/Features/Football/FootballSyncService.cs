@@ -25,6 +25,7 @@ public sealed class FootballSyncService(
 {
     private const int MaxStatsPerRun = 25;   // a real provider: about one gameweek of matches per run (the simulated one has no limit)
     private const string ApiFootball = "api-football";
+    private const string Fpl = "fpl";
     private static readonly TimeSpan SquadRefresh = TimeSpan.FromDays(7);
     private static readonly TimeSpan FullRefresh = TimeSpan.FromDays(1);
 
@@ -83,10 +84,13 @@ public sealed class FootballSyncService(
         return (stats, scored);
     }
 
-    /// <summary>Clubs and squads are read again once a week (one call per club), else the stored ones are used.</summary>
+    /// <summary>
+    /// Clubs and squads are read again once a week (one call per club), else the stored ones are used. FPL is read every
+    /// sync: its squads come from the one file already read, and prices, news and photos change daily.
+    /// </summary>
     private async Task<(IReadOnlyDictionary<int, long> Clubs, int Players)> SyncSquadsAsync(IFootballData data, CompetitionRef comp, int season, long seasonId, CancellationToken ct)
     {
-        if (await repository.SquadsFreshAsync(seasonId, clock.UtcNow - SquadRefresh, ct))
+        if (data.Provider != Fpl && await repository.SquadsFreshAsync(seasonId, clock.UtcNow - SquadRefresh, ct))
         {
             if (data.Provider != ApiFootball)   // free sources: the club list costs no extra call, so new badges show at once
             {
@@ -130,7 +134,10 @@ public sealed class FootballSyncService(
         return read.Count;
     }
 
-    /// <summary>Statistics rows with clean sheet, goals conceded, bonus (best three ratings) and points.</summary>
+    /// <summary>
+    /// Statistics rows with clean sheet, goals conceded, bonus and points. The source's own numbers win when it has them
+    /// (FPL: conceded while on the pitch, the official bonus); otherwise the match score and the best three ratings.
+    /// </summary>
     public static IReadOnlyList<StatToSave> Rows(FixtureToStat fixture, IReadOnlyList<FdPlayerStat> stats, IReadOnlyDictionary<int, KnownPlayer> players)
     {
         var known = stats.Where(s => players.ContainsKey(s.PlayerExternalId) && s.Minutes > 0).ToList();
@@ -138,11 +145,12 @@ public sealed class FootballSyncService(
         return known.Select(s =>
         {
             var player = players[s.PlayerExternalId];
-            var conceded = player.ClubId == fixture.HomeClubId ? fixture.AwayGoals : fixture.HomeGoals;
+            var conceded = s.GoalsConceded ?? (player.ClubId == fixture.HomeClubId ? fixture.AwayGoals : fixture.HomeGoals);
+            var clean = (s.CleanSheet ?? conceded == 0) && s.Minutes >= 60;
             var line = new StatLine(s.Minutes, s.Goals, s.Assists, s.Saves, s.OwnGoals, s.PenaltiesSaved, s.PenaltiesMissed, s.YellowCards, s.RedCard,
-                conceded == 0 && s.Minutes >= 60, bonus.GetValueOrDefault(s.PlayerExternalId));
+                clean, s.Bonus ?? bonus.GetValueOrDefault(s.PlayerExternalId), conceded, s.DefensiveContribution);
             return new StatToSave(player.Id, s.Minutes, s.Goals, s.Assists, s.Saves, s.OwnGoals, s.PenaltiesSaved, s.PenaltiesMissed, s.YellowCards,
-                s.RedCard, line.CleanSheet, conceded, line.Bonus, FantasyScoring.PlayerPoints(player.Position, line));
+                s.RedCard, line.CleanSheet, conceded, line.Bonus, FantasyScoring.PlayerPoints(player.Position, line), s.DefensiveContribution);
         }).ToList();
     }
 }

@@ -311,3 +311,35 @@
 .club-logo { position: relative; display: inline-grid; place-items: center; flex: none; vertical-align: middle; }
 .club-logo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .25)); }
 .club-logo > img + svg { visibility: hidden; }
+
+/* Fantasy player pictures: the official headshot on a disc in club colours, the club badge in the corner. The badge
+   (or shirt) drawn under the photo shows if the photo cannot load. */
+.pl-face { position: relative; display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); vertical-align: middle; }
+.pl-face > .pl-face-img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 12%;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--kc) 70%, #fff) 0%, var(--kc) 55%, color-mix(in srgb, var(--kc) 55%, #000) 100%);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 4px 10px -4px rgba(0, 0, 0, .45); }
+.pl-face:has(> .pl-face-img) > :first-child { visibility: hidden; }
+.pl-face-club { position: absolute; right: -4%; bottom: -4%; display: grid; place-items: center; padding: 2px; border-radius: 50%; background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .25); line-height: 0; }
+.pl-face-club .club-logo > img { filter: none; }
+[data-theme="dark"] .pl-face-club { background: #f4f6f5; }
+
+/* Fantasy chips (Wildcard, Free Hit, Bench Boost, Triple Captain) above the pitch */
+.fx-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.fx-chip { display: grid; justify-items: center; gap: 4px; padding: 12px 6px; border-radius: var(--r-md, 14px); border: 1px solid var(--line-2, rgba(0,0,0,.1));
+  background: var(--surface, #fff); color: var(--ink, #0d1411); cursor: pointer; text-align: center; transition: transform .2s, box-shadow .2s, border-color .2s; }
+.fx-chip b { font-size: .82rem; line-height: 1.15; }
+.fx-chip .xs { color: var(--muted, #6b7280); font-weight: 600; }
+.fx-chip-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(145deg, #138a5f, #0a3d2c); color: #fff; }
+.fx-chip:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 10px 22px -12px rgba(10, 61, 44, .6); border-color: #138a5f; }
+.fx-chip:not(:disabled) .xs { color: #0f7a55; }
+.fx-chip.is-on { border-color: #FF5B14; box-shadow: 0 0 0 2px rgba(255, 91, 20, .25); cursor: default; }
+.fx-chip.is-on .fx-chip-ico { background: linear-gradient(145deg, #FF5B14, #c73d00); }
+.fx-chip.is-on .xs { color: #c73d00; }
+.fx-chip:disabled:not(.is-on) { opacity: .55; cursor: default; }
+.fx-chip.is-played .fx-chip-ico { background: #9aa5a0; }
+@media (max-width: 520px) { .fx-chip { padding: 10px 4px; } .fx-chip b { font-size: .72rem; } .fx-chip-ico { width: 32px; height: 32px; } }
+.fx-rules-more { margin-top: 12px; }
+.fx-rules-more summary { cursor: pointer; color: var(--ink-2, #374151); }
+.fx-rules-list { margin: 10px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; }
+.ptoken .ptoken-kit .flag { min-width: 18px; width: auto; padding: 0 4px; border-radius: 9px; font-size: 9px; }

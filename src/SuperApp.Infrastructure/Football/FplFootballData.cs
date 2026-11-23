@@ -16,6 +16,9 @@ public sealed class FplFootballData(HttpClient http) : IFootballData
 {
     public const string BaseAddress = "https://fantasy.premierleague.com/api/";
 
+    /// <summary>The official headshots (110×140; the site asks for the 40×40 copy in lists), + the player's "code" + ".png".</summary>
+    public const string PhotoAddress = "https://resources.premierleague.com/premierleague25/photos/players/110x140/";
+
     private static readonly Dictionary<string, (string Main, string Second)> Kits = new()
     {
         ["ARS"] = ("#EF0107", "#FFFFFF"), ["AVL"] = ("#670E36", "#95BFE5"), ["BOU"] = ("#DA291C", "#111111"), ["BRE"] = ("#E30613", "#FFFFFF"),
@@ -51,7 +54,10 @@ public sealed class FplFootballData(HttpClient http) : IFootballData
     public async Task<IReadOnlyList<FdPlayer>> SquadAsync(int leagueId, int season, int clubExternalId, CancellationToken ct) =>
         (await BootstrapAsync(ct)).GetProperty("elements").EnumerateArray().Where(p => p.GetProperty("team").GetInt32() == clubExternalId)
             .Select(p => new FdPlayer(p.GetProperty("id").GetInt32(), clubExternalId, p.GetProperty("web_name").GetString() ?? "Player",
-                Position(p.GetProperty("element_type").GetInt32()), p.GetProperty("now_cost").GetInt32() / 10m, Status(p.GetProperty("status").GetString())))
+                Position(p.GetProperty("element_type").GetInt32()), p.GetProperty("now_cost").GetInt32() / 10m, Status(p.GetProperty("status").GetString()),
+                Int(p, "code") is { } code ? $"{PhotoAddress}{code}.png" : null,
+                p.TryGetProperty("news", out var news) && news.ValueKind == JsonValueKind.String ? news.GetString() : null,
+                Int(p, "chance_of_playing_next_round")))
             .ToList();
 
     /// <summary>Matches without a gameweek or a kick-off time (postponed, not yet rescheduled) are left out until they get one.</summary>
@@ -60,7 +66,10 @@ public sealed class FplFootballData(HttpClient http) : IFootballData
             .Where(f => f.GetProperty("event").ValueKind == JsonValueKind.Number && f.GetProperty("kickoff_time").ValueKind == JsonValueKind.String)
             .Select(ToFixture).Where(f => rounds is null || rounds.Contains(f.Round)).ToList();
 
-    /// <summary>Minutes from the gameweek's live file; goals, assists, cards, saves and BPS from the fixture itself.</summary>
+    /// <summary>
+    /// Minutes, goals conceded on the pitch and the clean sheet from the gameweek's live file; goals, assists, cards,
+    /// saves, BPS, defensive contribution and the official bonus (once published) from the fixture itself.
+    /// </summary>
     public async Task<IReadOnlyList<FdPlayerStat>> FixtureStatsAsync(int leagueId, int fixtureExternalId, CancellationToken ct)
     {
         var fixture = (await FixturesDocAsync(ct)).EnumerateArray().FirstOrDefault(f => f.GetProperty("id").GetInt32() == fixtureExternalId);
@@ -68,15 +77,38 @@ public sealed class FplFootballData(HttpClient http) : IFootballData
         {
             return [];
         }
-        var minutes = Minutes(await LiveAsync(fixture.GetProperty("event").GetInt32(), ct), fixtureExternalId);
+        var onPitch = OnPitch(await LiveAsync(fixture.GetProperty("event").GetInt32(), ct), fixtureExternalId);
+        var minutes = onPitch.ToDictionary(x => x.Key, x => x.Value.Minutes);
         var numbers = Numbers(fixture);
+        var bonusOut = numbers.Keys.Any(k => k.Item1 == "bonus");
         var clubs = (await BootstrapAsync(ct)).GetProperty("elements").EnumerateArray()
             .ToDictionary(p => p.GetProperty("id").GetInt32(), p => p.GetProperty("team").GetInt32());
         int N(string stat, int player) => numbers.TryGetValue((stat, player), out var v) ? v : 0;
         return minutes.Where(m => m.Value > 0 && clubs.ContainsKey(m.Key)).Select(m => new FdPlayerStat(m.Key, clubs[m.Key], m.Value,
             N("goals_scored", m.Key), N("assists", m.Key), N("saves", m.Key), N("own_goals", m.Key), N("penalties_saved", m.Key),
-            N("penalties_missed", m.Key), N("yellow_cards", m.Key), N("red_cards", m.Key) > 0, N("bps", m.Key))).ToList();
+            N("penalties_missed", m.Key), N("yellow_cards", m.Key), N("red_cards", m.Key) > 0, N("bps", m.Key),
+            onPitch[m.Key].Conceded, onPitch[m.Key].Clean, N("defensive_contribution", m.Key), bonusOut ? N("bonus", m.Key) : null)).ToList();
     }
+
+    /// <summary>
+    /// Per player in this fixture: minutes, goals conceded while on the pitch and the clean sheet. A player with one
+    /// match in the gameweek has exact totals; in a double gameweek only the lines that scored are listed per match, so
+    /// a missing conceded line means 0 or 1 (the same points).
+    /// </summary>
+    private static Dictionary<int, (int Minutes, int? Conceded, bool? Clean)> OnPitch(JsonElement live, int fixtureId) =>
+        live.GetProperty("elements").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetInt32(), e =>
+        {
+            var matches = e.GetProperty("explain").EnumerateArray().ToList();
+            var lines = matches.Where(x => x.GetProperty("fixture").GetInt32() == fixtureId).SelectMany(x => x.GetProperty("stats").EnumerateArray()).ToList();
+            int? Line(string id) => lines.Where(s => s.GetProperty("identifier").GetString() == id).Select(s => (int?)s.GetProperty("value").GetInt32()).FirstOrDefault();
+            var minutes = Line("minutes") ?? 0;
+            if (matches.Count == 1 && e.TryGetProperty("stats", out var totals))
+            {
+                return (minutes, Int(totals, "goals_conceded"), Int(totals, "clean_sheets") is { } cs ? cs > 0 : (bool?)null);
+            }
+            var clean = Line("clean_sheets") > 0;
+            return (minutes, (int?)(Line("goals_conceded") ?? (clean ? 0 : Math.Min(1, minutes))), (bool?)clean);
+        });
 
     private static FdFixture ToFixture(JsonElement f)
     {
@@ -87,13 +119,6 @@ public sealed class FplFootballData(HttpClient http) : IFootballData
             DateTime.Parse(f.GetProperty("kickoff_time").GetString()!, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal),
             status, Int(f, "team_h_score"), Int(f, "team_a_score"), status == FixtureStatus.Live ? Int(f, "minutes") : null);
     }
-
-    /// <summary>Minutes each player played in this fixture (a double gameweek lists each match separately).</summary>
-    private static Dictionary<int, int> Minutes(JsonElement live, int fixtureId) =>
-        live.GetProperty("elements").EnumerateArray().ToDictionary(e => e.GetProperty("id").GetInt32(), e => e.GetProperty("explain").EnumerateArray()
-            .Where(x => x.GetProperty("fixture").GetInt32() == fixtureId)
-            .SelectMany(x => x.GetProperty("stats").EnumerateArray())
-            .Where(s => s.GetProperty("identifier").GetString() == "minutes").Sum(s => s.GetProperty("value").GetInt32()));
 
     /// <summary>The fixture's per-player numbers: (stat, player) → value, both sides together.</summary>
     private static Dictionary<(string, int), int> Numbers(JsonElement fixture) =>

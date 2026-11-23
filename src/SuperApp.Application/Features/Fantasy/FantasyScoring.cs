@@ -14,7 +14,9 @@ public sealed record StatLine(
     int YellowCards,
     bool RedCard,
     bool CleanSheet,
-    int Bonus);
+    int Bonus,
+    int GoalsConceded = 0,
+    int DefensiveContribution = 0);
 
 /// <summary>A pick going into the team score: slot 1–11 starts, 12–15 is the bench in order (12 = the goalkeeper).</summary>
 public sealed record ScoringPick(long PlayerId, int Slot, PlayerPosition Position, bool IsCaptain, bool IsViceCaptain);
@@ -28,15 +30,26 @@ public sealed record ScoredPick(long PlayerId, int Slot, int Multiplier, int Bas
 public sealed record TeamScore(int Total, IReadOnlyList<ScoredPick> Picks, long? CaptainUsed);
 
 /// <summary>
-/// The fantasy scoring rules (PRD FR-FAN-04), pure so they are unit-tested on their own. They match the rules table the
-/// site shows: minutes 1 / 2, goals 6 (GK, DEF) / 5 (MID) / 4 (FWD), assist 3, clean sheet 4 (GK, DEF) / 1 (MID),
-/// every 3 saves 1, penalty save 5, penalty miss −2, yellow −1, red −3, own goal −2, bonus 1–3.
+/// The fantasy scoring rules (PRD FR-FAN-04), pure so they are unit-tested on their own. They follow the official
+/// Fantasy Premier League table (checked 2026-11-23) and the rules table the site shows: minutes 1 / 2, goals
+/// 10 (GK) / 6 (DEF) / 5 (MID) / 4 (FWD), assist 3, clean sheet 4 (GK, DEF) / 1 (MID), every 3 saves 1, every 2 goals
+/// conceded −1 (GK, DEF), defensive contribution 2 (DEF at 10, MID and FWD at 12; once a match), penalty save 5,
+/// penalty miss −2, yellow −1, red −3, own goal −2, bonus 1–3.
 /// </summary>
 public static class FantasyScoring
 {
     public const string WildcardChip = "wildcard";
     public const string BenchBoostChip = "benchboost";
     public const string TripleCaptainChip = "triplecaptain";
+    public const string FreeHitChip = "freehit";
+
+    /// <summary>Defensive contribution needed for its 2 points: defenders 10, midfielders and forwards 12, goalkeepers never.</summary>
+    public static int? DefensiveThreshold(PlayerPosition position) => position switch
+    {
+        PlayerPosition.Defender => 10,
+        PlayerPosition.Midfielder or PlayerPosition.Forward => 12,
+        _ => null,
+    };
 
     public static int PlayerPoints(PlayerPosition position, StatLine s)
     {
@@ -54,13 +67,22 @@ public static class FantasyScoring
         {
             points += s.Saves / 3;
         }
+        if (position is PlayerPosition.Goalkeeper or PlayerPosition.Defender)
+        {
+            points -= s.GoalsConceded / 2;
+        }
+        if (DefensiveThreshold(position) is { } needed && s.DefensiveContribution >= needed)
+        {
+            points += 2;
+        }
         points += s.PenaltiesSaved * 5 - s.PenaltiesMissed * 2 - s.YellowCards - (s.RedCard ? 3 : 0) - s.OwnGoals * 2 + s.Bonus;
         return points;
     }
 
     private static int GoalPoints(PlayerPosition position) => position switch
     {
-        PlayerPosition.Goalkeeper or PlayerPosition.Defender => 6,
+        PlayerPosition.Goalkeeper => 10,
+        PlayerPosition.Defender => 6,
         PlayerPosition.Midfielder => 5,
         _ => 4,
     };

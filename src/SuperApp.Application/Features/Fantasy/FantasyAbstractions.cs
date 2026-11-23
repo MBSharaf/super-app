@@ -42,6 +42,15 @@ public interface IFantasyTeamRepository
     /// <summary>The team's picks for the gameweek; when it has none yet, its latest earlier picks are copied forward.</summary>
     Task<List<Pick>> PicksAsync(long teamId, long gameweekId, CancellationToken ct);
 
+    /// <summary>The transfers the team made in the gameweek (tracked, so a wildcard or free hit can make them free).</summary>
+    Task<List<Transfer>> TransfersAsync(long teamId, long gameweekId, CancellationToken ct);
+
+    /// <summary>True when the team has picks in an earlier gameweek (it has passed a deadline).</summary>
+    Task<bool> PlayedBeforeAsync(long teamId, int number, CancellationToken ct);
+
+    /// <summary>The chip the team played in gameweek <paramref name="number"/> of its season (null = none).</summary>
+    Task<string?> ChipPlayedAsync(long teamId, int number, CancellationToken ct);
+
     /// <summary>The team's row for the gameweek (chip played, transfer cost), created when missing.</summary>
     Task<TeamGameweekPoint> GameweekRowAsync(long teamId, long gameweekId, CancellationToken ct);
 

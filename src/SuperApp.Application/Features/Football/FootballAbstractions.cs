@@ -7,7 +7,9 @@ namespace SuperApp.Application.Features.Football;
 /// <summary>A club from a data source. <c>LogoUrl</c> is the club badge the source publishes (null when it has none).</summary>
 public sealed record FdClub(int ExternalId, string Name, string ShortName, string KitColor, string KitColor2, string? LogoUrl = null);
 
-public sealed record FdPlayer(int ExternalId, int ClubExternalId, string Name, PlayerPosition Position, decimal Price, PlayerStatus Status);
+/// <summary>A player: <c>PhotoUrl</c> is his headshot, <c>News</c> and <c>ChanceOfPlaying</c> the source's availability note (null when it has none).</summary>
+public sealed record FdPlayer(int ExternalId, int ClubExternalId, string Name, PlayerPosition Position, decimal Price, PlayerStatus Status,
+    string? PhotoUrl = null, string? News = null, int? ChanceOfPlaying = null);
 
 /// <summary>
 /// A match. <c>Round</c> is the gameweek number ("Regular Season - 9" → 9); in cups TheSportsDB's codes are kept
@@ -16,9 +18,14 @@ public sealed record FdPlayer(int ExternalId, int ClubExternalId, string Name, P
 public sealed record FdFixture(int ExternalId, int Round, int HomeClubExternalId, int AwayClubExternalId, DateTime KickoffAt,
     FixtureStatus Status, int? HomeGoals, int? AwayGoals, int? Minute, string? Venue = null);
 
-/// <summary>A player's numbers in a finished match. <c>Rating</c> decides the bonus points (best three ratings).</summary>
+/// <summary>
+/// A player's numbers in a finished match. <c>Rating</c> decides the bonus points (best three ratings) unless the source
+/// publishes the official <c>Bonus</c>. <c>GoalsConceded</c> and <c>CleanSheet</c> are what he conceded while on the pitch
+/// when the source knows it (else the match score is used); <c>DefensiveContribution</c> is his CBIT(R) total.
+/// </summary>
 public sealed record FdPlayerStat(int PlayerExternalId, int ClubExternalId, int Minutes, int Goals, int Assists, int Saves, int OwnGoals,
-    int PenaltiesSaved, int PenaltiesMissed, int YellowCards, bool RedCard, decimal Rating);
+    int PenaltiesSaved, int PenaltiesMissed, int YellowCards, bool RedCard, decimal Rating,
+    int? GoalsConceded = null, bool? CleanSheet = null, int DefensiveContribution = 0, int? Bonus = null);
 
 /// <summary>
 /// Football data (INTEGRATIONS §7): leagues, clubs, squads, fixtures and per-player match statistics. The site never

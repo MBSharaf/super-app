@@ -9,10 +9,14 @@ public sealed record CompetitionDto(string Key, string NameEn, string NameAr, st
 /// <summary>A club with its kit colours and badge (<c>LogoUrl</c>, from the data source; the site hides it when Features:ClubLogos is off).</summary>
 public sealed record ClubDto(long Id, string Name, string NameAr, string ShortName, string KitColor, string KitColor2, string? LogoUrl);
 
-/// <summary>A player with his season numbers. Position GK / DEF / MID / FWD; status Available / Doubtful / Injured / LeftTheClub.</summary>
+/// <summary>
+/// A player with his season numbers. Position GK / DEF / MID / FWD; status Available / Doubtful / Injured / LeftTheClub.
+/// <c>PhotoUrl</c> is his headshot (hidden by the site when Features:ClubLogos is off), <c>News</c> / <c>ChanceOfPlaying</c>
+/// the source's availability note.
+/// </summary>
 public sealed record PlayerDto(long Id, string Name, string? NameAr, long ClubId, string Club, string Position, decimal Price, string Status,
     decimal SelectedBy, int TotalPoints, decimal Form, int LastPoints, int Goals, int Assists, int CleanSheets, int Minutes, int Bonus,
-    int YellowCards, int Saves);
+    int YellowCards, int Saves, string? PhotoUrl = null, string? News = null, int? ChanceOfPlaying = null, int DefensiveContribution = 0);
 
 /// <summary>GET /fantasy/{comp}/players — sort: total (default), price, form, selected, goals, value.</summary>
 public sealed record PlayersQuery(string? Position = null, long? Club = null, string? Q = null, string? Sort = null, decimal? MaxPrice = null,
@@ -28,7 +32,8 @@ public sealed record FixtureDto(long Id, int Gameweek, long HomeClubId, long Awa
     string Status, int? HomeGoals, int? AwayGoals, int? Minute);
 
 /// <summary>A player's gameweek: minutes, goals, assists, points (two matches in a double gameweek are added).</summary>
-public sealed record PlayerGameweekDto(int Gameweek, int Minutes, int Goals, int Assists, int CleanSheets, int Saves, int Bonus, int YellowCards, bool RedCard, int Points);
+public sealed record PlayerGameweekDto(int Gameweek, int Minutes, int Goals, int Assists, int CleanSheets, int Saves, int Bonus, int YellowCards, bool RedCard, int Points,
+    int GoalsConceded, int DefensiveContribution);
 
 public sealed record PlayerDetailDto(PlayerDto Player, IReadOnlyList<PlayerGameweekDto> History, IReadOnlyList<FixtureDto> Upcoming);
 
@@ -37,7 +42,8 @@ public sealed record TableRowDto(int Position, long ClubId, string Club, int Pla
 
 /* ---------- Customer: my team ---------- */
 
-public sealed record PickDto(long PlayerId, int Slot, bool IsCaptain, bool IsViceCaptain, int Multiplier, int Points);
+/// <summary>A pick: <c>SellingPrice</c> is what he sells for now (half of any rise kept), <c>PurchasePrice</c> what the team paid.</summary>
+public sealed record PickDto(long PlayerId, int Slot, bool IsCaptain, bool IsViceCaptain, int Multiplier, int Points, decimal SellingPrice = 0, decimal PurchasePrice = 0);
 
 /// <summary>
 /// My squad for the gameweek open for changes. <c>ActiveChip</c> is the chip played for that gameweek;

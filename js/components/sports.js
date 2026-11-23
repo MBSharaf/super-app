@@ -14,6 +14,19 @@
   /** Club in fantasy lists (fixtures, table): its badge, else its shirt. */
   const badgeOrKit = (t, size = 30, gk = false) => logo(t, size, SA.ui.c.kit(t, size, gk));
 
+  /**
+   * A player's picture in fantasy: his official headshot when the data has one (the light 40×40 copy up to 60px), over a
+   * disc in club colours, with his club badge in the corner. No photo (the demo) or photos switched off → the club
+   * badge, else the shirt. A photo that cannot load is removed, which shows the badge under it.
+   */
+  const face = (p, t, size = 34, gk = false) => {
+    const fallback = badgeOrKit(t, size, gk);
+    if (!p || !p.photo || !SA.config.clubLogos) return fallback;
+    const src = size <= 60 ? p.photo.replace('/110x140/', '/40x40/') : p.photo;
+    const club = t && t.logo && size >= 30 ? `<span class="pl-face-club">${logo(t, Math.round(size * 0.4), '')}</span>` : '';
+    return `<span class="pl-face" style="--s:${size}px;--kc:${t ? esc(t.kit.a) : '#1F2A24'}">${fallback}<img class="pl-face-img" src="${esc(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />${club}</span>`;
+  };
+
   /** A small badge before a club name (nothing when the club has no badge). */
   const mini = (t, size = 14) => (t && t.logo && SA.config.clubLogos ? `${logo(t, size, '')} ` : '');
 
@@ -46,7 +59,7 @@
   };
 
   // A badge that cannot load is removed, which shows the crest or shirt drawn under it
-  document.addEventListener('error', (e) => { if (e.target instanceof HTMLImageElement && e.target.parentElement?.classList.contains('club-logo')) e.target.remove(); }, true);
+  document.addEventListener('error', (e) => { if (e.target instanceof HTMLImageElement && (e.target.parentElement?.classList.contains('club-logo') || e.target.classList.contains('pl-face-img'))) e.target.remove(); }, true);
 
-  SA.ui.sports = { crest, badgeOrKit, mini, matchRow };
+  SA.ui.sports = { crest, badgeOrKit, mini, face, matchRow };
 })(window.SA);

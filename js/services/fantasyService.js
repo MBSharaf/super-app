@@ -58,7 +58,8 @@
 
   // ---------- Squad & lineup rules ----------
   const counts = (ids) => { const c = { GK: 0, DEF: 0, MID: 0, FWD: 0 }; ids.forEach((id) => c[byId[id].pos]++); return c; };
-  const cost = (ids) => +sum(ids, (id) => byId[id].price).toFixed(1);
+  // A player already in the team counts at his selling price when the server gave one (live site)
+  const cost = (ids) => +sum(ids, (id) => byId[id].sell ?? byId[id].price).toFixed(1);
   const teamCounts = (ids) => ids.reduce((a, id) => ((a[byId[id].teamId] = (a[byId[id].teamId] || 0) + 1), a), {});
 
   const validateSquad = (ids) => {
@@ -86,21 +87,35 @@
     return { xi, bench };
   };
 
-  /** Greedy auto-pick that always produces a valid squad. Seed makes it repeatable (used for rival teams). */
+  /** Greedy auto-pick that produces a valid squad. Seed makes it repeatable (used for rival teams). */
   const autoPick = (seedStr = String(Date.now())) => {
+    // A greedy try can still end a player short (cheap ones all from full clubs): try again with a wider safety margin
+    let ids = [];
+    for (let k = 0; k < 12; k++) { ids = autoPickOnce(k ? `${seedStr}~${k}` : seedStr, k * 0.25); if (!validateSquad(ids).length) return ids; }
+    return ids;
+  };
+  const autoPickOnce = (seedStr, margin) => {
     const r = rng(Math.floor(seeded(seedStr) * 1e9));
     const need = { ...D.rules.squad };
     const picked = [], perTeam = {};
     let budget = D.rules.budget;
     const pool = D.players.filter((p) => p.status !== 'injured').map((p) => ({ p, w: score(p) + r() * 45 })).sort((a, b) => b.w - a.w);
     const slotsLeft = () => sum(Object.values(need));
+    // Money kept back for the places still open, at the cheapest price of each position (so the goalkeepers always fit)
+    const cheapest = {};
+    pool.forEach(({ p }) => { cheapest[p.pos] = Math.min(cheapest[p.pos] ?? Infinity, p.price); });
+    const reserveAfter = (pos) => sum(Object.entries(need), ([k, n]) => (k === pos ? n - 1 : n) * ((cheapest[k] || 4) + margin));
+    const take = (p) => { picked.push(p.id); need[p.pos]--; budget -= p.price; perTeam[p.teamId] = (perTeam[p.teamId] || 0) + 1; };
     for (const { p } of pool) {
       if (!need[p.pos] || (perTeam[p.teamId] || 0) >= D.rules.maxPerTeam) continue;
-      const reserve = (slotsLeft() - 1) * 4.0;
-      if (budget - p.price < reserve) continue;
-      picked.push(p.id); need[p.pos]--; budget -= p.price; perTeam[p.teamId] = (perTeam[p.teamId] || 0) + 1;
+      if (budget - p.price < reserveAfter(p.pos) - 0.001) continue;
+      take(p);
       if (!slotsLeft()) break;
     }
+    // Still short (rare): the cheapest players who fit
+    pool.map((x) => x.p).sort((a, b) => a.price - b.price).forEach((p) => {
+      if (need[p.pos] && !picked.includes(p.id) && (perTeam[p.teamId] || 0) < D.rules.maxPerTeam && p.price <= budget + 0.001) take(p);
+    });
     return picked;
   };
 

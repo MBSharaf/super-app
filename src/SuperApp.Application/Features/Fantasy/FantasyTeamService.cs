@@ -71,7 +71,7 @@ public sealed partial class FantasyTeamService(
             throw new BusinessRuleException(badLineup.Message, badLineup.Code);
         }
         var team = new FantasyTeam { UserId = UserId, SeasonId = season.SeasonId, Name = request.Name.Trim(), Bank = season.Budget - squad.Sum(p => p.Price) };
-        await repository.AddTeamAsync(team, Picks(lineup, 0, open.Id), ct);
+        await repository.AddTeamAsync(team, Picks(lineup, 0, open.Id, players.ToDictionary(p => p.Key, p => (decimal?)p.Value.Price)), ct);
         await notifier.NotifyUserAsync(UserId, new NotificationMessage(NotificationCategory.Fantasy, "Your fantasy team is ready",
             $"{team.Name} plays from gameweek {open.Number}. Join a group to play your friends.", "#/fantasy", NotificationTone.Success), ct);
         return await ToDtoAsync(season, team, ct);
@@ -87,7 +87,7 @@ public sealed partial class FantasyTeamService(
         {
             throw new BusinessRuleException(broken.Message, broken.Code);
         }
-        await repository.ReplacePicksAsync(e.Team.Id, e.Open.Id, Picks(lineup, e.Team.Id, e.Open.Id), ct);
+        await repository.ReplacePicksAsync(e.Team.Id, e.Open.Id, Picks(lineup, e.Team.Id, e.Open.Id, Paid(e.Picks)), ct);
         return await ToDtoAsync(e.Season, e.Team, ct);
     }
 
@@ -101,30 +101,71 @@ public sealed partial class FantasyTeamService(
         return await ToDtoAsync(season, team, ct);
     }
 
+    /// <summary>
+    /// Plays a chip for the open gameweek (official rules): each of wildcard, free hit, bench boost and triple captain
+    /// once in each half of the season (gameweeks 1–19, then 20–38), one chip a gameweek. The free hit needs a deadline
+    /// behind the team and not a free hit the gameweek before. A wildcard or free hit makes this gameweek's transfers free.
+    /// </summary>
     public async Task<TeamDto> ChipAsync(string competition, string chip, CancellationToken ct)
     {
         var e = await EditableAsync(competition, ct);
-        var key = chip.ToLowerInvariant() switch
+        var name = chip.ToLowerInvariant();
+        if (name is not (FantasyScoring.WildcardChip or FantasyScoring.FreeHitChip or FantasyScoring.BenchBoostChip or FantasyScoring.TripleCaptainChip))
         {
-            FantasyScoring.WildcardChip => e.Open.Number < 20 ? "wildcard1" : "wildcard2",
-            FantasyScoring.BenchBoostChip or FantasyScoring.TripleCaptainChip => chip.ToLowerInvariant(),
-            _ => throw new BadRequestException("Chips: wildcard, benchboost or triplecaptain.", "unknown_chip"),
-        };
+            throw new BadRequestException("Chips: wildcard, freehit, benchboost or triplecaptain.", "unknown_chip");
+        }
+        var key = ChipKey(name, e.Open.Number);
         var used = Chips(e.Team);
-        var row = await repository.GameweekRowAsync(e.Team.Id, e.Open.Id, ct);
         if (used.Contains(key))
         {
-            throw new ConflictException("You have already played this chip.", "chip_used");
+            throw new ConflictException("You have already played this chip in this half of the season.", "chip_used");
         }
+        var row = await repository.GameweekRowAsync(e.Team.Id, e.Open.Id, ct);
         if (row.ChipPlayed is not null)
         {
             throw new ConflictException($"You already play the {row.ChipPlayed} chip this gameweek.", "chip_this_week");
         }
-        row.ChipPlayed = chip.ToLowerInvariant();
+        if (name == FantasyScoring.FreeHitChip)
+        {
+            await CheckFreeHitAsync(e, ct);
+        }
+        if (name is FantasyScoring.WildcardChip or FantasyScoring.FreeHitChip)
+        {
+            await MakeTransfersFreeAsync(e, row, ct);
+        }
+        row.ChipPlayed = name;
         e.Team.ChipsUsed = string.Join(',', used.Append(key));
         await unitOfWork.SaveChangesAsync(ct);
         return await ToDtoAsync(e.Season, e.Team, ct);
     }
+
+    private async Task CheckFreeHitAsync(Editable e, CancellationToken ct)
+    {
+        if (!await repository.PlayedBeforeAsync(e.Team.Id, e.Open.Number, ct))
+        {
+            throw new BusinessRuleException("The free hit can be played from your second gameweek.", "freehit_first_week");
+        }
+        if (await repository.ChipPlayedAsync(e.Team.Id, e.Open.Number - 1, ct) == FantasyScoring.FreeHitChip)
+        {
+            throw new BusinessRuleException("The free hit can't be played in two gameweeks in a row.", "freehit_consecutive");
+        }
+    }
+
+    /// <summary>Transfers already made this gameweek become free and the free transfers they used are given back.</summary>
+    private async Task MakeTransfersFreeAsync(Editable e, Domain.Entities.Fantasy.TeamGameweekPoint row, CancellationToken ct)
+    {
+        var made = await repository.TransfersAsync(e.Team.Id, e.Open.Id, ct);
+        if (await repository.PlayedBeforeAsync(e.Team.Id, e.Open.Number, ct))
+        {
+            var usedFree = made.Count(t => t.PointsHit == 0);
+            e.Team.FreeTransfers = (byte)Math.Min(SquadRules.MaxSavedFreeTransfers, e.Team.FreeTransfers + usedFree);
+        }
+        made.ForEach(t => t.PointsHit = 0);
+        row.TransfersCost = 0;
+    }
+
+    /// <summary>"wildcard1" … "triplecaptain2": the chip and the half of the season (1 = gameweeks 1–19).</summary>
+    private static string ChipKey(string chip, int gameweek) => $"{chip}{(gameweek <= 19 ? 1 : 2)}";
 
     public async Task<TeamHistoryDto> HistoryAsync(string competition, CancellationToken ct)
     {

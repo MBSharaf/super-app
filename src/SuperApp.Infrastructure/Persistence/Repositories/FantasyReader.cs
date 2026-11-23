@@ -49,13 +49,14 @@ public sealed class FantasyReader(AppDbContext db) : IFantasyReader
     public async Task<IReadOnlyList<PlayerDto>> PlayersAsync(long seasonId, CancellationToken ct)
     {
         var players = await db.Set<Player>().AsNoTracking().Where(p => db.Set<SeasonClub>().Any(sc => sc.SeasonId == seasonId && sc.ClubId == p.ClubId))
-            .Select(p => new { p.Id, p.Name, p.NameAr, p.ClubId, Club = p.Club.ShortName, p.Position, p.Price, p.Status, p.SelectedByPercent }).ToListAsync(ct);
+            .Select(p => new { p.Id, p.Name, p.NameAr, p.ClubId, Club = p.Club.ShortName, p.Position, p.Price, p.Status, p.SelectedByPercent, p.PhotoUrl, p.News, p.ChanceOfPlaying })
+            .ToListAsync(ct);
         var totals = await db.Set<PlayerFixtureStat>().AsNoTracking().Where(s => s.Fixture.Gameweek.SeasonId == seasonId).GroupBy(s => s.PlayerId)
             .Select(g => new
             {
                 g.Key, Points = g.Sum(s => (int)s.Points), Goals = g.Sum(s => (int)s.Goals), Assists = g.Sum(s => (int)s.Assists),
                 CleanSheets = g.Count(s => s.CleanSheet), Minutes = g.Sum(s => (int)s.Minutes), Bonus = g.Sum(s => (int)s.Bonus),
-                Yellow = g.Sum(s => (int)s.YellowCards), Saves = g.Sum(s => (int)s.Saves),
+                Yellow = g.Sum(s => (int)s.YellowCards), Saves = g.Sum(s => (int)s.Saves), Dc = g.Sum(s => (int)s.DefensiveContribution),
             }).ToDictionaryAsync(x => x.Key, ct);
         var recent = await RecentPointsAsync(seasonId, ct);
         return players.Select(p =>
@@ -63,7 +64,8 @@ public sealed class FantasyReader(AppDbContext db) : IFantasyReader
             var t = totals.GetValueOrDefault(p.Id);
             var (form, last) = recent.GetValueOrDefault(p.Id);
             return new PlayerDto(p.Id, p.Name, p.NameAr, p.ClubId, p.Club, Code(p.Position), p.Price, p.Status.ToString(), p.SelectedByPercent,
-                t?.Points ?? 0, form, last, t?.Goals ?? 0, t?.Assists ?? 0, t?.CleanSheets ?? 0, t?.Minutes ?? 0, t?.Bonus ?? 0, t?.Yellow ?? 0, t?.Saves ?? 0);
+                t?.Points ?? 0, form, last, t?.Goals ?? 0, t?.Assists ?? 0, t?.CleanSheets ?? 0, t?.Minutes ?? 0, t?.Bonus ?? 0, t?.Yellow ?? 0, t?.Saves ?? 0,
+                p.PhotoUrl, p.News, p.ChanceOfPlaying, t?.Dc ?? 0);
         }).ToList();
     }
 
@@ -104,5 +106,5 @@ public sealed class FantasyReader(AppDbContext db) : IFantasyReader
             .GroupBy(s => s.Fixture.Gameweek.Number).OrderByDescending(g => g.Key)
             .Select(g => new PlayerGameweekDto(g.Key, g.Sum(s => (int)s.Minutes), g.Sum(s => (int)s.Goals), g.Sum(s => (int)s.Assists),
                 g.Count(s => s.CleanSheet), g.Sum(s => (int)s.Saves), g.Sum(s => (int)s.Bonus), g.Sum(s => (int)s.YellowCards), g.Any(s => s.RedCard),
-                g.Sum(s => (int)s.Points))).ToListAsync(ct);
+                g.Sum(s => (int)s.Points), g.Sum(s => (int)s.GoalsConceded), g.Sum(s => (int)s.DefensiveContribution))).ToListAsync(ct);
 }

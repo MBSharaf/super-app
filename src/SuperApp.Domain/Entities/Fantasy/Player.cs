@@ -16,6 +16,12 @@ public class Player : BaseEntity
     public PlayerStatus Status { get; set; }
     public decimal SelectedByPercent { get; set; }
 
+    /// <summary>The data source's latest news about him (injury, suspension), e.g. "Hamstring injury - 75% chance of playing".</summary>
+    public string? News { get; set; }
+
+    /// <summary>Chance of playing the next round in percent (null = no doubt).</summary>
+    public byte? ChanceOfPlaying { get; set; }
+
     // Navigation
     public Club Club { get; set; } = null!;
 }

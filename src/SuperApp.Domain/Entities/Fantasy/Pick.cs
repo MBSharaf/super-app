@@ -14,6 +14,9 @@ public class Pick : Entity<long>
     public byte Multiplier { get; set; } = (byte)1;
     public short Points { get; set; }
 
+    /// <summary>What the team paid for him (the official rule: a sale keeps half of any rise, rounded down to 0.1M). Null on older rows = the current price.</summary>
+    public decimal? PurchasePrice { get; set; }
+
     // Navigation
     public FantasyTeam Team { get; set; } = null!;
     public Gameweek Gameweek { get; set; } = null!;

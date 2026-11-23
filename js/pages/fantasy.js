@@ -66,7 +66,7 @@
       title: `Gameweek ${r.gw} result`,
       body: `<div class="gw-result"><b class="gw-big num">${r.pts}</b><span class="soft">points${r.hits ? ` (after −${r.hits} transfer cost)` : ''}</span></div>
         <dl class="kv" style="margin:18px 0"><div><dt>Gameweek rank</dt><dd class="num">${fmtNum(r.gwRank)}</dd></div><div><dt>Overall rank</dt><dd class="num">${fmtNum(r.rank)}</dd></div><div><dt>Captain</dt><dd>${esc(f.byId[r.captain].name)} · ${f.byId[r.captain].gw[r.gw] * 2} pts</dd></div></dl>
-        <h3 class="small strong">Your top scorers</h3><ul class="mini-bookings">${top.map((x) => `<li><span class="row grow">${c.kit(f.teamById[x.p.teamId], 28, x.p.pos === 'GK')}<b class="small">${esc(x.p.name)}</b></span><b class="num">${x.pts}</b></li>`).join('')}</ul>`,
+        <h3 class="small strong">Your top scorers</h3><ul class="mini-bookings">${top.map((x) => `<li><span class="row grow">${SA.ui.sports.face(x.p, f.teamById[x.p.teamId], 28, x.p.pos === 'GK')}<b class="small">${esc(x.p.name)}</b></span><b class="num">${x.pts}</b></li>`).join('')}</ul>`,
       footer: `<a class="btn btn-outline" href="#/fantasy/leagues" data-close>See league tables</a><button class="btn btn-primary" data-close>Done</button>`,
     });
   };
@@ -77,14 +77,14 @@
     SA.ui.overlay.open({
       wide: true, label: p.name,
       body: `<div class="pl-head" style="--kit:${p.team.kit.a}">
-          <div class="pl-kit">${c.kit(p.team, 96, p.pos === 'GK')}</div>
+          <div class="pl-kit">${SA.ui.sports.face(p, p.team, 96, p.pos === 'GK')}</div>
           <div class="grow"><span class="badge badge-glass">${p.pos === 'GK' ? 'Goalkeeper' : p.pos === 'DEF' ? 'Defender' : p.pos === 'MID' ? 'Midfielder' : 'Forward'}</span>
             <h2 class="h2" style="margin-top:8px">${esc(p.name)}</h2><p class="soft">${esc(p.team.name)} · ${esc(p.team.city)}</p></div>
           <button class="icon-btn" data-close aria-label="Close">${icon('x')}</button>
         </div>
         ${p.news ? `<div class="notice ${p.status === 'injured' ? 'blaze' : 'gold'}" style="margin-top:14px">${icon('alert', 18)}<span>${esc(p.news)}</span></div>` : ''}
         <div class="pl-kpis">
-          <div><span class="xs muted">Price</span><b class="num">${fantasyPrice(p.price)}</b></div>
+          <div><span class="xs muted">Price</span><b class="num">${fantasyPrice(p.price)}</b>${p.sell != null && p.sell !== p.price ? `<span class="xs muted" style="display:block">Sells for ${fantasyPrice(p.sell)}</span>` : ''}</div>
           <div><span class="xs muted">Total points</span><b class="num">${p.total}</b></div>
           <div><span class="xs muted">Form</span><b class="num">${p.form.toFixed(1)}</b></div>
           <div><span class="xs muted">Selected by</span><b class="num">${p.selectedBy}%</b></div>
@@ -95,6 +95,7 @@
             <dl class="kv" style="margin-top:10px">
               <div><dt>Minutes</dt><dd class="num">${fmtNum(p.stats.minutes)}</dd></div><div><dt>Goals</dt><dd class="num">${p.stats.goals}</dd></div><div><dt>Assists</dt><dd class="num">${p.stats.assists}</dd></div>
               ${p.pos === 'GK' || p.pos === 'DEF' ? `<div><dt>Clean sheets</dt><dd class="num">${p.stats.cleanSheets}</dd></div>` : ''}${p.pos === 'GK' ? `<div><dt>Saves</dt><dd class="num">${p.stats.saves}</dd></div>` : ''}
+              ${p.pos !== 'GK' && p.stats.defensive != null ? `<div><dt>Defensive contributions</dt><dd class="num">${fmtNum(p.stats.defensive)}</dd></div>` : ''}
               <div><dt>Bonus</dt><dd class="num">${p.stats.bonus}</dd></div><div><dt>Yellow cards</dt><dd class="num">${p.stats.yellow}</dd></div>
             </dl>
             <h3 class="small strong" style="margin-top:20px">Next fixtures</h3>
@@ -112,6 +113,30 @@
     });
   };
 
+  /* ---------- Chips (official rules: each one twice a season, once in GW1–19 and once in GW20–38; one a gameweek) ---------- */
+  const CHIPS = [
+    ['wildcard', 'Wildcard', 'Unlimited free transfers this gameweek. Your new squad stays.', 'refresh'],
+    ['freehit', 'Free Hit', 'Unlimited free transfers for one gameweek. Your squad comes back after it.', 'bolt'],
+    ['benchboost', 'Bench Boost', 'Your 4 substitutes score points too this gameweek.', 'users'],
+    ['triplecaptain', 'Triple Captain', 'Your captain scores 3× instead of 2× this gameweek.', 'crown'],
+  ];
+  const chipsPanel = (team) => {
+    const gw = F().meta().gw, half = gw <= 19 ? 1 : 2, used = team.chipsUsed || [], active = team.activeChip;
+    return `<div class="fx-chips" role="group" aria-label="Chips">${CHIPS.map(([k, label, text, ic]) => {
+      const on = active === k, played = used.includes(k + half);
+      const state = on ? 'Active' : played ? 'Played' : active ? 'Next gameweek' : 'Play';
+      return `<button class="fx-chip ${on ? 'is-on' : ''} ${played && !on ? 'is-played' : ''}" data-chip="${k}" ${on || played || active ? 'disabled' : ''} title="${esc(text)}">
+        <span class="fx-chip-ico">${icon(ic, 20)}</span><b>${label}</b><span class="xs">${state}</span></button>`;
+    }).join('')}</div>`;
+  };
+  const playChip = async (k) => {
+    const [, label, text] = CHIPS.find((x) => x[0] === k);
+    const ok = await SA.ui.overlay.confirm({ title: `Play ${label}?`, text: `${text} You get each chip once in gameweeks 1–19 and once in 20–38, and only one chip a gameweek.${k === 'wildcard' || k === 'freehit' ? ' It can’t be cancelled once played.' : ''}`, confirmLabel: `Play ${label}` });
+    if (!ok) return;
+    try { await F().playChip(k); await SA.app.rerender(); SA.ui.overlay.toast(`${label} is active for gameweek ${F().meta().gw}`); }
+    catch (e) { SA.ui.overlay.toast(e.message, { type: 'error' }); }
+  };
+
   /* ---------- My team (pitch view) ---------- */
   let swapFrom = null;
   let view = 'pitch';
@@ -123,7 +148,7 @@
     const lastGW = f.meta().gw - 1;
     const eligible = swapFrom && swapFrom !== id && (team.xi.includes(swapFrom) !== team.xi.includes(id));
     return `<button class="ptoken ${swapFrom === id ? 'is-swapping' : ''} ${eligible ? 'is-eligible' : ''} ${p.status !== 'fit' ? 'is-' + p.status : ''}" data-pid="${id}" aria-label="${esc(p.name)}${isC ? ', captain' : isV ? ', vice-captain' : ''}">
-      <span class="ptoken-kit">${c.kit(f.teamById[p.teamId], bench ? 46 : 54, p.pos === 'GK')}${isC ? '<i class="cap">C</i>' : isV ? '<i class="cap vice">V</i>' : ''}${p.status !== 'fit' ? `<i class="flag">!</i>` : ''}</span>
+      <span class="ptoken-kit">${SA.ui.sports.face(p, f.teamById[p.teamId], bench ? 46 : 54, p.pos === 'GK')}${isC ? '<i class="cap">C</i>' : isV ? '<i class="cap vice">V</i>' : ''}${p.status !== 'fit' ? `<i class="flag" title="${esc(p.news || '')}">${p.chance != null && p.chance > 0 ? `${p.chance}%` : '!'}</i>` : ''}</span>
       <span class="ptoken-name">${esc(short(p.name))}</span>
       <span class="ptoken-sub ${nx ? fdrCls(nx.fdr) : ''}">${team.history?.length && lastGW >= team.createdGW ? `${(p.gw[lastGW] || 0) * (isC ? 2 : 1)} pts` : nx ? `${nx.opp} (${nx.home ? 'H' : 'A'})` : '–'}</span>
     </button>`;
@@ -141,7 +166,7 @@
 
   const listView = (team) => {
     const f = F();
-    const row = (id, role) => { const p = f.byId[id]; const nx = f.nextOpponent(p.teamId); return `<tr data-pid="${id}" class="clickable"><td><span class="row">${c.kit(f.teamById[p.teamId], 30, p.pos === 'GK')}<span><b class="small">${esc(p.name)}</b> ${team.captain === id ? '<span class="badge badge-ink">C</span>' : team.vice === id ? '<span class="badge">V</span>' : ''} ${c.statusDot(p.status)}<span class="xs muted" style="display:block">${SA.ui.sports.mini(f.teamById[p.teamId])}${f.teamById[p.teamId].name} · ${p.pos}</span></span></span></td><td class="r num">${fantasyPrice(p.price)}</td><td class="r num">${p.form.toFixed(1)}</td><td class="r num">${p.total}</td><td class="r">${nx ? `<span class="fdr-pill ${fdrCls(nx.fdr)}">${nx.opp} ${nx.home ? 'H' : 'A'}</span>` : ''}</td><td class="xs muted">${role}</td></tr>`; };
+    const row = (id, role) => { const p = f.byId[id]; const nx = f.nextOpponent(p.teamId); return `<tr data-pid="${id}" class="clickable"><td><span class="row">${SA.ui.sports.face(p, f.teamById[p.teamId], 30, p.pos === 'GK')}<span><b class="small">${esc(p.name)}</b> ${team.captain === id ? '<span class="badge badge-ink">C</span>' : team.vice === id ? '<span class="badge">V</span>' : ''} ${c.statusDot(p.status)}<span class="xs muted" style="display:block">${SA.ui.sports.mini(f.teamById[p.teamId])}${f.teamById[p.teamId].name} · ${p.pos}</span></span></span></td><td class="r num">${fantasyPrice(p.price)}</td><td class="r num">${p.form.toFixed(1)}</td><td class="r num">${p.total}</td><td class="r">${nx ? `<span class="fdr-pill ${fdrCls(nx.fdr)}">${nx.opp} ${nx.home ? 'H' : 'A'}</span>` : ''}</td><td class="xs muted">${role}</td></tr>`; };
     return `<div class="table-wrap panel"><table class="table"><thead><tr><th>Player</th><th class="r">Price</th><th class="r">Form</th><th class="r">Pts</th><th class="r">Next</th><th></th></tr></thead>
       <tbody>${team.xi.map((id) => row(id, 'Starting')).join('')}${team.bench.map((id) => row(id, 'Bench')).join('')}</tbody></table></div>`;
   };
@@ -164,7 +189,7 @@
             <li>Every league is free. The top 3 of every gameweek in the Super Malaab League win Super Points.</li>
           </ul></details>
         </div>
-        <div class="fx-onboard-art">${(() => { const f = F(); const ids = f.autoPick('preview-team'); const { xi } = f.lineupFor(ids, '4-3-3'); return `<div class="fx-pitch is-preview">${['GK', 'DEF', 'MID', 'FWD'].map((pos) => `<div class="fx-row">${xi.filter((id) => f.byId[id].pos === pos).map((id) => `<span class="ptoken"><span class="ptoken-kit">${c.kit(f.teamById[f.byId[id].teamId], 46, pos === 'GK')}</span><span class="ptoken-name">${esc(short(f.byId[id].name))}</span></span>`).join('')}</div>`).join('')}</div>`; })()}</div>
+        <div class="fx-onboard-art">${(() => { const f = F(); const ids = f.autoPick('preview-team'); const { xi } = f.lineupFor(ids, '4-3-3'); return `<div class="fx-pitch is-preview">${['GK', 'DEF', 'MID', 'FWD'].map((pos) => `<div class="fx-row">${xi.filter((id) => f.byId[id].pos === pos).map((id) => `<span class="ptoken"><span class="ptoken-kit">${SA.ui.sports.face(f.byId[id], f.teamById[f.byId[id].teamId], 46, pos === 'GK')}</span><span class="ptoken-name">${esc(short(f.byId[id].name))}</span></span>`).join('')}</div>`).join('')}</div>`; })()}</div>
       </div>
     </div>`;
 
@@ -184,6 +209,7 @@
               <div class="tabs" role="tablist"><button class="tab" data-view="pitch" aria-selected="${view === 'pitch'}">Pitch view</button><button class="tab" data-view="list" aria-selected="${view === 'list'}">List view</button></div>
               <label class="sort-select"><span class="small soft">Formation</span><select class="select" id="formation" style="width:auto">${f.D.rules.formations.map((fm) => `<option ${fm === f.formationOf(team.xi) ? 'selected' : ''}>${fm}</option>`).join('')}</select></label>
             </div>
+            ${team.live ? chipsPanel(team) : ''}
             <div class="swap-hint small" ${swapFrom ? '' : 'hidden'}>${icon('swap', 16)} <span>Pick a highlighted player to swap with <b>${swapFrom ? esc(f.byId[swapFrom].name) : ''}</b>.</span> <button class="link" data-cancel-swap>Cancel</button></div>
             ${view === 'pitch' ? pitchView(team) : listView(team)}
             <p class="xs muted" style="margin-top:12px">Tap a player to view stats, change captain or substitute. Changes save automatically until the deadline.</p>
@@ -191,8 +217,8 @@
           <aside class="stack" style="--gap:16px">
             <div class="panel panel-pad">
               <h2 class="h4">Armband</h2>
-              <div class="armband"><span class="cap">C</span>${c.kit(f.teamById[cap.teamId], 34, cap.pos === 'GK')}<span class="grow"><b class="small">${esc(cap.name)}</b><span class="xs muted" style="display:block">Scores double points</span></span></div>
-              <div class="armband"><span class="cap vice">V</span>${c.kit(f.teamById[vice.teamId], 34, vice.pos === 'GK')}<span class="grow"><b class="small">${esc(vice.name)}</b><span class="xs muted" style="display:block">Takes over if the captain doesn’t play</span></span></div>
+              <div class="armband"><span class="cap">C</span>${SA.ui.sports.face(cap, f.teamById[cap.teamId], 34, cap.pos === 'GK')}<span class="grow"><b class="small">${esc(cap.name)}</b><span class="xs muted" style="display:block">${team.activeChip === 'triplecaptain' ? 'Scores triple points (Triple Captain)' : 'Scores double points'}</span></span></div>
+              <div class="armband"><span class="cap vice">V</span>${SA.ui.sports.face(vice, f.teamById[vice.teamId], 34, vice.pos === 'GK')}<span class="grow"><b class="small">${esc(vice.name)}</b><span class="xs muted" style="display:block">Takes over if the captain doesn’t play</span></span></div>
             </div>
             <div class="panel panel-pad">
               <div class="row-between"><h2 class="h4">Your gameweeks</h2><span class="xs muted">${hist.length ? `${hist.length} played` : `Started GW${team.createdGW}`}</span></div>
@@ -217,6 +243,8 @@
       el.addEventListener('click', (e) => {
         const v = e.target.closest('[data-view]');
         if (v) { view = v.dataset.view; SA.app.rerender(); return; }
+        const chip = e.target.closest('[data-chip]');
+        if (chip) { playChip(chip.dataset.chip); return; }
         if (e.target.closest('[data-cancel-swap]')) { swapFrom = null; SA.app.rerender(); return; }
         const t = e.target.closest('[data-pid]');
         if (!t) return;
@@ -297,7 +325,7 @@
       const f = F();
       const load = async () => {
         const rows = (await f.players(st)).slice(0, 60);
-        el.querySelector('[data-rows]').innerHTML = rows.map((p) => `<tr class="clickable" data-pid="${p.id}"><td><span class="row">${c.kit(f.teamById[p.teamId], 30, p.pos === 'GK')}<span><b class="small">${esc(p.name)}</b> ${c.statusDot(p.status)}<span class="xs muted" style="display:block">${SA.ui.sports.mini(f.teamById[p.teamId])}${f.teamById[p.teamId].name} · ${p.pos}</span></span></span></td><td class="r num">${fantasyPrice(p.price)}</td><td class="r num">${p.selectedBy}%</td><td class="r num">${p.form.toFixed(1)}</td><td class="r num hide-s">${p.stats.goals}</td><td class="r num hide-s">${p.stats.assists}</td><td class="r num hide-s">${p.stats.cleanSheets}</td><td class="r num strong">${p.total}</td></tr>`).join('') || `<tr><td colspan="8">${c.empty({ icon: 'search', title: 'No players found', text: 'Try a different name or club.' })}</td></tr>`;
+        el.querySelector('[data-rows]').innerHTML = rows.map((p) => `<tr class="clickable" data-pid="${p.id}"><td><span class="row">${SA.ui.sports.face(p, f.teamById[p.teamId], 30, p.pos === 'GK')}<span><b class="small">${esc(p.name)}</b> ${c.statusDot(p.status)}<span class="xs muted" style="display:block">${SA.ui.sports.mini(f.teamById[p.teamId])}${f.teamById[p.teamId].name} · ${p.pos}</span></span></span></td><td class="r num">${fantasyPrice(p.price)}</td><td class="r num">${p.selectedBy}%</td><td class="r num">${p.form.toFixed(1)}</td><td class="r num hide-s">${p.stats.goals}</td><td class="r num hide-s">${p.stats.assists}</td><td class="r num hide-s">${p.stats.cleanSheets}</td><td class="r num strong">${p.total}</td></tr>`).join('') || `<tr><td colspan="8">${c.empty({ icon: 'search', title: 'No players found', text: 'Try a different name or club.' })}</td></tr>`;
         SA.core.motion.enhance(el.querySelector('[data-rows]'));
       };
       el.addEventListener('click', (e) => {

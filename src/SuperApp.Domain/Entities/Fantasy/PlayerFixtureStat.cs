@@ -19,6 +19,9 @@ public class PlayerFixtureStat : BaseEntity
     public bool CleanSheet { get; set; }
     public byte GoalsConceded { get; set; }
     public byte Bonus { get; set; }
+
+    /// <summary>Clearances, blocks, interceptions and tackles (plus recoveries for midfielders and forwards): 2 points at 10 (DEF) or 12 (MID, FWD).</summary>
+    public byte DefensiveContribution { get; set; }
     public short Points { get; set; }
 
     // Navigation

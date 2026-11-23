@@ -20,7 +20,7 @@ internal sealed class FantasyTeamConfiguration : IEntityTypeConfiguration<Fantas
         builder.Property(x => x.Bank).HasPrecision(5, 1).HasDefaultValue(0m).ValueGeneratedNever();
         builder.Property(x => x.FreeTransfers).HasDefaultValue((byte)1).ValueGeneratedNever();
         builder.Property(x => x.TotalPoints).HasDefaultValue(0).ValueGeneratedNever();
-        builder.Property(x => x.ChipsUsed).HasMaxLength(60).IsUnicode(false);
+        builder.Property(x => x.ChipsUsed).HasMaxLength(120).IsUnicode(false);
         builder.HasIndex(x => new { x.UserId, x.SeasonId }).IsUnique().HasDatabaseName("UQ_FantasyTeams_UserId_SeasonId");
         builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.NoAction);
         builder.HasOne(x => x.Season).WithMany().HasForeignKey(x => x.SeasonId).OnDelete(DeleteBehavior.NoAction);

@@ -11,13 +11,22 @@ public sealed record Lineup(IReadOnlyList<long> Starters, IReadOnlyList<long> Be
 /// <summary>
 /// Squad, lineup and transfer rules (PRD FR-FAN-03), pure so they are unit-tested on their own: 15 players (2 GK, 5 DEF,
 /// 5 MID, 3 FWD) within the budget, at most N per club; a starting XI of 1 GK, at least 3 DEF, 2 MID and 1 FWD; one free
-/// transfer a gameweek (two can be saved), every extra one costs 4 points unless a wildcard is played.
+/// transfer a gameweek (up to five can be saved, as in the official game since 2024/25), every extra one costs 4 points
+/// unless a wildcard or free hit is played; at most 20 transfers a gameweek otherwise.
 /// </summary>
 public static class SquadRules
 {
     public const int SquadSize = 15;
-    public const int MaxSavedFreeTransfers = 2;
+    public const int MaxSavedFreeTransfers = 5;
+    public const int MaxTransfersPerGameweek = 20;
     public const int TransferHit = 4;
+
+    /// <summary>
+    /// What a player sells for (official rule): a fall is passed on in full; of a rise the team keeps half, rounded down
+    /// to 0.1M (bought 7.5, now 7.8 → sells for 7.6). No purchase price (older rows) = the current price.
+    /// </summary>
+    public static decimal SellingPrice(decimal? purchase, decimal now) =>
+        purchase is not { } paid || now <= paid ? now : paid + Math.Floor((now - paid) * 10m / 2m) / 10m;
 
     private static readonly IReadOnlyDictionary<PlayerPosition, int> Shape = new Dictionary<PlayerPosition, int>
     {

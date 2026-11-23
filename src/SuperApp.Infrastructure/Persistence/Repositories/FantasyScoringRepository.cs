@@ -29,17 +29,7 @@ public sealed class FantasyScoringRepository(AppDbContext db, IClock clock) : IF
         {
             return;
         }
-        var earlier = await db.Set<Pick>().AsNoTracking()
-            .Where(p => missing.Contains(p.TeamId) && p.Gameweek.Number < gameweek.Number)
-            .Select(p => new { p.TeamId, p.Gameweek.Number, p.PlayerId, p.Slot, p.IsCaptain, p.IsViceCaptain }).ToListAsync(ct);
-        foreach (var team in earlier.GroupBy(p => p.TeamId))
-        {
-            var latest = team.Max(p => p.Number);
-            db.Set<Pick>().AddRange(team.Where(p => p.Number == latest).Select(p => new Pick
-            {
-                TeamId = p.TeamId, GameweekId = gameweek.Id, PlayerId = p.PlayerId, Slot = p.Slot, IsCaptain = p.IsCaptain, IsViceCaptain = p.IsViceCaptain,
-            }));
-        }
+        await PickCarry.CarryAsync(db, missing, gameweek.Id, gameweek.Number, ct);
         await db.SaveChangesAsync(ct);
     }
 
@@ -106,7 +96,7 @@ public sealed class FantasyScoringRepository(AppDbContext db, IClock clock) : IF
         await db.SaveChangesAsync(ct);
     }
 
-    /// <summary>Totals and overall ranks for the season; one more free transfer (up to 2) after the first scoring.</summary>
+    /// <summary>Totals and overall ranks for the season; one more free transfer (up to 5) after the first scoring.</summary>
     private async Task UpdateTeamsAsync(GameweekToScore gameweek, CancellationToken ct)
     {
         var teams = await db.Set<FantasyTeam>().Where(t => t.SeasonId == gameweek.SeasonId).ToListAsync(ct);

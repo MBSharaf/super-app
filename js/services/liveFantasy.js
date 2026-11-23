@@ -47,8 +47,8 @@
     D.teams.splice(0, D.teams.length, ...boot.clubs.map((c) => ({ id: c.shortName, apiId: c.id, name: c.name, city: '', strength: 75, kit: { a: c.kitColor, b: c.kitColor2, p: 'solid' }, logo: c.logoUrl || null })));
     D.players.splice(0, D.players.length, ...boot.players.map((p) => ({
       id: pid(p.id), apiId: p.id, teamId: shortOf[p.clubId] || p.club, name: p.name, pos: p.position, price: +p.price, total: p.totalPoints, form: +p.form,
-      selectedBy: +p.selectedBy, status: POS_STATUS[p.status] || 'fit', news: '', gw: {}, log: {},
-      stats: { goals: p.goals, assists: p.assists, cleanSheets: p.cleanSheets, minutes: p.minutes, bonus: p.bonus, yellow: p.yellowCards, saves: p.saves },
+      selectedBy: +p.selectedBy, status: POS_STATUS[p.status] || 'fit', news: p.news || '', chance: p.chanceOfPlaying ?? null, photo: p.photoUrl || null, gw: {}, log: {},
+      stats: { goals: p.goals, assists: p.assists, cleanSheets: p.cleanSheets, minutes: p.minutes, bonus: p.bonus, yellow: p.yellowCards, saves: p.saves, defensive: p.defensiveContribution || 0 },
     })));
     D.fixtures.splice(0, D.fixtures.length, ...fixtures.map((f, i) => ({
       id: `fx-${f.id}`, apiId: f.id, gw: f.gameweek, home: shortOf[f.homeClubId], away: shortOf[f.awayClubId], slot: i, kickoffAt: f.kickoffAt,
@@ -91,11 +91,23 @@
     };
   };
 
+  /**
+   * Owned players count at their selling price (the server keeps half of a rise) and the budget is the team's value,
+   * so "money left" on every page is the server's bank.
+   */
+  const sellPrices = (k, t) => {
+    const D = LEAGUES[k];
+    D.players.forEach((p) => { delete p.sell; });
+    t.picks.forEach((pk) => { const p = D.players.find((x) => x.apiId === pk.playerId); if (p && pk.sellingPrice) p.sell = +pk.sellingPrice; });
+    if (t.squadValue) D.rules.budget = +t.squadValue;
+  };
+
   const loadTeam = async (k) => {
     if (!signedIn()) return null;
     try {
       const t = await api.get(`/fantasy/${k}/team`);
       const h = await quiet(api.get(`/fantasy/${k}/team/history`));
+      sellPrices(k, t);
       setF(k, { team: toLocalTeam(t, h) });
       return t;
     } catch (e) {

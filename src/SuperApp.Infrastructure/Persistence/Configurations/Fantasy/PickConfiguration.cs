@@ -19,6 +19,7 @@ internal sealed class PickConfiguration : IEntityTypeConfiguration<Pick>
         builder.Property(x => x.IsViceCaptain).HasDefaultValue(false).ValueGeneratedNever();
         builder.Property(x => x.Multiplier).HasDefaultValue((byte)1).ValueGeneratedNever();
         builder.Property(x => x.Points).HasDefaultValue((short)0).ValueGeneratedNever();
+        builder.Property(x => x.PurchasePrice).HasPrecision(4, 1);
         builder.HasIndex(x => new { x.TeamId, x.GameweekId, x.PlayerId }).IsUnique().HasDatabaseName("UQ_Picks_TeamId_GameweekId_PlayerId");
         builder.HasIndex(x => new { x.TeamId, x.GameweekId, x.Slot }).IsUnique().HasDatabaseName("UQ_Picks_TeamId_GameweekId_Slot");
         builder.HasOne(x => x.Team).WithMany(p => p.Picks).HasForeignKey(x => x.TeamId).OnDelete(DeleteBehavior.Cascade);

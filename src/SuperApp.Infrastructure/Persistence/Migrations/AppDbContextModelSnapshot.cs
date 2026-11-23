@@ -3868,9 +3868,9 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasDefaultValue(0m);
 
                     b.Property<string>("ChipsUsed")
-                        .HasMaxLength(60)
+                        .HasMaxLength(120)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(60)");
+                        .HasColumnType("varchar(120)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2(0)")
@@ -4093,6 +4093,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("smallint")
                         .HasDefaultValue((short)0);
 
+                    b.Property<decimal?>("PurchasePrice")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("decimal(4,1)");
+
                     b.Property<byte>("Slot")
                         .HasColumnType("tinyint");
 
@@ -4129,6 +4133,9 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<byte?>("ChanceOfPlaying")
+                        .HasColumnType("tinyint");
+
                     b.Property<long>("ClubId")
                         .HasColumnType("bigint");
 
@@ -4147,6 +4154,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<string>("NameAr")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("News")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("PhotoUrl")
                         .HasMaxLength(300)
@@ -4184,7 +4195,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_Players_Position", "[Position] BETWEEN 0 AND 3");
 
-                            t.HasCheckConstraint("CK_Players_Price", "[Price] BETWEEN 3.5 AND 15.0");
+                            t.HasCheckConstraint("CK_Players_Price", "[Price] BETWEEN 3.0 AND 25.0");
 
                             t.HasCheckConstraint("CK_Players_Status", "[Status] BETWEEN 0 AND 3");
                         });
@@ -4213,6 +4224,10 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2(0)")
                         .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<byte>("DefensiveContribution")
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
 
                     b.Property<long>("FixtureId")
                         .HasColumnType("bigint");

@@ -97,9 +97,14 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
         {
             if (!rows.TryGetValue(p.ExternalId, out var row))
             {
-                row = new Player { ExternalId = p.ExternalId, Price = Math.Clamp(p.Price, 3.5m, 15m), Position = p.Position };
+                row = new Player { ExternalId = p.ExternalId, Position = p.Position };
                 db.Set<Player>().Add(row);
             }
+            // Prices follow the source every sync (the official game moves them daily); the photo and news too when it has them
+            row.Price = Math.Clamp(p.Price, 3.0m, 25m);
+            row.PhotoUrl = p.PhotoUrl ?? row.PhotoUrl;
+            row.News = string.IsNullOrWhiteSpace(p.News) ? null : p.News.Length > 300 ? p.News[..300] : p.News;
+            row.ChanceOfPlaying = p.ChanceOfPlaying is { } chance ? (byte)Math.Clamp(chance, 0, 100) : null;
             row.ClubId = clubs[p.ClubExternalId];
             row.Name = p.Name.Length > 100 ? p.Name[..100] : p.Name;
             row.Status = p.Status;
@@ -214,6 +219,7 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
         row.CleanSheet = r.CleanSheet;
         row.GoalsConceded = (byte)r.GoalsConceded;
         row.Bonus = (byte)Math.Min(r.Bonus, 3);
+        row.DefensiveContribution = (byte)Math.Clamp(r.DefensiveContribution, 0, 255);
         row.Points = (short)r.Points;
     }
 

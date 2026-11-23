@@ -13,7 +13,7 @@ internal sealed class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.ToTable("Players", "fantasy", t =>
         {
             t.HasCheckConstraint("CK_Players_Position", "[Position] BETWEEN 0 AND 3");
-            t.HasCheckConstraint("CK_Players_Price", "[Price] BETWEEN 3.5 AND 15.0");
+            t.HasCheckConstraint("CK_Players_Price", "[Price] BETWEEN 3.0 AND 25.0");
             t.HasCheckConstraint("CK_Players_Status", "[Status] BETWEEN 0 AND 3");
         });
         builder.HasKey(x => x.Id);
@@ -22,6 +22,8 @@ internal sealed class PlayerConfiguration : IEntityTypeConfiguration<Player>
         builder.Property(x => x.Position).HasConversion<byte>();
         builder.Property(x => x.Price).HasPrecision(4, 1);
         builder.Property(x => x.PhotoUrl).HasMaxLength(300);
+        builder.Property(x => x.News).HasMaxLength(300);
+        builder.Property(x => x.ChanceOfPlaying);
         builder.Property(x => x.Status).HasConversion<byte>().HasDefaultValue(PlayerStatus.Available).ValueGeneratedNever();
         builder.Property(x => x.SelectedByPercent).HasPrecision(5, 2).HasDefaultValue(0m).ValueGeneratedNever();
         builder.HasIndex(x => x.ExternalId).IsUnique().HasDatabaseName("UQ_Players_ExternalId");

@@ -166,7 +166,9 @@
               </ul>
               <div class="row-between" style="margin-top:14px"><span class="small soft">GW${meta.gw} locks in</span>${c.countdown(meta.deadline, { compact: true })}</div>
             </div>`}
-            <div class="panel panel-pad"><h3 class="h4">How points work</h3><dl class="kv" style="margin-top:10px">${f.D.rules.scoring.slice(0, 7).map(([k, v]) => `<div><dt>${k}</dt><dd class="num">${v > 0 ? '+' + v : v}</dd></div>`).join('')}</dl></div>
+            <div class="panel panel-pad"><h3 class="h4">How points work</h3>${(() => { const row = ([k, v]) => `<div><dt>${k}</dt><dd class="num">${v > 0 ? '+' + v : v}</dd></div>`; const all = f.D.rules.scoring; return `<dl class="kv" style="margin-top:10px">${all.slice(0, 7).map(row).join('')}</dl>
+              <details class="fx-rules-more"><summary class="small strong">All scoring rules, captain and chips</summary><dl class="kv" style="margin-top:8px">${all.slice(7).map(row).join('')}</dl>
+              <ul class="small soft fx-rules-list"><li>Your captain scores double. If he doesn’t play, your vice-captain does.</li><li>Substitutes come on automatically, in bench order, for starters who don’t play.</li><li>One free transfer a gameweek; save up to 5. Each extra transfer costs 4 points.</li><li>Chips, each once in gameweeks 1–19 and once in 20–38: Wildcard, Free Hit, Bench Boost and Triple Captain.</li><li>Prices follow the official game. When a player you own rises, you keep half of the rise when you sell him.</li></ul></details>`; })()}</div>
           </aside>
         </div>
       </div>`;
@@ -189,7 +191,7 @@
           const hist = f.rivalHistory(name);
           const mine = Object.fromEntries((team?.history || []).map((h) => [h.gw, h.pts]));
           const common = team ? rival.xi.filter((id) => team.xi.includes(id)) : [];
-          const col = (title, xi, cap) => `<div><h3 class="small strong">${title}</h3><ul class="cmp-list">${xi.map((id) => { const p = f.byId[id]; return `<li class="${common.includes(id) ? 'is-common' : ''}">${c.kit(f.teamById[p.teamId], 24, p.pos === 'GK')}<span class="grow small truncate">${esc(p.name)}</span>${id === cap ? '<span class="badge badge-ink">C</span>' : ''}<span class="xs muted">${p.pos}</span></li>`; }).join('')}</ul></div>`;
+          const col = (title, xi, cap) => `<div><h3 class="small strong">${title}</h3><ul class="cmp-list">${xi.map((id) => { const p = f.byId[id]; return `<li class="${common.includes(id) ? 'is-common' : ''}">${SA.ui.sports.face(p, f.teamById[p.teamId], 24, p.pos === 'GK')}<span class="grow small truncate">${esc(p.name)}</span>${id === cap ? '<span class="badge badge-ink">C</span>' : ''}<span class="xs muted">${p.pos}</span></li>`; }).join('')}</ul></div>`;
           SA.ui.overlay.open({
             wide: true, title: `You vs ${esc(name)}`, subtitle: `${common.length} players in common · highlighted`,
             body: `<div class="gw-compare">${hist.slice(-8).map((h) => `<div class="gwc"><div class="gwc-bars"><span class="them" style="height:${h.pts}px" title="${esc(name)}: ${h.pts}"></span><span class="me" style="height:${mine[h.gw] || 0}px" title="You: ${mine[h.gw] ?? '–'}"></span></div><i class="xs">GW${h.gw}</i></div>`).join('')}</div>

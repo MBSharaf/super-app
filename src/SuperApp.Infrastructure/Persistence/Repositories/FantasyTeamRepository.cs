@@ -31,17 +31,20 @@ public sealed class FantasyTeamRepository(AppDbContext db) : IFantasyTeamReposit
             return picks;
         }
         var number = await db.Set<Gameweek>().Where(g => g.Id == gameweekId).Select(g => g.Number).SingleAsync(ct);
-        var latest = await db.Set<Pick>().AsNoTracking().Where(p => p.TeamId == teamId && p.Gameweek.Number < number)
-            .GroupBy(p => p.GameweekId).OrderByDescending(g => g.Max(p => p.Gameweek.Number)).Select(g => g.Key).FirstOrDefaultAsync(ct);
-        var copied = await db.Set<Pick>().AsNoTracking().Where(p => p.TeamId == teamId && p.GameweekId == latest).OrderBy(p => p.Slot).ToListAsync(ct);
-        var fresh = copied.Select(p => new Pick
-        {
-            TeamId = teamId, GameweekId = gameweekId, PlayerId = p.PlayerId, Slot = p.Slot, IsCaptain = p.IsCaptain, IsViceCaptain = p.IsViceCaptain,
-        }).ToList();
-        db.Set<Pick>().AddRange(fresh);
+        var fresh = await PickCarry.CarryAsync(db, [teamId], gameweekId, number, ct);
         await db.SaveChangesAsync(ct);
-        return fresh;
+        return [.. fresh.OrderBy(p => p.Slot)];
     }
+
+    public Task<List<Transfer>> TransfersAsync(long teamId, long gameweekId, CancellationToken ct) =>
+        db.Set<Transfer>().Where(t => t.TeamId == teamId && t.GameweekId == gameweekId).ToListAsync(ct);
+
+    public Task<bool> PlayedBeforeAsync(long teamId, int number, CancellationToken ct) =>
+        db.Set<Pick>().AnyAsync(p => p.TeamId == teamId && p.Gameweek.Number < number, ct);
+
+    public Task<string?> ChipPlayedAsync(long teamId, int number, CancellationToken ct) =>
+        db.Set<TeamGameweekPoint>().AsNoTracking().Where(r => r.TeamId == teamId && r.Gameweek.Number == number && r.Gameweek.SeasonId == r.Team.SeasonId)
+            .Select(r => r.ChipPlayed).FirstOrDefaultAsync(ct);
 
     public async Task<TeamGameweekPoint> GameweekRowAsync(long teamId, long gameweekId, CancellationToken ct)
     {
@@ -98,7 +101,7 @@ public sealed class FantasyTeamRepository(AppDbContext db) : IFantasyTeamReposit
             .OrderBy(r => r.Gameweek.Number).Select(r => new { r.GameweekId, r.Gameweek.Number, r.Points, r.TransfersCost, r.Rank, r.ChipPlayed }).ToListAsync(ct);
         var ids = rows.Select(r => r.GameweekId).ToList();
         var picks = (await db.Set<Pick>().AsNoTracking().Where(p => p.TeamId == teamId && ids.Contains(p.GameweekId)).OrderBy(p => p.Slot)
-            .Select(p => new { p.GameweekId, Pick = new PickDto(p.PlayerId, p.Slot, p.IsCaptain, p.IsViceCaptain, p.Multiplier, p.Points) }).ToListAsync(ct))
+            .Select(p => new { p.GameweekId, Pick = new PickDto(p.PlayerId, p.Slot, p.IsCaptain, p.IsViceCaptain, p.Multiplier, p.Points, 0m, 0m) }).ToListAsync(ct))
             .ToLookup(p => p.GameweekId, p => p.Pick);
         var total = 0;
         return rows.Select(r =>

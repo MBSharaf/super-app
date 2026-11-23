@@ -125,11 +125,16 @@
     const rules = {
       budget: 100.0, squad: shape, maxPerTeam: 3, starting: 11,
       formations: ['3-4-3', '3-5-2', '4-4-2', '4-3-3', '4-5-1', '5-3-2', '5-4-1'],
-      freeTransfersPerGW: 1, transferCost: 4,
+      freeTransfersPerGW: 1, transferCost: 4, maxSavedTransfers: 5,
+      // The official Fantasy Premier League table (checked 2026-11-23); the server scores with the same rules
       scoring: [
-        ['Playing up to 60 minutes', 1], ['Playing 60 minutes or more', 2], ['Goal by a goalkeeper or defender', 6], ['Goal by a midfielder', 5],
+        ['Playing up to 60 minutes', 1], ['Playing 60 minutes or more', 2], ['Goal by a goalkeeper', 10], ['Goal by a defender', 6], ['Goal by a midfielder', 5],
         ['Goal by a forward', 4], ['Assist', 3], ['Clean sheet — goalkeeper or defender', 4], ['Clean sheet — midfielder', 1],
-        ['Every 3 saves by a goalkeeper', 1], ['Penalty save', 5], ['Bonus points for the best players in a match', '1–3'],
+        ['Every 3 saves by a goalkeeper', 1], ['Penalty save', 5],
+        ['Defensive contribution — defender: 10 clearances, blocks, interceptions and tackles', 2],
+        ['Defensive contribution — midfielder or forward: 12 of those plus recoveries', 2],
+        ['Bonus points for the best 3 players in a match (BPS)', '1–3'],
+        ['Every 2 goals conceded — goalkeeper or defender', -1], ['Penalty miss', -2],
         ['Yellow card', -1], ['Red card', -3], ['Own goal', -2],
       ],
     };

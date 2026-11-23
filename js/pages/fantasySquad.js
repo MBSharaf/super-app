@@ -39,7 +39,7 @@
     const p = f.byId[id], t = f.teamById[p.teamId];
     const isNew = f.team() && !f.team().squad.includes(id);
     return `<button class="sq-slot ${isNew ? 'is-new' : ''} ${id === justAdded ? 'just-added' : ''}" data-remove="${id}" aria-label="Remove ${esc(p.name)}">
-      <span class="sq-x">${icon('x', 12, 2.6)}</span>${c.kit(t, 40, pos === 'GK')}<span class="sq-name">${esc(SA.pages.fantasy.short(p.name))}</span><span class="xs num">${fantasyPrice(p.price)}</span></button>`;
+      <span class="sq-x">${icon('x', 12, 2.6)}</span>${SA.ui.sports.face(p, t, 40, pos === 'GK')}<span class="sq-name">${esc(SA.pages.fantasy.short(p.name))}</span><span class="xs num">${fantasyPrice(p.price)}</span></button>`;
   };
 
   const summary = () => {
@@ -90,7 +90,7 @@
       const tooPricey = p.price > bank + 0.001;
       const reason = inSquad ? '' : posFull ? `${p.pos} full` : teamFull ? '3 from club' : tooPricey ? 'Over budget' : '';
       return `<li class="pl-row ${inSquad ? 'is-in' : ''}">
-        <button class="pl-info" data-info="${p.id}" aria-label="View ${esc(p.name)}">${c.kit(f.teamById[p.teamId], 34, p.pos === 'GK')}<span class="grow"><b class="small">${esc(p.name)}</b> ${c.statusDot(p.status)}<span class="xs muted" style="display:block">${f.teamById[p.teamId].name} · ${p.pos} · ${p.total} pts · form ${p.form.toFixed(1)}</span></span></button>
+        <button class="pl-info" data-info="${p.id}" aria-label="View ${esc(p.name)}">${SA.ui.sports.face(p, f.teamById[p.teamId], 34, p.pos === 'GK')}<span class="grow"><b class="small">${esc(p.name)}</b> ${c.statusDot(p.status)}<span class="xs muted" style="display:block">${f.teamById[p.teamId].name} · ${p.pos} · ${p.total} pts · form ${p.form.toFixed(1)}</span></span></button>
         <span class="num small strong">${fantasyPrice(p.price)}</span>
         ${inSquad ? `<button class="pl-add is-in" data-remove="${p.id}" aria-label="Remove ${esc(p.name)}">${icon('check', 16, 2.6)}</button>`
           : `<button class="pl-add" data-add="${p.id}" ${reason ? `disabled title="${reason}"` : ''} aria-label="Add ${esc(p.name)}">${reason ? `<span class="xs">${reason}</span>` : icon('plus', 16, 2.4)}</button>`}
