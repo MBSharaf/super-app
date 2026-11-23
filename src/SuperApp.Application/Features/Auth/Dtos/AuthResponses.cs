@@ -19,7 +19,8 @@ public sealed record MeResponse(
     IReadOnlyList<string> Dashboards,
     bool TwoFactorEnabled,
     bool Requires2faSetup,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    string? AvatarUrl = null);
 
 /// <summary>GET /auth/csrf — the anti-forgery token to send in the X-CSRF-TOKEN header.</summary>
 public sealed record CsrfResponse(string Token, string HeaderName);

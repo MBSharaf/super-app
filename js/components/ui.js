@@ -13,8 +13,10 @@
     rating(rating, count, size = 14) {
       return `<span class="rating">${icon('star', size)}<span>${Number(rating).toFixed(1)}</span>${count != null ? `<span class="count">(${count.toLocaleString()})</span>` : ''}</span>`;
     },
-    avatar({ name, avatar, photo = true }, size = '') {
+    avatar({ name, avatar, avatarUrl, photo = true }, size = '') {
       const cls = `avatar ${size ? 'avatar-' + size : ''}`;
+      // A photo the person uploaded (served by the API)
+      if (photo && avatarUrl) return `<span class="${cls}"><img src="${esc(avatarUrl)}" alt="" loading="lazy" /></span>`;
       if (photo && avatar != null) return `<span class="${cls}"><img src="${media.avatar(avatar, 160)}" alt="" loading="lazy" /></span>`;
       const c = AV_COLORS[(name || '').length % AV_COLORS.length];
       return `<span class="${cls}" style="background:${c}" aria-hidden="true">${esc(initials(name || '?'))}</span>`;

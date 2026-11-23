@@ -91,7 +91,14 @@ public sealed class IdentityService(UserManager<User> users, AppDbContext db, Pe
         var roles = (await users.GetRolesAsync(user)).Order().ToList();
         var codes = await permissions.ForUserAsync(userId, roles, ct);
         return new ProfileData(user.Id, user.FullName, user.Email!, user.EmailConfirmed, user.PhoneNumber, user.Language,
-            roles, codes, user.TwoFactorEnabled, user.CreatedAt);
+            roles, codes, user.TwoFactorEnabled, user.CreatedAt, user.AvatarFileId);
+    }
+
+    public async Task SetAvatarAsync(Guid userId, long? fileId, CancellationToken ct)
+    {
+        var user = await RequireAsync(userId);
+        user.AvatarFileId = fileId;
+        IdentityErrors.Check(await users.UpdateAsync(user));
     }
 
     public async Task UpdateProfileAsync(Guid userId, string? fullName, string? phone, string? language, CancellationToken ct)

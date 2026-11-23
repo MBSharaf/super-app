@@ -1,5 +1,6 @@
 using SuperApp.Application.Abstractions.Identity;
 using SuperApp.Application.Abstractions.Services;
+using SuperApp.Application.Abstractions.Storage;
 using SuperApp.Application.Common.Exceptions;
 using SuperApp.Application.Common.Validation;
 using SuperApp.Application.Features.Auth.Dtos;
@@ -18,15 +19,21 @@ public interface IMeService
     Task<MeResponse> UpdateAsync(UpdateMeRequest request, CancellationToken ct);
 
     Task ChangePasswordAsync(ChangePasswordRequest request, CancellationToken ct);
+
+    /// <summary>Uploads the person's own profile photo (JPEG/PNG/WEBP up to 5 MB, re-encoded without hidden data).</summary>
+    Task<MeResponse> SetAvatarAsync(UploadedFile? file, CancellationToken ct);
+
+    Task<MeResponse> RemoveAvatarAsync(CancellationToken ct);
 }
 
-public sealed class MeService(IIdentityService identity, ISessionService session, ICurrentUser currentUser, IAuditLogger audit) : IMeService
+public sealed class MeService(IIdentityService identity, ISessionService session, ICurrentUser currentUser, IAuditLogger audit, IFileStorage storage) : IMeService
 {
     public async Task<MeResponse> GetAsync(Guid userId, CancellationToken ct)
     {
         var p = await identity.GetProfileAsync(userId, ct);
         return new MeResponse(p.Id, p.FullName, p.Email, p.EmailConfirmed, p.Phone, p.Language, p.Roles, p.Permissions,
-            Dashboards(p.Roles, p.Permissions), p.TwoFactorEnabled, p.Permissions.Count > 0 && !p.TwoFactorEnabled, p.CreatedAt);
+            Dashboards(p.Roles, p.Permissions), p.TwoFactorEnabled, p.Permissions.Count > 0 && !p.TwoFactorEnabled, p.CreatedAt,
+            p.AvatarFileId is { } avatar ? $"/api/v1/files/{avatar}" : null);
     }
 
     public Task<MeResponse> GetCurrentAsync(CancellationToken ct) => GetAsync(Me(), ct);
@@ -36,6 +43,26 @@ public sealed class MeService(IIdentityService identity, ISessionService session
         var userId = Me();
         var phone = request.Phone is null ? null : EgyptianPhone.Normalize(request.Phone);
         await identity.UpdateProfileAsync(userId, request.FullName?.Trim(), phone, request.Language, ct);
+        return await GetAsync(userId, ct);
+    }
+
+    public async Task<MeResponse> SetAvatarAsync(UploadedFile? file, CancellationToken ct)
+    {
+        var userId = Me();
+        if (file is null || file.Length == 0)
+        {
+            throw new FluentValidation.ValidationException([new FluentValidation.Results.ValidationFailure("avatar", "Choose a photo.")]);
+        }
+        var fileId = await storage.SaveAsync(file, UploadKind.Photo, userId, "avatar", ct);
+        await identity.SetAvatarAsync(userId, fileId, ct);
+        await audit.LogAsync(AuditSystem.Site, "account.avatar_changed", "Profile photo changed", "User", userId.ToString(), ct: ct);
+        return await GetAsync(userId, ct);
+    }
+
+    public async Task<MeResponse> RemoveAvatarAsync(CancellationToken ct)
+    {
+        var userId = Me();
+        await identity.SetAvatarAsync(userId, null, ct);
         return await GetAsync(userId, ct);
     }
 

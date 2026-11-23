@@ -16,7 +16,8 @@
   /** Copies the real account onto the demo profile (name, email, mobile) */
   const syncProfile = () => {
     if (!me) return;
-    SA.core.store.set((s) => ({ user: { ...s.user, name: me.fullName, firstName: String(me.fullName || '').trim().split(/\s+/)[0] || s.user?.firstName, email: me.email, phone: me.phone || s.user?.phone || '' } }), 'session');
+    SA.core.store.set((s) => ({ user: { ...s.user, name: me.fullName, firstName: String(me.fullName || '').trim().split(/\s+/)[0] || s.user?.firstName, email: me.email, phone: me.phone || s.user?.phone || '',
+      avatarUrl: me.avatarUrl || null, ...(SA.config.realData ? { id: me.id, memberSince: String(me.createdAt || '').slice(0, 10) } : {}) } }), 'session');
   };
 
   const set = (next) => { me = next; loaded = true; syncProfile(); emit(); return me; };

@@ -51,8 +51,8 @@
         ${real}
         <section class="profile-hero">
           ${c.avatar(u, 'xl')}
-          <div class="grow"><h1 class="h1">${esc(u.name)}</h1><p class="soft">${esc(u.position)} · ${esc(u.level)} · ${esc(u.foot)} foot · ${esc(u.area)}, ${esc(u.city)}</p>
-            <div class="profile-stats"><div><b class="num">${u.matchesPlayed + mine.joined.length}</b><span class="xs muted">matches</span></div><div><b class="num">${u.goals}</b><span class="xs muted">goals</span></div><div><b class="num">${u.rating}</b><span class="xs muted">player rating</span></div><div><b class="num">${new Date(u.memberSince).getFullYear()}</b><span class="xs muted">member since</span></div></div></div>
+          <div class="grow"><h1 class="h1">${esc(u.name)}</h1>${(() => { const bits = [u.position, u.level, u.foot && `${u.foot} foot`, [u.area, u.city].filter(Boolean).join(', ')].filter(Boolean); return bits.length ? `<p class="soft">${bits.map(esc).join(' · ')}</p>` : (SA.config.realData ? '<p class="soft">Add your position, level and area from Edit profile.</p>' : ''); })()}
+            <div class="profile-stats"><div><b class="num">${(u.matchesPlayed || 0) + mine.joined.length}</b><span class="xs muted">matches</span></div>${u.goals ? `<div><b class="num">${u.goals}</b><span class="xs muted">goals</span></div>` : ''}${u.rating ? `<div><b class="num">${u.rating}</b><span class="xs muted">player rating</span></div>` : ''}${u.memberSince ? `<div><b>${new Date(u.memberSince).getFullYear()}</b><span class="xs muted">member since</span></div>` : ''}</div></div>
           <button class="btn btn-outline" data-edit>${icon('edit', 16)} Edit profile</button>
         </section>
         <div class="tile-grid">${tiles.map(([ic, t, sub, h]) => `<a class="card card-link account-tile" href="${h}"><span class="service-ico">${icon(ic, 20)}</span><span class="grow"><b>${t}</b><span class="small muted" style="display:block">${sub}</span></span>${icon('chevronRight', 18)}</a>`).join('')}</div>
@@ -68,7 +68,7 @@
           ${upcoming.length ? `<div class="stack" style="--gap:12px">${upcoming.slice(0, 3).map((b) => cards.bookingRow(b)).join('')}</div>` : `<div class="panel">${c.empty({ icon: 'calendar', title: 'No upcoming bookings', action: '<a class="btn btn-primary" href="#/pitches">Book a pitch</a>' })}</div>`}
         </section>
         ${favs.length ? `<section class="section-tight"><div class="sec-head"><h2 class="h3">Favourite pitches</h2></div><div class="scroller" style="--col:300px">${favs.map((p) => cards.pitch({ ...p, distanceKm: SA.core.utils.haversineKm(S.location.current() || SA.config.fallbackLocation, p) })).join('')}</div></section>` : ''}
-        <section class="section-tight"><div class="panel panel-pad row-between wrap"><div><h2 class="h4">Demo data</h2><p class="small soft">Everything here is stored on this device. Reset to start the demo from scratch.</p></div><button class="btn btn-outline" data-action="reset-demo">${icon('refresh', 16)} Reset demo</button></div></section>
+        ${SA.config.realData ? '' : `<section class="section-tight"><div class="panel panel-pad row-between wrap"><div><h2 class="h4">Demo data</h2><p class="small soft">Everything here is stored on this device. Reset to start the demo from scratch.</p></div><button class="btn btn-outline" data-action="reset-demo">${icon('refresh', 16)} Reset demo</button></div></section>`}
       </div>`;
     },
     mount(el) {
@@ -78,6 +78,7 @@
         SA.ui.overlay.open({
           title: 'Edit profile',
           body: `<form id="pf" class="form-grid">
+            ${SA.services.api.isLive() ? `<div class="field span-2"><label>Profile photo</label><div class="row" style="--gap:12px;align-items:center">${c.avatar(u, 'lg')}<label class="btn btn-outline btn-sm" for="pf-photo">${icon('image', 15)} Change photo</label><input type="file" id="pf-photo" accept="image/jpeg,image/png,image/webp" hidden />${u.avatarUrl ? '<button type="button" class="btn btn-ghost btn-sm" data-photo-remove>Remove</button>' : ''}</div><p class="xs muted">JPEG, PNG or WEBP, up to 5 MB.</p></div>` : ''}
             <div class="field span-2"><label for="pf-n">Full name</label><input class="input" id="pf-n" name="name" value="${esc(u.name)}" required /></div>
             <div class="field"><label for="pf-p">Position</label><select class="select" id="pf-p" name="position">${['Goalkeeper', 'Defender', 'Midfielder', 'Winger', 'Forward'].map((x) => `<option ${x === u.position ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
             <div class="field"><label for="pf-l">Level</label><select class="select" id="pf-l" name="level">${SA.data.matches.levels.map((x) => `<option ${x === u.level ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
@@ -85,6 +86,18 @@
             <div class="field"><label for="pf-a">Area</label><input class="input" id="pf-a" name="area" value="${esc(u.area)}" /></div></form>`,
           footer: `<button class="btn btn-outline" data-close>Cancel</button><button class="btn btn-primary" form="pf" type="submit">Save changes</button>`,
           onMount(m, close) {
+            // Profile photo: saved on the server straight away (POST /me/avatar), then the session refreshes the profile
+            const photo = async (run, done) => {
+              try { const me = await run(); SA.core.store.set((st) => ({ user: { ...st.user, avatarUrl: me?.avatarUrl || null } }), 'session'); close(); SA.app.rerender(); SA.ui.overlay.toast(done); }
+              catch (err) { SA.ui.overlay.toast(err.details?.avatar || err.message, { type: 'error' }); }
+            };
+            m.querySelector('#pf-photo')?.addEventListener('change', (e) => {
+              const f = e.target.files?.[0]; if (!f) return;
+              if (f.size > 5 * 1024 * 1024) { SA.ui.overlay.toast('The photo is larger than 5 MB.', { type: 'error' }); return; }
+              const fd = new FormData(); fd.append('avatar', f);
+              photo(() => SA.services.api.form('/me/avatar', fd), 'Photo saved');
+            });
+            m.querySelector('[data-photo-remove]')?.addEventListener('click', () => photo(() => SA.services.api.del('/me/avatar'), 'Photo removed'));
             m.querySelector('#pf').addEventListener('submit', async (e) => {
               e.preventDefault();
               const d = SA.core.utils.formData(e.target);

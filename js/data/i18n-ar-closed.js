@@ -3,6 +3,14 @@
   const D = SA.data.i18nAr;
   const add = (o) => Object.entries(o).forEach(([k, v]) => { if (!(k in D.strings)) D.strings[k] = v; });
   add({
+    'Profile photo': 'صورة البروفايل',
+    'Change photo': 'غيّر الصورة',
+    'JPEG, PNG or WEBP, up to 5 MB.': 'JPEG أو PNG أو WEBP، لحد 5 ميجا.',
+    'Photo saved': 'الصورة اتحفظت',
+    'Photo removed': 'الصورة اتشالت',
+    'The photo is larger than 5 MB.': 'الصورة أكبر من 5 ميجا.',
+    'Add your position, level and area from Edit profile.': 'ضيف مركزك ومستواك ومنطقتك من تعديل البروفايل.',
+    'Remove': 'شيل',
     'Add an admin': 'إضافة أدمن',
     'Already has a Super Malaab account (a player, partner or seller)? Write the email they signed up with: the same account joins the team, keeps its password and gets an email. Someone new gets an email to choose a password. Everyone sets up an authenticator app at the next sign-in. Money limits start at 0 — set them on their page.': 'عنده حساب على سوبر ملعب (لاعب أو شريك أو بائع)؟ اكتب الإيميل اللي سجّل بيه: نفس الحساب هيدخل الفريق بنفس الباسورد وهيوصله إيميل. الشخص الجديد هيوصله إيميل يختار فيه باسورد. والكل هيفعّل تطبيق التحقق في الدخول الجاي. حدود الفلوس بتبدأ من 0 — حددها من صفحته.',
     'Add to the team': 'ضيفه للفريق',

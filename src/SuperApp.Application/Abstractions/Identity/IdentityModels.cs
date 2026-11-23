@@ -27,4 +27,5 @@ public sealed record ProfileData(
     IReadOnlyList<string> Roles,
     IReadOnlyList<string> Permissions,
     bool TwoFactorEnabled,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    long? AvatarFileId = null);

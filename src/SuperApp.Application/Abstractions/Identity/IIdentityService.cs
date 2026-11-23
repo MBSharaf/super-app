@@ -27,6 +27,9 @@ public interface IIdentityService
 
     Task UpdateProfileAsync(Guid userId, string? fullName, string? phone, string? language, CancellationToken ct);
 
+    /// <summary>The profile photo (a stored public photo), or null to go back to the initials.</summary>
+    Task SetAvatarAsync(Guid userId, long? fileId, CancellationToken ct);
+
     /// <summary>
     /// The account for a Google or Facebook sign-in: the one already linked to it, else the account with the same
     /// verified email (linked now). Null when there is none yet.

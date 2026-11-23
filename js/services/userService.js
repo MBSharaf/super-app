@@ -8,6 +8,14 @@
     /** First boot: copy the seed profile into the store. */
     ensureSeeded() {
       const s = store.get();
+      // The server's site (real data): a blank profile the signed-in account fills, never the demo player's stats,
+      // photo, wallet or points. A browser that still holds the demo player is reset once.
+      if (SA.config.realData) {
+        if (s.user && s.realProfile) return;
+        store.set({ user: { id: s.user?.id || null, name: '', firstName: '', email: '', phone: '', avatar: null, avatarUrl: null, city: '', area: '', position: '', level: '', foot: '',
+          memberSince: '', matchesPlayed: 0, goals: 0, rating: null, addresses: [] }, wallet: { balance: 0, transactions: [] }, savedCards: [], notifications: [], loyalty: { entries: [] }, realProfile: true }, 'seed');
+        return;
+      }
       if (s.user) { if (!s.loyalty) store.set({ loyalty: structuredClone(SA.data.user.loyalty) }, 'seed'); return; }
       const seed = structuredClone(SA.data.user);
       store.set({ user: seed.profile, wallet: seed.wallet, savedCards: seed.savedCards, notifications: seed.notifications, loyalty: seed.loyalty }, 'seed');

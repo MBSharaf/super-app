@@ -235,4 +235,28 @@ public sealed class AuthTests(AccountsApiFactory api) : IClassFixture<AccountsAp
         (await laptop.GetAsync("/api/v1/me")).Status.ShouldBe(HttpStatusCode.Unauthorized);
         (await tablet.GetAsync("/api/v1/me")).Status.ShouldBe(HttpStatusCode.Unauthorized);
     }
+
+    /// <summary>Owner (2026-11-23): the profile shows the person's own photo, which they change from Edit profile.</summary>
+    [Fact]
+    public async Task The_profile_photo_is_uploaded_shown_and_removed()
+    {
+        var client = await api.ClientAsync();
+        (await client.PostAsync("/api/v1/auth/sign-up", NewCustomer(out _, out _))).Status.ShouldBe(HttpStatusCode.Created);
+        await client.RefreshCsrfAsync();
+        var me = (await client.GetAsync("/api/v1/me")).Body.Data();
+        me.GetProperty("avatarUrl").ValueKind.ShouldBe(System.Text.Json.JsonValueKind.Null);
+
+        var (status, body) = await client.SendFormAsync(HttpMethod.Post, "/api/v1/me/avatar", new { }, ("avatar", "me.png", ShopKit.Png(300)));
+        status.ShouldBe(HttpStatusCode.OK, body.ToString());
+        var url = body.Data().GetProperty("avatarUrl").GetString().ShouldNotBeNull();
+        url.ShouldStartWith("/api/v1/files/");
+        (await api.CreateClient().GetAsync(url)).StatusCode.ShouldBe(HttpStatusCode.OK); // public photo, no sign-in needed
+
+        var notImage = await client.SendFormAsync(HttpMethod.Post, "/api/v1/me/avatar", new { }, ("avatar", "me.png", "not an image"u8.ToArray()));
+        notImage.Status.ShouldBe(HttpStatusCode.BadRequest);
+
+        var removed = await client.SendAsync(HttpMethod.Delete, "/api/v1/me/avatar");
+        removed.Body.Data().GetProperty("avatarUrl").ValueKind.ShouldBe(System.Text.Json.JsonValueKind.Null);
+        (await (await api.ClientAsync()).SendFormAsync(HttpMethod.Post, "/api/v1/me/avatar", new { }, ("avatar", "x.png", ShopKit.Png(300)))).Status.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }
