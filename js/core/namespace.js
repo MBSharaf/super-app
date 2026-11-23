@@ -65,7 +65,7 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // Empty, or no answer = the built-in demo assistant answers from the Help center.
   chatbot: { url: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook/support', hours: '' },
   // Public contact details (owner, 2026-11-23) — shown on Contact us (#/contact) and About us (#/about).
-  contact: { phone: '+201024549574', phoneLabel: '+20 102 454 9574', email: 'supermalaab@gmail.com' },
+  contact: { phone: '+201024549574', phoneLabel: '+20 102 454 9574', email: 'supermalaab@gmail.com', address: 'Maadi, Cairo, Egypt' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.
   social: { facebook: 'https://www.facebook.com/share/1A4odKYei2/', instagram: 'https://www.instagram.com/superapp0/', tiktok: '' },
 } };

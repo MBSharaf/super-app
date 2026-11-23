@@ -24,6 +24,7 @@
   const contactCards = () => `<div class="ab-contact">
       <a class="ab-contact-card" href="${telHref()}"><span class="ab-ico">${icon('message', 20)}</span><span class="grow"><span class="xs muted">Phone</span><b dir="ltr" data-i18n-skip>${esc(C().phoneLabel)}</b></span></a>
       <a class="ab-contact-card" href="${mailHref()}"><span class="ab-ico">${icon('send', 20)}</span><span class="grow"><span class="xs muted">Email</span><b dir="ltr" data-i18n-skip>${esc(C().email)}</b></span></a>
+      <div class="ab-contact-card"><span class="ab-ico">${icon('pin', 20)}</span><span class="grow"><span class="xs muted">Address</span><b>${esc(C().address)}</b></span></div>
     </div>`;
 
   SA.pages.about = {
@@ -63,7 +64,7 @@
           <p class="small soft">List your pitches on Super Malaab and get bookings online.</p>
           <a class="btn btn-outline btn-sm" href="#/apply" style="margin-top:14px">Become a partner ${icon('arrowRight', 14)}</a>
         </section>
-        <p class="small muted" style="margin-top:18px">Super Malaab · Cairo, Egypt · <a class="link" href="#/about">About us</a> · <a class="link" href="#/legal">Terms & policies</a></p>
+        <p class="small muted" style="margin-top:18px">Super Malaab · Maadi, Cairo, Egypt · <a class="link" href="#/about">About us</a> · <a class="link" href="#/legal">Terms & policies</a></p>
       </div>`;
     },
   };

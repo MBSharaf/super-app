@@ -44,6 +44,8 @@
     'List your pitches on Super Malaab and get bookings online.': 'ضيف ملاعبك على سوبر ملعب وخد حجوزات أونلاين.',
     'Become a partner': 'اشترك كشريك',
     'Terms & policies': 'الشروط والسياسات',
-    'Super Malaab · Cairo, Egypt ·': 'سوبر ملعب · القاهرة، مصر ·',
+    'Super Malaab · Maadi, Cairo, Egypt ·': 'سوبر ملعب · المعادي، القاهرة، مصر ·',
+    'Address': 'العنوان',
+    'Maadi, Cairo, Egypt': 'مصر، القاهرة، المعادي',
   });
 })(window.SA);
