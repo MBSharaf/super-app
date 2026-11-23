@@ -14,6 +14,7 @@
         if (s.user && s.realProfile) return;
         store.set({ user: { id: s.user?.id || null, name: '', firstName: '', email: '', phone: '', avatar: null, avatarUrl: null, city: '', area: '', position: '', level: '', foot: '',
           memberSince: '', matchesPlayed: 0, goals: 0, rating: null, addresses: [] }, wallet: { balance: 0, transactions: [] }, savedCards: [], notifications: [], loyalty: { entries: [] }, realProfile: true }, 'seed');
+        SA.services.session?.resync?.(); // the account may already be loaded: put its name, email and photo back
         return;
       }
       if (s.user) { if (!s.loyalty) store.set({ loyalty: structuredClone(SA.data.user.loyalty) }, 'seed'); return; }

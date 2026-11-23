@@ -25,6 +25,8 @@
   const session = {
     me: () => me,
     loaded: () => loaded,
+    /** Copy the signed-in account onto the local profile again (after the profile was reset) */
+    resync: () => syncProfile(),
     subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
     can: (permission) => !!me?.permissions?.includes(permission),
     has: (dashboard) => !!me?.dashboards?.includes(dashboard),
