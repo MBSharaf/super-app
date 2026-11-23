@@ -36,6 +36,9 @@ public static class FantasyInfrastructureRegistration
         RegisterEmails();
         services.AddHostedService<FootballScheduler>();
         services.AddSingleton<LiveClock>();
+        services.AddSingleton<FotMobIds>();
+        services.AddMemoryCache();
+        services.AddScoped<Application.Features.Content.IMatchInsights, MatchInsights>();
         services.AddHostedService<LiveScoresJob>();
         return services;
     }

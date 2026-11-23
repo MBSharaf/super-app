@@ -16,7 +16,8 @@ using SuperApp.Infrastructure.Persistence;
 namespace SuperApp.Infrastructure.Football;
 
 /// <summary>A match as the live feed shows it: the clock is the text to show ("57'", "45+2'", "HT", "FT").</summary>
-public sealed record LiveMatch(long Id, string Home, string Away, DateTime KickoffUtc, FixtureStatus? Status, int? HomeGoals, int? AwayGoals, int? Minute, string? Clock);
+public sealed record LiveMatch(long Id, string Home, string Away, DateTime KickoffUtc, FixtureStatus? Status, int? HomeGoals, int? AwayGoals, int? Minute, string? Clock,
+    int LeagueId = 0);
 
 /// <summary>The live clock text of each match being played, kept in memory (a restart clears it; the scores stay in the database).</summary>
 public sealed class LiveClock
@@ -38,6 +39,26 @@ public sealed class LiveClock
         clocks.TryGetValue(fixtureId, out var c) && now - c.At <= Fresh ? c.Text : null;
 }
 
+/// <summary>The live feed's ids learnt by pairing: our match → its match, our competition key → its league.</summary>
+public sealed class FotMobIds
+{
+    private readonly ConcurrentDictionary<long, long> matches = new();
+    private readonly ConcurrentDictionary<string, int> leagues = new(StringComparer.Ordinal);
+
+    public void Remember(long fixtureId, string competition, LiveMatch m)
+    {
+        matches[fixtureId] = m.Id;
+        if (m.LeagueId > 0)
+        {
+            leagues[competition] = m.LeagueId;
+        }
+    }
+
+    public long? Match(long fixtureId) => matches.TryGetValue(fixtureId, out var id) ? id : null;
+
+    public int? League(string competition) => leagues.TryGetValue(competition, out var id) ? id : null;
+}
+
 /// <summary>
 /// Live scores and minutes of every league for a day, from FotMob's public match list (one call covers all the
 /// competitions, no key). The free fixture sources (TheSportsDB, FPL) update scores late or not at all while a match is on.
@@ -55,6 +76,20 @@ public sealed class FotMobLiveFeed(HttpClient http)
         return Parse(doc.RootElement);
     }
 
+    /// <summary>A league's page (its table, under "table").</summary>
+    public Task<JsonDocument> LeagueAsync(int leagueId, CancellationToken ct) => GetJsonAsync($"leagues?id={leagueId}", ct);
+
+    /// <summary>A match's page: statistics, events and line-ups (under "content").</summary>
+    public Task<JsonDocument> MatchAsync(long matchId, CancellationToken ct) => GetJsonAsync($"matchDetails?matchId={matchId}", ct);
+
+    private async Task<JsonDocument> GetJsonAsync(string path, CancellationToken ct)
+    {
+        using var response = await http.GetAsync(path, ct);
+        response.EnsureSuccessStatusCode();
+        await using var body = await response.Content.ReadAsStreamAsync(ct);
+        return await JsonDocument.ParseAsync(body, cancellationToken: ct);
+    }
+
     public static IReadOnlyList<LiveMatch> Parse(JsonElement root)
     {
         var list = new List<LiveMatch>();
@@ -62,11 +97,15 @@ public sealed class FotMobLiveFeed(HttpClient http)
         {
             return list;
         }
-        foreach (var match in leagues.EnumerateArray().Where(l => l.TryGetProperty("matches", out _)).SelectMany(l => l.GetProperty("matches").EnumerateArray()))
+        foreach (var league in leagues.EnumerateArray().Where(l => l.TryGetProperty("matches", out var ms) && ms.ValueKind == JsonValueKind.Array))
         {
-            if (Read(match) is { } m)
+            var leagueId = league.TryGetProperty("primaryId", out var pid) && pid.TryGetInt32(out var n) ? n : 0;
+            foreach (var match in league.GetProperty("matches").EnumerateArray())
             {
-                list.Add(m);
+                if (Read(match) is { } m)
+                {
+                    list.Add(m with { LeagueId = leagueId });
+                }
             }
         }
         return list;
@@ -173,7 +212,7 @@ public static partial class LiveMatcher
 /// Off in "Testing", with <c>Football:Offline</c>, or with <c>Football:Live:Enabled</c> false.
 /// </summary>
 public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment environment, IConfiguration configuration, LiveClock clocks,
-    ILogger<LiveScoresJob> logger) : BackgroundService
+    FotMobIds ids, ILogger<LiveScoresJob> logger) : BackgroundService
 {
     private static readonly TimeSpan Tick = TimeSpan.FromMinutes(1);
 
@@ -204,7 +243,7 @@ public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment 
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
-        var rows = await db.Set<Fixture>().Include(f => f.HomeClub).Include(f => f.AwayClub)
+        var rows = await db.Set<Fixture>().Include(f => f.HomeClub).Include(f => f.AwayClub).Include(f => f.Gameweek.Season.Competition)
             .Where(f => f.Gameweek.Season.IsCurrent && f.KickoffAt >= now.AddHours(-3) && f.KickoffAt <= now.AddMinutes(10)
                 && (f.Status == FixtureStatus.Scheduled || f.Status == FixtureStatus.Live))
             .ToListAsync(ct);
@@ -222,6 +261,10 @@ public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment 
         var pairs = LiveMatcher.Pair(rows.Select(f => new LiveMatcher.Ours(f.Id, f.HomeClub.NameEn, f.AwayClub.NameEn, f.KickoffAt)).ToList(), live);
         foreach (var row in rows)
         {
+            if (pairs.TryGetValue(row.Id, out var found))
+            {
+                ids.Remember(row.Id, row.Gameweek.Season.Competition.Key, found);
+            }
             if (pairs.TryGetValue(row.Id, out var m) && m.Status is { } status)
             {
                 Apply(row, m, status);
