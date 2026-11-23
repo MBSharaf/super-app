@@ -43,7 +43,7 @@ public sealed class FantasyReader(AppDbContext db) : IFantasyReader
 
     public async Task<IReadOnlyList<ClubDto>> ClubsAsync(long seasonId, CancellationToken ct) =>
         await db.Set<SeasonClub>().AsNoTracking().Where(sc => sc.SeasonId == seasonId).OrderBy(sc => sc.Club.NameEn)
-            .Select(sc => new ClubDto(sc.ClubId, sc.Club.NameEn, sc.Club.NameAr, sc.Club.ShortName, sc.Club.KitColor, sc.Club.KitColor2, null))
+            .Select(sc => new ClubDto(sc.ClubId, sc.Club.NameEn, sc.Club.NameAr, sc.Club.ShortName, sc.Club.KitColor, sc.Club.KitColor2, sc.Club.LogoUrl))
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<PlayerDto>> PlayersAsync(long seasonId, CancellationToken ct)

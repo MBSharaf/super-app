@@ -34,7 +34,7 @@ public sealed class ApiFootballClient(HttpClient http, FootballUsageRecorder usa
         var data = await GetAsync($"teams?league={leagueId}&season={season}", ct);
         return data.EnumerateArray().Select(t => t.GetProperty("team")).Select(t => new FdClub(
             t.GetProperty("id").GetInt32(), t.GetProperty("name").GetString() ?? "Club",
-            ShortName(t), "#0D1411", "#FFFFFF")).ToList();
+            ShortName(t), "#0D1411", "#FFFFFF", t.TryGetProperty("logo", out var logo) ? logo.GetString() : null)).ToList();
     }
 
     public async Task<IReadOnlyList<FdPlayer>> SquadAsync(int leagueId, int season, int clubExternalId, CancellationToken ct)

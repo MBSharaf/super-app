@@ -11,7 +11,7 @@ namespace SuperApp.Application.Features.Content;
 
 /* ---------- Matches (real football, from the fantasy cache) ---------- */
 
-public sealed record MatchClubDto(long Id, string Name, string ShortName, string Kit, string Kit2);
+public sealed record MatchClubDto(long Id, string Name, string ShortName, string Kit, string Kit2, string? Logo = null);
 
 /// <summary>
 /// A real match of a followed competition. Status Scheduled / Live / Finished / Postponed / Cancelled. <c>Gameweek</c> is

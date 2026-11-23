@@ -6,7 +6,7 @@ namespace SuperApp.Application.Features.Fantasy;
 public sealed record CompetitionDto(string Key, string NameEn, string NameAr, string Country, int? Season, int? Gameweek, DateTime? Deadline,
     int? LastFinishedGameweek, int TotalGameweeks, decimal SquadBudget, int MaxPerClub, DateTime? LastSyncedAt);
 
-/// <summary>A club. No logos for now (FR-FAN-02): kit colours instead; <c>LogoUrl</c> stays empty until logos are licensed.</summary>
+/// <summary>A club with its kit colours and badge (<c>LogoUrl</c>, from the data source; the site hides it when Features:ClubLogos is off).</summary>
 public sealed record ClubDto(long Id, string Name, string NameAr, string ShortName, string KitColor, string KitColor2, string? LogoUrl);
 
 /// <summary>A player with his season numbers. Position GK / DEF / MID / FWD; status Available / Doubtful / Injured / LeftTheClub.</summary>

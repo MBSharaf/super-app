@@ -1,6 +1,6 @@
 /**
  * Seed: competitions and teams for the match schedule (demo data).
- * Crests are drawn as original monograms in each team's colours (no official logos).
+ * Clubs with a known badge show it (LOGOS below); the rest are drawn as monograms in the team's colours.
  */
 (function (SA) {
   // id: [name, short, primary, secondary]
@@ -41,6 +41,19 @@
     GER: T('Germany', 'GER', '#111111', '#DD0000'), POR2: T('Portugal', 'POR', '#006600', '#FF0000'), ITA: T('Italy', 'ITA', '#0066CC', '#FFFFFF'),
     NED: T('Netherlands', 'NED', '#FF6600', '#FFFFFF'), BEL: T('Belgium', 'BEL', '#E30613', '#111111'),
   };
+
+  // Club badges for the demo (the live site gets every badge from its data sources)
+  const SDB = (f) => `https://r2.thesportsdb.com/images/media/team/badge/${f}/small`;
+  const PL = (code) => `https://resources.premierleague.com/premierleague/badges/t${code}.svg`;
+  const LOGOS = {
+    AHL: SDB('x8753q1751421890.png'), ZAM: SDB('tgekj81580930027.png'), MAS: SDB('3aw86h1589807260.png'), CER: SDB('xy4shs1751422167.png'),
+    ENP: SDB('m6p9ml1787512639.png'), GOU: SDB('6vdj631589807310.png'), ITT: SDB('bqnmfm1786058466.png'),
+    BAR: SDB('wq9sir1639406443.png'), ATM: SDB('0ulh3q1719984315.png'), ATH: SDB('68w7fe1639408210.png'), MIL: SDB('wvspur1448806617.png'),
+    ATA: SDB('qix5ku1780561327.png'), FIO: SDB('hc8nhu1656098030.png'), INT: SDB('ryhu6d1617113103.png'), JUV: SDB('uxf0gr1742983727.png'),
+    B04: SDB('3x9k851726760113.png'), BAY: SDB('01ogkh1716960412.png'), BVB: SDB('tqo8ge1716960353.png'), SGE: SDB('rurwpy1473453269.png'),
+    LIV: PL(14), MCI: PL(43), ARS: PL(3), CHE: PL(8), MUN: PL(1), TOT: PL(6), NEW: PL(4), AVL: PL(7), BHA: PL(36), WHU: PL(21),
+  };
+  Object.entries(LOGOS).forEach(([id, logo]) => { if (teams[id]) teams[id].logo = logo; });
 
   // days: weekdays the competition plays (0 = Sun). times: Cairo kick-off hours.
   const competitions = [

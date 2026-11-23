@@ -44,7 +44,8 @@ public sealed class FplFootballData(HttpClient http) : IFootballData
         {
             var code = t.GetProperty("short_name").GetString() ?? "CLB";
             var kit = Kits.GetValueOrDefault(code, ("#0D1411", "#FFFFFF"));
-            return new FdClub(t.GetProperty("id").GetInt32(), t.GetProperty("name").GetString() ?? code, code, kit.Item1, kit.Item2);
+            var logo = t.TryGetProperty("code", out var badge) ? $"https://resources.premierleague.com/premierleague/badges/t{badge.GetInt32()}.svg" : null;
+            return new FdClub(t.GetProperty("id").GetInt32(), t.GetProperty("name").GetString() ?? code, code, kit.Item1, kit.Item2, logo);
         }).ToList();
 
     public async Task<IReadOnlyList<FdPlayer>> SquadAsync(int leagueId, int season, int clubExternalId, CancellationToken ct) =>

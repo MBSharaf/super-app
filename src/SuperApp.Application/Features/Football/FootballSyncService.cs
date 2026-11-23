@@ -88,6 +88,10 @@ public sealed class FootballSyncService(
     {
         if (await repository.SquadsFreshAsync(seasonId, clock.UtcNow - SquadRefresh, ct))
         {
+            if (data.Provider != ApiFootball)   // free sources: the club list costs no extra call, so new badges show at once
+            {
+                await repository.UpdateClubLogosAsync(await data.ClubsAsync(comp.ExternalLeagueId, season, ct), ct);
+            }
             return (await repository.ClubIdsAsync(seasonId, ct), 0);
         }
         var clubs = await data.ClubsAsync(comp.ExternalLeagueId, season, ct);

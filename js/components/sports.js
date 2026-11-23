@@ -3,8 +3,21 @@
   const { esc } = SA.core.utils;
   const { icon } = SA.ui;
 
-  /** Original crest: split shield in club colours with a monogram (no official badges). */
-  const crest = (t, size = 36) => {
+  /** Club badge when the data has one (t.logo), drawn over the monogram crest so a badge that fails to load leaves the crest. */
+  const logo = (t, size, fallback) => (t && t.logo && SA.config.clubLogos
+    ? `<span class="club-logo" style="width:${size}px;height:${size}px"><img src="${esc(t.logo)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />${fallback}</span>`
+    : fallback);
+
+  /** Club crest: the real badge when there is one, else a split shield in club colours with a monogram. */
+  const crest = (t, size = 36) => logo(t, size, monogram(t, size));
+
+  /** Club in fantasy lists (fixtures, table): its badge, else its shirt. */
+  const badgeOrKit = (t, size = 30, gk = false) => logo(t, size, SA.ui.c.kit(t, size, gk));
+
+  /** A small badge before a club name (nothing when the club has no badge). */
+  const mini = (t, size = 14) => (t && t.logo && SA.config.clubLogos ? `${logo(t, size, '')} ` : '');
+
+  const monogram = (t, size) => {
     const light = (hex) => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 165; };
     const ink = light(t.a) ? '#0D1411' : '#FFFFFF';
     const id = 'c' + Math.random().toString(36).slice(2, 7);
@@ -32,5 +45,8 @@
     </article>`;
   };
 
-  SA.ui.sports = { crest, matchRow };
+  // A badge that cannot load is removed, which shows the crest or shirt drawn under it
+  document.addEventListener('error', (e) => { if (e.target instanceof HTMLImageElement && e.target.parentElement?.classList.contains('club-logo')) e.target.remove(); }, true);
+
+  SA.ui.sports = { crest, badgeOrKit, mini, matchRow };
 })(window.SA);

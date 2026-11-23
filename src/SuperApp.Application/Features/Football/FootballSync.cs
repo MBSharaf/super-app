@@ -40,6 +40,9 @@ public interface IFantasySyncRepository
 
     Task<IReadOnlyDictionary<int, long>> UpsertClubsAsync(long seasonId, IReadOnlyList<FdClub> clubs, CancellationToken ct);
 
+    /// <summary>Stores new club badges only (squads are not marked as read again).</summary>
+    Task UpdateClubLogosAsync(IReadOnlyList<FdClub> clubs, CancellationToken ct);
+
     Task<IReadOnlyDictionary<int, long>> ClubIdsAsync(long seasonId, CancellationToken ct);
 
     Task<int> UpsertPlayersAsync(IReadOnlyList<FdPlayer> players, IReadOnlyDictionary<int, long> clubs, CancellationToken ct);

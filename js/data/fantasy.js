@@ -273,6 +273,10 @@
     ],
   };
 
+  // Club badges (the Premier League's own badge files, by club code); the live site gets them from the server
+  const PL_CODES = { ARS: 3, LIV: 14, MCI: 43, CHE: 8, MUN: 1, NEW: 4, TOT: 6, AVL: 7, BHA: 36, CRY: 31, BOU: 91, BRE: 94, FUL: 54, NFO: 17, EVE: 11, WHU: 21, WOL: 39, LEE: 2, SUN: 56, BUR: 90 };
+  EPL.teams.forEach((t) => { if (PL_CODES[t.id]) t.logo = `https://resources.premierleague.com/premierleague/badges/t${PL_CODES[t.id]}.svg`; });
+
   SA.data.fantasy = build(EGY);
   SA.data.fantasyEPL = build(EPL);
   // Egyptian league fantasy is off (owner, 2026-11-09): no free source has its player statistics. Its demo data stays

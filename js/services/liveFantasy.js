@@ -44,7 +44,7 @@
   const applyBootstrap = (k, boot, fixtures) => {
     const D = LEAGUES[k];
     const shortOf = Object.fromEntries(boot.clubs.map((c) => [c.id, c.shortName]));
-    D.teams.splice(0, D.teams.length, ...boot.clubs.map((c) => ({ id: c.shortName, apiId: c.id, name: c.name, city: '', strength: 75, kit: { a: c.kitColor, b: c.kitColor2, p: 'solid' } })));
+    D.teams.splice(0, D.teams.length, ...boot.clubs.map((c) => ({ id: c.shortName, apiId: c.id, name: c.name, city: '', strength: 75, kit: { a: c.kitColor, b: c.kitColor2, p: 'solid' }, logo: c.logoUrl || null })));
     D.players.splice(0, D.players.length, ...boot.players.map((p) => ({
       id: pid(p.id), apiId: p.id, teamId: shortOf[p.clubId] || p.club, name: p.name, pos: p.position, price: +p.price, total: p.totalPoints, form: +p.form,
       selectedBy: +p.selectedBy, status: POS_STATUS[p.status] || 'fit', news: '', gw: {}, log: {},

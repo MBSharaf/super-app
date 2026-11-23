@@ -30,8 +30,8 @@ public sealed class MatchesReader(AppDbContext db) : IMatchesReader
 
     private static IQueryable<MatchDto> Project(IQueryable<Fixture> query) =>
         query.AsNoTracking().Select(f => new MatchDto(f.Id, f.Gameweek.Season.Competition.Key, f.Gameweek.Number,
-            new MatchClubDto(f.HomeClubId, f.HomeClub.NameEn, f.HomeClub.ShortName, f.HomeClub.KitColor, f.HomeClub.KitColor2),
-            new MatchClubDto(f.AwayClubId, f.AwayClub.NameEn, f.AwayClub.ShortName, f.AwayClub.KitColor, f.AwayClub.KitColor2),
+            new MatchClubDto(f.HomeClubId, f.HomeClub.NameEn, f.HomeClub.ShortName, f.HomeClub.KitColor, f.HomeClub.KitColor2, f.HomeClub.LogoUrl),
+            new MatchClubDto(f.AwayClubId, f.AwayClub.NameEn, f.AwayClub.ShortName, f.AwayClub.KitColor, f.AwayClub.KitColor2, f.AwayClub.LogoUrl),
             f.KickoffAt, f.Status.ToString(), f.HomeGoals, f.AwayGoals, f.Minute, f.Venue));
 
     public async Task<IReadOnlyList<MatchCompetitionDto>> CompetitionsAsync(CancellationToken ct) =>

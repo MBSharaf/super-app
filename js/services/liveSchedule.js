@@ -30,7 +30,7 @@
 
   const club = (c) => {
     const id = `c${c.id}`;
-    teams[id] = { name: c.name, short: c.shortName, a: c.kit, b: c.kit2 };
+    teams[id] = { name: c.name, short: c.shortName, a: c.kit, b: c.kit2, logo: c.logo || null };
     return id;
   };
 

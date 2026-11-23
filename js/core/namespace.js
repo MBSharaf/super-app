@@ -33,6 +33,8 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // How store orders are paid (server setting Features:ShopPayment → <html data-shop-pay>): online = card or wallet,
   // cod = cash on delivery only (owner, 2026-11-23, until the payment gateway is ready), both. The server enforces it.
   shopPayment: SA_HTML_FLAGS.shopPay || 'online',
+  /** Club badges in matches and fantasy (server setting Features:ClubLogos; on unless the page says off) */
+  clubLogos: SA_HTML_FLAGS.logos !== 'off',
   // Tournaments are back as "coming soon" (owner, 2026-11-15: the Ramadan tournament). Venues and the admin can already
   // prepare tournaments and offers; players see them but can't register until the server setting
   // Features:TournamentsOpen marks <html data-tournaments="open"> (the server refuses registrations until then too).

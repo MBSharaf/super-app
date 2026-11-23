@@ -60,6 +60,10 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
             }
             row.NameEn = c.Name;
             row.ShortName = c.ShortName.Length > 5 ? c.ShortName[..5] : c.ShortName;
+            if (c.LogoUrl is { Length: > 0 and <= 300 })
+            {
+                row.LogoUrl = c.LogoUrl;   // the club badge (shown unless Features:ClubLogos is off)
+            }
             row.UpdatedAt = clock.UtcNow;   // marks when the squads were last read
         }
         await db.SaveChangesAsync(ct);
@@ -67,6 +71,18 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
         db.Set<SeasonClub>().AddRange(rows.Values.Where(r => !linked.Contains(r.Id)).Select(r => new SeasonClub { SeasonId = seasonId, ClubId = r.Id }));
         await db.SaveChangesAsync(ct);
         return rows.ToDictionary(r => r.Key, r => r.Value.Id);
+    }
+
+    public async Task UpdateClubLogosAsync(IReadOnlyList<FdClub> clubs, CancellationToken ct)
+    {
+        var logos = clubs.Where(c => c.LogoUrl is { Length: > 0 and <= 300 }).ToDictionary(c => c.ExternalId, c => c.LogoUrl!);
+        var ids = logos.Keys.ToList();
+        var rows = await db.Set<Club>().Where(c => ids.Contains(c.ExternalId)).ToListAsync(ct);
+        foreach (var row in rows.Where(r => r.LogoUrl != logos[r.ExternalId]))
+        {
+            row.LogoUrl = logos[row.ExternalId];
+        }
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task<IReadOnlyDictionary<int, long>> ClubIdsAsync(long seasonId, CancellationToken ct) =>

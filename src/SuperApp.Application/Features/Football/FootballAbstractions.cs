@@ -4,7 +4,8 @@ namespace SuperApp.Application.Features.Football;
 
 /* ---------- What a football data provider returns (FPL, TheSportsDB, API-FOOTBALL, or the simulated one) ---------- */
 
-public sealed record FdClub(int ExternalId, string Name, string ShortName, string KitColor, string KitColor2);
+/// <summary>A club from a data source. <c>LogoUrl</c> is the club badge the source publishes (null when it has none).</summary>
+public sealed record FdClub(int ExternalId, string Name, string ShortName, string KitColor, string KitColor2, string? LogoUrl = null);
 
 public sealed record FdPlayer(int ExternalId, int ClubExternalId, string Name, PlayerPosition Position, decimal Price, PlayerStatus Status);
 

@@ -116,19 +116,21 @@ public sealed class TheSportsDbFootballData(HttpClient http, ILogger<TheSportsDb
         {
             return null;
         }
-        Remember(leagueId, home.Value, Text(e, "strHomeTeam"));
-        Remember(leagueId, away.Value, Text(e, "strAwayTeam"));
+        Remember(leagueId, home.Value, Text(e, "strHomeTeam"), Text(e, "strHomeTeamBadge"));
+        Remember(leagueId, away.Value, Text(e, "strAwayTeam"), Text(e, "strAwayTeamBadge"));
         var (hs, aws) = (Int(e, "intHomeScore"), Int(e, "intAwayScore"));
         return new FdFixture(id.Value, round, home.Value, away.Value, kickoff, Status(Text(e, "strStatus"), hs, kickoff), hs, aws, null, Text(e, "strVenue"));
     }
 
-    private void Remember(int leagueId, int id, string? name)
+    /// <summary>Keeps the club once per run; the badge is TheSportsDB's 200 px copy ("…png/small").</summary>
+    private void Remember(int leagueId, int id, string? name, string? badge)
     {
         var seen = clubs.TryGetValue(leagueId, out var list) ? list : clubs[leagueId] = [];
         if (!seen.ContainsKey(id) && !string.IsNullOrWhiteSpace(name))
         {
             var (main, second) = Colours(name);
-            seen[id] = new FdClub(id, name.Trim(), ShortName(name), main, second);
+            var logo = Uri.TryCreate(badge, UriKind.Absolute, out var url) && url.Scheme == Uri.UriSchemeHttps ? $"{badge!.TrimEnd('/')}/small" : null;
+            seen[id] = new FdClub(id, name.Trim(), ShortName(name), main, second, logo);
         }
     }
 

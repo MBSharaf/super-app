@@ -305,3 +305,9 @@
 .auth-social-terms { text-align: center; margin: 0; }
 .auth-or { display: flex; align-items: center; gap: 12px; color: var(--muted, #6b7280); font-size: 13px; margin: 4px 0 2px; }
 .auth-or::before, .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--line, rgba(0,0,0,.12)); }
+
+/* Club badges (matches, home, fantasy): the real badge sits on top; if it cannot load it is removed and the
+   monogram crest or shirt drawn under it shows instead. */
+.club-logo { position: relative; display: inline-grid; place-items: center; flex: none; vertical-align: middle; }
+.club-logo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .25)); }
+.club-logo > img + svg { visibility: hidden; }
