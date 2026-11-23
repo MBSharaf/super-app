@@ -11,12 +11,19 @@
 
   const compName = (k) => (SA.i18n?.isAr && k.nameAr ? k.nameAr : k.name);
 
+  /** Clean league marks drawn for dark and light backgrounds (no white tile needed); other leagues fall back to the usual logo. */
+  const MARK_IDS = { epl: 47, egy: 519, ucl: 42, laliga: 87, seriea: 55, bundesliga: 54, ligue1: 53, superlig: 71, uel: 73, uecl: 10216, afcon: 289, euro: 50, wc: 77 };
+  const dark = () => document.documentElement.dataset.theme !== 'light';
+  const mark = (k) => (MARK_IDS[k.id] && SA.config.clubLogos
+    ? { src: `https://images.fotmob.com/image_resources/logo/leaguelogo/${dark() ? 'dark/' : ''}${MARK_IDS[k.id]}.png`, clean: true }
+    : { src: SA.ui.sports.leagueLogo(k), clean: false });
+
   /** One row of league tiles (logo + name) that scrolls sideways; the chosen one is pressed */
   const rail = (comps, active, href) => `<div class="comp-rail" role="group" aria-label="League">
     ${comps.map((k) => {
-      const src = SA.ui.sports.leagueLogo(k);
+      const { src, clean } = mark(k);
       return `<a class="comp-tile ${active === k.id ? 'is-on' : ''}" href="${href(k)}" aria-pressed="${active === k.id}" style="--comp:${esc(k.color)}" title="${esc(compName(k))}">
-        <span class="comp-tile-logo">${src ? `<img src="${esc(src)}" alt="" width="28" height="28" loading="lazy" decoding="async" referrerpolicy="no-referrer" />` : `<b>${esc(String(k.short || k.name).slice(0, 3).toUpperCase())}</b>`}</span>
+        <span class="comp-tile-logo${clean ? ' is-clean' : ''}">${src ? `<img src="${esc(src)}" alt="" width="28" height="28" loading="lazy" decoding="async" referrerpolicy="no-referrer" />` : `<b>${esc(String(k.short || k.name).slice(0, 3).toUpperCase())}</b>`}</span>
         <span class="comp-tile-name" translate="no">${esc(compName(k))}</span></a>`;
     }).join('')}</div>`;
 
