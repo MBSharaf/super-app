@@ -100,6 +100,7 @@ public sealed class SiteAtRootTests(RootSiteApiFactory api) : IClassFixture<Root
         html.ShouldContain("<title>سوبر ملعب Super Malaab");
         html.ShouldContain("\"@type\":\"Organization\"");
         html.ShouldContain("alternateName");
+        html.ShouldContain("\"sameAs\":[\"https://www.facebook.com/share/1A4odKYei2/\"");
         html.ShouldContain("<h1>سوبر ملعب Super Malaab");
         html.ShouldNotContain("Egyptian Premier League fantasy");
     }

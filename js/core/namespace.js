@@ -65,5 +65,5 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // Empty, or no answer = the built-in demo assistant answers from the Help center.
   chatbot: { url: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook/support', hours: '' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.
-  social: { facebook: '', instagram: '', tiktok: '' },
+  social: { facebook: 'https://www.facebook.com/share/1A4odKYei2/', instagram: 'https://www.instagram.com/superapp0/', tiktok: '' },
 } };
