@@ -29,7 +29,7 @@
 
   /** League logos by competition id (server keys and demo ids), from the API-Football image CDN. */
   const LEAGUE_IDS = { epl: 39, pl: 39, egy: 233, 'epl-eg': 233, 'caf-cl': 12, ucl: 2, laliga: 140, seriea: 135, bundesliga: 78, ligue1: 61,
-    superlig: 203, uel: 3, uecl: 848, afcon: 6, 'afcon-q': 6, euro: 4, wc: 1, unl: 5 };
+    superlig: 203, uel: 3, uecl: 848, cafcl: 12, cafcc: 20, afcon: 6, 'afcon-q': 6, euro: 4, wc: 1, unl: 5 };
   const leagueLogo = (comp) => (comp && LEAGUE_IDS[comp.id] && SA.config.clubLogos ? `https://media.api-sports.io/football/leagues/${LEAGUE_IDS[comp.id]}.png` : null);
   /** The league's mark: its logo on a white tile, else its colour with a three-letter code (also when the logo fails). */
   const compBadge = (comp) => {

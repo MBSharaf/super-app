@@ -140,6 +140,34 @@
     "color": "#00BE14"
   },
   {
+    "key": "cafcl",
+    "en": "CAF Champions League",
+    "ar": "دوري أبطال أفريقيا",
+    "externalLeagueId": 4720,
+    "country": "Africa",
+    "budget": 100,
+    "maxPerClub": 3,
+    "provider": "thesportsdb",
+    "fantasy": false,
+    "short": "CAF CL",
+    "region": "Africa",
+    "color": "#2459D6"
+  },
+  {
+    "key": "cafcc",
+    "en": "CAF Confederation Cup",
+    "ar": "كأس الكونفدرالية الأفريقية",
+    "externalLeagueId": 5057,
+    "country": "Africa",
+    "budget": 100,
+    "maxPerClub": 3,
+    "provider": "thesportsdb",
+    "fantasy": false,
+    "short": "Confed Cup",
+    "region": "Africa",
+    "color": "#B7791F"
+  },
+  {
     "key": "afcon",
     "en": "Africa Cup of Nations",
     "ar": "كأس الأمم الأفريقية",
