@@ -61,9 +61,13 @@ offsite_setup() {
   local pid=$!
   for _ in $(seq 1 20); do grep -q 'http://127.0.0.1:53682/auth' "$log" && break; sleep 1; done
   echo
+  # rclone's local page only redirects to Google's sign-in page; take that address so it opens on any computer
+  local local_url google_url
+  local_url="$(grep -o 'http://127.0.0.1:53682/auth[^ ]*' "$log" | head -1)"
+  google_url="$(curl -s -o /dev/null -w '%{redirect_url}' "$local_url")"
   echo "1) Open this address in Chrome, choose the Super Malaab Google account and press Allow:"
-  grep -o 'http://127.0.0.1:53682/auth[^ ]*' "$log" | head -1 | sed 's#^#   #'
-  echo "   (it redirects to Google; after Allow the page shows 'This site can't be reached' — that is expected)"
+  echo "   ${google_url:-$local_url}"
+  echo "   (after Allow the page shows 'This site can't be reached' — that is expected)"
   echo "2) Copy the whole address from Chrome's address bar (it starts with http://127.0.0.1:53682/?state=)"
   read -r -p "   and paste it here, then press Enter: " back
   curl -s "$back" >/dev/null || true
