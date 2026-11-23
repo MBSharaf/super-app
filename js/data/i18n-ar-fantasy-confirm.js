@@ -30,6 +30,7 @@
     'Tap a player to view stats, change captain or substitute. Changes save automatically until the deadline.': 'دوس على أي لاعب تشوف أرقامه أو تخليه كابتن أو تبدّله. التغييرات بتتحفظ لوحدها لحد آخر ميعاد.',
     'Your gameweeks': 'جولاتك',
     'Scores double points': 'بياخد النقط دبل',
+    'Sign in to save your team — your squad is kept': 'سجّل دخول علشان تحفظ فريقك — تشكيلتك محفوظة',
     'Simulate GW{0}': 'شغّل الجولة {0}',
     'Started GW{0}': 'بدأ من الجولة {0}',
     'Pick a highlighted player to swap with': 'اختار لاعب من المتعلّم عليهم علشان تبدّل مع',

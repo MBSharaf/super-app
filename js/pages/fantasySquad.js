@@ -30,8 +30,22 @@
     });
   };
 
+  // The real site saves teams on the server, so a visitor signs in first; the picked squad waits for them in this tab
+  const KEEP = 'superapp.fantasy.draft';
+  const needsSignIn = () => isLive() && !!SA.services.session?.loaded?.() && !SA.services.session.me();
+  const keepDraft = (ids) => { try { sessionStorage.setItem(KEEP, JSON.stringify({ league: F().league(), ids })); } catch { /* private mode */ } };
+  const keptDraft = () => {
+    try { const k = JSON.parse(sessionStorage.getItem(KEEP)); sessionStorage.removeItem(KEEP); return k && k.league === F().league() ? k.ids.filter((id) => F().byId[id]) : null; } catch { return null; }
+  };
+
   /** Creating a team: a summary to confirm (first gameweek, deadline, money left) and the team name */
   const promptCreate = (ids) => {
+    if (needsSignIn()) {
+      keepDraft(ids);
+      SA.ui.overlay.toast('Sign in to save your team — your squad is kept', { type: 'info' });
+      SA.core.router.go(`/auth/sign-in?next=${encodeURIComponent('/fantasy/squad')}`);
+      return;
+    }
     const user = SA.services.user.me();
     const f = F(), meta = f.meta(), spent = f.cost(ids);
     SA.ui.overlay.open({
@@ -148,7 +162,7 @@
       const f = F(), team = f.team();
       // Switching leagues starts a fresh draft and clears the club filter
       if (draftLeague !== f.league()) { draft = null; filt.team = ''; draftLeague = f.league(); }
-      if (!draft || ctx.query.reset) draft = team ? team.squad.slice() : [];
+      if (!draft || ctx.query.reset) draft = team ? team.squad.slice() : (!ctx.query.reset && keptDraft()) || [];
       if (ctx.query.out && draft.includes(ctx.query.out)) { filt.pos = f.byId[ctx.query.out].pos; draft = draft.filter((x) => x !== ctx.query.out); }
       return `${SA.pages.fantasy.header('squad')}
       <div class="container fx-body">
