@@ -10,9 +10,11 @@
   const live = () => api()?.isLive?.();
 
   const compName = (k) => (SA.i18n?.isAr && k.nameAr ? k.nameAr : k.name);
+  /** A club or national team in the user's language (the feed spells them in English) */
+  const club = (n) => (SA.i18n?.isAr ? SA.data.clubsAr?.name(n) ?? n : n);
 
   /** Clean league marks drawn for dark and light backgrounds (no white tile needed); other leagues fall back to the usual logo. */
-  const MARK_IDS = { epl: 47, egy: 519, ucl: 42, laliga: 87, seriea: 55, bundesliga: 54, ligue1: 53, superlig: 71, uel: 73, uecl: 10216, afcon: 289, euro: 50, wc: 77 };
+  const MARK_IDS = { cafcl: 526, cafcc: 9468, epl: 47, egy: 519, ucl: 42, laliga: 87, seriea: 55, bundesliga: 54, ligue1: 53, superlig: 71, uel: 73, uecl: 10216, afcon: 289, euro: 50, wc: 77 };
   const dark = () => document.documentElement.dataset.theme !== 'light';
   const mark = (k) => (MARK_IDS[k.id] && SA.config.clubLogos
     ? { src: `https://images.fotmob.com/image_resources/logo/leaguelogo/${dark() ? 'dark/' : ''}${MARK_IDS[k.id]}.png`, clean: true }
@@ -31,10 +33,10 @@
   const HEAD = { en: ['P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts'], ar: ['لعب', 'ف', 'ت', 'خ', 'له', 'عليه', '±', 'ن'] };
   const head = () => (SA.i18n?.isAr ? HEAD.ar : HEAD.en).map((h, i) => `<th class="r${i === 4 || i === 5 ? ' hide-s' : ''}" translate="no">${h}</th>`).join('');
   const logo = (src, name) => (src && SA.config.clubLogos ? `<img class="st-logo" src="${esc(src)}" alt="" width="20" height="20" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />` : `<span class="st-logo st-mono">${esc(name.slice(0, 1))}</span>`);
-  const group = (g, multi) => `<div class="panel table-wrap st-group">${multi && g.name ? `<h3 class="small strong st-group-name">${esc(g.name)}</h3>` : ''}
+  const group = (g, multi) => `<div class="panel table-wrap st-group">${multi && g.name ? `<h3 class="small strong st-group-name">${esc(String(g.name).replace(/^Grp\. /, 'Group '))}</h3>` : ''}
     <table class="table league-table st-table"><thead><tr><th>#</th><th>Club</th>${head()}</tr></thead>
     <tbody>${g.rows.map((r) => `<tr><td class="st-pos" style="${r.color ? `box-shadow: inset 3px 0 0 ${esc(r.color)}` : ''}"><b class="num">${r.position}</b></td>
-      <td><span class="st-club">${logo(r.logo, r.club)}<span translate="no">${esc(r.club)}</span></span></td>
+      <td><span class="st-club">${logo(r.logo, r.club)}<span translate="no">${esc(club(r.club))}</span></span></td>
       <td class="r num">${r.played}</td><td class="r num">${r.won}</td><td class="r num">${r.drawn}</td><td class="r num">${r.lost}</td>
       <td class="r num hide-s">${r.goalsFor}</td><td class="r num hide-s">${r.goalsAgainst}</td><td class="r num">${r.goalDifference > 0 ? '+' : ''}${r.goalDifference}</td><td class="r num"><b>${r.points}</b></td></tr>`).join('')}</tbody></table></div>`;
 

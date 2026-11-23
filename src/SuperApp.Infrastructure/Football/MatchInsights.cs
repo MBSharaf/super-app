@@ -24,6 +24,7 @@ public sealed class MatchInsights(AppDbContext db, FotMobLiveFeed feed, FotMobId
     {
         ["epl"] = 47, ["egy"] = 519, ["ucl"] = 42, ["laliga"] = 87, ["seriea"] = 55, ["bundesliga"] = 54, ["ligue1"] = 53,
         ["superlig"] = 71, ["uel"] = 73, ["uecl"] = 10216, ["afcon"] = 289, ["euro"] = 50, ["wc"] = 77,
+        ["cafcl"] = 526, ["cafcc"] = 9468,
     };
 
     public async Task<StandingsDto?> StandingsAsync(string competition, CancellationToken ct)
@@ -95,9 +96,14 @@ public sealed class MatchInsights(AppDbContext db, FotMobLiveFeed feed, FotMobId
         }
     }
 
-    /// <summary>The league learnt from a paired match, else found by pairing one of its matches near today, else a known id.</summary>
+    /// <summary>The known id of the main competition, else the league learnt from a paired match, else found by pairing one of its matches near today.</summary>
     private async Task<int?> LeagueIdAsync(string competition, CancellationToken ct)
     {
+        // The known main competition wins: a learned id can be a qualifying stage (CAF has its own "Qualification" league)
+        if (KnownLeagues.TryGetValue(competition, out var main))
+        {
+            return main;
+        }
         if (ids.League(competition) is { } known)
         {
             return known;
@@ -111,7 +117,7 @@ public sealed class MatchInsights(AppDbContext db, FotMobLiveFeed feed, FotMobId
         {
             await FindMatchAsync(near, competition, ct);
         }
-        return ids.League(competition) ?? (KnownLeagues.TryGetValue(competition, out var id) ? id : null);
+        return ids.League(competition);
     }
 
     /// <summary>Pairs a match of ours with the feed's list of its day (cached two minutes) and remembers the ids.</summary>
