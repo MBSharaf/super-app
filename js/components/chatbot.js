@@ -23,7 +23,7 @@
     ['users', 'Finding players', 'games'],
     ['trophy', 'Fantasy & leagues', 'fantasy'],
     ['package', 'Order or delivery', 'shop'],
-  ];
+  ].filter(([, , k]) => (k !== 'fantasy' || SA.config.fantasyEnabled) && (k !== 'shop' || SA.config.storeEnabled));  // closed parts
 
   const load = () => { try { return JSON.parse(sessionStorage.getItem(KEY)) || null; } catch { return null; } };
   const save = (s) => { try { sessionStorage.setItem(KEY, JSON.stringify(s)); } catch { /* private mode */ } };
@@ -203,7 +203,7 @@
           <button class="wa-close" type="button" data-wa-close aria-label="Close">${icon('x', 18)}</button>
         </div>
         <div class="wa-body cb-body" data-cb-body>
-          <div class="wa-bubble">Hi there! I’m the Super Malaab assistant. Ask me about a booking, a match, your fantasy team or an order — or pick a topic.</div>
+          <div class="wa-bubble">Hi there! I’m the Super Malaab assistant. ${SA.config.fantasyEnabled || SA.config.storeEnabled ? 'Ask me about a booking, a match, your fantasy team or an order — or pick a topic.' : 'Ask me about a booking, a match or a padel court — or pick a topic.'}</div>
           <div class="wa-topics">${TOPICS.map(([ic, t, k]) => `<button type="button" class="wa-topic" data-topic="${k}" aria-pressed="false">${icon(ic, 16)}<span>${t}</span></button>`).join('')}</div>
           <div class="cb-log" data-cb-log data-i18n-skip aria-live="polite"></div>
         </div>

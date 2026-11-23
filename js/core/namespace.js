@@ -6,6 +6,10 @@
  *   SA.ui         -> src/components
  *   SA.pages      -> src/pages     (route components)
  */
+// The demo site (GitHub Pages: no server, so no data-store / data-fantasy on <html>) closes these parts for now.
+// Owner, 2026-11-23: the demo link goes to Paymob for review without the store and fantasy. Set both to false to reopen.
+const SA_DEMO_CLOSED = { store: true, fantasy: true };
+const SA_HTML_FLAGS = document.documentElement.dataset;
 window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   currency: 'EGP',
   locale: 'en-EG',
@@ -16,13 +20,16 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   storageKey: 'superapp.state.v1',
   // The store (sellers' own products, shipping) and print on demand (studio, designs, factory) are switched on the server
   // (settings Features:StoreEnabled / Features:PodEnabled), which marks <html data-store="on" data-pod="on">.
-  // The demo site (GitHub Pages, no server) shows the store (owner's request, 2026-10-28: test orders there) without
-  // print on demand. Everything stays in the code.
+  // The demo site (GitHub Pages, no server) had the store open for test orders (owner, 2026-10-28) without print on
+  // demand; it is closed there for now by SA_DEMO_CLOSED above. Everything stays in the code.
   // How far ahead a pitch can be booked: the whole coming month (owner, 2026-11-11). The server enforces the same window
   // (BookingWindow.Days in src/SuperApp.Application/Features/Bookings).
   bookingDays: 31,
-  storeEnabled: (document.documentElement.dataset.store || 'on') === 'on',
-  podEnabled: document.documentElement.dataset.pod === 'on',
+  demoClosed: SA_DEMO_CLOSED,
+  storeEnabled: SA_HTML_FLAGS.store ? SA_HTML_FLAGS.store === 'on' : !SA_DEMO_CLOSED.store,
+  // Fantasy is open on the server's site; data-fantasy="off" (or SA_DEMO_CLOSED on GitHub Pages) closes it.
+  fantasyEnabled: SA_HTML_FLAGS.fantasy ? SA_HTML_FLAGS.fantasy !== 'off' : !SA_DEMO_CLOSED.fantasy,
+  podEnabled: SA_HTML_FLAGS.pod === 'on',
   // Tournaments are back as "coming soon" (owner, 2026-11-15: the Ramadan tournament). Venues and the admin can already
   // prepare tournaments and offers; players see them but can't register until the server setting
   // Features:TournamentsOpen marks <html data-tournaments="open"> (the server refuses registrations until then too).

@@ -14,10 +14,10 @@
      the print catalogue and design review, samples, the factory. */
   const STORE_PATHS = /^\/(shop|cart|checkout|orders?|wishlist|sell|s|seller|factory)(\/|$)|^\/dash\/(orders|pod-catalog|pod-review|print|store|seller)(\/|$)|^\/admin\/(returns|designs|catalog|store|store-orders|sellers|orders)(\/|$)/;
   const POD_PATHS = /^\/(sell\/studio|sell\/bulk|seller\/designs|factory)(\/|$)|^\/dash\/(pod-catalog|pod-review|print)(\/|$)|^\/admin\/(designs|catalog|print|samples)(\/|$)/;
-  const soon = (title, text) => ({
+  const soon = (title, text, ic = 'bag') => ({
     title: `${title} — Super Malaab`,
     render: () => `<div class="container section-tight"><section class="panel panel-pad" style="text-align:center;max-width:560px;margin:48px auto">
-      <span class="service-ico" style="margin:0 auto">${SA.ui.icon('bag', 26)}</span>
+      <span class="service-ico" style="margin:0 auto">${SA.ui.icon(ic, 26)}</span>
       <h1 class="h2" style="margin-top:16px">${title}</h1>
       <p class="lead soft" style="margin-top:10px">${text}</p>
       <div class="row wrap" style="--gap:10px;justify-content:center;margin-top:20px"><a class="btn btn-primary" href="#/pitches">Book a pitch</a><a class="btn btn-outline" href="#/">Home</a></div></section></div>`,
@@ -28,6 +28,16 @@
     const css = paths.map((x) => `a[href="#/${x}"],a[href^="#/${x}/"],a[href^="#/${x}?"]`).join(',');
     document.head.insertAdjacentHTML('beforeend', `<style>${css}${extra}{display:none!important}</style>`);
   };
+  // Fantasy closed (SA.config.fantasyEnabled = false): its pages, links, the home fantasy band and its pop-up ads
+  const FANTASY_PATHS = /^\/fantasy(\/|$)/;
+  SA.core.isPaused = (path) => {
+    const p = String(path || '').replace(/^#/, '').split('?')[0];
+    return (!SA.config.storeEnabled && STORE_PATHS.test(p)) || (!SA.config.podEnabled && POD_PATHS.test(p)) || (!SA.config.fantasyEnabled && FANTASY_PATHS.test(p));
+  };
+  if (!SA.config.fantasyEnabled) {
+    P.fantasySoon = soon('Fantasy is coming soon', 'We’re getting Super Malaab fantasy ready. Meanwhile, book a pitch or join a game.', 'trophy');
+    pause(FANTASY_PATHS, P.fantasySoon, ['fantasy'], ',.fantasy-band,.fc-fantasy,[data-fantasy-only]');
+  }
   if (!SA.config.storeEnabled) {
     P.comingSoon = soon('The Super Malaab store is coming soon', 'We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.');
     pause(STORE_PATHS, P.comingSoon, ['shop', 'cart', 'checkout', 'order', 'orders', 'wishlist', 'sell', 's/', 'seller', 'factory', 'dash/orders', 'dash/pod-catalog', 'dash/pod-review', 'dash/print', 'dash/store', 'dash/seller', 'admin/returns', 'admin/designs', 'admin/catalog', 'admin/store', 'admin/sellers', 'admin/orders'],

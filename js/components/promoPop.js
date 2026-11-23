@@ -38,7 +38,7 @@
     if (QUIET.test(path)) return [];
     const seller = !!SA.services.sellers?.mine?.();
     const closed = ss.get(SEEN)?.closed || [];
-    return cfg.items.filter((p) => p.active && !closed.includes(p.id) && !(p.forNonSellers && seller)
+    return cfg.items.filter((p) => p.active && !closed.includes(p.id) && !(p.forNonSellers && seller) && !(p.link && SA.core.isPaused?.(p.link))
       && !(p.link && path !== '/' && p.link.replace(/^#/, '').split('?')[0] === path));
   };
   const busy = () => document.hidden || !!document.querySelector('#overlay-root .modal, #overlay-root .drawer, .wa.is-open, .cookie-bar') || document.querySelector('input:focus, textarea:focus, select:focus');
