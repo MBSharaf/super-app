@@ -42,6 +42,9 @@ public interface IWebhookSender
     (byte[] Salt, string Secret) NewSecret();
 
     Task<WebhookTestDto> SendAsync(WebhookSubscription subscription, Guid eventId, string type, DateTime occurredAt, string payloadJson, CancellationToken ct);
+
+    /// <summary>Sends a body that is already built (the demo site's format for <see cref="WebhookEvents.SiteFormat"/> subscriptions), signed the same way.</summary>
+    Task<WebhookTestDto> SendBodyAsync(WebhookSubscription subscription, Guid eventId, string type, string body, CancellationToken ct);
 }
 
 /// <summary>
@@ -127,7 +130,7 @@ public sealed class WebhookRequestValidator : AbstractValidator<WebhookRequest>
             .Must(u => u.StartsWith("https://", StringComparison.OrdinalIgnoreCase) || u.StartsWith("http://localhost", StringComparison.OrdinalIgnoreCase))
             .Must(u => Uri.TryCreate(u, UriKind.Absolute, out _))
             .WithMessage("Enter the full webhook URL: https://… (or http://localhost… on this computer).");
-        RuleFor(x => x.Events).NotEmpty().Must(e => e.All(v => v == "*" || WebhookEvents.All.Contains(v)))
+        RuleFor(x => x.Events).NotEmpty().Must(e => e.All(v => v == "*" || v == WebhookEvents.SiteFormat || WebhookEvents.All.Contains(v)))
             .WithMessage($"Events: * or {string.Join(", ", WebhookEvents.All)}.");
     }
 }
@@ -136,7 +139,7 @@ public sealed class WebhookUpdateRequestValidator : AbstractValidator<WebhookUpd
 {
     public WebhookUpdateRequestValidator()
     {
-        RuleFor(x => x.Events).NotEmpty().Must(e => e.All(v => v == "*" || WebhookEvents.All.Contains(v)))
+        RuleFor(x => x.Events).NotEmpty().Must(e => e.All(v => v == "*" || v == WebhookEvents.SiteFormat || WebhookEvents.All.Contains(v)))
             .WithMessage($"Events: * or {string.Join(", ", WebhookEvents.All)}.");
     }
 }

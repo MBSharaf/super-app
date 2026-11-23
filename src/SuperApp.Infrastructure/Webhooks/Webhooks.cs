@@ -78,6 +78,11 @@ public sealed class WebhookSender(IHttpClientFactory http, IConfiguration config
     public async Task<WebhookTestDto> SendAsync(WebhookSubscription subscription, Guid eventId, string type, DateTime occurredAt, string payloadJson, CancellationToken ct)
     {
         var body = $"{{\"id\":\"{eventId}\",\"type\":\"{type}\",\"occurredAt\":\"{occurredAt.ToString("o", CultureInfo.InvariantCulture)}\",\"data\":{payloadJson}}}";
+        return await SendBodyAsync(subscription, eventId, type, body, ct);
+    }
+
+    public async Task<WebhookTestDto> SendBodyAsync(WebhookSubscription subscription, Guid eventId, string type, string body, CancellationToken ct)
+    {
         var stamp = new DateTimeOffset(clock.UtcNow).ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
         var secret = Encoding.UTF8.GetBytes(SecretOf(subscription.SecretHash));
         var signature = Convert.ToHexString(HMACSHA256.HashData(secret, Encoding.UTF8.GetBytes($"{stamp}.{body}"))).ToLowerInvariant();
@@ -134,6 +139,7 @@ public sealed class WebhookDispatcher(IServiceScopeFactory scopes, IHostEnvironm
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var sender = scope.ServiceProvider.GetRequiredService<IWebhookSender>();
+        var payloads = scope.ServiceProvider.GetRequiredService<Automation.SitePayloads>();
         var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
         var events = await db.Set<OutboxEvent>().Where(e => e.Status == OutboxStatus.Pending && (e.NextAttemptAt == null || e.NextAttemptAt <= now))
             .OrderBy(e => e.Id).Take(20).ToListAsync(ct);
@@ -144,20 +150,35 @@ public sealed class WebhookDispatcher(IServiceScopeFactory scopes, IHostEnvironm
         var subs = await db.Set<WebhookSubscription>().Where(w => w.IsEnabled).ToListAsync(ct);
         foreach (var e in events)
         {
-            await DeliverAsync(db, sender, subs, e, now, ct);
+            await DeliverAsync(db, sender, payloads, subs, e, now, ct);
         }
         await db.SaveChangesAsync(ct);
         return events.Count;
     }
 
-    private static async Task DeliverAsync(AppDbContext db, IWebhookSender sender, List<WebhookSubscription> subs, OutboxEvent e, DateTime now, CancellationToken ct)
+    private static async Task DeliverAsync(AppDbContext db, IWebhookSender sender, Automation.SitePayloads payloads, List<WebhookSubscription> subs, OutboxEvent e,
+        DateTime now, CancellationToken ct)
     {
         var targets = subs.Where(s => WebhookSender.EventsOf(s).Any(x => x == "*" || x == e.Type)).ToList();
         var done = await db.Set<WebhookDelivery>().Where(d => d.OutboxEventId == e.Id && d.StatusCode >= 200 && d.StatusCode < 300).Select(d => d.SubscriptionId).ToListAsync(ct);
         var failed = false;
+        string? siteBody = null;
         foreach (var sub in targets.Where(s => !done.Contains(s.Id)))
         {
-            var r = await sender.SendAsync(sub, e.EventId, e.Type, e.OccurredAt, e.PayloadJson, ct);
+            WebhookTestDto r;
+            if (WebhookSender.EventsOf(sub).Contains(WebhookEvents.SiteFormat))
+            {
+                siteBody ??= await payloads.BuildAsync(e, ct) ?? string.Empty;
+                if (siteBody.Length == 0)
+                {
+                    continue;   // the demo site has no such event, or the record is gone: nothing to send
+                }
+                r = await sender.SendBodyAsync(sub, e.EventId, e.Type, siteBody, ct);
+            }
+            else
+            {
+                r = await sender.SendAsync(sub, e.EventId, e.Type, e.OccurredAt, e.PayloadJson, ct);
+            }
             db.Set<WebhookDelivery>().Add(new WebhookDelivery { SubscriptionId = sub.Id, OutboxEventId = e.Id, Attempt = (byte)(e.Attempts + 1),
                 StatusCode = (short?)r.StatusCode, DurationMs = r.DurationMs, Error = r.Error, At = now });
             failed |= !r.Ok;
@@ -176,6 +197,8 @@ public static class WebhookRegistration
         services.AddHttpClient("webhooks", c => c.Timeout = TimeSpan.FromSeconds(10));
         services.AddScoped<IWebhookStore, WebhookStore>();
         services.AddScoped<IWebhookSender, WebhookSender>();
+        services.AddScoped<Automation.SitePayloads>();
+        services.AddHostedService<Automation.N8nLinks>();
         services.AddSingleton<WebhookDispatcher>();
         services.AddHostedService(sp => sp.GetRequiredService<WebhookDispatcher>());
         return services;
