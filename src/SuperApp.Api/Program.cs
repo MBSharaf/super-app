@@ -28,11 +28,19 @@ builder.Services
     .AddApiLayer(builder.Configuration);
 
 // Site files (css, js, svg, the page itself) are sent compressed: about a quarter of the size on the wire.
-// API answers (JSON) are left as they are, so no secret is ever inside a compressed https response.
+// API answers (JSON) are compressed only for public catalogue data (PublicJsonCompression), so no secret or personal
+// data is ever inside a compressed https response (BREACH).
 builder.Services.AddResponseCompression(o =>
 {
     o.EnableForHttps = true;
-    o.MimeTypes = ["text/css", "text/javascript", "application/javascript", "image/svg+xml", "text/html", "application/manifest+json", "application/xml", "text/plain"];
+    o.MimeTypes = ["text/css", "text/javascript", "application/javascript", "image/svg+xml", "text/html", "application/manifest+json", "application/xml", "text/plain", "application/json"];
+});
+
+// Browsers remember "https only" for a year (the default is 30 days), for the domain and its subdomains (www)
+builder.Services.AddHsts(o =>
+{
+    o.MaxAge = TimeSpan.FromDays(365);
+    o.IncludeSubDomains = true;
 });
 
 var app = builder.Build();

@@ -117,7 +117,7 @@
 
       <section class="container section-tight">
         <div class="sec-head"><div><h2 class="h2">${icon('pitch', 24)} Pitches near you</h2><p>${loc ? `Closest to ${esc(loc.label)}` : 'Near Downtown Cairo'}</p></div>
-          <div class="row">${loc?.source === 'gps' ? '' : `<button class="btn btn-outline btn-sm" data-locate>${icon('locate', 16)} <span class="hide-xs">Use my location</span></button>`}<a class="btn btn-ghost btn-sm" href="#/pitches">See all ${icon('arrowRight', 16)}</a></div></div>
+          <div class="row">${loc?.source === 'gps' ? '' : `<button class="btn btn-outline btn-sm" data-locate aria-label="Use my location">${icon('locate', 16)} <span class="hide-xs">Use my location</span></button>`}<a class="btn btn-ghost btn-sm" href="#/pitches">See all ${icon('arrowRight', 16)}</a></div></div>
         <div class="scroller" style="--col:clamp(250px, 30vw, 330px)">${nearby.slice(0, 6).map((p) => cards.pitch(p)).join('')}</div>
       </section>
 

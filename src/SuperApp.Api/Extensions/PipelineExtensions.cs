@@ -26,6 +26,7 @@ public static class PipelineExtensions
 
         // Site files first, then routing — so the page fallback route never hides a real css/js file
         app.UseResponseCompression();
+        app.UseMiddleware<PublicJsonCompressionMiddleware>();
         app.UseSuperAppSite();
         app.UseRouting();
 

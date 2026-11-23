@@ -16,9 +16,40 @@ public sealed record SeoPage(string Title, string Description, string Path, stri
 /// index.html — title, description, canonical, share tags, JSON-LD and readable content inside &lt;main id="app"&gt; — and
 /// the app replaces that content as soon as it loads, so visitors see the site exactly as before.
 /// </summary>
-public sealed class SeoPages(IPitchesService pitches)
+public sealed class SeoPages(IPitchesService pitches, IConfiguration configuration)
 {
     private const string Brand = "Super Malaab";
+    private const string BrandAr = "سوبر ملعب";
+
+    /// <summary>Public pages without live data: title, description and a short readable text, in Arabic and English, so a
+    /// search for the Arabic name (سوبر ملعب) or the English one finds the right page.</summary>
+    private static readonly Dictionary<string, (string Title, string Description, string Body)> Static = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["players"] = ("دور على لاعيبة لماتشك | Find players — Super Malaab سوبر ملعب",
+            "سوبر ملعب: لاقي لاعيبة ناقصين لماتشك أو انضم لماتش قريب منك. Find players for your football match in Egypt on Super Malaab.",
+            "<h1>Find players for your match — دور على لاعيبة</h1><p>Post a game with the places you still need, or join a match near you.</p>"),
+        ["matches"] = ("مواعيد ونتايج الماتشات | Matches — Super Malaab سوبر ملعب",
+            "مواعيد ماتشات الدوري المصري والدوري الإنجليزي ونتايجها على سوبر ملعب. Fixtures and results of the Egyptian and English leagues.",
+            "<h1>Matches — الماتشات</h1><p>Fixtures, live scores and results from the Egyptian Premier League and the English Premier League.</p>"),
+        ["fantasy"] = ("فانتازي الدوري الإنجليزي | Fantasy — Super Malaab سوبر ملعب",
+            "العب فانتازي الدوري الإنجليزي على سوبر ملعب: اختار فريقك، اعمل دوري مع صحابك واكسب جوايز. Play Premier League fantasy football.",
+            "<h1>Premier League fantasy — فانتازي الدوري الإنجليزي</h1><p>Pick your squad, make a league with friends and win prizes.</p>"),
+        ["shop"] = ("متجر أدوات رياضية | Shop — Super Malaab سوبر ملعب",
+            "اشتري أدوات وملابس كورة وبادل من متاجر مصرية على سوبر ملعب، والدفع عند الاستلام. Sports gear from Egyptian stores.",
+            "<h1>Sports shop — متجر سوبر ملعب</h1><p>Football and padel gear from Egyptian stores, delivered to your door.</p>"),
+        ["community"] = ("مجتمع لاعيبة الكورة | Community — Super Malaab سوبر ملعب",
+            "انضم لمجتمعات لاعيبة الكورة والبادل في مصر على سوبر ملعب. Join football and padel communities in Egypt.",
+            "<h1>Community — المجتمع</h1><p>Talk football, share your games and meet players near you.</p>"),
+        ["tournaments"] = ("بطولات كورة | Tournaments — Super Malaab سوبر ملعب",
+            "بطولات كرة القدم في الملاعب القريبة منك على سوبر ملعب. Football tournaments at pitches near you in Egypt.",
+            "<h1>Tournaments — البطولات</h1><p>Enter your team in football tournaments at pitches near you.</p>"),
+        ["help"] = ("مركز المساعدة | Help — Super Malaab سوبر ملعب",
+            "إجابات عن الحجز والدفع والعربون والإلغاء على سوبر ملعب. Answers about booking, payment, deposits and cancellation.",
+            "<h1>Help center — مركز المساعدة</h1><p>Booking, payments, deposits, cancellations and your account.</p>"),
+        ["legal"] = ("الشروط والخصوصية | Legal — Super Malaab سوبر ملعب",
+            "شروط الاستخدام وسياسة الخصوصية والاسترجاع في سوبر ملعب. Terms, privacy and refund policies of Super Malaab.",
+            "<h1>Legal — الشروط والسياسات</h1><p>Terms of use, privacy policy, refunds and cookies.</p>"),
+    };
 
     public async Task<SeoPage?> BuildAsync(string path, CancellationToken ct)
     {
@@ -30,6 +61,7 @@ public sealed class SeoPages(IPitchesService pitches)
                 [] => await HomeAsync(ct),
                 ["pitches"] => await PitchesAsync(ct),
                 ["pitches", var id] when id.StartsWith("p-", StringComparison.Ordinal) => await PitchAsync(id[2..], ct),
+                [var key] when Static.TryGetValue(key, out var s) => new SeoPage(s.Title, s.Description, key.ToLowerInvariant(), s.Body),
                 _ => null,
             };
         }
@@ -42,19 +74,48 @@ public sealed class SeoPages(IPitchesService pitches)
     private async Task<SeoPage> HomeAsync(CancellationToken ct)
     {
         var top = await pitches.SearchAsync(new PitchSearchQuery(PageSize: 8), ct);
-        var body = new StringBuilder("<h1>Super Malaab — book football pitches, find players and play fantasy in Egypt</h1>")
-            .Append("<p>Book 5, 7 and 11-a-side pitches near you in Cairo, Giza and Alexandria, find players for your match and play fantasy football.</p>")
-            .Append("<h2>Top pitches</h2>").Append(PitchList(top.Items));
-        return new SeoPage("Super Malaab — Book, play, compete", "Book football pitches near you, find players for your match and play Egyptian Premier League fantasy — in one app.", "", body.ToString(),
-            new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@type"] = "WebSite", ["name"] = Brand });
+        var body = new StringBuilder("<h1>سوبر ملعب Super Malaab — احجز ملعب كورة أو بادل في مصر</h1>")
+            .Append("<p>سوبر ملعب هو تطبيق الكورة في مصر: احجز ملاعب خماسي وسباعي وبادل قريبة منك في القاهرة والجيزة والإسكندرية، لاقي لاعيبة لماتشك، والعب فانتازي الدوري الإنجليزي.</p>")
+            .Append("<p>Super Malaab is Egypt's football app: book 5, 7 and 11-a-side and padel pitches near you, find players for your match and play Premier League fantasy.</p>")
+            .Append("<h2>Top pitches — أشهر الملاعب</h2>").Append(PitchList(top.Items));
+        return new SeoPage("سوبر ملعب Super Malaab — احجز ملعب كورة وبادل في مصر",
+            "سوبر ملعب: احجز ملاعب الكورة والبادل، لاقي لاعيبة لماتشك والعب فانتازي. Super Malaab: book football and padel pitches in Egypt, find players and play Premier League fantasy.",
+            "", body.ToString(), BrandGraph());
+    }
+
+    /// <summary>Who we are, for search engines and AI assistants: both names, the logo and the official social pages
+    /// (Site:Social:Facebook / Instagram / TikTok / YouTube / X, set on the server once the pages exist).</summary>
+    private Dictionary<string, object> BrandGraph()
+    {
+        var url = (configuration["Site:PublicUrl"] ?? "https://supermalaab.com/").TrimEnd('/') + "/";
+        var social = configuration.GetSection("Site:Social").GetChildren().Select(c => c.Value?.Trim())
+            .Where(v => v is { Length: > 0 } && v.StartsWith("https://", StringComparison.Ordinal)).ToArray();
+        string[] names = [BrandAr, "Supermalaab", "SuperMalaab", "سوبر ملاعب"];
+        var org = new Dictionary<string, object>
+        {
+            ["@type"] = "Organization", ["@id"] = url + "#org", ["name"] = Brand, ["alternateName"] = names, ["url"] = url,
+            ["logo"] = url + "icons/icon-512.png", ["areaServed"] = "EG",
+            ["description"] = "سوبر ملعب — حجز ملاعب كورة وبادل في مصر. Super Malaab — football and padel pitch booking in Egypt.",
+        };
+        if (social.Length > 0)
+        {
+            org["sameAs"] = social;
+        }
+        var site = new Dictionary<string, object>
+        {
+            ["@type"] = "WebSite", ["@id"] = url + "#site", ["name"] = Brand, ["alternateName"] = names, ["url"] = url,
+            ["inLanguage"] = new[] { "ar-EG", "en" }, ["publisher"] = new Dictionary<string, object> { ["@id"] = url + "#org" },
+        };
+        return new Dictionary<string, object> { ["@context"] = "https://schema.org", ["@graph"] = new object[] { org, site } };
     }
 
     private async Task<SeoPage> PitchesAsync(CancellationToken ct)
     {
         var list = await pitches.SearchAsync(new PitchSearchQuery(PageSize: 50), ct);
-        var body = "<h1>Book a football pitch in Egypt</h1><p>Live availability, prices and reviews for football pitches near you. Pick a time, pay, and you're on.</p>"
+        var body = "<h1>Book a football or padel pitch in Egypt — احجز ملعب</h1><p>Live availability, prices and reviews for football pitches near you. Pick a time, pay, and you're on.</p>"
             + PitchList(list.Items);
-        return new SeoPage("Book a football pitch — Super Malaab", $"Compare {list.Total} football pitches in Egypt by price, rating and area, and book an hour online.", "pitches", body);
+        return new SeoPage("احجز ملعب كورة أو بادل | Book a pitch — Super Malaab سوبر ملعب",
+            $"قارن ملاعب الكورة والبادل في مصر بالسعر والتقييم والمنطقة واحجز أونلاين على سوبر ملعب. Compare {list.Total} pitches in Egypt and book an hour online.", "pitches", body);
     }
 
     private async Task<SeoPage> PitchAsync(string slug, CancellationToken ct)

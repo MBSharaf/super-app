@@ -27,7 +27,8 @@ public static class RateLimitPolicies
                 ApiResponse.Fail("Too many requests. Please wait a moment and try again.",
                     new Dictionary<string, string[]> { ["code"] = ["rate_limited"] }, ctx.HttpContext.TraceIdentifier), token));
             var limits = configuration.GetSection("RateLimits");
-            var read = limits.GetValue("Read", 300);
+            // 1200 a minute per address: in Egypt many mobile users share one public IP (carrier NAT), and one home page load makes ~20 API calls
+            var read = limits.GetValue("Read", 1200);
             o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx => PerMinute(ctx, "read", read));
             Add(o, Auth, limits.GetValue("Auth", 5));
             Add(o, Scan, limits.GetValue("Scan", 60));

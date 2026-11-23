@@ -44,6 +44,7 @@ public sealed class SiteAtRootTests(RootSiteApiFactory api) : IClassFixture<Root
     [InlineData("/sw.js", "text/javascript")]
     [InlineData("/icons/icon-192.png", "image/png")]
     [InlineData("/robots.txt", "text/plain")]
+    [InlineData("/llms.txt", "text/plain")]
     public async Task Site_files_are_served_at_the_root(string path, string type)
     {
         var response = await Client().GetAsync(path);
@@ -80,4 +81,49 @@ public sealed class SiteAtRootTests(RootSiteApiFactory api) : IClassFixture<Root
         sitemap.ShouldContain("<loc>https://supermalaab.com/pitches</loc>");
         sitemap.ShouldNotContain("super-app");
     }
+
+    [Theory]
+    [InlineData("/pitches?x=1", "https://supermalaab.com/pitches?x=1")]
+    [InlineData("/", "https://supermalaab.com/")]
+    public async Task The_www_address_moves_to_the_main_domain_for_good(string path, string to)
+    {
+        var www = api.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, BaseAddress = new Uri("https://www.supermalaab.com") });
+        var response = await www.GetAsync(path);
+        response.StatusCode.ShouldBe(HttpStatusCode.MovedPermanently, path);
+        response.Headers.Location!.OriginalString.ShouldBe(to);
+    }
+
+    [Fact]
+    public async Task Home_page_tells_search_engines_both_names_of_the_brand()
+    {
+        var html = await (await Client().GetAsync("/")).Content.ReadAsStringAsync();
+        html.ShouldContain("<title>سوبر ملعب Super Malaab");
+        html.ShouldContain("\"@type\":\"Organization\"");
+        html.ShouldContain("alternateName");
+        html.ShouldContain("<h1>سوبر ملعب Super Malaab");
+        html.ShouldNotContain("Egyptian Premier League fantasy");
+    }
+
+    [Theory]
+    [InlineData("/players", "Find players")]
+    [InlineData("/fantasy", "Fantasy")]
+    [InlineData("/help", "Help")]
+    public async Task Public_pages_have_their_own_title(string path, string title)
+    {
+        var html = await (await Client().GetAsync(path)).Content.ReadAsStringAsync();
+        html.ShouldContain($"| {title} — Super Malaab سوبر ملعب</title>");
+        html.ShouldContain($"<link rel=\"canonical\" href=\"https://localhost{path}\" />");
+    }
+
+    [Theory]
+    [InlineData("GET", "/api/v1/fantasy/epl/bootstrap", true)]
+    [InlineData("GET", "/api/v1/pitches", true)]
+    [InlineData("GET", "/api/v1/pitches/zamalek/availability", true)]
+    [InlineData("GET", "/api/v1/fantasy/epl/team", false)]
+    [InlineData("GET", "/api/v1/auth/csrf", false)]
+    [InlineData("GET", "/api/v1/me", false)]
+    [InlineData("POST", "/api/v1/pitches", false)]
+    [InlineData("GET", "/api/v1/pitchesx", false)]
+    public void Only_public_catalogue_answers_are_compressed(string method, string path, bool compressed) =>
+        SuperApp.Api.Middlewares.PublicJsonCompressionMiddleware.IsPublicCatalogue(method, path).ShouldBe(compressed);
 }

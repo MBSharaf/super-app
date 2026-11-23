@@ -1,0 +1,24 @@
+# Super Malaab (سوبر ملعب)
+
+> Super Malaab — سوبر ملعب — is an Egyptian sports app and website at https://supermalaab.com. Players book football
+> (5, 7 and 11-a-side) and padel pitches in Egypt online, find players for a match, follow Egyptian and English league
+> matches, play Premier League fantasy football and shop for sports gear. Pitch owners and store owners manage their
+> bookings, products and payouts from their own dashboards.
+
+Also known as: سوبر ملعب, Supermalaab, SuperMalaab, Super Malaab.
+Country: Egypt. Languages: Arabic and English. Currency: EGP.
+
+## How booking works
+- Pick a pitch, a date and an hour; see the live free hours and the price per hour.
+- Each venue chooses how players pay: a deposit in the app (at least 100 EGP) and the rest in cash at the pitch, or the full amount online.
+- Show the booking QR code at the pitch to check in.
+- Cancellation and refunds follow each pitch's cancellation policy (see the help center).
+
+## Main pages
+- [Book a pitch — احجز ملعب](https://supermalaab.com/pitches)
+- [Find players — دور على لاعيبة](https://supermalaab.com/players)
+- [Matches — الماتشات](https://supermalaab.com/matches)
+- [Premier League fantasy — فانتازي](https://supermalaab.com/fantasy)
+- [Shop — المتجر](https://supermalaab.com/shop)
+- [Help center — المساعدة](https://supermalaab.com/help)
+- [Terms and privacy — الشروط والخصوصية](https://supermalaab.com/legal)

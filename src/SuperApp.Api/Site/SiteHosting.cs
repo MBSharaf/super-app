@@ -20,7 +20,7 @@ public static class SiteHosting
     public const string DefaultBasePath = "/super-app";
     private const string LegacyBasePath = "/super-app";
     private static readonly string[] Folders = ["css", "js", "models", "vendor", "icons"];
-    private static readonly string[] RootFiles = ["index.html", "404.html", "og-image.png", "robots.txt", "sitemap.xml", "manifest.json", "sw.js", "offline.html"];
+    private static readonly string[] RootFiles = ["index.html", "404.html", "og-image.png", "robots.txt", "sitemap.xml", "manifest.json", "sw.js", "offline.html", "llms.txt"];
 
     public static WebApplication UseSuperAppSite(this WebApplication app)
     {
@@ -31,6 +31,7 @@ public static class SiteHosting
             return app;
         }
         var basePath = BasePathOf(app.Configuration);
+        RedirectWwwToMainDomain(app);
         var types = new FileExtensionContentTypeProvider();
         types.Mappings[".glb"] = "model/gltf-binary";
         types.Mappings.Remove(".py");
@@ -61,6 +62,29 @@ public static class SiteHosting
         app.MapGet("/", () => Results.Redirect($"{basePath}/")).ExcludeFromDescription();
         app.MapGet($"{basePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, basePath, path, seo, ct)).ExcludeFromDescription();
         return app;
+    }
+
+    /// <summary>
+    /// www.supermalaab.com and supermalaab.com showed the same pages, so search engines saw two copies of the site.
+    /// When Site:PublicUrl is set, the www address answers with a permanent redirect to the same page on the main domain.
+    /// </summary>
+    private static void RedirectWwwToMainDomain(WebApplication app)
+    {
+        if (!Uri.TryCreate(app.Configuration["Site:PublicUrl"], UriKind.Absolute, out var main) || main.Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+        var www = "www." + main.Host;
+        app.Use((http, next) =>
+        {
+            if (!string.Equals(http.Request.Host.Host, www, StringComparison.OrdinalIgnoreCase))
+            {
+                return next(http);
+            }
+            http.Response.StatusCode = StatusCodes.Status301MovedPermanently;
+            http.Response.Headers.Location = $"{main.Scheme}://{main.Authority}{http.Request.PathBase}{http.Request.Path}{http.Request.QueryString}";
+            return Task.CompletedTask;
+        });
     }
 
     /// <summary>Site:BasePath without the trailing slash: "" for the domain root, "/super-app" by default.</summary>

@@ -92,7 +92,7 @@ chmod 700 /usr/local/bin/supermalaab-migrate
 
 step "Site files"
 rm -rf $BASE/site.new && mkdir -p $BASE/site.new
-for f in css js models vendor icons index.html 404.html og-image.png robots.txt sitemap.xml manifest.json sw.js offline.html; do
+for f in css js models vendor icons index.html 404.html og-image.png robots.txt sitemap.xml manifest.json sw.js offline.html llms.txt; do
   [ -e "$f" ] && cp -r "$f" $BASE/site.new/
 done
 rm -rf $BASE/site.old; [ -d $BASE/site ] && mv $BASE/site $BASE/site.old; mv $BASE/site.new $BASE/site
