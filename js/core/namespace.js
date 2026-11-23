@@ -7,8 +7,9 @@
  *   SA.pages      -> src/pages     (route components)
  */
 // The demo site (GitHub Pages: no server, so no data-store / data-fantasy on <html>) closes these parts for now.
-// Owner, 2026-11-23: the demo link goes to Paymob for review without the store and fantasy. Set both to false to reopen.
-const SA_DEMO_CLOSED = { store: true, fantasy: true };
+// Owner, 2026-11-23: the demo link goes to Paymob for review without the store, fantasy and the match schedule (matches
+// added the same day at Paymob's request). Set them to false to reopen. The server's site (supermalaab.com) is not affected.
+const SA_DEMO_CLOSED = { store: true, fantasy: true, matches: true };
 const SA_HTML_FLAGS = document.documentElement.dataset;
 window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   currency: 'EGP',
@@ -30,6 +31,8 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // Fantasy is open on the server's site; data-fantasy="off" (or SA_DEMO_CLOSED on GitHub Pages) closes it.
   fantasyEnabled: SA_HTML_FLAGS.fantasy ? SA_HTML_FLAGS.fantasy !== 'off' : !SA_DEMO_CLOSED.fantasy,
   podEnabled: SA_HTML_FLAGS.pod === 'on',
+  // The match schedule (live scores and fixtures) is open on the server's site; closed on GitHub Pages by SA_DEMO_CLOSED.
+  matchesEnabled: SA_HTML_FLAGS.server === 'on' || !SA_DEMO_CLOSED.matches,
   // How store orders are paid (server setting Features:ShopPayment → <html data-shop-pay>): online = card or wallet,
   // cod = cash on delivery only (owner, 2026-11-23, until the payment gateway is ready), both. The server enforces it.
   shopPayment: SA_HTML_FLAGS.shopPay || 'online',

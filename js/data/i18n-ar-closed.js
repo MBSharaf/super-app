@@ -23,6 +23,8 @@
     'Apply to sell': 'قدّم كبائع',
     'No factory is set up yet. The Super Malaab admin adds factories and their team.': 'لسه مفيش مصنع متضاف. أدمن سوبر ملعب هو اللي بيضيف المصانع وفريقها.',
     'Fantasy is coming soon': 'الفانتازي جاية قريب',
+    'Live scores are coming soon': 'نتايج الماتشات جاية قريب',
+    'We’re getting the match schedule ready. Meanwhile, book a pitch or join a game.': 'بنجهّز جدول الماتشات. لحد ما يبدأ، احجز ملعب أو انضم لماتش.',
     'We’re getting Super Malaab fantasy ready. Meanwhile, book a pitch or join a game.': 'بنجهّز فانتازي سوبر ملعب. لحد ما تبدأ، احجز ملعب أو انضم لماتش.',
     'Pitches, padel courts and players for your game — in one app.': 'ملاعب كورة وبادل ولاعيبة لماتشك — في أبلكيشن واحد.',
     'Book pitches and padel courts, fill your squad and join games — all from one account and one wallet.': 'احجز ملاعب كورة وبادل، كمّل فريقك وانضم لماتشات — كله من حساب واحد ومحفظة واحدة.',

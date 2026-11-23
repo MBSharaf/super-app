@@ -30,13 +30,20 @@
   };
   // Fantasy closed (SA.config.fantasyEnabled = false): its pages, links, the home fantasy band and its pop-up ads
   const FANTASY_PATHS = /^\/fantasy(\/|$)/;
+  const MATCHES_PATHS = /^\/matches(\/|$)/;
   SA.core.isPaused = (path) => {
     const p = String(path || '').replace(/^#/, '').split('?')[0];
-    return (!SA.config.storeEnabled && STORE_PATHS.test(p)) || (!SA.config.podEnabled && POD_PATHS.test(p)) || (!SA.config.fantasyEnabled && FANTASY_PATHS.test(p));
+    return (!SA.config.storeEnabled && STORE_PATHS.test(p)) || (!SA.config.podEnabled && POD_PATHS.test(p)) || (!SA.config.fantasyEnabled && FANTASY_PATHS.test(p))
+      || (!SA.config.matchesEnabled && MATCHES_PATHS.test(p));
   };
   if (!SA.config.fantasyEnabled) {
     P.fantasySoon = soon('Fantasy is coming soon', 'We’re getting Super Malaab fantasy ready. Meanwhile, book a pitch or join a game.', 'trophy');
     pause(FANTASY_PATHS, P.fantasySoon, ['fantasy'], ',.fantasy-band,.fc-fantasy,[data-fantasy-only]');
+  }
+  // Match schedule closed (GitHub Pages demo for the Paymob review): its page, links and the home "Live & next up" band
+  if (!SA.config.matchesEnabled) {
+    P.matchesSoon = soon('Live scores are coming soon', 'We’re getting the match schedule ready. Meanwhile, book a pitch or join a game.', 'calendar');
+    pause(MATCHES_PATHS, P.matchesSoon, ['matches'], ',.matchday-band');
   }
   if (!SA.config.storeEnabled) {
     P.comingSoon = soon('The Super Malaab store is coming soon', 'We’re getting the shop, sellers’ designs and delivery ready. Meanwhile, book a pitch or join a game.');
