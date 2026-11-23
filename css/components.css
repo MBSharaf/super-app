@@ -55,7 +55,7 @@
 .chip {
   display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: var(--r-pill);
   background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-size: var(--fs-sm); font-weight: 550; color: var(--ink-2);
-  transition: all var(--t-fast) var(--ease); white-space: nowrap;
+  transition: all var(--t-fast) var(--ease); white-space: nowrap; flex-shrink: 0;
 }
 .chip:hover { color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink-3); }
 .chip[aria-pressed="true"], .chip.is-active { background: var(--ink-bg); color: #fff; box-shadow: none; }

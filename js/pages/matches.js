@@ -2,7 +2,7 @@
   const { esc, isoDate, today, fmtDate, DAY, countdownParts } = SA.core.utils;
   const { icon } = SA.ui;
   const c = SA.ui.c;
-  const { crest, matchRow } = SA.ui.sports;
+  const { crest, matchRow, compBadge, compDot } = SA.ui.sports;
   const S = SA.services;
 
   const REGIONS = [['', 'All'], ['live', 'Live now'], ['Egypt', 'Egypt'], ['Africa', 'Africa'], ['Europe', 'Europe'], ['National teams', 'National teams']];
@@ -41,7 +41,7 @@
       const comp = ms[0].comp, live = ms.filter((m) => m.status === 'live').length, closed = collapsed.has(id);
       return `<section class="comp-block ${closed ? 'is-closed' : ''}" style="--comp:${comp.color}">
         <button class="comp-head" data-collapse="${id}" aria-expanded="${!closed}">
-          <span class="comp-badge">${esc(comp.short.split(' ')[0].slice(0, 3).toUpperCase())}</span>
+          ${compBadge(comp)}
           <span class="grow"><b>${esc(comp.name)}</b><span class="xs muted">${esc(comp.region)} · ${esc(ms[0].round)}</span></span>
           ${live ? `<span class="badge badge-danger"><span class="live-dot"></span>${live} live</span>` : ''}<span class="xs muted">${ms.length} match${ms.length > 1 ? 'es' : ''}</span>
           <span class="comp-chev">${icon('chevronDown', 18)}</span>
@@ -107,17 +107,17 @@
           <div class="date-strip match-days" role="tablist" aria-label="Match day">${days.map((d) => `<a role="tab" class="date-chip md-chip ${d.iso === date ? 'is-active' : ''}" aria-selected="${d.iso === date}" href="${href({ date: d.offset === 0 ? undefined : d.iso })}">
             <span class="xs">${d.offset === 0 ? 'Today' : d.offset === 1 ? 'Tmrw' : d.offset === -1 ? 'Ystdy' : DAY[d.d.getDay()]}</span><b class="num">${d.d.getDate()}</b><span class="md-count xs">${d.live ? '<span class="live-dot"></span>' : ''}${d.count}</span></a>`).join('')}</div>
           <div class="chips" style="margin-top:12px" role="group" aria-label="Competition">
-            ${REGIONS.map(([v, l]) => `<a class="chip" href="${href({ region: v || undefined, comp: undefined })}" aria-pressed="${f.region === v && !f.comp}">${v === 'live' ? '<span class="live-dot" style="color:var(--danger)"></span>' : ''}${l}</a>`).join('')}
+            ${REGIONS.filter(([v]) => !v || v === 'live' || comps.some((k) => k.region === v)).map(([v, l]) => `<a class="chip" href="${href({ region: v || undefined, comp: undefined })}" aria-pressed="${f.region === v && !f.comp}">${v === 'live' ? '<span class="live-dot" style="color:var(--danger)"></span>' : ''}${l}</a>`).join('')}
           </div>
           <div class="chips comp-chips" style="margin-top:8px" role="group" aria-label="League">
-            ${comps.map((k) => `<a class="chip" href="${href({ comp: f.comp === k.id ? undefined : k.id, region: undefined })}" aria-pressed="${f.comp === k.id}"><i class="cat-dot" style="background:${k.color}"></i>${esc(k.name)}</a>`).join('')}
+            ${comps.map((k) => `<a class="chip" href="${href({ comp: f.comp === k.id ? undefined : k.id, region: undefined })}" aria-pressed="${f.comp === k.id}">${compDot(k)}${esc(k.name)}</a>`).join('')}
           </div>
         </section>
         <section class="container section-tight">
           ${motd(featured)}
           <div class="row-between" style="margin:26px 0 12px"><h2 class="h3">${date === isoDate(today()) ? 'Today' : fmtDate(date, 'long')}</h2><span class="small muted">${list.length} match${list.length === 1 ? '' : 'es'} · times in Cairo (EET)</span></div>
           <div class="comp-list">${list.length ? groups(list) : c.empty({ icon: 'calendar', title: f.region === 'live' ? 'No live matches right now' : 'No matches on this day', text: 'Pick another day or competition — there’s football almost every day.' })}</div>
-          <p class="xs muted demo-note" style="margin-top:18px">${icon('info', 12)} Demo fixtures and scores. Connect a live data provider for official schedules.</p>
+          ${S.api.isLive() ? '' : `<p class="xs muted demo-note" style="margin-top:18px">${icon('info', 12)} Demo fixtures and scores. Connect a live data provider for official schedules.</p>`}
         </section>`;
     },
     mount(el) {

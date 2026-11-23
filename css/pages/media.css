@@ -310,3 +310,11 @@
 @keyframes liveRing { 70% { box-shadow: 0 0 0 8px rgba(229,72,77,0); } 100% { box-shadow: 0 0 0 0 rgba(229,72,77,0); } }
 .hm-names { padding-top: 10px; border-top: 1px solid rgba(255,255,255,.1); font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .home-match.is-live::after { animation: none; } }
+
+/* League logos (matches page): the logo on a white tile, the colour + code when there is none */
+.comp-badge { position: relative; overflow: hidden; }
+.comp-badge.has-logo { background: #fff; box-shadow: 0 0 0 1px var(--line), 0 6px 14px -8px var(--comp); }
+.comp-badge .comp-logo { width: 74%; height: 74%; object-fit: contain; }
+.comp-badge.has-logo .comp-abbr { display: none; }
+.chip-logo { width: 20px; height: 20px; padding: 2px; border-radius: 50%; background: #fff; object-fit: contain; flex: none; box-shadow: 0 0 0 1px var(--line); }
+@media (min-width: 760px) { .comp-chips { flex-wrap: wrap; overflow: visible; } }

@@ -27,6 +27,21 @@
     return `<span class="pl-face" style="--s:${size}px;--kc:${t ? esc(t.kit.a) : '#1F2A24'}">${fallback}<img class="pl-face-img" src="${esc(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />${club}</span>`;
   };
 
+  /** League logos by competition id (server keys and demo ids), from the API-Football image CDN. */
+  const LEAGUE_IDS = { epl: 39, pl: 39, egy: 233, 'epl-eg': 233, 'caf-cl': 12, ucl: 2, laliga: 140, seriea: 135, bundesliga: 78, ligue1: 61,
+    superlig: 203, uel: 3, uecl: 848, afcon: 6, 'afcon-q': 6, euro: 4, wc: 1, unl: 5 };
+  const leagueLogo = (comp) => (comp && LEAGUE_IDS[comp.id] && SA.config.clubLogos ? `https://media.api-sports.io/football/leagues/${LEAGUE_IDS[comp.id]}.png` : null);
+  /** The league's mark: its logo on a white tile, else its colour with a three-letter code (also when the logo fails). */
+  const compBadge = (comp) => {
+    const src = leagueLogo(comp);
+    return `<span class="comp-badge${src ? ' has-logo' : ''}">${src ? `<img class="comp-logo" src="${esc(src)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />` : ''}<span class="comp-abbr">${esc(String(comp.short || comp.name).split(' ')[0].slice(0, 3).toUpperCase())}</span></span>`;
+  };
+  /** Small league mark in a filter chip: the logo, else the coloured dot. */
+  const compDot = (comp) => {
+    const src = leagueLogo(comp);
+    return src ? `<img class="chip-logo" src="${esc(src)}" alt="" width="20" height="20" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-dot="${esc(comp.color)}" />` : `<i class="cat-dot" style="background:${esc(comp.color)}"></i>`;
+  };
+
   /** A small badge before a club name (nothing when the club has no badge). */
   const mini = (t, size = 14) => (t && t.logo && SA.config.clubLogos ? `${logo(t, size, '')} ` : '');
 
@@ -59,7 +74,12 @@
   };
 
   // A badge that cannot load is removed, which shows the crest or shirt drawn under it
+  document.addEventListener('error', (e) => {
+    const img = e.target;
+    if (img instanceof HTMLImageElement && img.classList.contains('comp-logo')) { img.parentElement?.classList.remove('has-logo'); img.remove(); return; }
+    if (img instanceof HTMLImageElement && img.classList.contains('chip-logo')) { const i = document.createElement('i'); i.className = 'cat-dot'; i.style.background = img.dataset.dot || ''; img.replaceWith(i); return; }
+  }, true);
   document.addEventListener('error', (e) => { if (e.target instanceof HTMLImageElement && (e.target.parentElement?.classList.contains('club-logo') || e.target.classList.contains('pl-face-img'))) e.target.remove(); }, true);
 
-  SA.ui.sports = { crest, badgeOrKit, mini, face, matchRow };
+  SA.ui.sports = { crest, badgeOrKit, mini, face, matchRow, leagueLogo, compBadge, compDot };
 })(window.SA);

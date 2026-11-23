@@ -82,7 +82,10 @@
     </div>`;
   };
 
-  const tabbar = (path) => NAV.map((n) => {
+  // Phones: the match schedule (league tables) takes the Players tab; Players stays in the menu. Where the schedule is
+  // closed (GitHub Pages demo) the tab stays Players.
+  const MATCHES_TAB = { key: 'matches', label: 'Matches', href: '#/matches', icon: 'calendar', match: (p) => /^\/matches/.test(p) };
+  const tabbar = (path) => NAV.map((n) => (n.key === 'players' && !SA.core.isPaused?.('/matches') ? MATCHES_TAB : n)).map((n) => {
     let badge = '';
     if (n.key === 'shop') { const c = store.get().cart.reduce((a, l) => a + l.qty, 0); if (c) badge = `<span class="tab-badge" data-cart-target>${c}</span>`; }
     return `<a href="${n.href}" ${n.match(path) ? 'aria-current="page"' : ''}>${icon(n.icon, 22)}<span>${n.short || n.label}</span>${badge}</a>`;
@@ -97,7 +100,7 @@
       <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/community">Communities</a><a href="#/help">Help center</a><a href="#/support">Contact support</a><a href="#/dash">Partner dashboard</a><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
     </div>
     <div class="footer-legal"><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/refunds">Refunds & returns</a><a href="#/legal/waiver">Injury waiver</a><a href="#/legal/cookies">Cookies</a><button class="footer-link" data-cookie-settings>Cookie settings</button><a href="#/legal">All legal</a></div>
-    <div class="footer-base"><span>© 2026 Super Malaab. Cairo, Egypt.</span><span>${SA.config.fantasyEnabled ? 'Frontend demo: payments, bookings and fantasy scores are simulated on this device.' : 'Frontend demo: payments and bookings are simulated on this device.'}</span></div>
+    <div class="footer-base"><span>© 2026 Super Malaab. Cairo, Egypt.</span><span>${SA.config.realData ? '' : SA.config.fantasyEnabled ? 'Frontend demo: payments, bookings and fantasy scores are simulated on this device.' : 'Frontend demo: payments and bookings are simulated on this device.'}</span></div>
   </div>`;
 
   /** Mobile menu: account card, an icon grid of everything you can do, your stuff, then settings. Short labels, no descriptions. */

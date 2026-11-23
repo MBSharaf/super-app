@@ -33,7 +33,7 @@
     ['.loc-prompt', 'up'], ['.notice', 'up'], ['.empty', 'up'], ['.gw-bars', 'up'], ['.fx-stats > div', 'up'],
     ['.cart-line', 'slide'], ['.co-items li', 'fade-left'], ['.track li', 'pop'], ['.ticker', 'fade'],
     ['.kpi', 'rise'], ['.dash-card', 'up'], ['.dp-card', 'rise'], ['.av-slot', 'pop'], ['.dl-acc', 'fade-left'], ['.pocket', 'up'], ['.flip-card', 'flip'], ['.activity li', 'fade-left'], ['.next-list li', 'fade-left'], ['.tb-row', 'fade-left'], ['.store-hero', 'zoom'], ['.money-split', 'up'], ['.platform-card', 'flip'],
-    ['.news-card', 'rise'], ['.most-read li', 'fade-left'], ['.derby-item', 'up'], ['.motd', 'flip'], ['.comp-block', 'up'], ['.mrow', 'slide'], ['.article-body p', 'up'], ['.home-match', 'rise'],
+    ['.news-card', 'rise'], ['.most-read li', 'fade-left'], ['.derby-item', 'up'], ['.motd', 'flip'], ['.article-body p', 'up'], ['.home-match', 'rise'],
   ];
 
   let io;
