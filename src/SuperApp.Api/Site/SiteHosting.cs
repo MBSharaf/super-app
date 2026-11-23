@@ -120,7 +120,7 @@ public static class SiteHosting
         var fantasy = OnOff(configuration.GetValue("Features:FantasyEnabled", true));
         var shopPay = (configuration["Features:ShopPayment"] ?? "online").Trim().ToLowerInvariant() switch { "cod" => "cod", "both" => "both", _ => "online" };
         return html.Replace("<html lang=\"en\">",
-            $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\" data-tournaments=\"{tournaments}\" data-shop-pay=\"{shopPay}\" data-logos=\"{logos}\" data-fantasy=\"{fantasy}\">", StringComparison.Ordinal);
+            $"<html lang=\"en\" data-store=\"{store}\" data-pod=\"{pod}\" data-tournaments=\"{tournaments}\" data-shop-pay=\"{shopPay}\" data-logos=\"{logos}\" data-fantasy=\"{fantasy}\" data-server=\"on\">", StringComparison.Ordinal);
     }
 
     private static string ContentType(string name) => Path.GetExtension(name).ToLowerInvariant() switch

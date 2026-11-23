@@ -84,8 +84,8 @@
         </section>
         <section class="dl-visual adm-visual" aria-hidden="true">
           <div class="adm-orbit adm-3d" data-tilt3d>
-            <div class="float-card adm-f1"><span class="xs">Platform revenue · 30 days</span><b class="num">412,860 EGP</b><span class="dl-spark"><i style="--h:40%"></i><i style="--h:52%"></i><i style="--h:47%"></i><i style="--h:66%"></i><i style="--h:71%"></i><i style="--h:84%"></i><i style="--h:92%"></i></span></div>
-            <div class="float-card adm-f2">${icon('wallet', 16)}<span><span class="xs">Withdrawals to approve</span><b class="num">7</b></span></div>
+            <div class="float-card adm-f1"><span class="xs">Platform revenue · 30 days</span>${SA.config.realData ? '<b>Live totals</b>' : '<b class="num">412,860 EGP</b>'}<span class="dl-spark"><i style="--h:40%"></i><i style="--h:52%"></i><i style="--h:47%"></i><i style="--h:66%"></i><i style="--h:71%"></i><i style="--h:84%"></i><i style="--h:92%"></i></span></div>
+            <div class="float-card adm-f2">${icon('wallet', 16)}<span><span class="xs">Withdrawals to approve</span>${SA.config.realData ? '<b>In one queue</b>' : '<b class="num">7</b>'}</span></div>
             <div class="float-card adm-f3">${icon('shield', 16)}<span><span class="xs">Audit log</span><b>Every change, signed</b></span></div>
             <div class="adm-cube-wrap"><div class="adm-cube">${[['wallet', 'Money'], ['users', 'People'], ['ticket', 'Orders'], ['news', 'Content'], ['trophy', 'Fantasy'], ['chart', 'Insights']].map(([ic, l], i) => `<div class="adm-face f${i}">${icon(ic, 34)}<b>${l}</b></div>`).join('')}</div></div>
             <div class="adm-ring" aria-hidden="true"><i></i><i></i><i></i></div>

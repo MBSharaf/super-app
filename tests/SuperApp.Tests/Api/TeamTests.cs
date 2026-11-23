@@ -79,6 +79,33 @@ public sealed class TeamTests(AccountsApiFactory api) : IClassFixture<AccountsAp
         duplicate.Status.ShouldBe(HttpStatusCode.Conflict);
     }
 
+    /// <summary>Owner (2026-11-23): the CEO can make any existing user an admin from the team screen.</summary>
+    [Fact]
+    public async Task An_existing_customer_joins_the_team_and_keeps_their_password()
+    {
+        var email = $"p{Guid.NewGuid():N}"[..12] + "@test.example";
+        var customer = await api.ClientAsync();
+        (await customer.PostAsync("/api/v1/auth/sign-up", new { fullName = "Player Person", email, phone = "+2011" + Random.Shared.Next(10_000_000, 99_999_999), password = "Football2026", acceptTerms = true }))
+            .Status.ShouldBe(HttpStatusCode.Created);
+
+        var ceo = await CeoAsync();
+        var (status, body) = await ceo.PostAsync("/api/v1/ceo/admins", new { fullName = "Player Person", email, roles = new[] { "Support" }, language = "en" });
+        status.ShouldBe(HttpStatusCode.Created, body.ToString());
+        body.Data().GetProperty("invitationPending").GetBoolean().ShouldBeFalse();
+        api.Emails.Sent.ShouldContain(m => m.To == email && m.Subject.Contains("team", StringComparison.OrdinalIgnoreCase));
+        api.Emails.LinkTo(email, "auth/invite").ShouldBeNull();
+
+        var me = (await (await api.ClientAsync()).SignInAsync(email, "Football2026")).Data().GetProperty("me");
+        me.GetProperty("requires2faSetup").GetBoolean().ShouldBeTrue();
+        me.GetProperty("dashboards").EnumerateArray().Select(d => d.GetString()).ShouldContain("admin");
+
+        var again = await ceo.PostAsync("/api/v1/ceo/admins", new { fullName = "Player Person", email, roles = new[] { "Content" } });
+        again.Status.ShouldBe(HttpStatusCode.Conflict);
+        again.Body.Code().ShouldBe("already_admin");
+        var self = await ceo.PostAsync("/api/v1/ceo/admins", new { fullName = "Me", email = AccountsApiFactory.CeoEmail, roles = new[] { "Support" } });
+        self.Status.ShouldBe(HttpStatusCode.Conflict);
+    }
+
     [Fact]
     public async Task The_ceo_grants_approvals_to_one_admin_and_sets_money_limits()
     {

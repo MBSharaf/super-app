@@ -10,7 +10,12 @@
  * When the real backend exists, this file is replaced by API calls; services keep their signatures.
  */
 (function (SA) {
-  const KEY = 'superapp.db.v1';
+  // On the Super Malaab server (SA.config.realData) the dashboards show only real data: the demo records are cleared on
+  // every start (scrubDemo) and kept under their own key, so a browser that opened the demo before keeps nothing from it.
+  const REAL = !!SA.config.realData;
+  const KEY = REAL ? 'superapp.db.real.v1' : 'superapp.db.v1';
+  // Reference lists that stay in real mode: the print-on-demand base products and design categories the admin manages
+  const KEEP = new Set(['podCatalog', 'podCategories']);
   const VERSION = 1;
   const DAY = 864e5;
 
@@ -292,6 +297,7 @@
         persist();
       }
       migrate();
+      db.scrubDemo();
       // Another tab (e.g. the shop in one tab, the dashboard in another) changed the data: pick it up
       window.addEventListener('storage', (e) => { if (e.key !== KEY) return; const next = load(); if (next) { data = next; emit('*'); } });
     },
@@ -333,7 +339,21 @@
     overrideSale(saleId, patch) { data.saleOverrides[saleId] = { ...(data.saleOverrides[saleId] || {}), ...patch, at: Date.now() }; if (!persist()) throw new Error('storage_full'); emit('sales'); },
     /** Save in-place changes to a collection and tell subscribers */
     touch(col) { if (!persist()) throw new Error('storage_full'); emit(col); },
-    reset() { localStorage.removeItem(KEY); data = seed(); migrate(); persist(); emit('*'); },
+    reset() { localStorage.removeItem(KEY); data = seed(); migrate(); db.scrubDemo(); persist(); emit('*'); },
+    /**
+     * Real mode only: drop every demo record (pitches, stores, products, sellers, orders, bookings, payouts, tickets,
+     * factories, codes, banners…). The live services fill these lists again from the server. Only the console's own
+     * stand-in accounts stay (HQ, CEO and the AI agents of the org chart), without demo contact or bank details.
+     */
+    scrubDemo() {
+      if (!REAL || !data) return;
+      Object.keys(data).forEach((k) => {
+        if (!Array.isArray(data[k]) || KEEP.has(k)) return;
+        data[k] = k === 'accounts' ? data[k].filter((a) => a.id === 'acc-admin' || a.teamRole === 'ceo' || a.agent).map((a) => ({ ...a, phone: '', payout: null, taxId: '' })) : [];
+      });
+      data.bookingOverrides = {}; data.saleOverrides = {};
+      persist(); emit('*');
+    },
     uid,
   };
 

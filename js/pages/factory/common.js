@@ -51,7 +51,7 @@
           <p class="lead">Every printed order from Super Malaab in one queue — job tickets with a QR code, quality checks, and the courier booked for you when an order is packed.</p>
           ${fs.map((f) => `<h2 class="h4" style="margin-top:26px">${esc(f.name)} <span class="xs muted">· ${esc(f.city)}</span></h2>
             <div class="dl-accounts fac-people">${F().staff(f.id).filter((x) => x.active).map((x, i) => `<button class="dl-acc" data-who="${x.id}" style="--i:${i}">${c.avatar({ name: x.name, avatar: x.avatar })}<span class="grow"><b>${esc(x.name)}</b><span class="xs muted" style="display:block">${F().ROLES[x.role].label}</span></span>${icon('lock', 15)}</button>`).join('')}</div>`).join('')}
-          <p class="xs muted" style="margin-top:14px">${icon('info', 12)} Demo PINs: owner 1111 · supervisor 2222 · printers 3333 / 3344 · quality 4444 · packing 5555</p>
+          ${SA.config.realData ? (fs.length ? '' : `<p class="small soft" style="margin-top:22px">${icon('info', 13)} No factory is set up yet. The Super Malaab admin adds factories and their team.</p>`) : `<p class="xs muted" style="margin-top:14px">${icon('info', 12)} Demo PINs: owner 1111 · supervisor 2222 · printers 3333 / 3344 · quality 4444 · packing 5555</p>`}
           <p class="small muted" style="margin-top:18px">Pitch owner or seller? <a class="link" href="#/dash">Partner dashboard</a> · Super Malaab team? <a class="link" href="#/admin">Admin console</a></p>
         </section>
         <section class="dl-visual fac-visual" aria-hidden="true">

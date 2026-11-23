@@ -35,6 +35,9 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   shopPayment: SA_HTML_FLAGS.shopPay || 'online',
   /** Club badges in matches and fantasy (server setting Features:ClubLogos; on unless the page says off) */
   clubLogos: SA_HTML_FLAGS.logos !== 'off',
+  // The Super Malaab server marks its pages <html data-server="on">: there the dashboards show only real data (owner,
+  // 2026-11-23) and the demo data (pitches, sellers, orders, factories…) is never loaded. GitHub Pages keeps the demo.
+  realData: SA_HTML_FLAGS.server === 'on',
   // Tournaments are back as "coming soon" (owner, 2026-11-15: the Ramadan tournament). Venues and the admin can already
   // prepare tournaments and offers; players see them but can't register until the server setting
   // Features:TournamentsOpen marks <html data-tournaments="open"> (the server refuses registrations until then too).

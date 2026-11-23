@@ -12,6 +12,12 @@ public interface IStaffStore
 
     Task<bool> EmailExistsAsync(string email, CancellationToken ct);
 
+    /// <summary>The person (not an AI agent) who signed up with this email, if any.</summary>
+    Task<Guid?> PersonIdByEmailAsync(string email, CancellationToken ct);
+
+    /// <summary>Adds admin roles to an existing account; its other roles (customer, partner, seller…) stay.</summary>
+    Task AddAdminRolesAsync(Guid userId, IReadOnlyList<string> roles, CancellationToken ct);
+
     Task<bool> IsCeoAsync(Guid userId, CancellationToken ct);
 
     /// <summary>Creates the account without a password; the person sets it from the invitation.</summary>

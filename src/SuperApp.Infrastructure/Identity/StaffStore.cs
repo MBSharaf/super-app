@@ -50,6 +50,17 @@ public sealed class StaffStore(AppDbContext db, UserManager<User> users, RoleMan
 
     public async Task<bool> EmailExistsAsync(string email, CancellationToken ct) => await users.FindByEmailAsync(email) is not null;
 
+    public async Task<Guid?> PersonIdByEmailAsync(string email, CancellationToken ct) =>
+        await users.FindByEmailAsync(email) is { AccountType: AccountType.Person } user ? user.Id : null;
+
+    public async Task AddAdminRolesAsync(Guid userId, IReadOnlyList<string> roles, CancellationToken ct)
+    {
+        var user = await RequireAsync(userId);
+        var current = await users.GetRolesAsync(user);
+        IdentityErrors.Check(await users.AddToRolesAsync(user, roles.Except(current)), "roles");
+        await users.UpdateSecurityStampAsync(user);   // the new team pages open after the next sign-in (with an authenticator)
+    }
+
     public Task<bool> IsCeoAsync(Guid userId, CancellationToken ct) =>
         db.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.Role.Name == SystemRoles.Ceo, ct);
 

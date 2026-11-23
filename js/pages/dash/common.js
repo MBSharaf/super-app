@@ -410,6 +410,9 @@
   const xlsx = (name, sheets) => { SA.core.xlsx.download(name, sheets); SA.ui.overlay.toast(`Downloaded ${name}`, { type: 'success' }); };
 
   /* ---------- Sign-in screen ---------- */
+  // The server's site (real data): no demo accounts, the visitor signs in with their own account or applies
+  const realSignIn = (next) => `<div class="row" style="--gap:10px;margin-top:28px;flex-wrap:wrap"><a class="btn btn-primary" href="#/auth/sign-in?next=${next}">${icon('lock', 15)} Sign in</a><a class="btn btn-ghost" href="#/${next === '/seller' ? 'sell' : 'partner/apply'}">${next === '/seller' ? 'Apply to sell' : 'Apply'}</a></div>
+    <p class="xs muted" style="margin-top:8px">Use the account you applied with. Staff use their own account.</p>`;
   SA.pages.dashLogin = {
     title: 'Partner dashboard — Super Malaab',
     render() {
@@ -421,9 +424,9 @@
           <span class="badge badge-turf">${icon('pitch', 13)} Pitch partners</span>
           <h1 class="display dl-title">Run your pitches. Fill every hour. Get paid.</h1>
           <p class="lead">Bookings, availability, check-in, tournaments, free slots and your money — in one place.</p>
-          <h2 class="h4" style="margin-top:28px">Sign in as</h2>
+          ${SA.config.realData ? realSignIn('/dash') : `<h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
-          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>
+          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>`}
                   <p class="small muted" style="margin-top:22px">Seller? <a class="link" href="#/seller">Seller dashboard</a> · Factory team? <a class="link" href="#/factory">Factory system</a> · Want to list your pitch? <a class="link" href="#/partner/apply">Apply here</a></p>
         </section>
         <section class="dl-visual" aria-hidden="true">
@@ -431,8 +434,8 @@
             <div class="pitch3d"><div class="pitch3d-grass"></div>
               <svg class="pitch3d-lines" viewBox="0 0 400 260" preserveAspectRatio="none"><g fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"><rect x="6" y="6" width="388" height="248" rx="2"/><line x1="200" y1="6" x2="200" y2="254"/><circle cx="200" cy="130" r="34"/><rect x="6" y="70" width="52" height="120"/><rect x="342" y="70" width="52" height="120"/></g></svg>
               <div class="pitch3d-glow"></div></div>
-            <div class="float-card dl-f1"><span class="xs">Revenue this month</span><b class="num">186,420 EGP</b><span class="dl-spark"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:42%"></i><i style="--h:70%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:76%"></i></span></div>
-            <div class="float-card dl-f2"><span class="xs">Occupancy tonight</span><b class="num">82%</b><span class="meter"><span style="width:82%"></span></span></div>
+            <div class="float-card dl-f1"><span class="xs">Revenue this month</span>${SA.config.realData ? '<b>Live totals</b>' : '<b class="num">186,420 EGP</b>'}<span class="dl-spark"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:42%"></i><i style="--h:70%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:76%"></i></span></div>
+            <div class="float-card dl-f2"><span class="xs">Occupancy tonight</span>${SA.config.realData ? '<b>Hour by hour</b>' : '<b class="num">82%</b><span class="meter"><span style="width:82%"></span></span>'}</div>
             <div class="float-card dl-f3">${icon('wallet', 16)}<span><span class="xs">Next payout</span><b class="num">Monday</b></span></div>
           </div>
         </section>
@@ -461,9 +464,9 @@
           <span class="badge badge-blaze">${icon('bag', 13)} Sellers</span>
           <h1 class="display dl-title">Your designs. Your store. Your money.</h1>
           <p class="lead">Print-on-demand designs, your own products, orders, analytics and your wallet — in one place.</p>
-          <h2 class="h4" style="margin-top:28px">Sign in as</h2>
+          ${SA.config.realData ? realSignIn('/seller') : `<h2 class="h4" style="margin-top:28px">Sign in as</h2>
           <p class="xs muted" style="margin-top:4px">${icon('info', 12)} Demo accounts — partner sign-in with email and password arrives with the backend.</p>
-          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>
+          <div class="dl-accounts">${accs.map((a, i) => `<button class="dl-acc" data-signin="${a.id}" style="--i:${i}" ${a.status === 'suspended' ? 'disabled aria-disabled="true"' : ''}>${c.avatar({ name: a.name, avatar: a.avatar })}<span class="grow"><b>${esc(a.name)}</b><span class="xs muted" style="display:block">${esc(a.company)}${a.role === 'owner' ? ` · ${SA.services.db.all('pitches').filter((p) => p.ownerId === a.id && !p.deleted).length} pitches` : ''}</span></span>${a.status === 'suspended' ? '<span class="badge badge-danger">Suspended</span>' : `<span class="badge ${a.id === 'acc-new' ? 'badge-gold' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[0]}">${a.id === 'acc-new' ? 'New partner' : (ROLE_LABEL[a.role] || ROLE_LABEL.owner)[1]}</span>`}${icon('arrowRight', 16)}</button>`).join('')}</div>`}
                   <p class="small muted" style="margin-top:22px">Pitch partner? <a class="link" href="#/dash">Pitch partner dashboard</a> · Want to sell? <a class="link" href="#/sell">Apply here</a></p>
         </section>
         <section class="dl-visual" aria-hidden="true">
@@ -471,8 +474,8 @@
             <div class="pitch3d"><div class="pitch3d-grass"></div>
               <svg class="pitch3d-lines" viewBox="0 0 400 260" preserveAspectRatio="none"><g fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"><rect x="6" y="6" width="388" height="248" rx="2"/><line x1="200" y1="6" x2="200" y2="254"/><circle cx="200" cy="130" r="34"/><rect x="6" y="70" width="52" height="120"/><rect x="342" y="70" width="52" height="120"/></g></svg>
               <div class="pitch3d-glow"></div></div>
-            <div class="float-card dl-f1"><span class="xs">Revenue this month</span><b class="num">186,420 EGP</b><span class="dl-spark"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:42%"></i><i style="--h:70%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:76%"></i></span></div>
-            <div class="float-card dl-f2"><span class="xs">Occupancy tonight</span><b class="num">82%</b><span class="meter"><span style="width:82%"></span></span></div>
+            <div class="float-card dl-f1"><span class="xs">Revenue this month</span>${SA.config.realData ? '<b>Live totals</b>' : '<b class="num">186,420 EGP</b>'}<span class="dl-spark"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:42%"></i><i style="--h:70%"></i><i style="--h:62%"></i><i style="--h:88%"></i><i style="--h:76%"></i></span></div>
+            <div class="float-card dl-f2"><span class="xs">Occupancy tonight</span>${SA.config.realData ? '<b>Hour by hour</b>' : '<b class="num">82%</b><span class="meter"><span style="width:82%"></span></span>'}</div>
             <div class="float-card dl-f3">${icon('wallet', 16)}<span><span class="xs">Next payout</span><b class="num">Monday</b></span></div>
           </div>
         </section>

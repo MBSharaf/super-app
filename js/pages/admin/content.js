@@ -112,7 +112,7 @@
             <div class="row" style="--gap:8px;margin-top:12px"><button class="btn btn-primary" type="submit">Save categories</button>${SA.services.db.settings().shopCategories ? '<button type="button" class="btn btn-ghost" data-cat-reset>Back to the default list</button>' : ''}</div></form></section>`;
       } else {
         const st = SA.core.store.get();
-        const raw = [...(st.publishedMatches || []), ...SA.data.matches.list];
+        const raw = [...(st.publishedMatches || []), ...(SA.config.realData ? [] : SA.data.matches.list)]; // demo games stay off the server's site
         const hidden = db().settings().hiddenMatches || {};
         const people = SA.data.matches.people;
         const rows = raw.map((m) => { const p = SA.services.pitches.getSync(m.pitchId); const date = m.date || isoDate(addDays(today(), m.dayOffset || 0)); return { m, p, date, host: m.hostName || people[m.host] || 'Player' }; }).filter((x) => x.date >= isoDate(today())).sort((a, b) => a.date.localeCompare(b.date) || a.m.hour - b.m.hour);

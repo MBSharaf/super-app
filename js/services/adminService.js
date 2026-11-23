@@ -23,6 +23,7 @@
   const passSynth = new Map();
   const passesOn = (iso) => {
     if (passSynth.has(iso)) return passSynth.get(iso);
+    if (SA.config.realData) return []; // the server's site shows real sales only
     const out = [];
     const since = db().raw().platformSince;
     if (parseISO(iso).getTime() >= since && iso < isoDate(today())) {

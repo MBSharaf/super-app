@@ -3,6 +3,17 @@
   const D = SA.data.i18nAr;
   const add = (o) => Object.entries(o).forEach(([k, v]) => { if (!(k in D.strings)) D.strings[k] = v; });
   add({
+    'Add an admin': 'إضافة أدمن',
+    'Already has a Super Malaab account (a player, partner or seller)? Write the email they signed up with: the same account joins the team, keeps its password and gets an email. Someone new gets an email to choose a password. Everyone sets up an authenticator app at the next sign-in. Money limits start at 0 — set them on their page.': 'عنده حساب على سوبر ملعب (لاعب أو شريك أو بائع)؟ اكتب الإيميل اللي سجّل بيه: نفس الحساب هيدخل الفريق بنفس الباسورد وهيوصله إيميل. الشخص الجديد هيوصله إيميل يختار فيه باسورد. والكل هيفعّل تطبيق التحقق في الدخول الجاي. حدود الفلوس بتبدأ من 0 — حددها من صفحته.',
+    'Add to the team': 'ضيفه للفريق',
+    'Added to the team': 'اتضاف للفريق',
+    'No admins yet. Add the first one above.': 'لسه مفيش أدمنز. ضيف أول واحد من فوق.',
+    'This person is already on the team. Open their page to change their roles.': 'الشخص ده في الفريق بالفعل. افتح صفحته علشان تغيّر أدواره.',
+    'Live totals': 'أرقام حقيقية لحظة بلحظة',
+    'In one queue': 'في طابور واحد',
+    'Hour by hour': 'ساعة بساعة',
+    'Apply to sell': 'قدّم كبائع',
+    'No factory is set up yet. The Super Malaab admin adds factories and their team.': 'لسه مفيش مصنع متضاف. أدمن سوبر ملعب هو اللي بيضيف المصانع وفريقها.',
     'Fantasy is coming soon': 'الفانتازي جاية قريب',
     'We’re getting Super Malaab fantasy ready. Meanwhile, book a pitch or join a game.': 'بنجهّز فانتازي سوبر ملعب. لحد ما تبدأ، احجز ملعب أو انضم لماتش.',
     'Pitches, padel courts and players for your game — in one app.': 'ملاعب كورة وبادل ولاعيبة لماتشك — في أبلكيشن واحد.',

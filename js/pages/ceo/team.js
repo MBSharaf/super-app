@@ -32,7 +32,7 @@
   const roleChips = (a) => a.roles.map((r) => `<span class="ceo-tag">${esc(r)}</span>`).join(' ') || '<span class="xs muted">No role</span>';
 
   /* ---------- The team ---------- */
-  const inviteForm = (roles) => `<details class="dash-card"><summary class="h4">${icon('plus', 16)} Invite an admin</summary>
+  const inviteForm = (roles) => `<details class="dash-card"><summary class="h4">${icon('plus', 16)} Add an admin</summary>
     <form data-invite style="margin-top:10px">
       <div class="dash-grid g-1-1">
         <div class="field"><label for="tm-name">Full name</label><input class="input" id="tm-name" name="fullName" required maxlength="80" /></div>
@@ -40,8 +40,8 @@
       </div>
       <h3 class="h5" style="margin-top:10px">Roles</h3><div class="ceo-secs">${adminRoles(roles).map((r) => box('role', r.name, false, esc(r.name))).join('')}</div>
       <div class="field" style="max-width:220px;margin-top:10px"><label for="tm-lang">Invitation language</label><select class="input" id="tm-lang" name="language"><option value="ar">Arabic</option><option value="en">English</option></select></div>
-      <p class="xs muted">${icon('info', 12)} They get an email to choose a password, then set up an authenticator app at the first sign-in. Money limits start at 0 — set them on their page.</p>
-      <button class="btn btn-primary btn-sm" type="submit" style="margin-top:10px">Send the invitation</button>
+      <p class="xs muted">${icon('info', 12)} Already has a Super Malaab account (a player, partner or seller)? Write the email they signed up with: the same account joins the team, keeps its password and gets an email. Someone new gets an email to choose a password. Everyone sets up an authenticator app at the next sign-in. Money limits start at 0 — set them on their page.</p>
+      <button class="btn btn-primary btn-sm" type="submit" style="margin-top:10px">Add to the team</button>
     </form></details>`;
 
   SA.pages.ceoTeam = C.guard({
@@ -54,7 +54,7 @@
         <section class="dash-card table-card"><div class="table-wrap"><table class="table dash-table"><thead><tr><th>Admin</th><th>Roles</th><th>Status</th><th>Last seen</th></tr></thead><tbody>
         ${list.map((a) => `<tr><td class="small"><a class="link" href="#/ceo/team/${a.id}"><b>${esc(a.fullName)}</b></a><span class="xs muted" style="display:block">${esc(a.email)}</span></td>
           <td class="small">${roleChips(a)}${a.directPermissions.length ? ` <span class="xs muted">+${a.directPermissions.length} extra</span>` : ''}</td>
-          <td>${status(a)}</td><td class="xs muted">${a.lastSeenAt ? timeAgo(at(a.lastSeenAt)) : '—'}</td></tr>`).join('') || '<tr><td colspan="4" class="small muted">No admins yet. Invite the first one above.</td></tr>'}
+          <td>${status(a)}</td><td class="xs muted">${a.lastSeenAt ? timeAgo(at(a.lastSeenAt)) : '—'}</td></tr>`).join('') || '<tr><td colspan="4" class="small muted">No admins yet. Add the first one above.</td></tr>'}
         </tbody></table></div></section>`;
       return C.layout('team', { title: 'Team', subtitle: sub, actions: '<a class="btn btn-ghost btn-sm" href="#/ceo/roles">Roles & permissions</a>', body });
     },
@@ -62,7 +62,7 @@
       el.querySelector('[data-invite]')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const f = e.currentTarget;
-        const a = await C.run(() => api().post('/ceo/admins', { fullName: f.fullName.value.trim(), email: f.email.value.trim(), roles: checks(f, 'role'), language: f.language.value }), 'Invitation sent');
+        const a = await C.run(() => api().post('/ceo/admins', { fullName: f.fullName.value.trim(), email: f.email.value.trim(), roles: checks(f, 'role'), language: f.language.value }), 'Added to the team');
         if (a?.id) SA.core.router.go(`/ceo/team/${a.id}`);
       });
     },

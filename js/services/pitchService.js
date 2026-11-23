@@ -66,7 +66,7 @@
    * the same predicate generates the dashboard ledger, so both sides always agree.
    */
   const syntheticBooked = (p, dateISO, h, { raw = false } = {}) => {
-    if (!p.seed || !p.seedSnapshot) return false;
+    if (SA.config.realData || !p.seed || !p.seedSnapshot) return false; // the server's site shows only real bookings
     const [o, c] = p.seedSnapshot.open;
     if (h < o || h >= c) return false;
     if (isCourt(p)) {

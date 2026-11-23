@@ -64,17 +64,41 @@ public sealed class AdminAccountsService(
 
     public async Task<AdminResponse> CreateAsync(CreateAdminRequest request, CancellationToken ct)
     {
+        await CheckRolesAsync(request.Roles, ct);
+        if (await staff.PersonIdByEmailAsync(request.Email.Trim(), ct) is { } existing)
+        {
+            return await PromoteAsync(existing, request, ct);
+        }
         if (await staff.EmailExistsAsync(request.Email.Trim(), ct))
         {
             throw new ConflictException("An account with this email already exists.", "email_taken");
         }
-        await CheckRolesAsync(request.Roles, ct);
         var id = await staff.CreateAdminAsync(new NewAdmin(request.FullName.Trim(), request.Email.Trim(), request.Roles, request.Language), ct);
         await staff.SetDirectPermissionsAsync(id, request.Permissions ?? [], null, Ceo(), ct);
         await staff.SetLimitsAsync(id, request.Limits ?? NoLimits, ct);
         await SendInviteAsync(id, ct);
         await audit.LogAsync(AuditSystem.Ceo, "admin.created", $"Admin {request.Email} invited ({string.Join(", ", request.Roles)})", "User", id.ToString(), request, ct);
         return await GetAsync(id, ct);
+    }
+
+/// <summary>
+    /// Someone who already has an account (a customer, partner or seller) joins the team: admin roles are added to the
+    /// same account and they are told by email. They keep their password and sign in as usual, then set up an authenticator.
+    /// </summary>
+    private async Task<AdminResponse> PromoteAsync(Guid userId, CreateAdminRequest request, CancellationToken ct)
+    {
+        if (await staff.IsCeoAsync(userId, ct) || await staff.GetAdminAsync(userId, ct) is not null)
+        {
+            throw new ConflictException("This person is already on the team. Open their page to change their roles.", "already_admin");
+        }
+        await staff.AddAdminRolesAsync(userId, request.Roles, ct);
+        await staff.SetDirectPermissionsAsync(userId, request.Permissions ?? [], null, Ceo(), ct);
+        await staff.SetLimitsAsync(userId, request.Limits ?? NoLimits, ct);
+        var admin = await GetAsync(userId, ct);
+        var model = new Dictionary<string, string> { ["name"] = admin.FullName, ["link"] = site.Value.Link("admin"), ["roles"] = string.Join(", ", admin.Roles) };
+        await email.SendAsync(new EmailMessage(admin.Email, "admin-added", model, request.Language ?? "ar", userId), ct);
+        await audit.LogAsync(AuditSystem.Ceo, "admin.promoted", $"{admin.Email} joined the team ({string.Join(", ", request.Roles)})", "User", userId.ToString(), request, ct);
+        return admin;
     }
 
     public async Task<AdminResponse> UpdateAsync(Guid id, UpdateAdminRequest request, CancellationToken ct)

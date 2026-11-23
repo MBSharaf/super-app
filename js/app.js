@@ -315,6 +315,8 @@
   SA.ui.chatbot.init();
   SA.ui.promoPop?.init();
   SA.ui.pointsPop?.init();
+  // Real mode (the server's site): clear the demo records the services added while loading, before the first page
+  SA.services.db.scrubDemo();
   router.onChange((m) => render(m));
   router.start();
 })(window.SA);

@@ -134,7 +134,8 @@
   const view = (r) => {
     const st = cfg().agents?.[r.id] || {};
     const accountId = r.account || (r.holder === 'ai' ? agentAcc(r.id) : r.id === 'ceo' ? CEO_ID : null);
-    return { ...r, status: st.status || 'active', pausedReason: st.reason || '', limit: st.limit ?? r.limit, can: st.can || r.can, sections: st.sections || r.sections, accountId, dept: r.dept, deptInfo: ORG().DEPTS.find((x) => x.key === r.dept) };
+    // The server's site has no running AI agents to bill yet: no demo model costs in the budgets
+    return { ...r, cost: SA.config.realData ? 0 : r.cost, status: st.status || 'active', pausedReason: st.reason || '', limit: st.limit ?? r.limit, can: st.can || r.can, sections: st.sections || r.sections, accountId, dept: r.dept, deptInfo: ORG().DEPTS.find((x) => x.key === r.dept) };
   };
   const roles = () => ORG().ROLES.map(view);
   const getRole = (id) => { const r = role(id); if (!r) throw new ApiError('Role not found.', 'not_found'); return view(r); };
@@ -206,8 +207,9 @@
     const r = getRole(id);
     const since = Date.now() - 30 * DAY;
     const acts = activity(id, { limit: 1000 }).filter((x) => x.at >= since);
-    const s = (k) => seeded(`${id}|${k}|${isoDate(today())}`);
-    const tasks = acts.length + Math.round(40 + s('t') * 260);
+    // The server's site has no agent telemetry yet: real counts only, no demo numbers
+    const s = (k) => (SA.config.realData ? 0 : seeded(`${id}|${k}|${isoDate(today())}`));
+    const tasks = acts.length + (SA.config.realData ? 0 : Math.round(40 + s('t') * 260));
     return { tasks, errors: r.holder === 'ai' ? Math.round(s('e') * 6) : 0, accuracy: r.holder === 'ai' ? +(96 + s('a') * 3.8).toFixed(1) : null, avgMinutes: +(0.4 + s('m') * 3).toFixed(1), cost: r.cost || 0, tokens: r.holder === 'ai' ? Math.round((1.5 + s('k') * 9) * 1e6) : 0, last: acts[0]?.at || 0, escalations: Math.round(s('x') * 9) };
   };
 
