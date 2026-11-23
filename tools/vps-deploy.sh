@@ -154,6 +154,13 @@ fi
 # Sign-in answers carry several cookies (session, antiforgery, remember-me): the default nginx header buffer is too
 # small and answers "502 upstream sent too big header", so the buffers are raised for the whole server
 printf 'proxy_buffer_size 32k;\nproxy_buffers 8 32k;\nproxy_busy_buffers_size 64k;\n' > /etc/nginx/conf.d/supermalaab-buffers.conf
+# Cloudflare sits in front of the site: nginx takes the visitor's real IP from CF-Connecting-IP, but only when the
+# request comes from Cloudflare's own ranges (cloudflare.com/ips), so rate limits and logs see the real visitor
+{ for r in 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 \
+    190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 \
+    172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 \
+    2a06:98c0::/29 2c0f:f248::/32; do echo "set_real_ip_from $r;"; done; echo 'real_ip_header CF-Connecting-IP;'; } \
+  > /etc/nginx/conf.d/supermalaab-cloudflare.conf
 # HTTP/2: the browser gets the site's files in parallel over one connection (certbot writes "listen 443 ssl;").
 # The old file is kept and put back if nginx does not accept the change.
 NGX=/etc/nginx/sites-available/supermalaab
