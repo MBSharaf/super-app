@@ -88,9 +88,10 @@ public sealed class ContentService(
     {
         var (pitches, communities) = await content.SitemapAsync(clock.UtcNow, ct);
         var root = BaseUrl();
-        string[] pages = ["", "pitches", "players", "fantasy", "matches", "shop", "communities", "tournaments", "help", "legal"];
-        var urls = pages.Select(p => $"{root}#/{p}").Concat(pitches.Select(s => $"{root}#/pitches/p-{s}"))
-            .Concat(communities.Select(c => $"{root}#/communities/{c}"));
+        string[] pages = ["", "pitches", "players", "fantasy", "matches", "shop", "community", "tournaments", "help", "legal", "legal/privacy", "legal/terms"];
+        // Clean addresses (no "#"): search engines ignore everything after "#", so those pages were never indexed
+        var urls = pages.Select(p => $"{root}{p}").Concat(pitches.Select(s => $"{root}pitches/p-{Uri.EscapeDataString(s)}"))
+            .Concat(communities.Select(c => $"{root}community/{Uri.EscapeDataString(c)}"));
         var xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
         foreach (var url in urls)
         {
@@ -99,9 +100,15 @@ public sealed class ContentService(
         return xml.Append("</urlset>\n").ToString();
     }
 
-    public string Robots() =>
-        $"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /*#/admin\nDisallow: /*#/ceo\nDisallow: /*#/dash\nDisallow: /*#/factory\nDisallow: /*#/seller\n" +
-        $"Sitemap: {BaseUrl()}api/v1/seo/sitemap.xml\n";
+    /// <summary>Served at the domain root (/robots.txt); private systems, checkout and the API are kept out of search.</summary>
+    public string Robots()
+    {
+        var root = new Uri(BaseUrl());
+        var site = root.AbsolutePath.TrimEnd('/');
+        string[] closed = ["admin", "ceo", "dash", "factory", "seller", "checkout", "cart", "book", "auth", "profile", "wallet", "orders", "bookings", "alerts", "sell"];
+        var rules = string.Concat(closed.Select(c => $"Disallow: {site}/{c}\n"));
+        return $"User-agent: *\nAllow: /\nDisallow: /api/\n{rules}Sitemap: {root.GetLeftPart(UriPartial.Authority)}/sitemap.xml\n";
+    }
 
     private string BaseUrl()
     {

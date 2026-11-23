@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
+using SuperApp.Application.Features.Content;
 
 namespace SuperApp.Api.Site;
 
@@ -41,6 +42,9 @@ public static class SiteHosting
             });
         }
         app.MapGet("/", () => Results.Redirect($"{BasePath}/")).ExcludeFromDescription();
+        // Search engines read these two only from the domain root; both are built from live data (ContentService)
+        app.MapGet("/robots.txt", (IContentService content) => Results.Text(content.Robots(), "text/plain; charset=utf-8")).ExcludeFromDescription();
+        app.MapGet("/sitemap.xml", async (IContentService content, CancellationToken ct) => Results.Text(await content.SitemapAsync(ct), "application/xml; charset=utf-8")).ExcludeFromDescription();
         app.MapGet($"{BasePath}/{{**path}}", (HttpContext http, string? path, SeoPages seo, CancellationToken ct) => ServePageAsync(http, root, path, seo, ct)).ExcludeFromDescription();
         return app;
     }
@@ -49,6 +53,10 @@ public static class SiteHosting
     {
         http.Response.Headers.CacheControl = "no-cache";
         var name = string.IsNullOrEmpty(path) ? "index.html" : path;
+        if (name is "robots.txt" or "sitemap.xml")
+        {
+            return Results.Redirect($"/{name}", permanent: true);
+        }
         if (RootFiles.Contains(name, StringComparer.OrdinalIgnoreCase) && name != "index.html")
         {
             return Results.File(Path.Combine(root, name), ContentType(name));

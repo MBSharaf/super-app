@@ -125,9 +125,11 @@ public sealed class ContentTests(AccountsApiFactory api) : IClassFixture<Account
         var guest = await api.ClientAsync();
         var sitemap = await guest.Http.GetStringAsync("/api/v1/seo/sitemap.xml");
         sitemap.ShouldContain("<urlset");
-        sitemap.ShouldContain("#/communities/");
+        sitemap.ShouldContain("/super-app/community/");
+        sitemap.ShouldNotContain("#/");
         var robots = await guest.Http.GetStringAsync("/api/v1/seo/robots.txt");
         robots.ShouldContain("Disallow: /api/");
-        robots.ShouldContain("sitemap.xml");
+        robots.ShouldContain("Disallow: /super-app/admin");
+        robots.ShouldContain("Sitemap: https://localhost:7254/sitemap.xml");
     }
 }

@@ -34,6 +34,7 @@ HTTPS_PORT=443
 DOTNET_CLI_TELEMETRY_OPTOUT=1
 CONNECTIONSTRINGS__DEFAULT=Server=127.0.0.1,1433;Database=SuperMalaab;User Id=supermalaab_app;Password=$DBPASS;TrustServerCertificate=True;Encrypt=True
 SITE__ROOT=$BASE/site
+SITE__PUBLICURL=https://supermalaab.com/super-app/
 ALLOWEDHOSTS=supermalaab.com;www.supermalaab.com;localhost;127.0.0.1
 SECURITY__DATA_PROTECTION_KEYS_PATH=$BASE/keys
 STORAGE__LOCAL_ROOT=$BASE/storage
@@ -61,6 +62,8 @@ FOOTBALL__THESPORTSDB__KEY=123
 EOF
   chmod 600 /etc/supermalaab/app.env
 fi
+# The public address used in e-mail links (reset password, confirm e-mail), the sitemap and robots.txt
+grep -q '^SITE__PUBLICURL=' /etc/supermalaab/app.env || echo 'SITE__PUBLICURL=https://supermalaab.com/super-app/' >> /etc/supermalaab/app.env
 
 step "Build the API"
 cd $BASE/src
