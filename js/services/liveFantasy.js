@@ -223,24 +223,32 @@
 
     /* Groups and leagues */
     officialLeagues() {
-      if (!live() || !S()?.groups) return demo.fantasy.officialLeagues();
-      return [grandOf(key()), ...S().groups.official.map(officialOf)];
+      if (!live()) return demo.fantasy.officialLeagues();
+      // Real site: only the server's leagues, never the demo's made-up ones (visitors see the grand league only)
+      return [grandOf(key()), ...(S()?.groups?.official || []).map(officialOf)];
     },
     allOfficial(lg) {
-      if (!live() || !server[lg || key()]?.groups) return demo.fantasy.allOfficial(lg);
-      return server[lg || key()].groups.official.map(officialOf);
+      if (!live()) return demo.fantasy.allOfficial(lg);
+      return (server[lg || key()]?.groups?.official || []).map(officialOf);
     },
     privateGroups() {
-      if (!live() || !S()?.groups) return demo.fantasy.privateGroups();
+      if (!live()) return demo.fantasy.privateGroups();
+      if (!S()?.groups) return [];
       return S().groups.mine.filter((g) => g.type !== 'Official').map((g) => privateOf(g, key()));
     },
     group(id) {
-      if (!live() || !S()?.groups) return demo.fantasy.group(id);
+      if (!live()) return demo.fantasy.group(id);
       const apiId = Number(String(id).replace(/^(pg|og)-/, ''));
       if (String(id).startsWith('grand-')) return { ...grandOf(key()), standings: [] };
+      if (!S()?.groups) return null;
       const g = [...S().groups.mine, ...S().groups.official].find((x) => x.id === apiId);
       if (!g) return null;
       return { ...(g.type === 'Official' ? officialOf(g) : privateOf(g, key())), standings: standingsOf(apiId) };
+    },
+    /** Real site: a league's table is the server's (made-up rivals are for the demo only). */
+    standings(g) {
+      if (!live()) return demo.fantasy.standings(g);
+      return g?.standings || (g?.apiId ? standingsOf(g.apiId) : []);
     },
     async createGroup(name) {
       if (!live() || !S()) return demo.fantasy.createGroup(name);
