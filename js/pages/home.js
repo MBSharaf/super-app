@@ -89,7 +89,7 @@
         <div class="hero-copy">
           <div class="sport-switch" role="group" aria-label="Sport">${sportBtn('football', 'ball', 'Football')}${sportBtn('padel', 'padel', 'Padel')}</div>
           <h1 class="display hero-title"><span>Book.</span><span>Play.</span><span>Win.</span></h1>
-          <p class="lead">Pitches, padel courts, players for your game and Premier League fantasy — in one app.</p>
+          <p class="lead">${SA.config.fantasyEnabled ? 'Pitches, padel courts, players for your game and Premier League fantasy — in one app.' : 'Pitches, padel courts and players for your game — in one app.'}</p>
           <div class="hero-ctas">
             <a class="btn btn-primary btn-lg" data-sport-only="football" href="#/pitches?locate=1">${icon('pitch', 19)} Book a pitch</a>
             <a class="btn btn-primary btn-lg" data-sport-only="padel" href="#/pitches?sport=padel">${icon('padel', 19)} Book a padel court</a>
@@ -105,7 +105,7 @@
 
       <section class="container">
         <nav class="quick-nav" aria-label="Everything in Super Malaab">
-          ${QUICK.filter(([k]) => k !== 'shop' || SA.config.storeEnabled).map(([k, l]) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item qn-${k}"><span class="quick-nav-ico">${icon(n.icon, 24)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${l}</span></a>`; }).join('')}
+          ${QUICK.filter(([k]) => (k !== 'shop' || SA.config.storeEnabled) && (k !== 'fantasy' || SA.config.fantasyEnabled)).map(([k, l]) => { const n = SA.ui.shell.LINKS[k]; const live = k === 'matches' ? SA.ui.shell.liveCount() : 0; return `<a href="${n.href}" class="quick-nav-item qn-${k}"><span class="quick-nav-ico">${icon(n.icon, 24)}${live ? '<span class="quick-nav-dot"></span>' : ''}</span><span>${l}</span></a>`; }).join('')}
         </nav>
       </section>
 
@@ -175,7 +175,7 @@
         <div class="stats-strip reveal">
           <div><b class="num" data-countup="420">0</b><span>partner pitches</span></div>
           <div><b class="num" data-countup="18500">0</b><span>games filled last month</span></div>
-          <div><b class="num" data-countup="184320">0</b><span>fantasy managers</span></div>
+          ${SA.config.fantasyEnabled ? '<div><b class="num" data-countup="184320">0</b><span>fantasy managers</span></div>' : '<div><b class="num" data-countup="62000">0</b><span>players across Egypt</span></div>'}
           <div><b class="num" data-countup="98.4" data-decimals="1">0</b><span>% bookings confirmed instantly</span></div>
         </div>
       </section>`;

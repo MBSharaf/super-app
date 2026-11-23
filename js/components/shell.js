@@ -43,7 +43,8 @@
   ];
   const liveCount = () => { try { return SA.services.schedule.listSync(SA.core.utils.isoDate(SA.core.utils.today())).filter((m) => m.status === 'live').length; } catch { return 0; } };
   const linkBadge = (n, live) => (n.key === 'matches' && live ? `<span class="badge badge-danger"><span class="live-dot"></span>${live} live</span>` : '');
-  const mainNav = (path) => DESK.map((d) => {
+  const paused = (n) => !!SA.core.isPaused?.(n.href);  // closed parts (store, fantasy) leave the header
+  const mainNav = (path) => DESK.filter((d) => (d.link ? !paused(d.link) : d.items.some((n) => !paused(n)))).map((d) => {
     if (d.link) return `<a href="${d.link.href}" ${d.link.match(path) ? 'aria-current="page"' : ''}>${d.link.label}</a>`;
     const on = d.items.some((n) => n.match(path));
     return `<div class="nav-dd"><button type="button" class="nav-dd-btn" data-nav-dd aria-expanded="false" aria-haspopup="true" ${on ? 'aria-current="page"' : ''}>${d.label} ${icon('chevronDown', 14)}</button>
@@ -62,7 +63,7 @@
   const header = (path) => {
     const s = store.get();
     const cartCount = s.cart.reduce((a, l) => a + l.qty, 0);
-    const unread = s.notifications.filter((n) => !n.read).length;
+    const unread = s.notifications.filter((n) => !n.read && !SA.core.isPaused?.(n.link)).length;
     const u = s.user;
     const mt = SA.services.db?.settings().maintenance;
     const an = mt && (mt.bookings || mt.shop) ? { text: `${mt.bookings && mt.shop ? 'Bookings and shop checkout are' : mt.bookings ? 'Pitch bookings are' : 'Shop checkout is'} paused for maintenance. ${mt.message || ''}`.trim(), tone: 'alert', v: `m${mt.v || 0}` } : SA.services.content?.announcement();
@@ -89,14 +90,14 @@
 
   const footer = () => `<div class="container">
     <div class="footer-grid">
-      <div class="footer-brand">${brand}<p>Book pitches, fill your squad, play Premier League fantasy and gear up — all from one account and one wallet.</p>${SA.ui.social.render({ variant: 'dark' })}</div>
+      <div class="footer-brand">${brand}<p>${SA.config.fantasyEnabled ? 'Book pitches, fill your squad, play Premier League fantasy and gear up — all from one account and one wallet.' : 'Book pitches and padel courts, fill your squad and join games — all from one account and one wallet.'}</p>${SA.ui.social.render({ variant: 'dark' })}</div>
       <div><h4>Play</h4><a href="#/pitches">Book a pitch</a><a href="#/players">Find players</a><a href="#/tournaments">Tournaments</a><a href="#/players/new">Post a match</a><a href="#/bookings">My bookings</a></div>
-      <div><h4>Fantasy</h4><a href="#/fantasy">My team</a><a href="#/fantasy/leagues">Leagues</a><a href="#/fantasy/fixtures">Fixtures</a><a href="#/fantasy/stats">Player stats</a></div>
-      <div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super Malaab</a></div>
+      ${SA.config.fantasyEnabled ? `<div><h4>Fantasy</h4><a href="#/fantasy">My team</a><a href="#/fantasy/leagues">Leagues</a><a href="#/fantasy/fixtures">Fixtures</a><a href="#/fantasy/stats">Player stats</a></div>` : ''}
+      ${SA.config.storeEnabled ? `<div><h4>Shop</h4><a href="#/shop?cat=boots">Football boots</a><a href="#/shop?cat=kits">Jerseys & kits</a><a href="#/shop?sale=1">Sale</a><a href="#/orders">Order history</a><a href="#/sell">Sell on Super Malaab</a></div>` : ''}
       <div><h4>Account</h4><a href="#/profile">Profile</a><a href="#/wallet">Wallet</a><a href="#/wishlist">Wishlist</a><a href="#/community">Communities</a><a href="#/help">Help center</a><a href="#/support">Contact support</a><a href="#/dash">Partner dashboard</a><button class="footer-link" data-action="cycle-theme">Theme: <b data-theme-label>${SA.core.theme.label()}</b></button><button class="footer-link" data-action="toggle-lang" data-i18n-skip>${SA.i18n.isAr ? 'English' : 'العربية'}</button></div>
     </div>
     <div class="footer-legal"><a href="#/legal/terms">Terms</a><a href="#/legal/privacy">Privacy</a><a href="#/legal/refunds">Refunds & returns</a><a href="#/legal/waiver">Injury waiver</a><a href="#/legal/cookies">Cookies</a><button class="footer-link" data-cookie-settings>Cookie settings</button><a href="#/legal">All legal</a></div>
-    <div class="footer-base"><span>© 2026 Super Malaab. Cairo, Egypt.</span><span>Frontend demo: payments, bookings and fantasy scores are simulated on this device.</span></div>
+    <div class="footer-base"><span>© 2026 Super Malaab. Cairo, Egypt.</span><span>${SA.config.fantasyEnabled ? 'Frontend demo: payments, bookings and fantasy scores are simulated on this device.' : 'Frontend demo: payments and bookings are simulated on this device.'}</span></div>
   </div>`;
 
   /** Mobile menu: account card, an icon grid of everything you can do, your stuff, then settings. Short labels, no descriptions. */
@@ -109,7 +110,7 @@
       ? `<div class="mnu-guest"><b>Welcome to Super Malaab</b><div class="mnu-guest-btns"><a class="btn btn-primary btn-sm" href="${signInHref(path)}" data-close>Sign in</a><a class="btn btn-outline btn-sm" href="#/auth/sign-up" data-close>Create an account</a></div></div>`
       : `<a class="mnu-me" href="#/profile" data-close>${SA.ui.c.avatar(u)}<span class="grow"><b>${esc(u?.name || 'My account')}</b><span class="xs">View profile</span></span><span class="mnu-bal"><span class="xs">Wallet</span><b class="num">${money(s.wallet.balance)}</b></span></a>`;
     return `${account}
-      <nav class="mnu-grid" aria-label="Explore">${EXPLORE.filter(([k]) => k !== 'shop' || SA.config.storeEnabled).map(([k, l]) => { const n = LINKS[k]; const on = n.match(path); return `<a href="${n.href}" class="mnu-tile ${on ? 'is-active' : ''}" data-close><span class="mnu-tile-ico">${icon(n.icon, 22)}${k === 'matches' && live ? `<span class="mnu-live">${live}</span>` : ''}</span><span>${l}</span></a>`; }).join('')}</nav>
+      <nav class="mnu-grid" aria-label="Explore">${EXPLORE.filter(([k]) => (k !== 'shop' || SA.config.storeEnabled) && (k !== 'fantasy' || SA.config.fantasyEnabled)).map(([k, l]) => { const n = LINKS[k]; const on = n.match(path); return `<a href="${n.href}" class="mnu-tile ${on ? 'is-active' : ''}" data-close><span class="mnu-tile-ico">${icon(n.icon, 22)}${k === 'matches' && live ? `<span class="mnu-live">${live}</span>` : ''}</span><span>${l}</span></a>`; }).join('')}</nav>
       ${signedOut() ? '' : `<section class="mnu-sec"><h3 class="mnu-h">My activity</h3><div class="mnu-list">${[MINE[0], MINE[1], MINE[2], MINE[3], ['#/wishlist', 'heart', 'Wishlist']].map(row).join('')}</div></section>`}
       <section class="mnu-sec"><h3 class="mnu-h">More</h3><div class="mnu-list">${MORE.map(row).join('')}</div></section>
       <a class="mnu-partner" href="#/dash" data-close><span class="mnu-row-ico">${icon('dashboard', 19)}</span><span class="grow"><b>Partner dashboard</b><span class="xs">Pitch owners, sellers and print partners</span></span>${icon('arrowUpRight', 16)}</a>
@@ -117,7 +118,7 @@
   };
 
   const openNotifications = () => {
-    const list = store.get().notifications;
+    const list = store.get().notifications.filter((n) => !SA.core.isPaused?.(n.link));  // none from closed parts
     const kindIcon = { fantasy: 'trophy', match: 'users', booking: 'pitch', shop: 'bag' };
     const m = SA.ui.overlay.open({
       drawer: true, title: 'Notifications', subtitle: list.some((n) => !n.read) ? `${list.filter((n) => !n.read).length} unread` : 'You’re all caught up',
