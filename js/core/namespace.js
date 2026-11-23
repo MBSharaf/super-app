@@ -46,21 +46,21 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // package, published game and request to join a game to `bookings`, and fantasy events to `fantasy` (js/services/automation.js).
   // The server sends its own.
   automation: {
-    orders: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
-    bookings: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/BOOKING-created',
+    orders: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook/new_oreder',
+    bookings: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook/BOOKING-created',
     // Fantasy (league.created, league.member.joined, gameweek.finished) goes to the orders link too (owner's request, 2026-10-31)
-    fantasy: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/new_oreder',
+    fantasy: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook/new_oreder',
     // Cancellation requests (cancellation.requested / .approved / .rejected) go to the chatbot's AI agent (chatbot.url below),
     // never the orders link (owner, 2026-11-11). Set a link here only to send them to a separate workflow instead.
     cancellations: '',
     // Pitch partner dashboard (owner's link 2026-11-11): pitch.added / pitch.removed and review.created → Telegram to the
     // pitch owner; offer.created → email to players; slot.posted (free hours) → players following that area / pitch.
-    dashboard: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook-test/Dashboard_lplay',
+    dashboard: 'https://retract-monsieur-jovial.ngrok-free.dev/webhook/Dashboard_lplay',
   },
   // Chatbot support — the AI agent's webhook (n8n, owner's link 2026-11-07). POST JSON with the message, the conversation,
   // the customer's data on this device and knowledgeUrl (chatbot/knowledge.md); replies { reply, action? }.
   // Empty, or no answer = the built-in demo assistant answers from the Help center.
-  chatbot: { url: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook-test/support', hours: '' },
+  chatbot: { url: 'https://attitude-blighted-stunned.ngrok-free.dev/webhook/support', hours: '' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.
   social: { facebook: '', instagram: '', tiktok: '' },
 } };
