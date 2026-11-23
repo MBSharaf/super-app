@@ -6,13 +6,22 @@
     "allowMixedContent": false
   },
   "server": {
-    "androidScheme": "https"
+    "url": "https://supermalaab.com",
+    "androidScheme": "https",
+    "allowNavigation": [
+      "supermalaab.com",
+      "www.supermalaab.com"
+    ],
+    "errorPath": "offline.html"
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 800,
       "backgroundColor": "#F1F2EE",
       "showSpinner": false
+    },
+    "SystemBars": {
+      "insetsHandling": "css"
     }
   }
 }

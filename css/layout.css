@@ -259,3 +259,9 @@ html.reduce-motion .wa-fab::before { display: none; }
 .pp.is-still .pp-obj, .pp.is-still .pp-cube, .pp.is-still .pp-coin, .pp.is-still .pp-sparks { animation: none; }
 @media (max-width: 860px) { .pp-root { bottom: calc(var(--tabbar-h) + 92px + env(safe-area-inset-bottom)); inset-inline-end: max(16px, env(safe-area-inset-right)); } .pp { width: 100%; } .pp-card { grid-template-columns: 92px minmax(0, 1fr); } .pp-stage { height: 92px; } .pp-cube { --s: 52px; } .pp-coin { --d: 64px; } .pp-tee { width: 92px; height: 92px; } }
 @media print { .pp-root { display: none; } }
+
+/* Android app: the page is drawn behind the phone's status bar (edge-to-edge), so the header grows by the bar's height */
+html[data-native] { --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)); }
+html[data-native] .site-header { padding-top: var(--sat); height: calc(var(--header-h) + var(--sat)); }
+html[data-native] .site-header .header-inner { height: var(--header-h); }
+html[data-native] .shop-toolbar { top: calc(var(--header-h) + var(--sat)); }
