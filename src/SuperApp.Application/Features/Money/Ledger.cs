@@ -94,6 +94,8 @@ public interface ILedger
     Task OrderPaidAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> shares, CancellationToken ct);
 
     /// <summary>Money back to the customer's wallet for these items (+ the delivery fee when given), each share taken back, a refund receipt.</summary>
+    Task CashCollectedAsync(Domain.Entities.Shop.Order order, decimal amount, CancellationToken ct);
+
     Task OrderRefundAsync(Domain.Entities.Shop.Order order, IReadOnlyList<OrderShare> items, decimal deliveryFee, CancellationToken ct);
 
     /// <summary>

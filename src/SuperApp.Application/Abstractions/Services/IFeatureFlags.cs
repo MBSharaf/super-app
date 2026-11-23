@@ -25,4 +25,11 @@ public static class KillSwitches
     /// <summary>Not seeded: players can register teams only once the setting <c>Features:TournamentsOpen</c> is true
     /// (tournaments are "coming soon" until then).</summary>
     public const string TournamentRegistration = "tournaments.registration";
+
+    /// <summary>Not seeded: how store orders are paid, from the setting <c>Features:ShopPayment</c> = online (default), cod or both.
+    /// Cash on delivery is used while the payment gateway is not ready (owner, 2026-11-23).</summary>
+    public const string ShopCashOnDelivery = "shop.payment.cod";
+
+    /// <summary>Not seeded: card / wallet payment for store orders (off when <c>Features:ShopPayment</c> = cod).</summary>
+    public const string ShopOnlinePayment = "shop.payment.online";
 }

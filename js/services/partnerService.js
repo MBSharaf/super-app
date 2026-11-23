@@ -9,7 +9,7 @@
   const db = () => SA.services.db;
   const N = () => SA.services.notify;
   const me = () => SA.core.store.get().user || SA.data.user.profile;
-  const FORMATS = ['5-a-side', '7-a-side', '11-a-side'];
+  const FORMATS = ['5-a-side', '7-a-side', '11-a-side', 'Padel court'];   // padel courts too (owner, 2026-11-23)
   const PAYOUTS = ['Bank transfer', 'InstaPay'];
 
   const ensure = () => { const d = db().raw(); if (!Array.isArray(d.partnerApps)) { d.partnerApps = []; db().touch('partnerApps'); } };
@@ -70,7 +70,7 @@
       const format = app.formats[0];
       const pitch = db().insert('pitches', {
         id: `p-${app.pitchName.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24)}-${Math.random().toString(36).slice(2, 5)}`,
-        name: app.pitchName, area: app.area, city: app.city, address: app.address, lat: app.lat, lng: app.lng, format, players: { '5-a-side': 10, '7-a-side': 14, '11-a-side': 22 }[format],
+        name: app.pitchName, area: app.area, city: app.city, address: app.address, lat: app.lat, lng: app.lng, ...(format === 'Padel court' ? { sport: 'padel', format: 'Padel', players: 4, panoramic: false, durations: [60, 90] } : { format, players: { '5-a-side': 10, '7-a-side': 14, '11-a-side': 22 }[format] }),
         surface: 'Artificial turf', indoor: false, price: app.price, peakPrice: Math.round(app.price * 1.25), open: [9, 25], images: app.photos, facilities: ['lights', 'water', 'wc'], about: app.note || '', tags: [],
         ownerId: accountId, status: 'active', closedReason: '', rating: 0, reviews: 0, seed: false, review: 'approved', reviewedAt: now, cancelPolicy: 'standard', weekly: { enabled: true, discount: 0.1 },
       });

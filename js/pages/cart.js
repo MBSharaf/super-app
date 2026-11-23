@@ -55,7 +55,7 @@
                 : `<label class="field-label" for="coupon">Promo code</label><div class="row" style="--gap:8px;margin-top:6px"><input class="input" id="coupon" name="code" placeholder="e.g. KICKOFF10" autocomplete="off" style="text-transform:uppercase" /><button class="btn btn-outline" type="submit">Apply</button></div><p class="field-error" data-cerr></p><p class="xs muted">Try KICKOFF10, PITCH50 or FREESHIP.</p>`}
             </form>
             <div style="margin-top:18px">${summaryBox(t, { cta: `<a class="btn btn-blaze btn-lg btn-block" style="margin-top:18px" href="#/checkout">${icon('lock', 16)} Checkout</a>` })}</div>
-            <div class="pay-logos"><span>${SA.ui.payment.visaMark}</span><span class="badge">${icon('wallet', 12)} Wallet</span><span class="badge">Cash on delivery</span></div>
+            <div class="pay-logos">${SA.config.shopPayment === 'cod' ? '' : `<span>${SA.ui.payment.visaMark}</span><span class="badge">${icon('wallet', 12)} Wallet</span>`}<span class="badge">Cash on delivery</span></div>
           </aside>
         </div>
       </div>
@@ -107,7 +107,7 @@
                 <label class="choice"><input type="radio" name="delivery" value="express" /><span class="radio-dot"></span><span class="grow"><b>Express</b><span class="xs muted" style="display:block">Next day in Cairo & Giza</span></span><b class="small">${money(t.shipping ? P.shipping.express : P.shipping.express - P.shipping.standard)}</b></label>
               </div>
             </section>
-            <section class="panel panel-pad" data-paybox>${SA.ui.payment.render({ amount: t.total, name: 'copay' })}</section>
+            <section class="panel panel-pad" data-paybox>${SA.ui.payment.render({ amount: t.total, name: 'copay', codOnly: SA.config.shopPayment === 'cod', allowCOD: SA.config.shopPayment === 'both' })}</section>
           </form>
           <aside class="panel panel-pad order-summary">
             <h2 class="h4">Your order</h2>

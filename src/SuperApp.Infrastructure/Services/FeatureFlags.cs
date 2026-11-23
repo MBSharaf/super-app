@@ -23,6 +23,11 @@ public sealed class FeatureFlags(AppDbContext db, IConfiguration configuration) 
         {
             return configuration.GetValue("Features:TournamentsOpen", false);
         }
+        if (key is KillSwitches.ShopCashOnDelivery or KillSwitches.ShopOnlinePayment)
+        {
+            var payment = (configuration["Features:ShopPayment"] ?? "online").Trim().ToLowerInvariant();
+            return payment == "both" || payment == (key == KillSwitches.ShopCashOnDelivery ? "cod" : "online");
+        }
         return await db.Set<FeatureFlag>().Where(f => f.Key == key).Select(f => (bool?)f.IsEnabled).FirstOrDefaultAsync(ct) ?? true;
     }
 
@@ -33,6 +38,8 @@ public sealed class FeatureFlags(AppDbContext db, IConfiguration configuration) 
             throw key switch
             {
                 KillSwitches.Pod => new FeatureDisabledException("Print on demand is paused for now. Sellers can sell their own products.", "pod_paused"),
+                KillSwitches.ShopCashOnDelivery => new FeatureDisabledException("Cash on delivery isn't available. Pay by card or with your wallet.", "cod_off"),
+                KillSwitches.ShopOnlinePayment => new FeatureDisabledException("For now store orders are paid in cash on delivery.", "cod_only"),
                 KillSwitches.TournamentRegistration => new FeatureDisabledException("Tournaments are coming soon — registration isn't open yet.", "tournaments_soon"),
                 _ => new FeatureDisabledException(),
             };

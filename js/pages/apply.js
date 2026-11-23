@@ -43,7 +43,7 @@
     const area = areas.find((a) => [a.nameEn, a.nameAr].some((n) => n.toLowerCase() === String(fd.area || '').trim().toLowerCase()));
     const answers = {
       ownerName: fd.ownerName, phone: fd.phone, nationalId: fd.nationalId, pitchName: fd.pitchName, areaId: area?.id || 0, address: fd.address,
-      lat: data.lat, lng: data.lng, count: +fd.count, formats: [...f.querySelectorAll('[name="formats"]:checked')].map((x) => parseInt(x.value, 10)),
+      lat: data.lat, lng: data.lng, count: +fd.count, formats: [...f.querySelectorAll('[name="formats"]:checked')].map((x) => (x.value === 'Padel court' ? 2 : parseInt(x.value, 10))),   // 2 = padel (2 vs 2)
       price: +fd.price, payoutMethod: PAYOUT[fd.payoutMethod] || fd.payoutMethod, payoutDetail: fd.payoutDetail, acceptTerms: f.agree.checked, note: fd.note || null,
     };
     const form = new FormData();
@@ -90,7 +90,7 @@
             <div class="field span-2"><span class="field-label">Location on the map <span class="xs muted" data-coords>tap the map to pin it</span></span><div class="ap-map" data-map></div><p class="field-error" data-err="lat"></p></div>
             ${field('count', 'Number of pitches', '<input class="input num" id="ap-count" name="count" type="number" min="1" max="20" value="1" />')}
             ${field('price', 'Price per hour (EGP)', '<input class="input num" id="ap-price" name="price" type="number" min="100" max="5000" value="600" />', 'You can set peak prices later.')}
-            <fieldset class="field span-2"><legend class="field-label">Pitch sizes</legend><div class="chips">${S.partners.FORMATS.map((f, i) => `<label class="chip chip-check"><input type="checkbox" name="formats" value="${f}" ${i === 0 ? 'checked' : ''} /> ${f}</label>`).join('')}</div><p class="field-error" data-err="formats"></p></fieldset>
+            <fieldset class="field span-2"><legend class="field-label">Pitch types (football and padel)</legend><div class="chips">${S.partners.FORMATS.map((f, i) => `<label class="chip chip-check"><input type="checkbox" name="formats" value="${f}" ${i === 0 ? 'checked' : ''} /> ${f}</label>`).join('')}</div><p class="field-error" data-err="formats"></p></fieldset>
             <div class="field span-2"><span class="field-label">Photos of the pitch (up to 4)</span><div class="ap-photos">${[0, 1, 2, 3].map((i) => `<label class="ap-photo" data-pick="photo${i}"><input type="file" accept="image/*" hidden /><span data-preview>${icon('image', 20)}</span></label>`).join('')}</div><p class="field-error" data-err="photos"></p></div>
             <div class="field span-2"><label for="ap-note">Anything else? <span class="muted">(optional)</span></label><textarea class="input" id="ap-note" name="note" rows="2" maxlength="400" placeholder="Facilities, parking, opening hours…"></textarea></div>
           </div></section>

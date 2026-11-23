@@ -74,6 +74,7 @@ public sealed class ShipmentTracker(IShipmentRepository shipments, IParcelReposi
                 break;
             case ShipmentStatus.Delivered:
                 await DeliveredAsync(order, parcel, items, ct);
+                if (order.PaymentMethod == OrderPaymentMethod.CashOnDelivery) { await ledger.CashCollectedAsync(order, shipment.CodAmount, ct); }
                 break;
             case ShipmentStatus.Refused:
                 await RefusedAsync(order, parcel, items, ct);

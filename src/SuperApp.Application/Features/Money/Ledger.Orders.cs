@@ -47,10 +47,28 @@ public sealed partial class Ledger
         PostRaw(revenue, order.DeliveryFee, LedgerBucket.Available, LedgerKind.ServiceFee, "Order", order.Id, null, group);
         // What is left is the part of a discount Super Malaab pays (never more than the order's own numbers)
         PostRaw(revenue, order.Total - held - commission - official - order.DeliveryFee, LedgerBucket.Available, LedgerKind.Voucher, "Order", order.Id, null, group);
-        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = order.CustomerId, Kind = ReceiptKind.Payment,
-            Amount = order.Total, RefType = "Order", RefId = order.Id });
+        // Cash on delivery: the receipt is made when the courier collects the money (CashCollectedAsync)
+        if (order.PaymentMethod != OrderPaymentMethod.CashOnDelivery)
+        {
+            store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = order.CustomerId, Kind = ReceiptKind.Payment,
+                Amount = order.Total, RefType = "Order", RefId = order.Id });
+        }
     }
 
+    /// <summary>Cash on delivery: the courier collected this parcel's money — the customer's payment receipt.</summary>
+    public async Task CashCollectedAsync(Order order, decimal amount, CancellationToken ct)
+    {
+        if (amount > 0)
+        {
+            store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Payment, ct), UserId = order.CustomerId, Kind = ReceiptKind.Payment,
+                Amount = amount, RefType = "Order", RefId = order.Id });
+        }
+    }
+
+    /// <summary>
+    /// Takes the shares back. Money that was paid goes to the customer's wallet; cash on delivery that was never collected
+    /// (refused or cancelled before delivery) is only taken back from the stores and Super Malaab — no refund, no receipt.
+    /// </summary>
     public async Task OrderRefundAsync(Order order, IReadOnlyList<OrderShare> items, decimal deliveryFee, CancellationToken ct)
     {
         var amount = items.Sum(i => i.CustomerAmount) + deliveryFee;
@@ -59,7 +77,11 @@ public sealed partial class Ledger
             return;
         }
         var group = Guid.NewGuid();
-        PostRaw(await store.WalletAsync(order.CustomerId, WalletType.Customer, ct), amount, LedgerBucket.Available, LedgerKind.Refund, "Order", order.Id, null, group);
+        var paid = order.PaymentMethod != OrderPaymentMethod.CashOnDelivery;
+        if (paid)
+        {
+            PostRaw(await store.WalletAsync(order.CustomerId, WalletType.Customer, ct), amount, LedgerBucket.Available, LedgerKind.Refund, "Order", order.Id, null, group);
+        }
         decimal fromStores = 0;
         foreach (var s in items.Where(i => i.OwnerUserId is not null && i.Wallet is not null && i.Earning > 0))
         {
@@ -67,8 +89,11 @@ public sealed partial class Ledger
             fromStores += s.Earning;
         }
         PostRaw(await store.WalletAsync(null, WalletType.PlatformRevenue, ct), -(amount - fromStores), LedgerBucket.Available, LedgerKind.Refund, "Order", order.Id, null, group);
-        store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = order.CustomerId, Kind = ReceiptKind.Refund,
-            Amount = amount, RefType = "Order", RefId = order.Id });
+        if (paid)
+        {
+            store.Add(new Receipt { Number = await store.NewReceiptNumberAsync(ReceiptKind.Refund, ct), UserId = order.CustomerId, Kind = ReceiptKind.Refund,
+                Amount = amount, RefType = "Order", RefId = order.Id });
+        }
         await points.TakeBackAsync(order.CustomerId, amount, "Order", order.Id, ct);
     }
 

@@ -34,11 +34,11 @@ public sealed class ApplicationsTests(AccountsApiFactory api) : IClassFixture<Ac
 
     private Task<int> AreaAsync() => api.DbAsync(db => db.Set<Area>().Where(a => a.NameEn == "Maadi").Select(a => a.Id).SingleAsync());
 
-    private async Task<object> PitchAnswersAsync(int count = 2, bool terms = true, int? area = null) => new
+    private async Task<object> PitchAnswersAsync(int count = 2, bool terms = true, int? area = null, int[]? formats = null) => new
     {
         ownerName = "Karim Adel Mostafa", phone = "01012345678", nationalId = "29801011234567", pitchName = "Maadi Night Arena",
         areaId = area ?? await AreaAsync(), address = "Road 9, near the metro", lat = 29.96m, lng = 31.27m, count,
-        formats = new[] { 5, 7 }, price = 600, payoutMethod = "InstaPay", payoutDetail = "karim@instapay", acceptTerms = terms,
+        formats = formats ?? [5, 7], price = 600, payoutMethod = "InstaPay", payoutDetail = "karim@instapay", acceptTerms = terms,
     };
 
     private static object SellerAnswers(string? handle = null) => new
@@ -110,6 +110,19 @@ public sealed class ApplicationsTests(AccountsApiFactory api) : IClassFixture<Ac
         pitches.Count.ShouldBe(2);
         pitches.ShouldAllBe(p => p.Status == PitchStatus.Live && p.PricePerHour == 600);
         pitches.Select(p => (int)p.Format).ShouldBe([5, 7], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task A_padel_club_applies_with_courts_and_gets_padel_courts()
+    {
+        var (client, email) = await CustomerAsync();
+        var code = await ApplyPitchAsync(client, await PitchAnswersAsync(count: 3, formats: [5, 2]));
+        (await (await api.CeoAsync()).PostAsync($"/api/v1/admin/approvals/applications/{code}/approve")).Status.ShouldBe(HttpStatusCode.OK);
+
+        var pitches = await api.DbAsync(db => db.Set<Pitch>().Where(p => p.Venue.Partner.User.Email == email).OrderBy(p => p.Id).ToListAsync());
+        pitches.Select(p => p.Sport).ShouldBe([Sport.Football, Sport.Padel, Sport.Football]);
+        pitches[1].Durations.ShouldBe(CourtDurations.Min60 | CourtDurations.Min90);
+        pitches[1].Name.ShouldEndWith("Court 2");
     }
 
     [Fact]

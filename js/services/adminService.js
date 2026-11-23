@@ -54,7 +54,7 @@
       const p = db().find('pitches', b.pitchId);
       const owner = db().find('accounts', b.ownerId || p?.ownerId);
       const r = rows.get(b.pitchId) || { pitchId: b.pitchId, pitchName: p?.name || b.pitchName || 'Removed pitch', venueName: p?.area || '', partnerId: owner?.id || '', partnerName: owner?.company || owner?.name || '—',
-        paymentMode: p?.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit', bookings: 0, gross: 0, paidInApp: 0, cashAtPitch: 0, stillAtPitch: 0, ourIncome: 0, venueShareInApp: 0 };
+        paymentMode: ['Deposit50', 'FullOnline'].includes(p?.paymentMode) ? p.paymentMode : 'Deposit', bookings: 0, gross: 0, paidInApp: 0, cashAtPitch: 0, stillAtPitch: 0, ourIncome: 0, venueShareInApp: 0 };
       rows.set(b.pitchId, r);
       const m = b.money, fee = b.source === 'app' || !b.source ? b.fee || 0 : 0;
       if (b.status === 'cancelled') { r.ourIncome += m.commission; r.venueShareInApp += m.online ? m.wallet : 0; return; }

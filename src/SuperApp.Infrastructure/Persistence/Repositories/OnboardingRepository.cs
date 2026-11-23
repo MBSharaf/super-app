@@ -20,11 +20,14 @@ public sealed partial class OnboardingRepository(AppDbContext db) : IOnboardingR
         var policyId = await db.Set<CancellationPolicy>().Where(p => p.Key == "standard").Select(p => p.Id).SingleAsync(ct);
         for (var i = 0; i < answers.Count; i++)
         {
-            var name = answers.Count == 1 ? answers.PitchName.Trim() : $"{answers.PitchName.Trim()} — Pitch {i + 1}";
+            var format = answers.Formats[i % answers.Formats.Count];
+            var padel = format == 2;   // a padel court (2 vs 2): 60 or 90-minute bookings until the owner changes them
+            var name = answers.Count == 1 ? answers.PitchName.Trim() : $"{answers.PitchName.Trim()} — {(padel ? "Court" : "Pitch")} {i + 1}";
             var pitch = new Pitch
             {
-                Venue = venue, Name = name, Slug = await FreeSlugAsync(name, ct), Format = (byte)answers.Formats[i % answers.Formats.Count],
+                Venue = venue, Name = name, Slug = await FreeSlugAsync(name, ct), Format = (byte)format,
                 Surface = PitchSurface.ArtificialTurf, PricePerHour = answers.Price, CancellationPolicyId = policyId, Status = PitchStatus.Live,
+                Sport = padel ? Sport.Padel : Sport.Football, Durations = padel ? CourtDurations.Min60 | CourtDurations.Min90 : CourtDurations.None,
             };
             pitch.Photos = photoFileIds.Select((fileId, n) => new PitchPhoto { FileId = fileId, SortOrder = n + 1 }).ToList();
             db.Set<Pitch>().Add(pitch);

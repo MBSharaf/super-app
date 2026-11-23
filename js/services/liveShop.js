@@ -253,7 +253,7 @@
 
   const placeOrder = async ({ address, delivery, payment }) => {
     if (!signedIn()) throw needSignIn();
-    const method = payment?.method === 'wallet' ? 'wallet' : 'online';   // card or wallet only (no cash on delivery)
+    const method = payment?.method === 'wallet' ? 'wallet' : payment?.method === 'cod' ? 'cod' : 'online';   // the server checks which ones are open (Features:ShopPayment)
     const key = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
     const r = await api.post('/orders/checkout', {
       address: { label: address?.label, line1: address?.line1 || '', line2: address?.line2 || null, city: address?.city || '' }, phone: address?.phone || SA.services.session.me()?.phone || '',

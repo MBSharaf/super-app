@@ -21,7 +21,7 @@
     const x = a.answers, st = AS[a.status.toLowerCase()] || AS.pending, isPitch = a.type === 'PitchOwner';
     const title = isPitch ? x.pitchName : x.storeName;
     const facts = isPitch
-      ? `${esc(x.address)}, ${esc(areaName(x.areaId))} · ${x.count} pitch${x.count > 1 ? 'es' : ''} · ${x.formats.map((f) => `${f}-a-side`).join(', ')} · ${money(x.price)}/hour`
+      ? `${esc(x.address)}, ${esc(areaName(x.areaId))} · ${x.count} pitch${x.count > 1 ? 'es' : ''} · ${x.formats.map((f) => (f === 2 ? 'padel court' : `${f}-a-side`)).join(', ')} · ${money(x.price)}/hour`
       : `${{ pod: 'Print on demand', store: 'Own store', both: 'Both' }[x.mode] || ''}${x.bio ? ` · ${esc(x.bio)}` : ''}`;
     return `<article class="dash-card adm-approve">
       ${isPitch ? `<div class="adm-approve-img">${filesOf(a, 'VenuePhoto').slice(0, 3).map((u) => `<img src="${esc(u)}" alt="" loading="lazy" />`).join('')}</div>` : ''}

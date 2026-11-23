@@ -58,6 +58,7 @@ public sealed class CheckoutService(
         }
         var lines = await CheckLinesAsync(me, ct);
         var payment = PaymentOf(request.PaymentMethod);
+        await flags.EnsureOnAsync(payment == OrderPaymentMethod.CashOnDelivery ? KillSwitches.ShopCashOnDelivery : KillSwitches.ShopOnlinePayment, ct);
         var factory = await CheckPrintingAsync(lines, payment, me, ct);
         var promo = string.IsNullOrWhiteSpace(request.PromoCode) ? null : await cart.EvaluateAsync(request.PromoCode, lines, me, ct);
         var (address, phone) = await AddressAsync(request, me, ct);
@@ -65,7 +66,8 @@ public sealed class CheckoutService(
         order.IdempotencyKey = idempotencyKey;
         var jobs = await JobsAsync(order, factory, ct);
         await orders.PlaceAsync(order, jobs, StockOf(order), PromoUse(order, promo, me), lines.Select(l => l.Id).ToList(), ct);
-        var url = await PayAsync(order, me, ct);
+        // Cash on delivery: nothing to pay now, the sellers start at once and the courier collects the money
+        var url = payment == OrderPaymentMethod.CashOnDelivery ? await CashOnDeliveryAsync(order, ct) : await PayAsync(order, me, ct);
         return await ResultAsync(order.Code, ct) with { PaymentUrl = url };
     }
 
@@ -99,6 +101,14 @@ public sealed class CheckoutService(
             await money.PaidAsync(order, ct);
         }
         return started.RedirectUrl;
+    }
+
+    /// <summary>The order goes to the sellers like a paid one; earnings stay held until 24 hours after delivery, and what is
+    /// refused or cancelled before delivery is taken back without a refund (nothing was paid).</summary>
+    private async Task<string?> CashOnDeliveryAsync(Order order, CancellationToken ct)
+    {
+        await money.PaidAsync(order, ct);
+        return null;
     }
 
     private async Task<IReadOnlyList<CartLine>> CheckLinesAsync(Guid me, CancellationToken ct)
@@ -192,6 +202,7 @@ public sealed class CheckoutService(
     private static OrderPaymentMethod PaymentOf(string method) => method switch
     {
         "wallet" => OrderPaymentMethod.Wallet,
+        "cod" => OrderPaymentMethod.CashOnDelivery,
         _ => OrderPaymentMethod.Online,
     };
 }
@@ -208,7 +219,7 @@ public sealed class CheckoutRequestValidator : AbstractValidator<CheckoutRequest
         RuleFor(x => x.Phone).NotEmpty().When(x => x.AddressId is null).WithMessage("Add a phone number for the courier.");
         RuleFor(x => x.Phone).EgyptianMobile().When(x => !string.IsNullOrWhiteSpace(x.Phone));
         RuleFor(x => x.DeliverySpeed).Must(s => s is "standard" or "express").WithMessage("Choose standard or express delivery.");
-        RuleFor(x => x.PaymentMethod).Must(s => s is "online" or "wallet").WithMessage("Pay by card or with your Super Malaab wallet (no cash on delivery).");
+        RuleFor(x => x.PaymentMethod).Must(s => s is "online" or "wallet" or "cod").WithMessage("Choose card, wallet or cash on delivery.");
         RuleFor(x => x.PromoCode).MaximumLength(30);
     }
 }

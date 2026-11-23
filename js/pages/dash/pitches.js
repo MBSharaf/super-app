@@ -97,7 +97,8 @@
   const blank = (sport) => ({ sport: sport === 'padel' ? 'padel' : 'football', panoramic: true, durations: [60, 90], racketPrice: 50, ballsPrice: 100, name: '', area: '', city: 'Cairo', address: '', lat: null, lng: null, format: sport === 'padel' ? 'Padel' : '5-a-side', surface: 'Artificial turf', indoor: false, price: 600, peakPrice: 750, open: [9, 25], facilities: ['lights', 'water', 'wc'], images: [], about: '', tags: [], status: 'active', cancelPolicy: 'standard', paymentMode: 'Deposit', weekly: { enabled: true, discount: 0.1 } });
   /** The owner chooses how players pay for each pitch (owner's rule, 2026-11-21) */
   const PAY_MODES = [
-    { key: 'Deposit', icon: 'wallet', name: 'Deposit in the app, the rest at the pitch', summary: 'Players pay a deposit online to hold the pitch (20% of the total, at least 100 EGP). You collect the rest in cash when you scan their QR code.' },
+    { key: 'Deposit', icon: 'wallet', name: '20% deposit in the app, the rest at the pitch', summary: 'Players pay a deposit online to hold the pitch (20% of the total, at least 100 EGP). You collect the rest in cash when you scan their QR code.' },
+    { key: 'Deposit50', icon: 'wallet', name: '50% deposit in the app, the rest at the pitch', summary: 'Players pay half online to hold the pitch (at least 100 EGP). You collect the other half in cash when you scan their QR code.' },
     { key: 'FullOnline', icon: 'card', name: 'Full payment in the app', summary: 'Players pay everything online. Nothing to collect at the pitch. Super Malaab pays your share, less the commission, to your balance after the match.' },
   ];
   const hourOpts = (from, to, sel) => { let o = ''; for (let h = from; h <= to; h++) o += `<option value="${h}" ${h === sel ? 'selected' : ''}>${fmtHour(h)}${h >= 24 ? ' (next day)' : ''}</option>`; return o; };

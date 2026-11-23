@@ -106,7 +106,12 @@ public sealed class SettlementsService(ISettlementsReader reader, IExcelExporter
         return new ExcelFile($"supermalaab-pitch-accounts-{clock.UtcNow:yyyyMMdd}.xlsx", excel.Build(dashboard, pitches, partners));
     }
 
-    public static string ModeLabel(string mode) => mode == nameof(PitchPaymentMode.FullOnline) ? "Full payment in the app" : "Deposit in the app, rest at the pitch";
+    public static string ModeLabel(string mode) => mode switch
+    {
+        nameof(PitchPaymentMode.FullOnline) => "Full payment in the app",
+        nameof(PitchPaymentMode.Deposit50) => "50% deposit in the app, rest at the pitch",
+        _ => "20% deposit in the app, rest at the pitch",
+    };
 }
 
 public sealed class SettlementsQueryValidator : AbstractValidator<SettlementsQuery>

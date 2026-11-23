@@ -20,6 +20,7 @@ public static class Deposits
 {
     public const decimal DefaultPercent = 20m;
     public const decimal DefaultMinimum = 100m;
+    public const decimal HalfPercent = 50m;
 
     public static DepositSplit Split(decimal total, decimal percent, decimal minimum)
     {
@@ -31,9 +32,13 @@ public static class Deposits
         return new DepositSplit(deposit, total - deposit);
     }
 
-    /// <summary>The split for a pitch's payment mode: paid in full online, or the deposit rule.</summary>
-    public static DepositSplit Split(decimal total, decimal percent, decimal minimum, PitchPaymentMode mode) =>
-        mode == PitchPaymentMode.FullOnline ? new DepositSplit(Math.Max(0, total), 0) : Split(total, percent, minimum);
+    /// <summary>The split for a pitch's payment mode: paid in full online, a 50% deposit, or the deposit rule (20%); the minimum applies to both deposits.</summary>
+    public static DepositSplit Split(decimal total, decimal percent, decimal minimum, PitchPaymentMode mode) => mode switch
+    {
+        PitchPaymentMode.FullOnline => new DepositSplit(Math.Max(0, total), 0),
+        PitchPaymentMode.Deposit50 => Split(total, HalfPercent, minimum),
+        _ => Split(total, percent, minimum),
+    };
 
     public static async Task<DepositSplit> SplitAsync(ISettingsReader settings, decimal total, PitchPaymentMode mode, CancellationToken ct) =>
         Split(total, await settings.DecimalAsync("deposit.percent", DefaultPercent, ct), await settings.DecimalAsync("deposit.min", DefaultMinimum, ct), mode);

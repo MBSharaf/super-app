@@ -168,7 +168,7 @@
     racketPrice: d.sport === 'padel' && d.racketPrice !== '' && d.racketPrice != null ? Math.round(+d.racketPrice) : null,
     ballsPrice: d.sport === 'padel' && d.ballsPrice !== '' && d.ballsPrice != null ? Math.round(+d.ballsPrice) : null, surface: surfaceKey(d.surface), isIndoor: !!d.indoor, pricePerHour: Math.round(+d.price),
     peakPricePerHour: +d.peakPrice > +d.price ? Math.round(+d.peakPrice) : null, peakFromHour: +d.peakPrice > +d.price ? 18 : null,
-    descriptionEn: (d.about || '').trim(), descriptionAr: null, policyKey: d.cancelPolicy || 'standard', allowCash: prev?.allowCash ?? true, paymentMode: d.paymentMode === 'FullOnline' ? 'FullOnline' : 'Deposit',
+    descriptionEn: (d.about || '').trim(), descriptionAr: null, policyKey: d.cancelPolicy || 'standard', allowCash: prev?.allowCash ?? true, paymentMode: ['Deposit', 'Deposit50', 'FullOnline'].includes(d.paymentMode) ? d.paymentMode : 'Deposit',
     facilities: d.facilities || [], openingHours: prev?.openingHours && prev.open[0] === +d.open[0] && prev.open[1] === +d.open[1] ? prev.openingHours : SEVEN([+d.open[0], +d.open[1]]),
   });
   const venueBody = (d) => ({ name: d.name.trim(), areaId: areaIdOf(d.area), address: d.address.trim(), lat: +(+d.lat).toFixed(6), lng: +(+d.lng).toFixed(6), phone: null });

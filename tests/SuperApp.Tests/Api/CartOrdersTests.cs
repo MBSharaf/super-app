@@ -138,7 +138,9 @@ public sealed class CartOrdersTests(DemoApiFactory api) : IClassFixture<DemoApiF
     {
         var (person, userId) = await kit.PersonAsync();
         await person.PostAsync("/api/v1/cart/items", new { designId = await kit.DesignIdAsync("Giza Run Club"), size = "L", color = "White", qty = 1 });
-        (await ShopKit.CheckoutAsync(person, payment: "cod")).Status.ShouldBe(HttpStatusCode.BadRequest);   // online payment only
+        var cod = await ShopKit.CheckoutAsync(person, payment: "cod");
+        cod.Status.ShouldBe(HttpStatusCode.Locked);   // online payment only unless Features:ShopPayment allows cash on delivery
+        cod.Body.Code().ShouldBe("cod_off");
         (await person.GetAsync("/api/v1/cart")).Body.Data().GetProperty("lines").GetArrayLength().ShouldBe(1);
         await person.SendAsync(HttpMethod.Delete, $"/api/v1/cart/items/{(await person.GetAsync("/api/v1/cart")).Body.Data().GetProperty("lines")[0].GetProperty("id").GetInt64()}");
 

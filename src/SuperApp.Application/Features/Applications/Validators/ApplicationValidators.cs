@@ -38,7 +38,7 @@ public sealed class PitchOwnerAnswersValidator : AbstractValidator<PitchOwnerAns
         RuleFor(x => x.Lng).InclusiveBetween(24, 37).WithMessage("Pin the pitch on the map (inside Egypt).");
         RuleFor(x => x.Count).InclusiveBetween(1, 20).WithMessage("From 1 to 20 pitches.");
         RuleFor(x => x.Formats).NotEmpty().WithMessage("Choose at least one format.")
-            .Must(f => f.All(v => v is 5 or 7 or 11)).WithMessage("Formats are 5, 7 or 11-a-side.");
+            .Must(f => f.All(v => v is 2 or 5 or 7 or 11)).WithMessage("Choose 5, 7 or 11-a-side, or padel courts.");
         RuleFor(x => x.Price).InclusiveBetween(100, 5000).WithMessage("Between 100 and 5,000 EGP an hour.");
         RuleFor(x => x.PayoutMethod).PayoutMethod();
         RuleFor(x => x.PayoutDetail).PayoutDetail();

@@ -23,13 +23,15 @@
    * Each pitch's owner chooses how players pay (owner's rule, 2026-11-21):
    * - 'Deposit' (rule of 2026-11-01): a deposit in the app, 20% of the total with a minimum of 100 EGP (never more than
    *   the total); the rest is paid to the venue at the pitch and collected at check-in.
+   * - 'Deposit50' (owner, 2026-11-23): the same with a 50% deposit (same minimum).
    * - 'FullOnline': everything in the app, nothing at the pitch; Super Malaab pays the venue its share after the match.
    */
   const fullOnline = (p) => p?.paymentMode === 'FullOnline';
   const depositFor = (total, mode) => {
     if (mode === 'FullOnline') return { deposit: Math.max(0, Math.round(total)), payAtPitch: 0 };
     const cfg = SA.services.db.settings().deposit || { pct: 0.2, min: 100 };
-    const deposit = Math.min(Math.max(0, Math.round(total)), Math.max(Math.round(total * cfg.pct), cfg.min));
+    const pct = mode === 'Deposit50' ? 0.5 : cfg.pct;
+    const deposit = Math.min(Math.max(0, Math.round(total)), Math.max(Math.round(total * pct), cfg.min));
     return { deposit, payAtPitch: Math.max(0, Math.round(total) - deposit) };
   };
 

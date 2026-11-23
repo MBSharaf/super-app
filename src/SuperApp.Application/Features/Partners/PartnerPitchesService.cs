@@ -155,7 +155,12 @@ public sealed class PartnerPitchesService(
     /// <summary>Finance settles with the venue by this choice, so they and the owner are told; bookings already made keep theirs.</summary>
     private async Task PaymentModeChangedAsync(PartnerScope scope, Pitch pitch, CancellationToken ct)
     {
-        var how = pitch.PaymentMode == PitchPaymentMode.FullOnline ? "full payment in the app" : "deposit in the app, the rest at the pitch";
+        var how = pitch.PaymentMode switch
+        {
+            PitchPaymentMode.FullOnline => "full payment in the app",
+            PitchPaymentMode.Deposit50 => "50% deposit in the app, the rest at the pitch",
+            _ => "20% deposit in the app, the rest at the pitch",
+        };
         await notifier.NotifyStaffAsync("payouts.read", new NotificationMessage(NotificationCategory.System,
             $"{pitch.Name} now takes {how}", scope.BusinessName, "#/admin/settlements", NotificationTone.Info), ct);
         await notifier.NotifyUserAsync(scope.OwnerUserId, new NotificationMessage(NotificationCategory.Bookings,

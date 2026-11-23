@@ -14,6 +14,7 @@
   const MODE = {
     FullOnline: ['badge-turf', 'card', 'Full payment in the app'],
     Deposit: ['badge-info', 'wallet', 'Deposit + rest at the pitch'],
+    Deposit50: ['badge-info', 'wallet', '50% deposit + rest at the pitch'],
   };
   const modeBadge = (m) => { const [cls, ic, label] = MODE[m] || MODE.Deposit; return `<span class="badge ${cls}">${icon(ic, 12)} ${label}</span>`; };
   const modesOf = (s) => s.split(' + ').map(modeBadge).join(' ');

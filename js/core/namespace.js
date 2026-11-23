@@ -30,6 +30,9 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // Fantasy is open on the server's site; data-fantasy="off" (or SA_DEMO_CLOSED on GitHub Pages) closes it.
   fantasyEnabled: SA_HTML_FLAGS.fantasy ? SA_HTML_FLAGS.fantasy !== 'off' : !SA_DEMO_CLOSED.fantasy,
   podEnabled: SA_HTML_FLAGS.pod === 'on',
+  // How store orders are paid (server setting Features:ShopPayment → <html data-shop-pay>): online = card or wallet,
+  // cod = cash on delivery only (owner, 2026-11-23, until the payment gateway is ready), both. The server enforces it.
+  shopPayment: SA_HTML_FLAGS.shopPay || 'online',
   // Tournaments are back as "coming soon" (owner, 2026-11-15: the Ramadan tournament). Venues and the admin can already
   // prepare tournaments and offers; players see them but can't register until the server setting
   // Features:TournamentsOpen marks <html data-tournaments="open"> (the server refuses registrations until then too).

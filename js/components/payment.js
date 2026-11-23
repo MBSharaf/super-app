@@ -48,12 +48,15 @@
     </div>`;
   };
 
-  const render = ({ amount, allowCash = false, allowCOD = false, onlineOnly = false, allowVoucher = false, points = true, name = 'pay' } = {}) => {
+  const render = ({ amount, allowCash = false, allowCOD = false, codOnly = false, onlineOnly = false, allowVoucher = false, points = true, name = 'pay' } = {}) => {
     const bal = SA.services.payment.walletBalance();
     const cards = SA.services.payment.savedCards();
     const short = bal < amount;
     const defaultMethod = short || onlineOnly ? (cards[0] ? `saved:${cards[0].id}` : 'new') : 'wallet';
     if (onlineOnly) { allowCash = false; allowCOD = false; }
+    // Cash on delivery only (store orders while the payment gateway is not ready)
+    if (codOnly) return `<fieldset class="pay-methods stack" style="--gap:10px" data-amount="${amount}"><legend class="field-label" style="margin-bottom:10px">Payment method</legend>
+      <label class="choice pay-choice"><input type="radio" name="${name}" value="cod" checked /><span class="radio-dot"></span><span class="pay-ico pay-ico-new">${icon('truck', 18)}</span><span class="grow"><b>Cash on delivery</b><span class="xs muted" style="display:block">Pay the courier when your order arrives</span></span></label></fieldset>`;
     const opt = (value, inner, extra = '') => `<label class="choice pay-choice" ${extra}><input type="radio" name="${name}" value="${value}" ${value === defaultMethod ? 'checked' : ''} /><span class="radio-dot"></span>${inner}</label>`;
     return `<fieldset class="pay-methods stack" style="--gap:10px" data-amount="${amount}">
       <legend class="field-label" style="margin-bottom:10px">${onlineOnly ? 'Pay online by card' : 'Payment method'}</legend>
@@ -80,6 +83,7 @@
 
   const bind = (root, { name = 'pay', onChange } = {}) => {
     const form = root.querySelector('.card-form');
+    if (!form) return;   // cash on delivery only: nothing to bind
     const ptsIn = root.querySelector(`[name="${name}-points"]`);
     const ptsOut = () => { const Ls = SA.services.loyalty.summary(); const o = root.querySelector('[data-points-out]'); if (o) o.textContent = `= ${money(Math.floor(Math.floor(+ptsIn.value / 100) * 100 * Ls.cfg.pointValue))}`; };
     ptsIn?.addEventListener('input', ptsOut);
