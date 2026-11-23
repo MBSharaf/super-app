@@ -73,6 +73,24 @@ cd $BASE/src
 dotnet publish src/SuperApp.Api -c Release -o $BASE/app.new --nologo -v q
 rm -rf $BASE/app.old; [ -d $BASE/app ] && mv $BASE/app $BASE/app.old; mv $BASE/app.new $BASE/app
 
+step "Database logins: the site gets only what it needs"
+# Least privilege: the site's login (supermalaab_app) can read and write data and draw receipt numbers, but cannot
+# change tables, drop anything or read other databases. Database updates use a separate owner login
+# (supermalaab_migrate) that only supermalaab-migrate uses; its connection string is in /etc/supermalaab/migrate.env.
+if [ ! -f /etc/supermalaab/migrate.env ]; then
+  MIGPASS="Mg$(openssl rand -hex 16)!"
+  sql "IF SUSER_ID('supermalaab_migrate') IS NULL CREATE LOGIN supermalaab_migrate WITH PASSWORD='$MIGPASS', CHECK_POLICY=ON; ELSE ALTER LOGIN supermalaab_migrate WITH PASSWORD='$MIGPASS';"
+  sql "USE SuperMalaab; IF USER_ID('supermalaab_migrate') IS NULL CREATE USER supermalaab_migrate FOR LOGIN supermalaab_migrate; ALTER ROLE db_owner ADD MEMBER supermalaab_migrate;"
+  ( umask 077; echo "CONNECTIONSTRINGS__DEFAULT=Server=127.0.0.1,1433;Database=SuperMalaab;User Id=supermalaab_migrate;Password=$MIGPASS;TrustServerCertificate=True;Encrypt=True" > /etc/supermalaab/migrate.env )
+fi
+sql "USE SuperMalaab;
+ALTER ROLE db_datareader ADD MEMBER supermalaab_app;
+ALTER ROLE db_datawriter ADD MEMBER supermalaab_app;
+GRANT EXECUTE TO supermalaab_app;
+GRANT UPDATE ON SCHEMA::[money] TO supermalaab_app;
+IF IS_ROLEMEMBER('db_owner','supermalaab_app') = 1 ALTER ROLE db_owner DROP MEMBER supermalaab_app;" >/dev/null
+echo "site login db_owner: $(sql "USE SuperMalaab; SELECT IS_ROLEMEMBER('db_owner','supermalaab_app')" | tail -1 | tr -d ' ') (0 = limited)"
+
 step "Database updates bundle (applied by the owner with supermalaab-migrate)"
 export PATH="$PATH:/root/.dotnet/tools"
 command -v dotnet-ef >/dev/null || dotnet tool install --global dotnet-ef --version '10.*' >/dev/null
@@ -83,7 +101,9 @@ cat > /usr/local/bin/supermalaab-migrate <<'EOF'
 # Applies the waiting database updates to the live database, then restarts the site.
 set -euo pipefail
 # Read only the connection string (app.env is a systemd file, not a shell script)
-export CONNECTIONSTRINGS__DEFAULT="$(grep '^CONNECTIONSTRINGS__DEFAULT=' /etc/supermalaab/app.env | cut -d= -f2-)"
+# The owner login (migrate.env) changes tables; the site's own login is not allowed to
+ENVF=/etc/supermalaab/migrate.env; [ -f "$ENVF" ] || ENVF=/etc/supermalaab/app.env
+export CONNECTIONSTRINGS__DEFAULT="$(grep '^CONNECTIONSTRINGS__DEFAULT=' "$ENVF" | cut -d= -f2-)"
 /opt/supermalaab/migrate-bundle --connection "$CONNECTIONSTRINGS__DEFAULT"
 systemctl restart supermalaab
 echo "Database is up to date."
