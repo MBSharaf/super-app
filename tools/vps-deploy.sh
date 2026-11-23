@@ -83,13 +83,18 @@ if [ ! -f /etc/supermalaab/migrate.env ]; then
   sql "USE SuperMalaab; IF USER_ID('supermalaab_migrate') IS NULL CREATE USER supermalaab_migrate FOR LOGIN supermalaab_migrate; ALTER ROLE db_owner ADD MEMBER supermalaab_migrate;"
   ( umask 077; echo "CONNECTIONSTRINGS__DEFAULT=Server=127.0.0.1,1433;Database=SuperMalaab;User Id=supermalaab_migrate;Password=$MIGPASS;TrustServerCertificate=True;Encrypt=True" > /etc/supermalaab/migrate.env )
 fi
+# Schemas made by the old owner-level site login belong to it, and a schema's owner can drop or change anything in it:
+# hand every such schema to dbo first (grants are given again right after).
+sql "USE SuperMalaab; DECLARE @s nvarchar(max) = N'';
+SELECT @s += N'ALTER AUTHORIZATION ON SCHEMA::' + QUOTENAME(name) + N' TO dbo; ' FROM sys.schemas WHERE principal_id = USER_ID('supermalaab_app');
+EXEC sp_executesql @s;" >/dev/null
 sql "USE SuperMalaab;
 ALTER ROLE db_datareader ADD MEMBER supermalaab_app;
 ALTER ROLE db_datawriter ADD MEMBER supermalaab_app;
 GRANT EXECUTE TO supermalaab_app;
 GRANT UPDATE ON SCHEMA::[money] TO supermalaab_app;
 IF IS_ROLEMEMBER('db_owner','supermalaab_app') = 1 ALTER ROLE db_owner DROP MEMBER supermalaab_app;" >/dev/null
-echo "site login db_owner: $(sql "USE SuperMalaab; SELECT IS_ROLEMEMBER('db_owner','supermalaab_app')" | tail -1 | tr -d ' ') (0 = limited)"
+echo "site login: $(sql "SET NOCOUNT ON; USE SuperMalaab; SELECT CONCAT('db_owner=', IS_ROLEMEMBER('db_owner','supermalaab_app'), ' schemas_owned=', (SELECT COUNT(*) FROM sys.schemas WHERE principal_id = USER_ID('supermalaab_app')))" | grep db_owner | tr -d ' ') (both 0 = limited)"
 
 step "Database updates bundle (applied by the owner with supermalaab-migrate)"
 export PATH="$PATH:/root/.dotnet/tools"
