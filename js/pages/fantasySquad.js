@@ -11,23 +11,54 @@
   let justAdded = null;
   const filt = { pos: '', team: '', maxPrice: '', q: '', sort: 'total' };
 
+  const when = (d) => `${SA.core.utils.fmtDate(d)}, ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+  const isLive = () => !!SA.services.api?.isLive?.();
+
+  /** After the team is saved: says when it starts counting, so the player knows it's in */
+  const confirmed = (team) => {
+    const meta = F().meta();
+    SA.ui.overlay.open({
+      title: 'Your team is confirmed',
+      body: `<div class="stack" style="--gap:12px;text-align:center">
+        <span class="service-ico" style="margin:0 auto">${icon('check', 26)}</span>
+        <p class="lead"><b>${esc(team?.name || '')}</b></p>
+        <p>Your team plays from Gameweek ${meta.gw}.</p>
+        <div class="panel panel-pad small"><span class="soft">Deadline</span><br><b class="num">${when(meta.deadline)}</b></div>
+        <p class="small soft">Until then you can change players for free, pick your captain and set your lineup.</p>
+        <p class="small soft">${isLive() ? 'After the deadline your team is locked for that gameweek. Your points come from the real Premier League matches and are added automatically after each game.' : 'This is the demo site: use Simulate to play a gameweek and see your points.'}</p></div>`,
+      footer: '<button class="btn btn-primary btn-block" data-close>Pick my captain</button>',
+    });
+  };
+
+  /** Creating a team: a summary to confirm (first gameweek, deadline, money left) and the team name */
   const promptCreate = (ids) => {
     const user = SA.services.user.me();
+    const f = F(), meta = f.meta(), spent = f.cost(ids);
     SA.ui.overlay.open({
-      title: 'Name your team', subtitle: 'You can change it later.',
-      body: `<form id="name-form" class="stack" style="--gap:12px"><div class="field"><label for="tn">Team name</label><input class="input" id="tn" name="name" maxlength="24" value="${esc(user.firstName)} FC" autofocus /></div>
-        <p class="xs muted">Your team is entered into the Super Malaab League automatically.</p></form>`,
-      footer: `<button class="btn btn-outline" data-close>Back</button><button class="btn btn-primary" form="name-form" type="submit">Create team</button>`,
+      title: 'Confirm your team', subtitle: 'Check your squad and give it a name.',
+      body: `<form id="name-form" class="stack" style="--gap:12px">
+        <dl class="small stack panel panel-pad" style="--gap:8px;margin:0">
+          <div class="row-between"><dt class="soft">Players</dt><dd class="num"><b>15 / 15</b></dd></div>
+          <div class="row-between"><dt class="soft">Squad cost</dt><dd class="num"><b>${fantasyPrice(spent)}</b></dd></div>
+          <div class="row-between"><dt class="soft">Money left</dt><dd class="num"><b>${fantasyPrice(meta.budget - spent)}</b></dd></div>
+          <div class="row-between"><dt class="soft">First gameweek</dt><dd class="num"><b>Gameweek ${meta.gw}</b></dd></div>
+          <div class="row-between"><dt class="soft">Deadline</dt><dd class="num"><b>${when(meta.deadline)}</b></dd></div>
+        </dl>
+        <div class="field"><label for="tn">Team name</label><input class="input" id="tn" name="name" maxlength="24" value="${esc(user.firstName)} FC" autofocus /></div>
+        <p class="xs muted">Your points start from Gameweek ${meta.gw}. Your team is entered into the Super Malaab League automatically.</p></form>`,
+      footer: `<button class="btn btn-outline" data-close>Back</button><button class="btn btn-primary" form="name-form" type="submit">Confirm team</button>`,
       onMount(el, close) {
         el.querySelector('#tn').select();
         el.querySelector('#name-form').addEventListener('submit', async (e) => {
           e.preventDefault();
+          const btn = el.closest('.modal, .drawer')?.querySelector('[form="name-form"]') || document.querySelector('[form="name-form"]');
+          if (btn) btn.disabled = true;
           try {
-            await F().saveSquad(ids, { name: e.target.name.value });
+            const r = await F().saveSquad(ids, { name: e.target.name.value });
             close(); draft = null;
             SA.core.router.go('/fantasy');
-            SA.core.motion.confetti(); SA.ui.overlay.toast('Team created — set your captain before the deadline');
-          } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
+            SA.core.motion.confetti(); setTimeout(() => confirmed(r?.team || F().team()), 450);  // after the team page has opened
+          } catch (err) { if (btn) btn.disabled = false; SA.ui.overlay.toast(err.message, { type: 'error' }); }
         });
       },
     });
@@ -187,7 +218,7 @@
             confirmLabel: 'Confirm transfers', cancelLabel: 'Keep editing',
           });
           if (!ok) return;
-          try { await f.saveSquad(draft.slice()); SA.ui.overlay.toast('Transfers confirmed'); draft = null; SA.core.router.go('/fantasy'); }
+          try { await f.saveSquad(draft.slice()); SA.ui.overlay.toast(`Transfers confirmed for Gameweek ${f.meta().gw}`); draft = null; SA.core.router.go('/fantasy'); }
           catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); }
         }
       });

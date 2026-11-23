@@ -6,6 +6,8 @@
 
   const short = (name) => { const parts = name.split(' '); return parts.length > 1 ? parts.slice(1).join(' ') : name; };
   const fdrCls = (n) => `fdr-${n}`;
+  // The server's site scores real matches; the demo site plays gameweeks with Simulate
+  const live = () => !!SA.services.api?.isLive?.();
 
   /* ---------- Shared header for all fantasy routes ---------- */
   const header = (active) => {
@@ -31,7 +33,7 @@
           <div><span class="fx-dim xs">Overall rank</span><b class="num">${last ? fmtNum(last.rank) : '–'}</b></div>
           <div><span class="fx-dim xs">Free transfers</span><b class="num">${team.freeTransfers}</b></div>
           <div><span class="fx-dim xs">Bank</span><b class="num">${fantasyPrice(meta.budget - f.cost(team.squad))}</b></div>
-          <button class="btn btn-blaze fx-sim" data-simulate title="Plays every GW${meta.gw} fixture and scores your team">${icon('play', 16)} Simulate GW${meta.gw}</button>
+          ${live() ? `<span class="btn btn-blaze fx-sim" style="pointer-events:none">${icon('check', 16)} Team saved for GW${meta.gw}</span>` : `<button class="btn btn-blaze fx-sim" data-simulate title="Plays every GW${meta.gw} fixture and scores your team">${icon('play', 16)} Simulate GW${meta.gw}</button>`}
         </div>` : ''}
         <nav class="fx-tabs" aria-label="Fantasy">${nav.map(([k, l, h, ic]) => `<a href="${h}" ${k === active ? 'aria-current="page"' : ''}>${icon(ic, 20)}<span>${l}</span></a>`).join('')}</nav>
       </div>
@@ -224,6 +226,7 @@
               <div class="row-between"><h2 class="h4">Your gameweeks</h2><span class="xs muted">${hist.length ? `${hist.length} played` : `Started GW${team.createdGW}`}</span></div>
               ${hist.length ? `<div class="gw-bars" style="margin-top:14px">${hist.map((h) => `<div class="gw-bar" title="GW${h.gw}: ${h.pts} pts"><span style="height:${Math.max(6, h.pts * 1.3)}px" class="${h.pts >= 60 ? 'is-high' : ''}"></span><i class="xs">${h.gw}</i></div>`).join('')}</div>
                 <table class="table" style="margin-top:12px"><thead><tr><th>GW</th><th class="r">Pts</th><th class="r">Rank</th></tr></thead><tbody>${hist.slice().reverse().slice(0, 5).map((h) => `<tr><td>${h.gw}</td><td class="r num strong">${h.pts}</td><td class="r num">${fmtNum(h.rank)}</td></tr>`).join('')}</tbody></table>`
+                : live() ? `<p class="small soft" style="margin-top:8px">Your team is confirmed and plays from GW${f.meta().gw}. You can still change players, captain and lineup until the deadline. Points are added automatically after the real matches.</p>`
                 : `<p class="small soft" style="margin-top:8px">Your first gameweek is GW${team.createdGW}. Use <b>Simulate GW${f.meta().gw}</b> above to play it now and see your points.</p>`}
             </div>
             <div class="panel panel-pad">
