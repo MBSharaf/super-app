@@ -266,6 +266,7 @@
       view.className = 'view';
       view.innerHTML = html;
       appEl.replaceChildren(view);
+      window.saSplashDone?.(); // the first page is on screen: hide the boot splash (index.html)
       document.title = (page.title || 'Super Malaab').replace(/Super Malaab Partner$/, match.path.startsWith('/admin') ? 'Super Malaab Admin' : 'Super Malaab Partner');
       if (keepScroll) window.scrollTo(0, scroll);
       else window.scrollTo(0, 0);
