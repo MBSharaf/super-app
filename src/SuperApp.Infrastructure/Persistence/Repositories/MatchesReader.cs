@@ -2,20 +2,30 @@ using Microsoft.EntityFrameworkCore;
 using SuperApp.Application.Features.Content;
 using SuperApp.Domain.Entities.Content;
 using SuperApp.Domain.Entities.Fantasy;
+using SuperApp.Domain.Enums;
+using SuperApp.Application.Abstractions.Services;
+using SuperApp.Infrastructure.Football;
 
 namespace SuperApp.Infrastructure.Persistence.Repositories;
 
 /// <summary>Real matches from the fantasy cache (fixtures, clubs, player statistics).</summary>
-public sealed class MatchesReader(AppDbContext db) : IMatchesReader
+public sealed class MatchesReader(AppDbContext db, LiveClock clocks, IClock clock) : IMatchesReader
 {
-    public async Task<IReadOnlyList<MatchDto>> BetweenAsync(DateTime fromUtc, DateTime toUtc, string? competition, CancellationToken ct) =>
-        await Project(db.Set<Fixture>().Where(f => f.Gameweek.Season.IsCurrent && f.KickoffAt >= fromUtc && f.KickoffAt < toUtc
+    public async Task<IReadOnlyList<MatchDto>> BetweenAsync(DateTime fromUtc, DateTime toUtc, string? competition, CancellationToken ct)
+    {
+        var list = await Project(db.Set<Fixture>().Where(f => f.Gameweek.Season.IsCurrent && f.KickoffAt >= fromUtc && f.KickoffAt < toUtc
                 && (competition == null || f.Gameweek.Season.Competition.Key == competition))
             .OrderBy(f => f.KickoffAt).ThenBy(f => f.Id)).ToListAsync(ct);
+        return list.Select(WithClock).ToList();
+    }
+
+    /// <summary>Adds the live clock text ("HT", "45+2'") of a match that is on.</summary>
+    private MatchDto WithClock(MatchDto m) => m.Status == nameof(FixtureStatus.Live) ? m with { Clock = clocks.Get(m.Id, clock.UtcNow) } : m;
 
     public async Task<MatchDetailDto?> DetailAsync(long id, CancellationToken ct)
     {
-        var match = await Project(db.Set<Fixture>().Where(f => f.Id == id)).FirstOrDefaultAsync(ct);
+        var found = await Project(db.Set<Fixture>().Where(f => f.Id == id)).FirstOrDefaultAsync(ct);
+        var match = found is null ? null : WithClock(found);
         if (match is null)
         {
             return null;

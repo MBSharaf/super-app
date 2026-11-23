@@ -15,10 +15,11 @@ public sealed record MatchClubDto(long Id, string Name, string ShortName, string
 
 /// <summary>
 /// A real match of a followed competition. Status Scheduled / Live / Finished / Postponed / Cancelled. <c>Gameweek</c> is
-/// the round; cups use 32 playoff, 16 last 16, 125 quarter-final, 150 semi-final, 200 final.
+/// the round; cups use 32 playoff, 16 last 16, 125 quarter-final, 150 semi-final, 200 final. <c>Clock</c> is the live
+/// clock text while the match is on ("57'", "45+2'", "HT"), from the live feed.
 /// </summary>
 public sealed record MatchDto(long Id, string Competition, int Gameweek, MatchClubDto Home, MatchClubDto Away, DateTime KickoffAt, string Status,
-    int? HomeGoals, int? AwayGoals, int? Minute, string? Venue = null);
+    int? HomeGoals, int? AwayGoals, int? Minute, string? Venue = null, string? Clock = null);
 
 /// <summary>A competition shown on the matches page (with its colour), and whether it has fantasy.</summary>
 public sealed record MatchCompetitionDto(string Key, string Name, string NameAr, string ShortName, string Region, string Color, bool Fantasy);

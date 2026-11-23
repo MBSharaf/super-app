@@ -35,6 +35,8 @@ public static class FantasyInfrastructureRegistration
         services.AddScoped<Application.Features.Support.ISupportRepository, SupportRepository>();
         RegisterEmails();
         services.AddHostedService<FootballScheduler>();
+        services.AddSingleton<LiveClock>();
+        services.AddHostedService<LiveScoresJob>();
         return services;
     }
 
@@ -55,6 +57,12 @@ public static class FantasyInfrastructureRegistration
             http.DefaultRequestHeaders.UserAgent.ParseAdd(agent);
             http.Timeout = TimeSpan.FromSeconds(30);
         });
+        services.AddHttpClient<FotMobLiveFeed>(http =>
+        {
+            http.BaseAddress = new Uri(FotMobLiveFeed.BaseAddress);
+            http.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; SuperMalaab/1.0)");
+            http.Timeout = TimeSpan.FromSeconds(20);
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AutomaticDecompression = System.Net.DecompressionMethods.All });
         services.AddHttpClient<TheSportsDbFootballData>(http =>
         {
             http.BaseAddress = new Uri($"{TheSportsDbFootballData.BaseAddress}{configuration["Football:TheSportsDb:Key"] ?? "123"}/");

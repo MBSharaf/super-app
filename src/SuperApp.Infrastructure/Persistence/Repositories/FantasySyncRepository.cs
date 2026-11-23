@@ -145,15 +145,31 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
             row.GameweekId = gameweeks[f.Round];
             (row.HomeClubId, row.AwayClubId) = (clubs[f.HomeClubExternalId], clubs[f.AwayClubExternalId]);
             row.KickoffAt = f.KickoffAt;
-            row.Status = f.Status;
-            row.HomeGoals = (byte?)f.HomeGoals;
-            row.AwayGoals = (byte?)f.AwayGoals;
-            row.Minute = (byte?)f.Minute;
+            if (!BehindLive(row, f))
+            {
+                row.Status = f.Status;
+                row.HomeGoals = (byte?)f.HomeGoals;
+                row.AwayGoals = (byte?)f.AwayGoals;
+                row.Minute = (byte?)f.Minute;
+            }
             row.Venue = f.Venue is { Length: > 120 } v ? v[..120] : f.Venue;
         }
         await db.SaveChangesAsync(ct);
         return fixtures.Count;
     }
+
+    /// <summary>
+    /// True when the source is behind what the live feed (LiveScoresJob) already saved: it still says "not started" for a
+    /// match that is on or over, or "on" without a score for one that is over. A postponement or a final score always wins.
+    /// </summary>
+    public static bool BehindLive(Fixture row, FdFixture f) =>
+        f.Status is not (FixtureStatus.Postponed or FixtureStatus.Cancelled)
+        && ((f.Status == FixtureStatus.Scheduled && row.Status is FixtureStatus.Live or FixtureStatus.Finished)
+            || (f.Status == FixtureStatus.Live && row.Status == FixtureStatus.Finished)
+            || (f.Status == FixtureStatus.Live && row.Status == FixtureStatus.Live
+                && (f.HomeGoals ?? 0) + (f.AwayGoals ?? 0) < (row.HomeGoals ?? 0) + (row.AwayGoals ?? 0))
+            || (f.Status == FixtureStatus.Live && f.HomeGoals is null && row.HomeGoals is not null)
+            || (f.Status == FixtureStatus.Finished && f.HomeGoals is null && row.HomeGoals is not null));
 
     public async Task<IReadOnlyList<FixtureToStat>> FixturesNeedingStatsAsync(long seasonId, DateTime now, int max, CancellationToken ct)
     {

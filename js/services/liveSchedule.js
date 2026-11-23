@@ -4,8 +4,11 @@
  * In API mode the schedule service answers from the server instead of the generated demo slate: the competitions
  * (`/matches/competitions`, with their colours and regions) and eleven days of matches (`/matches?date&days=11`, three
  * back and seven ahead) are loaded once and every five minutes, turned into the shape the pages already read, and the
- * page re-renders when they land. The free sources (FPL, TheSportsDB) give scores but no minute-by-minute events or
- * match stats, so those boxes say so instead of showing made-up numbers. Demo mode (GitHub Pages) is unchanged.
+ * page re-renders when they land. While a match is on (or about to start) they are read again every minute: the server
+ * keeps live scores, minutes and the clock text ("HT", "45+2'") from its live feed, and the page's ticker shows them
+ * without a full re-render (only a status change, e.g. kick-off or full time, re-renders). The free sources give no
+ * minute-by-minute events or match stats, so those boxes say so instead of showing made-up numbers. Demo mode
+ * (GitHub Pages) is unchanged.
  */
 (function (SA) {
   const api = SA.services.api;
@@ -14,7 +17,7 @@
   const { isoDate, addDays, today } = SA.core.utils;
   const demo = { ...S };
   const live = () => api.isLive();
-  const BACK = 3, AHEAD = 7, EVERY = 5 * 60 * 1000;
+  const BACK = 3, AHEAD = 7, EVERY = 5 * 60 * 1000, LIVE_EVERY = 60 * 1000;
 
   let competitions = [];
   const teams = {};            // `c<club id>` → { name, short, a, b }
@@ -40,17 +43,27 @@
     return {
       id: `m-${m.id}`, apiId: m.id, compId: m.competition, date: isoDate(new Date(ko)), ko, home: club(m.home), away: club(m.away),
       round: roundLabel(m.competition, m.gameweek), venue: m.venue || '', events: [], stats: null, live: true,
-      srv: { status: m.status, hs: m.homeGoals, as: m.awayGoals, minute: m.minute },
+      srv: { status: m.status, hs: m.homeGoals, as: m.awayGoals, minute: m.minute, clock: m.clock || null },
     };
+  };
+
+  /** Without a live clock from the server: the minute from kick-off, with the 15-minute half-time break */
+  const guessClock = (ko) => {
+    const el = (Date.now() - ko) / 6e4;
+    if (el < 47) { const n = Math.max(1, Math.floor(el)); return { minute: Math.min(n, 45), label: n > 45 ? `45+${n - 45}'` : `${n}'` }; }
+    if (el < 62) return { minute: 45, label: 'HT' };
+    const n = Math.floor(el - 17);
+    return { minute: Math.min(n, 90), label: n > 90 ? `90+${Math.min(n - 90, 15)}'` : `${n}'` };
   };
 
   /** The live state the pages read (status, label, score), from the server's answer */
   const stateOf = (m) => {
     const status = STATUS[m.srv.status] || 'upcoming';
     const time = new Date(m.ko).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    const minute = status === 'live' ? (m.srv.minute ?? Math.max(1, Math.min(90, Math.floor((Date.now() - m.ko) / 6e4)))) : status === 'finished' ? 90 : null;
+    const guess = status === 'live' ? guessClock(m.ko) : null;
+    const minute = status === 'live' ? (m.srv.minute ?? guess.minute) : status === 'finished' ? 90 : null;
     const label = m.srv.status === 'Postponed' ? 'Postponed' : m.srv.status === 'Cancelled' ? 'Cancelled'
-      : status === 'upcoming' ? time : status === 'live' ? `${minute}'` : 'FT';
+      : status === 'upcoming' ? time : status === 'live' ? (m.srv.clock || (m.srv.minute != null ? `${m.srv.minute}'` : guess.label)) : 'FT';
     return { status, minute, label, hs: m.srv.hs ?? 0, as: m.srv.as ?? 0, seen: [], stats: null, noDetail: true };
   };
 
@@ -61,6 +74,29 @@
   };
 
   const importance = (m) => (m.isDerby ? 100 : 0) + (m.compId === 'egy' ? 40 : 0) + (m.compId === 'ucl' ? 30 : 0) + (m.status === 'live' ? 25 : 0) + (m.compId === 'epl' ? 15 : 0);
+
+  /** A match on now, or kicking off within ten minutes (then scores are read every minute) */
+  const hot = () => [...byId.values()].some((m) => m.srv.status === 'Live'
+    || (m.srv.status === 'Scheduled' && m.ko - Date.now() < 10 * 6e4 && Date.now() - m.ko < 3 * 36e5));
+
+  /** Fresh scores for the matches already shown: updated in place; re-render only when a status changed or a match is new */
+  const quiet = () => {
+    if (loading) return loading;
+    const from = isoDate(addDays(today(), -BACK));
+    loading = api.get(`/matches?date=${from}&days=${BACK + AHEAD + 1}`).then((list) => {
+      let changed = false;
+      list.map(fromApi).forEach((m) => {
+        const cur = byId.get(m.id);
+        if (!cur) { changed = true; return; }
+        if (cur.srv.status !== m.srv.status) changed = true;
+        cur.srv = m.srv;
+      });
+      loadedAt = Date.now();
+      if (changed) { loading = null; return load(); }
+      return undefined;
+    }, (err) => console.warn('[liveSchedule]', err?.message || err)).finally(() => { loading = null; });
+    return loading;
+  };
 
   const load = () => {
     if (loading) return loading;
@@ -109,5 +145,10 @@
   };
 
   SA.services.liveSchedule = { load };
-  api.ready.then(() => { if (live()) load(); });
+  api.ready.then(() => {
+    if (!live()) return;
+    load();
+    // Every minute while a match is on and the tab is visible
+    setInterval(() => { if (loadedAt && !document.hidden && hot() && Date.now() - loadedAt >= LIVE_EVERY - 5000) quiet(); }, 15000);
+  });
 })(window.SA);
