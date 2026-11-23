@@ -67,5 +67,5 @@ window.SA = { core: {}, data: {}, services: {}, ui: {}, pages: {}, config: {
   // Public contact details (owner, 2026-11-23) — shown on Contact us (#/contact) and About us (#/about).
   contact: { phone: '+201024549574', phoneLabel: '+20 102 454 9574', email: 'supermalaab@gmail.com', address: 'Maadi, Cairo, Egypt' },
   // Social profiles — paste each link here. Empty = shown but not linked yet.
-  social: { facebook: 'https://www.facebook.com/share/1A4odKYei2/', instagram: 'https://www.instagram.com/superapp0/', tiktok: '' },
+  social: { facebook: 'https://www.facebook.com/share/1KaqWPvmbE/', instagram: 'https://www.instagram.com/supermalaab/', tiktok: '' },
 } };
