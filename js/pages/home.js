@@ -143,7 +143,7 @@
           </div>
           <div class="fb-side">
             <h3 class="small" style="color:rgba(255,255,255,.7);font-weight:600">In form this week</h3>
-            <ul class="fb-players">${topPlayers.map((p) => `<li>${c.kit(S.fantasy.teamById[p.teamId], 34, p.pos === 'GK')}<span class="grow"><b>${esc(p.name)}</b><span class="xs">${S.fantasy.teamById[p.teamId].name} · ${p.pos} · ${fantasyPrice(p.price)}</span></span><span class="fb-form num">${p.form.toFixed(1)}</span></li>`).join('')}</ul>
+            <ul class="fb-players">${topPlayers.map((p) => `<li>${SA.ui.sports.face(p, S.fantasy.teamById[p.teamId], 34, p.pos === 'GK')}<span class="grow"><b>${esc(p.name)}</b><span class="xs">${SA.ui.sports.mini(S.fantasy.teamById[p.teamId], 13)}${S.fantasy.teamById[p.teamId].name} · ${p.pos} · ${fantasyPrice(p.price)}</span></span><span class="fb-form num">${p.form.toFixed(1)}</span></li>`).join('')}</ul>
             <div class="fb-leagues">${leagues.slice(0, 2).map((l) => `<a href="#/fantasy/league/${l.id}" class="fb-league"><span><b>${esc(l.name)}</b><span class="xs">Free · ${l.participants.toLocaleString()} managers</span></span><span class="fb-prize">${l.kind === 'official' ? `${S.fantasy.weeklyPoints()[0].toLocaleString()} pts / GW` : money(l.prizeValue || 0)}</span></a>`).join('')}</div>
           </div>
         </div>
