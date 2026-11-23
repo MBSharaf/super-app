@@ -20,7 +20,11 @@ public sealed record MeResponse(
     bool TwoFactorEnabled,
     bool Requires2faSetup,
     DateTime CreatedAt,
-    string? AvatarUrl = null);
+    string? AvatarUrl = null,
+    string? Position = null,
+    string? Level = null,
+    string? Foot = null,
+    string? Area = null);
 
 /// <summary>GET /auth/csrf — the anti-forgery token to send in the X-CSRF-TOKEN header.</summary>
 public sealed record CsrfResponse(string Token, string HeaderName);

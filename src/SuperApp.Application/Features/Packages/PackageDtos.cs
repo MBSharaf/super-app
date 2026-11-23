@@ -35,7 +35,9 @@ public sealed record PackageQuoteDto(long OptionId, int MatchCount, decimal Disc
     decimal ListPrice, decimal DiscountAmount, decimal ServiceFee, decimal Total, decimal Deposit = 0, decimal BalanceDue = 0);
 
 /// <summary>POST /packages — paid straight away until payments arrive (Phase 5). <c>AcceptWaiver</c> must be true.</summary>
-public sealed record BuyPackageRequest(string PitchSlug, long OptionId, DateOnly StartsOn, int Hour, int Duration, bool AcceptWaiver, bool PayFromWallet = false);
+/// <remarks><c>VoucherCode</c>: one of my Super Points vouchers (SP-…); it pays the matches in order, before their deposits are split.</remarks>
+public sealed record BuyPackageRequest(string PitchSlug, long OptionId, DateOnly StartsOn, int Hour, int Duration, bool AcceptWaiver, bool PayFromWallet = false,
+    string? VoucherCode = null);
 
 /// <summary>One match of a package. Status as for bookings (Confirmed, CheckedIn, Played, NoShow, Cancelled…).</summary>
 /// <summary>One match of a package: <c>Deposit</c> paid in the app, <c>BalanceDue</c> paid at the pitch that week.</summary>

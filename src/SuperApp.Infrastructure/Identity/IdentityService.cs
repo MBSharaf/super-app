@@ -91,7 +91,7 @@ public sealed class IdentityService(UserManager<User> users, AppDbContext db, Pe
         var roles = (await users.GetRolesAsync(user)).Order().ToList();
         var codes = await permissions.ForUserAsync(userId, roles, ct);
         return new ProfileData(user.Id, user.FullName, user.Email!, user.EmailConfirmed, user.PhoneNumber, user.Language,
-            roles, codes, user.TwoFactorEnabled, user.CreatedAt, user.AvatarFileId);
+            roles, codes, user.TwoFactorEnabled, user.CreatedAt, user.AvatarFileId, new PlayerProfile(user.Position, user.Level, user.Foot, user.Area));
     }
 
     public async Task SetAvatarAsync(Guid userId, long? fileId, CancellationToken ct)
@@ -114,6 +114,19 @@ public sealed class IdentityService(UserManager<User> users, AppDbContext db, Pe
         user.Language = language ?? user.Language;
         IdentityErrors.Check(await users.UpdateAsync(user));
     }
+
+    public async Task UpdatePlayerProfileAsync(Guid userId, PlayerProfile profile, CancellationToken ct)
+    {
+        var user = await RequireAsync(userId);
+        user.Position = Pick(profile.Position, user.Position);
+        user.Level = Pick(profile.Level, user.Level);
+        user.Foot = Pick(profile.Foot, user.Foot);
+        user.Area = Pick(profile.Area, user.Area);
+        IdentityErrors.Check(await users.UpdateAsync(user));
+    }
+
+    /// <summary>null keeps the old value; an empty text clears it.</summary>
+    private static string? Pick(string? next, string? old) => next is null ? old : string.IsNullOrWhiteSpace(next) ? null : next.Trim();
 
     public async Task<AccountSummary?> FindExternalAsync(ExternalProfile profile, CancellationToken ct)
     {

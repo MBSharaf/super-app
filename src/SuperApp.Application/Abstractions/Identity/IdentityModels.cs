@@ -28,4 +28,8 @@ public sealed record ProfileData(
     IReadOnlyList<string> Permissions,
     bool TwoFactorEnabled,
     DateTime CreatedAt,
-    long? AvatarFileId = null);
+    long? AvatarFileId = null,
+    PlayerProfile? Player = null);
+
+/// <summary>The player's own football profile: position, level, stronger foot and usual area (each null until set).</summary>
+public sealed record PlayerProfile(string? Position, string? Level, string? Foot, string? Area);

@@ -25,7 +25,16 @@
     /** Customers the Super Malaab team put on hold can browse but not book, order or join */
     blocked: () => { const id = store.get().user?.id; return !!(id && SA.services.db?.raw().podCustomers?.[id]?.blocked); },
     assertActive() { if (userService.blocked()) throw new SA.services.http.ApiError('Your account is on hold, so you can’t book or order right now. Contact Super Malaab support from your profile.', 'blocked'); },
-    update: (patch) => request(() => { store.set((s) => ({ user: { ...s.user, ...patch } })); return store.get().user; }),
+    /** On the server's site the profile is saved on the server (PATCH /me) and read back from it; the demo keeps it in the browser */
+    async update(patch) {
+      const api = SA.services.api;
+      if (SA.config.realData && api?.isLive?.()) {
+        await api.patch('/me', { fullName: patch.name, position: patch.position ?? null, level: patch.level ?? null, foot: patch.foot ?? null, area: patch.area ?? null });
+        await SA.services.session?.load?.(); // copies the saved account back onto the profile
+        return store.get().user;
+      }
+      return request(() => { store.set((s) => ({ user: { ...s.user, ...patch } })); return store.get().user; });
+    },
     notify(n) {
       store.set((s) => ({ notifications: [{ id: uid('n'), at: Date.now(), read: false, ...n }, ...s.notifications].slice(0, 40) }), 'notify');
     },

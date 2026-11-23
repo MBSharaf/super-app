@@ -19,7 +19,9 @@ public sealed record ResetPasswordRequest(Guid UserId, string Token, string NewP
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
 /// <summary>PATCH /me — only the fields that are sent change.</summary>
-public sealed record UpdateMeRequest(string? FullName, string? Phone, string? Language);
+/// <remarks>Position / Level / Foot / Area: the player profile (null leaves a field as it is, "" clears it).</remarks>
+public sealed record UpdateMeRequest(string? FullName, string? Phone, string? Language, string? Position = null, string? Level = null, string? Foot = null,
+    string? Area = null);
 
 /// <summary>POST /auth/accept-invite — a new admin chooses their first password from the invitation link.</summary>
 public sealed record AcceptInviteRequest(Guid UserId, string Token, string Password);

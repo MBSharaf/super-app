@@ -204,6 +204,29 @@ public sealed class AuthTests(AccountsApiFactory api) : IClassFixture<AccountsAp
     }
 
     [Fact]
+    public async Task My_player_profile_is_kept_on_the_server_and_only_takes_values_from_the_lists()
+    {
+        var client = await api.ClientAsync();
+        await client.PostAsync("/api/v1/auth/sign-up", NewCustomer(out _, out _));
+        await client.RefreshCsrfAsync();
+
+        (await client.SendAsync(HttpMethod.Patch, "/api/v1/me", new { position = "Captain" })).Status.ShouldBe(HttpStatusCode.BadRequest);
+        (await client.SendAsync(HttpMethod.Patch, "/api/v1/me", new { foot = "Hand" })).Status.ShouldBe(HttpStatusCode.BadRequest);
+        (await client.SendAsync(HttpMethod.Patch, "/api/v1/me", new { area = new string('x', 81) })).Status.ShouldBe(HttpStatusCode.BadRequest);
+        var saved = await client.SendAsync(HttpMethod.Patch, "/api/v1/me", new { position = "Winger", level = "Advanced", foot = "Left", area = " Maadi " });
+        saved.Status.ShouldBe(HttpStatusCode.OK, saved.Body.ToString());
+
+        var me = (await client.GetAsync("/api/v1/me")).Body.Data();
+        (me.GetProperty("position").GetString(), me.GetProperty("level").GetString(), me.GetProperty("foot").GetString(), me.GetProperty("area").GetString())
+            .ShouldBe(("Winger", "Advanced", "Left", "Maadi"));
+        // A name-only change keeps the profile; an empty value clears one field
+        (await client.SendAsync(HttpMethod.Patch, "/api/v1/me", new { fullName = "Karim Adel", area = "" })).Status.ShouldBe(HttpStatusCode.OK);
+        me = (await client.GetAsync("/api/v1/me")).Body.Data();
+        me.GetProperty("position").GetString().ShouldBe("Winger");
+        me.GetProperty("area").ValueKind.ShouldBe(System.Text.Json.JsonValueKind.Null);
+    }
+
+    [Fact]
     public async Task The_ceo_sees_every_permission_and_the_ceo_dashboard()
     {
         var client = await api.ClientAsync();

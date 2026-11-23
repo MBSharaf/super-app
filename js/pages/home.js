@@ -67,6 +67,9 @@
     async render() {
       const [nearby, courts, matches, products] = await Promise.all([S.pitches.list({ sort: 'distance' }), S.pitches.list({ sort: 'distance', sport: 'padel' }), S.matches.list({ sort: 'soon' }), SA.config.storeEnabled ? S.shop.list({ sort: 'featured' }) : Promise.resolve([])]);  // the store is paused: its API answers 423
       const meta = S.fantasy.meta();
+      // The real site shows only real counts from the server (0 is shown as 0); the GitHub demo keeps its sample figures
+      const real = !!SA.config.realData;
+      const stats = real ? await S.content.homeStats?.() : null;
       const loc = S.location.current();
       const upcoming = S.bookings.upcomingSync()[0];
       const topPlayers = S.fantasy.playersSync().slice().sort((a, b) => b.form - a.form).slice(0, 5);
@@ -95,10 +98,12 @@
             <a class="btn btn-primary btn-lg" data-sport-only="padel" href="#/pitches?sport=padel">${icon('padel', 19)} Book a padel court</a>
             <a class="btn btn-outline btn-lg" href="#/players">${icon('users', 19)} Find a game</a>
           </div>
-          <div class="hero-proof row">
+          ${real ? (stats ? `<div class="hero-proof row">
+            <div>${stats.reviews ? `<span class="row" style="--gap:6px">${c.stars(+stats.rating, 13)}<b class="small">${(+stats.rating).toFixed(1)}</b><span class="xs muted">(${stats.reviews.toLocaleString('en-US')})</span></span>` : ''}<span class="xs muted">${stats.players.toLocaleString('en-US')} players on Super Malaab</span></div>
+          </div>` : '') : `<div class="hero-proof row">
             ${c.avatarStack([0, 3, 9, 5].map((a) => ({ avatar: a, name: 'x' })), 4)}
             <div><span class="row" style="--gap:6px">${c.stars(5, 13)}<b class="small">4.8</b></span><span class="xs muted">62,000+ players across Cairo, Giza and Alexandria</span></div>
-          </div>
+          </div>`}
         </div>
         ${heroStage(hero, meta)}
       </section>
@@ -171,14 +176,21 @@
         <div class="product-grid">${products.filter((p) => !p.service).slice(0, 8).map((p) => cards.product(p)).join('')}</div>
       </section>` : '<!-- store paused -->'}
 
-      <section class="container section-tight desk-only">
+      ${real ? (stats ? `<section class="container section-tight desk-only">
+        <div class="stats-strip reveal">
+          <div><b class="num" data-countup="${stats.pitches}">0</b><span>partner pitches</span></div>
+          <div><b class="num" data-countup="${stats.gamesFilled}">0</b><span>games filled last month</span></div>
+          ${SA.config.fantasyEnabled ? `<div><b class="num" data-countup="${stats.fantasyManagers}">0</b><span>fantasy managers</span></div>` : `<div><b class="num" data-countup="${stats.players}">0</b><span>players across Egypt</span></div>`}
+          <div><b class="num" data-countup="${stats.bookings}">0</b><span>bookings in the last 30 days</span></div>
+        </div>
+      </section>` : '') : `<section class="container section-tight desk-only">
         <div class="stats-strip reveal">
           <div><b class="num" data-countup="420">0</b><span>partner pitches</span></div>
           <div><b class="num" data-countup="18500">0</b><span>games filled last month</span></div>
           ${SA.config.fantasyEnabled ? '<div><b class="num" data-countup="184320">0</b><span>fantasy managers</span></div>' : '<div><b class="num" data-countup="62000">0</b><span>players across Egypt</span></div>'}
           <div><b class="num" data-countup="98.4" data-decimals="1">0</b><span>% bookings confirmed instantly</span></div>
         </div>
-      </section>`;
+      </section>`}`;
     },
     mount(el) {
       const offs = [];

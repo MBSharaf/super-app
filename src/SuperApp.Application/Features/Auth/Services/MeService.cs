@@ -33,7 +33,7 @@ public sealed class MeService(IIdentityService identity, ISessionService session
         var p = await identity.GetProfileAsync(userId, ct);
         return new MeResponse(p.Id, p.FullName, p.Email, p.EmailConfirmed, p.Phone, p.Language, p.Roles, p.Permissions,
             Dashboards(p.Roles, p.Permissions), p.TwoFactorEnabled, p.Permissions.Count > 0 && !p.TwoFactorEnabled, p.CreatedAt,
-            p.AvatarFileId is { } avatar ? $"/api/v1/files/{avatar}" : null);
+            p.AvatarFileId is { } avatar ? $"/api/v1/files/{avatar}" : null, p.Player?.Position, p.Player?.Level, p.Player?.Foot, p.Player?.Area);
     }
 
     public Task<MeResponse> GetCurrentAsync(CancellationToken ct) => GetAsync(Me(), ct);
@@ -43,6 +43,10 @@ public sealed class MeService(IIdentityService identity, ISessionService session
         var userId = Me();
         var phone = request.Phone is null ? null : EgyptianPhone.Normalize(request.Phone);
         await identity.UpdateProfileAsync(userId, request.FullName?.Trim(), phone, request.Language, ct);
+        if (request.Position is not null || request.Level is not null || request.Foot is not null || request.Area is not null)
+        {
+            await identity.UpdatePlayerProfileAsync(userId, new PlayerProfile(request.Position, request.Level, request.Foot, request.Area), ct);
+        }
         return await GetAsync(userId, ct);
     }
 

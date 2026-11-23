@@ -66,7 +66,18 @@ public sealed class UpdateMeRequestValidator : AbstractValidator<UpdateMeRequest
         RuleFor(x => x.FullName!).PersonName().When(x => x.FullName is not null);
         RuleFor(x => x.Phone!).EgyptianMobile().When(x => x.Phone is not null);
         RuleFor(x => x.Language!).Language().When(x => x.Language is not null);
+        RuleFor(x => x.Position).Must(v => OneOf(v, Positions)).WithMessage("Choose a position from the list.");
+        RuleFor(x => x.Level).Must(v => OneOf(v, Levels)).WithMessage("Choose a level from the list.");
+        RuleFor(x => x.Foot).Must(v => OneOf(v, Feet)).WithMessage("Choose Right, Left or Both.");
+        RuleFor(x => x.Area).MaximumLength(80).WithMessage("Area: up to 80 characters.");
     }
+
+    public static readonly string[] Positions = ["Goalkeeper", "Defender", "Midfielder", "Winger", "Forward"];
+    public static readonly string[] Levels = ["Beginner", "Intermediate", "Advanced", "Competitive"];
+    public static readonly string[] Feet = ["Right", "Left", "Both"];
+
+    /// <summary>Not sent (null), cleared ("") or one of the allowed values.</summary>
+    private static bool OneOf(string? value, string[] allowed) => string.IsNullOrEmpty(value) || allowed.Contains(value, StringComparer.Ordinal);
 }
 
 public sealed class AcceptInviteRequestValidator : AbstractValidator<AcceptInviteRequest>

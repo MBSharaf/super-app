@@ -20,6 +20,19 @@ public class User : IdentityUser<Guid>, ITimestamped, ISoftDelete
     public PrepayRule MustPrepay { get; set; }
     public int CodRefusals { get; set; }
     public string? AdminNote { get; set; }
+
+    // Player profile (shown to hosts when the player asks to join a game)
+    /// <summary>Goalkeeper, Defender, Midfielder, Winger or Forward.</summary>
+    public string? Position { get; set; }
+
+    /// <summary>Beginner, Intermediate, Advanced or Competitive.</summary>
+    public string? Level { get; set; }
+
+    /// <summary>Right, Left or Both.</summary>
+    public string? Foot { get; set; }
+
+    /// <summary>The area the player usually plays in, e.g. Maadi.</summary>
+    public string? Area { get; set; }
     public DateTime? LastSeenAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

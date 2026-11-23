@@ -102,7 +102,8 @@
               e.preventDefault();
               const d = SA.core.utils.formData(e.target);
               if (d.name.trim().length < 3) return;
-              await S.user.update({ ...d, name: d.name.trim(), firstName: d.name.trim().split(' ')[0] });
+              try { await S.user.update({ ...d, name: d.name.trim(), firstName: d.name.trim().split(' ')[0] }); }
+              catch (err) { SA.ui.overlay.toast(Object.values(err.details || {})[0] || err.message, { type: 'error' }); return; }
               close(); SA.app.rerender(); SA.ui.overlay.toast('Profile saved');
             });
           },

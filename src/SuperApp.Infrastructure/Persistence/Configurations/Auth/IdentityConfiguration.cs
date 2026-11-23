@@ -33,6 +33,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.CodRefusals).HasDefaultValue(0).ValueGeneratedNever();
         builder.Property(x => x.SuspendedReason).HasMaxLength(400);
         builder.Property(x => x.AdminNote).HasMaxLength(1000);
+        builder.Property(x => x.Position).HasMaxLength(20).IsUnicode(false);
+        builder.Property(x => x.Level).HasMaxLength(20).IsUnicode(false);
+        builder.Property(x => x.Foot).HasMaxLength(10).IsUnicode(false);
+        builder.Property(x => x.Area).HasMaxLength(80);
         // Identity's own unique index on NormalizedEmail is replaced by one that ignores deleted accounts
         builder.HasIndex(x => x.NormalizedEmail).IsUnique().HasFilter("[IsDeleted] = 0 AND [NormalizedEmail] IS NOT NULL").HasDatabaseName("UQ_Users_NormalizedEmail");
         builder.HasIndex(x => x.PhoneNumber).IsUnique().HasFilter("[PhoneNumber] IS NOT NULL AND [IsDeleted] = 0").HasDatabaseName("UQ_Users_PhoneNumber");

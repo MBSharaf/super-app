@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SuperApp.Application.Features.Content;
+using SuperApp.Application.Security;
+using SuperApp.Domain.Entities.Auth;
+using SuperApp.Domain.Entities.Bookings;
+using SuperApp.Domain.Entities.Fantasy;
 using SuperApp.Domain.Entities.Communities;
 using SuperApp.Domain.Entities.Content;
 using SuperApp.Domain.Entities.Ops;
@@ -63,6 +67,20 @@ public sealed class ContentRepository(AppDbContext db) : IContentRepository
     public Task<bool> IsSellerAsync(Guid userId, CancellationToken ct) => db.Set<Seller>().AnyAsync(s => s.UserId == userId, ct);
 
     public void AddConsent(CookieConsent consent) => db.Set<CookieConsent>().Add(consent);
+
+    public async Task<HomeStatsDto> HomeStatsAsync(DateOnly since, DateTime sinceUtc, CancellationToken ct)
+    {
+        var pitches = await db.Set<Pitch>().CountAsync(p => p.Status == PitchStatus.Live, ct);
+        var players = await db.Set<User>().CountAsync(u => u.AccountType == AccountType.Person && u.UserRoles.Any(r => r.Role.Name == SystemRoles.Customer), ct);
+        var managers = await db.Set<FantasyTeam>().Select(t => t.UserId).Distinct().CountAsync(ct);
+        var games = await db.Set<Game>().CountAsync(g => !g.HiddenByAdmin && (g.Status == GameStatus.Full || g.Status == GameStatus.Played) && g.Booking.Date >= since, ct);
+        var bookings = await db.Set<Booking>().CountAsync(b => b.CreatedAt >= sinceUtc
+            && (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.CheckedIn || b.Status == BookingStatus.Played), ct);
+        var reviews = db.Set<Review>().Where(r => !r.IsHidden);
+        var count = await reviews.CountAsync(ct);
+        decimal? rating = count == 0 ? null : Math.Round((decimal)await reviews.AverageAsync(r => (double)r.Stars, ct), 1);
+        return new HomeStatsDto(pitches, players, managers, games, bookings, rating, count);
+    }
 
     public async Task<(IReadOnlyList<string> Pitches, IReadOnlyList<string> Communities)> SitemapAsync(DateTime now, CancellationToken ct)
     {

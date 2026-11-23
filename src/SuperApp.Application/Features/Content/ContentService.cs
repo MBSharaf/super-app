@@ -48,7 +48,9 @@ public sealed class ContentService(
         var banners = (await content.BannersAsync(true, today, ct)).Take(3).ToList();
         var announcement = Read<AnnouncementDto>(await content.SettingAsync("content.announcement", ct));
         var live = announcement is { On: true } && !string.IsNullOrWhiteSpace(announcement.Text) && (announcement.Until is null || announcement.Until >= today);
-        return new HomeDto(banners, live ? announcement : null);
+        var now = clock.UtcNow;
+        var stats = await content.HomeStatsAsync(today.AddDays(-30), now.AddDays(-30), ct);
+        return new HomeDto(banners, live ? announcement : null, stats);
     }
 
     public async Task<PopupsDto> PopupsAsync(CancellationToken ct)

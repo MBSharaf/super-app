@@ -85,6 +85,33 @@ public sealed class PackagesTests(AccountsApiFactory api) : IClassFixture<Accoun
     }
 
     [Fact]
+    public async Task A_super_points_voucher_pays_part_of_a_weekly_package_once()
+    {
+        var (_, _, slug, optionId) = await PitchWithPackageAsync();
+        var (player, playerId) = await kit.PersonAsync(partner: false);
+        await api.DbAsync(async db =>
+        {
+            db.Add(new SuperApp.Domain.Entities.Money.PointEntry { UserId = playerId, Points = 3000, Kind = PointKind.AdminAdjustment, Reason = "Test", CreatedAt = DateTime.UtcNow });
+            return await db.SaveChangesAsync();
+        });
+        var code = (await player.PostAsync("/api/v1/points/redeem", new { amount = 100 })).Body.Data().GetProperty("code").GetString()!;
+        var start = PartnerKit.Day(8);
+        var buy = new { pitchSlug = slug, optionId, startsOn = start, hour = 20, duration = 1, acceptWaiver = true, voucherCode = code };
+        (await player.PostAsync("/api/v1/packages", buy with { voucherCode = "SP-NOTMINE" })).Body.Code().ShouldBe("voucher_unknown");
+
+        var bought = await player.PostAsync("/api/v1/packages", buy);
+        bought.Status.ShouldBe(HttpStatusCode.Created, bought.Body.ToString());
+        var package = bought.Body.Data();
+        var codes = package.GetProperty("matches").EnumerateArray().Select(m => m.GetProperty("code").GetString()!).ToList();
+        var rows = await api.DbAsync(db => db.Set<Booking>().Where(b => codes.Contains(b.Code)).OrderBy(b => b.Date).Select(b => new { b.Total, b.DiscountAmount, b.Deposit, b.BalanceDue }).ToListAsync());
+        rows[0].Total.ShouldBe(675 + 20 - 100);                          // the voucher pays the first match
+        (rows[0].Deposit + rows[0].BalanceDue).ShouldBe(rows[0].Total);  // and its deposit is split from the new total
+        rows.Skip(1).ShouldAllBe(r => r.Total == 675 + 20);
+        (await player.GetAsync("/api/v1/vouchers/mine")).Body.Data()[0].GetProperty("status").GetString().ShouldBe("Used");
+        (await player.PostAsync("/api/v1/packages", buy with { startsOn = PartnerKit.Day(9) })).Body.Code().ShouldBe("voucher_used");
+    }
+
+    [Fact]
     public async Task One_qr_checks_in_todays_match_and_counts_it()
     {
         var (partner, _, slug, optionId) = await PitchWithPackageAsync();

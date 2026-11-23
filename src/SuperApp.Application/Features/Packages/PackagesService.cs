@@ -42,6 +42,7 @@ public sealed class PackagesService(
     IValidator<BuyPackageRequest> buyRules,
     Payments.IPaymentsService payments,
     Money.ILedger ledger,
+    Money.LoyaltyService loyalty,
     IUnitOfWork unitOfWork) : IPackagesService
 {
     public const int ExtraWeeks = 4;
@@ -72,8 +73,13 @@ public sealed class PackagesService(
         {
             matches.Add((await MatchAsync(p, package, plan, request.Duration, waiver, me, ct), p.Slots));
         }
+        var voucher = await UseVoucherAsync(request.VoucherCode, package, matches.Select(m => m.Item1).ToList(), first, me, ct);
         var paymentUrl = await PayAsync(package, matches.Select(m => m.Item1).ToList(), first, me, fromWallet: false, ct);
         await packages.SaveAsync(package, matches, ct);
+        if (voucher is { Voucher: { } used } && voucher.VoucherAmount > 0)
+        {
+            used.UsedOnId = matches[0].Item1.Id;
+        }
         if (paymentUrl is not null)
         {
             return (await GetAsync(package.Code, ct)) with { PaymentUrl = paymentUrl };
@@ -93,6 +99,10 @@ public sealed class PackagesService(
     /// </summary>
     private async Task<string?> PayAsync(Package package, IReadOnlyList<Booking> matches, BookingPlan first, Guid me, bool fromWallet, CancellationToken ct)
     {
+        if (matches.Sum(m => m.Deposit) <= 0)
+        {
+            return null; // a voucher paid every deposit: nothing to pay online
+        }
         var started = await payments.StartAsync(new Payments.PaymentRequest(PaymentPurpose.Package, matches.Sum(m => m.Deposit), me,
             $"Deposits for package {package.Code} at {first.Pitch.Name}", $"#/package/{package.Code}", fromWallet), ct);
         package.Payment = started.Payment;
@@ -102,6 +112,32 @@ public sealed class PackagesService(
             m.Status = started.RedirectUrl is null ? BookingStatus.Confirmed : BookingStatus.AwaitingPayment;
         }
         return started.RedirectUrl;
+    }
+
+    /// <summary>
+    /// A Super Points voucher pays the package's matches in order (up to the package total), then each match's deposit and
+    /// the rest at the pitch are split again from its new total. 422 when the voucher isn't mine or was used.
+    /// </summary>
+    private async Task<Money.BookingDiscount?> UseVoucherAsync(string? code, Package package, List<Booking> matches, BookingPlan first, Guid me, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return null;
+        }
+        var total = matches.Sum(m => m.Total);
+        var discount = await loyalty.ForBookingAsync(me, null, code, first.Pitch.Id, first.Pitch.OwnerUserId, total, total, ct);
+        var left = discount.VoucherAmount;
+        foreach (var m in matches.Where(_ => left > 0))
+        {
+            var part = Math.Min(left, m.Total);
+            m.DiscountAmount += part;
+            m.Total -= part;
+            left -= part;
+            await Deposits.ApplyAsync(settings, m, first.Pitch.PaymentMode, ct);
+        }
+        package.TotalPrice -= discount.VoucherAmount;
+        loyalty.Use(discount, matches[0]);
+        return discount;
     }
 
     public async Task<IReadOnlyList<PackageDto>> MineAsync(CancellationToken ct) => await packages.MineAsync(Me(), ct);
@@ -228,5 +264,6 @@ public sealed class BuyPackageRequestValidator : AbstractValidator<BuyPackageReq
         RuleFor(x => x.AcceptWaiver).Equal(true).WithMessage("Please accept the injury waiver to book.");
         // The deposit is paid online by card only
         RuleFor(x => x.PayFromWallet).Equal(false).WithMessage("Pitch bookings are paid online by card only.");
+        RuleFor(x => x.VoucherCode).MaximumLength(40);
     }
 }

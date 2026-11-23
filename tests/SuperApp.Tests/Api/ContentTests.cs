@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 using SuperApp.Domain.Entities.Content;
+using SuperApp.Domain.Enums;
 
 namespace SuperApp.Tests.Api;
 
@@ -36,6 +37,31 @@ public sealed class ContentTests(AccountsApiFactory api) : IClassFixture<Account
         (await customer.PostAsync("/api/v1/admin/banners", banner)).Status.ShouldBe(HttpStatusCode.Forbidden);
         (await ceo.SendAsync(HttpMethod.Delete, $"/api/v1/admin/banners/{created.Body.Data().GetProperty("id").GetInt64()}")).Status.ShouldBe(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task The_home_page_counts_are_the_real_counts_from_the_database()
+    {
+        await kit.PartnerWithPitchAsync(live: true);
+        // A new query string skips the guests' 60-second copy, so the answer is counted now
+        var stats = (await (await api.ClientAsync()).GetAsync($"/api/v1/content/home?t={Guid.NewGuid():N}")).Body.Data().GetProperty("stats");
+        var now = await CountsAsync();
+        now.Pitches.ShouldBeGreaterThan(0);
+        stats.GetProperty("pitches").GetInt32().ShouldBe(now.Pitches);
+        stats.GetProperty("fantasyManagers").GetInt32().ShouldBe(now.Managers);
+        stats.GetProperty("reviews").GetInt32().ShouldBe(now.Reviews);
+        stats.GetProperty("players").GetInt32().ShouldBeGreaterThan(0);   // the partner kit's people are player accounts
+        stats.GetProperty("gamesFilled").GetInt32().ShouldBeGreaterThanOrEqualTo(0);
+        stats.GetProperty("bookings").GetInt32().ShouldBeGreaterThanOrEqualTo(0);
+        if (now.Reviews == 0)
+        {
+            stats.GetProperty("rating").ValueKind.ShouldBe(JsonValueKind.Null); // no made-up rating when nobody reviewed yet
+        }
+    }
+
+    private Task<(int Pitches, int Managers, int Reviews)> CountsAsync() => api.DbAsync(async db => (
+        await db.Set<SuperApp.Domain.Entities.Pitches.Pitch>().CountAsync(p => p.Status == PitchStatus.Live),
+        await db.Set<SuperApp.Domain.Entities.Fantasy.FantasyTeam>().Select(t => t.UserId).Distinct().CountAsync(),
+        await db.Set<SuperApp.Domain.Entities.Pitches.Review>().CountAsync(r => !r.IsHidden)));
 
     [Fact]
     public async Task Popups_count_views_and_clicks_and_follow_their_timing()

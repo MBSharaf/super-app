@@ -10,8 +10,12 @@ public sealed record BannerDto(long Id, string Title, string? Badge, string? Cta
 /// <summary>The announcement bar (setting <c>content.announcement</c>). Tone info / success / warning / danger.</summary>
 public sealed record AnnouncementDto(bool On, string Text, string? Link, string? Cta, string Tone, DateOnly? Until);
 
-/// <summary>GET /content/home — up to 3 live banners in order, and the announcement when it is on and not expired.</summary>
-public sealed record HomeDto(IReadOnlyList<BannerDto> Banners, AnnouncementDto? Announcement);
+/// <summary>GET /content/home — up to 3 live banners in order, the announcement when it is on and not expired, and the real platform counts.</summary>
+public sealed record HomeDto(IReadOnlyList<BannerDto> Banners, AnnouncementDto? Announcement, HomeStatsDto Stats);
+
+/// <summary>Real counts for the home page (never marketing numbers): live pitches and courts, player accounts, fantasy managers,
+/// games filled and bookings in the last 30 days, and the average of visible pitch reviews (null when there are none).</summary>
+public sealed record HomeStatsDto(int Pitches, int Players, int FantasyManagers, int GamesFilled, int Bookings, decimal? Rating, int Reviews);
 
 public sealed record BannerRequest(string Title, string? Badge, string? CtaText, string Link, string ImageKey, bool IsActive, int SortOrder, DateOnly? ShowFrom, DateOnly? ShowUntil);
 
@@ -95,6 +99,9 @@ public interface IContentRepository
     Task<bool> IsSellerAsync(Guid userId, CancellationToken ct);
 
     void AddConsent(CookieConsent consent);
+
+    /// <summary>Real platform counts for the home page; "last 30 days" starts at <paramref name="since"/>.</summary>
+    Task<HomeStatsDto> HomeStatsAsync(DateOnly since, DateTime sinceUtc, CancellationToken ct);
 
     /// <summary>Live pitch slugs and public community slugs (sitemap).</summary>
     Task<(IReadOnlyList<string> Pitches, IReadOnlyList<string> Communities)> SitemapAsync(DateTime now, CancellationToken ct);

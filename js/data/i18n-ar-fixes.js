@@ -2,6 +2,8 @@
 (function (SA) {
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
+    /* ---------- Real home counts (live site) ---------- */
+    '{0} players on Super Malaab': '{0} لاعب على سوبر ملعب', 'bookings in the last 30 days': 'حجز في آخر 30 يوم',
     /* ---------- M1 weekly package ---------- */
     'Package paid': 'مدفوع للباقة', 'One QR for the whole package': 'QR واحد للباقة كلها', 'Package used up': 'الباقة خلصت', 'Your weekly package': 'باقتك الأسبوعية',
     'Played': 'اتلعب', 'Missed': 'غاب', 'Left': 'فاضل', 'In the package': 'في الباقة', 'Missed — counted': 'غاب — اتحسب', 'Excused': 'متسامح فيه', 'Upcoming': 'جاي', 'Make-up': 'تعويضي',

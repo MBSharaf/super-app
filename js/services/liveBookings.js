@@ -290,7 +290,8 @@
   const createSeries = async ({ pitchId, date, hour, duration, weeks, payment, waiver = false }) => {
     SA.services.legal?.requireWaiver(waiver, 'weekly package');
     const option = optionFor(pitches.get(pitchId), weeks);
-    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver, payFromWallet: false });
+    const pk = await api.post('/packages', { pitchSlug: slugOf(pitchId), optionId: option.id, startsOn: date, hour, duration, acceptWaiver: !!waiver, payFromWallet: false,
+      voucherCode: payment?.voucher || undefined }); // a Super Points voucher pays first, on the server
     SA.services.liveMoney?.sync();
     if (pk.paymentUrl) window.location.assign(pk.paymentUrl);
     packs.set(pk.code, pk);

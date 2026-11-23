@@ -308,6 +308,12 @@
       const a = home.announcement;
       return a ? { on: true, text: a.text, link: a.link, cta: a.cta, tone: a.tone, until: a.until, v: a.text } : null;
     },
+    /** Real platform counts for the home page (live site only; null on the demo or when the server can't be reached). */
+    async homeStats() {
+      if (!live()) return null;
+      if (!home) await loadContent();
+      return home?.stats || null;
+    },
     promoPops() {
       if (!live() || !popups) return demoContent.promoPops();
       const t = popups.timing;
