@@ -38,12 +38,16 @@
       btn.disabled = true;
       try {
         await (nativeReady ||= Native.initialize({ google: { webClientId: clientId, mode: 'online', skipAuthOnlyAuthorizationAfterSignIn: true } }).catch((e) => { nativeReady = null; throw e; }));
-        const r = await Native.login({ provider: 'google', options: { scopes: ['email', 'profile'] } });
+        // No scopes: email and profile come by default, and asking for any scope makes the plain app screen refuse
+        const r = await Native.login({ provider: 'google', options: {} });
         const token = r?.result?.idToken;
         if (token) await onToken(token);
       } catch (err) {
-        // Closing the account picker is not an error
-        if (!/cancel/i.test(String(err?.message || err))) SA.ui.overlay.toast(SA.i18n?.t?.('Google sign-in didn’t work. Try again or use your email.') || 'Google sign-in didn’t work. Try again or use your email.', { type: 'error' });
+        const why = String(err?.message || err || '').slice(0, 140);
+        // Closing the account picker on purpose says nothing; anything else shows Google's reason too
+        if (!/^(user )?cancel(l)?ed|USER_CANCELED|activity is cancelled by the user/i.test(why)) {
+          SA.ui.overlay.toast(`${SA.i18n?.t?.('Google sign-in didn’t work. Try again or use your email.') || 'Google sign-in didn’t work. Try again or use your email.'} (${SA.core.utils.esc(why)})`, { type: 'error' });
+        }
         console.warn('google native', err);
       } finally { btn.disabled = false; }
     });
