@@ -26,10 +26,12 @@ public sealed class MatchAlertsTests
         var kickoff = new DateTime(2026, 11, 24, 22, 30, 0, DateTimeKind.Utc);   // 00:30 on the 25th in Cairo
         var alert = new MatchAlert(42, kickoff, new AlertClub(1, "Al Ahly", "الأهلي"), new AlertClub(2, "Pyramids", ""), MatchMoment.Goal, 0, 1, 67);
         var ar = MatchAlerts.Message(alert, "ar");
-        ar.Title.ShouldBe("⚽ جووول Pyramids!");
-        ar.Body.ShouldBe("الأهلي 0–1 Pyramids · الدقيقة 67");
+        ar.Title.ShouldBe("⚽ جووول بيراميدز!");   // Arabic name from the site's list when the club has none
+        ar.Body.ShouldBe("الأهلي 0–1 بيراميدز · الدقيقة 67");
         ar.Link.ShouldBe("#/matches?date=2026-11-25&open=m-42");
         MatchAlerts.Message(alert with { Moment = MatchMoment.FullTime }, "en").Title.ShouldBe("Full time: Al Ahly 0–1 Pyramids");
-        MatchAlerts.Message(alert with { Moment = MatchMoment.Lineups }, "ar").Title.ShouldBe("التشكيلة نزلت: الأهلي ضد Pyramids");
+        MatchAlerts.Message(alert with { Moment = MatchMoment.Lineups }, "ar").Title.ShouldBe("التشكيلة نزلت: الأهلي ضد بيراميدز");
+        new AlertClub(3, "Unknown Town FC", "").Name("ar").ShouldBe("Unknown Town FC");
+        new AlertClub(4, "Liverpool FC", "").Name("ar").ShouldBe("ليفربول");
     }
 }

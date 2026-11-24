@@ -23,7 +23,7 @@ public sealed record MatchState(FixtureStatus Status, int? HomeGoals, int? AwayG
 /// <summary>A club as the alert names it (Arabic name when the person reads Arabic and the club has one).</summary>
 public sealed record AlertClub(long Id, string NameEn, string NameAr)
 {
-    public string Name(string lang) => lang == "ar" && !string.IsNullOrWhiteSpace(NameAr) ? NameAr : NameEn;
+    public string Name(string lang) => lang != "ar" ? NameEn : !string.IsNullOrWhiteSpace(NameAr) ? NameAr : ClubNamesAr.Of(NameEn) ?? NameEn;
 }
 
 /// <summary>A match alert to send: the fixture, its clubs, the moment and the score at that moment.</summary>

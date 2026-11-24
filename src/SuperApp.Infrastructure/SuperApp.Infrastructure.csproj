@@ -8,6 +8,7 @@
   <ItemGroup>
     <!-- Seed files travel inside the assembly, so the seed works the same from any folder -->
     <EmbeddedResource Include="Persistence\Seed\Data\**\*.json" />
+    <EmbeddedResource Include="Football\ClubNamesAr.json" LogicalName="SuperApp.Infrastructure.Football.ClubNamesAr.json" />
   </ItemGroup>
 
   <ItemGroup>
