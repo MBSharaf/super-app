@@ -5,6 +5,8 @@
 #   supermalaab-backup --list      show the backups on this server
 #   supermalaab-backup --offsite-setup   connect Google Drive once (owner pastes one address; nothing secret is shown)
 #   supermalaab-backup --show-key  print the off-site encryption key (owner keeps it outside the server)
+#   supermalaab-backup --offsite-list   list the backups on Google Drive
+#   supermalaab-backup --fetch <name>   copy one Drive backup back here (then supermalaab-restore <name>)
 # Each backup is one folder in /var/backups/supermalaab/<date-time>/ (root only):
 #   SuperMalaab.bak.gz  full SQL Server backup (checked with RESTORE VERIFYONLY)
 #   files.tar.gz        uploaded files (storage) and data-protection keys (logins survive a restore)
@@ -55,7 +57,11 @@ list_backups() {
 offsite_setup() {
   command -v rclone >/dev/null || curl -fsSL https://rclone.org/install.sh | bash >/dev/null
   install -d -m 700 /etc/supermalaab /root/.config/rclone
-  [ -s "$KEY" ] || { openssl rand -base64 32 | tr -d '\n' > "$KEY"; chmod 600 "$KEY"; }
+  if [ ! -s "$KEY" ]; then   # a rebuilt server: the key saved from before is needed to read the old Drive copies
+    read -r -s -p "Paste the off-site key you saved before (hidden), or press Enter to make a new one: " oldkey; echo
+    if [ -n "$oldkey" ]; then printf '%s' "$oldkey" > "$KEY"; else openssl rand -base64 32 | tr -d '\n' > "$KEY"; fi
+    chmod 600 "$KEY"; unset oldkey
+  fi
   local log; log="$(mktemp)"
   rclone authorize drive --auth-no-open-browser > "$log" 2>&1 &
   local pid=$!
@@ -79,7 +85,9 @@ offsite_setup() {
   rclone config create offsite crypt remote gdrive:SuperMalaab-backups password "$(rclone obscure "$(cat "$KEY")")" \
     filename_encryption off directory_name_encryption false --non-interactive >/dev/null
   chmod 600 "$RC"
-  rclone mkdir offsite: && echo "Google Drive connected. Making a backup now…" && backup
+  rclone mkdir offsite: && echo "Google Drive connected."
+  echo "Backups on Google Drive:"; rclone lsf offsite: --dirs-only 2>/dev/null | tr -d / | tail -5
+  echo "To bring one back: supermalaab-backup --fetch <name>  then  supermalaab-restore <name>"
   echo; echo "IMPORTANT: run  supermalaab-backup --show-key  and keep the key outside this server (password manager)."
 }
 
@@ -124,6 +132,13 @@ case "${1:-}" in
   --list) list_backups ;;
   --offsite-setup) offsite_setup ;;
   --show-key) cat "$KEY"; echo ;;
+  --offsite-list) rclone lsf offsite: --dirs-only | tr -d / ;;
+  --fetch)   # copy one Drive backup back to this server (decrypted), ready for supermalaab-restore
+    [ -n "${2:-}" ] || { echo "Usage: supermalaab-backup --fetch <name>   (names: --offsite-list)"; exit 1; }
+    install -d -m 700 "$DEST/$2"
+    rclone copy "offsite:$2" "$DEST/$2" --retries 3
+    gzip -t "$DEST/$2/$DB.bak.gz" && echo "Fetched $2 ($(du -sh "$DEST/$2" | cut -f1)). Now run: supermalaab-restore $2" \
+      || echo "The copy can't be read: is the key the one saved before?" ;;
   "") backup ;;
-  *) echo "Usage: supermalaab-backup [--install|--list|--offsite-setup|--show-key]"; exit 1 ;;
+  *) echo "Usage: supermalaab-backup [--install|--list|--offsite-setup|--show-key|--offsite-list|--fetch <name>]"; exit 1 ;;
 esac

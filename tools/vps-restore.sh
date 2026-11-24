@@ -29,6 +29,8 @@ rm -f "/tmp/restore-$1.bak"
 docker exec -u 0 mssql chown mssql "$inside"
 sql "ALTER DATABASE [$DB] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; RESTORE DATABASE [$DB] FROM DISK='$inside' WITH REPLACE, CHECKSUM; ALTER DATABASE [$DB] SET MULTI_USER;" >/dev/null
 docker exec mssql rm -f "$inside"
+# On a rebuilt server the logins are new: tie the database's users to them again (else the site can't sign in)
+sql "USE [$DB]; IF USER_ID('supermalaab_app') IS NOT NULL ALTER USER supermalaab_app WITH LOGIN = supermalaab_app; IF USER_ID('supermalaab_migrate') IS NOT NULL AND SUSER_ID('supermalaab_migrate') IS NOT NULL ALTER USER supermalaab_migrate WITH LOGIN = supermalaab_migrate;" >/dev/null
 tar -xzf "$DIR/files.tar.gz" -C /opt/supermalaab
 chown -R supermalaab:supermalaab /opt/supermalaab/storage /opt/supermalaab/keys
 echo "Restored $1. Starting the site..."
