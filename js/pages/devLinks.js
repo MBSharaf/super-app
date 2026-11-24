@@ -8,7 +8,7 @@
   const GROUPS = [
     { title: 'Site', icon: 'home', links: [
       ['Home', '#/'], ['Pitches', '#/pitches'], ['Pitch page', '#/pitches/p-zayed-22'], ['Book a pitch', '#/book/p-zayed-22'], ['Padel courts', '#/pitches?sport=padel'], ['Padel court page', '#/pitches/p-padel-smash-1'], ['Book a padel court', '#/book/p-padel-smash-1'], ['Padel Open Match', '#/players/m-1101'], ['My bookings', '#/bookings'],
-      ['Find players', '#/players'], ['Post a game', '#/players/new'], ['Matches', '#/matches'],
+      ['Find players', '#/players'], ['Post a game', '#/players/new'], ['Matches', '#/matches'], ['News', '#/news'], ['A news story', '#/news/1'], ['Notification settings', '#/notification-settings'], ['Admin: news', '#/admin/news'],
       ['Tournaments', '#/tournaments'], ['Tournament page', '#/tournaments/tr-autumn-cup'], ['Profile', '#/profile'], ['Wallet & points', '#/wallet'], ['Help & support', '#/support'], ['About us', '#/about'], ['Contact us', '#/contact'],
     ] },
     { title: 'Communities', icon: 'users', links: [

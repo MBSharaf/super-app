@@ -65,6 +65,7 @@
   };
 
   Push.addListener('registration', ({ value }) => { token = value; sentFor = null; send(); });
+  Push.addListener('pushNotificationReceived', () => SA.services.follow?.sync?.());   // the bell shows it at once
   Push.addListener('registrationError', (e) => console.warn('push registration', e));
   Push.addListener('pushNotificationActionPerformed', ({ notification }) => {
     const link = notification?.data?.link;

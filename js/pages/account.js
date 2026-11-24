@@ -45,6 +45,7 @@
         ['sparkle', 'Super Points', `${S.loyalty.summary().balance.toLocaleString()} points · ${S.loyalty.summary().tier.name}`, '#/wallet'],
         ['users', 'Communities', `${(store.get().communities || []).length} joined`, '#/community'],
         ['help', 'Help & support', `${S.support.mine().filter((t) => t.status !== 'resolved').length} open request${S.support.mine().filter((t) => t.status !== 'resolved').length === 1 ? '' : 's'}`, '#/support'],
+        ...(SA.config.realData ? [['star', 'My clubs & notifications', 'Pick up to 3 clubs and choose your alerts', '#/notification-settings'], ['news', 'News', 'Stories picked by the Super Malaab team', '#/news']] : []),
         ['trophy', 'Tournaments', `${(SA.services.db.all('tournaments') || []).filter((t) => t.status !== 'cancelled' && t.teams.some((x) => x.userId === u.id)).length} team entries`, '#/tournaments'],
       ];
       return `<div class="container">

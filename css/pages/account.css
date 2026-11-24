@@ -93,3 +93,26 @@ body.is-loading::before { content: ""; position: fixed; top: 0; inset-inline-sta
 /* Booking deposit */
 .kv .deposit-row { border-top: 1px dashed var(--line, rgba(0,0,0,.12)); padding-top: 10px; margin-top: 4px; }
 .ci-collect { margin-top: 12px; }
+
+/* ---------- Favourite clubs picker, news and notification settings (2026-11-24) ---------- */
+.fp-wrap { display: grid; gap: 14px; }
+.fp-picked { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.fp-slot { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 6px 10px; border-radius: 12px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); font-size: 13px; text-align: start; min-width: 0; }
+.fp-slot.is-on { box-shadow: inset 0 0 0 2px var(--turf); background: var(--turf-tint); cursor: pointer; }
+.fp-slot .grow { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.fp-n { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; background: var(--surface-3); }
+.fp-slot.is-on .fp-n { background: var(--turf); color: #fff; }
+.fp-tools { display: grid; gap: 10px; }
+.fp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; max-height: min(46vh, 420px); overflow: auto; padding: 2px; }
+.fp-club { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px 10px; border-radius: 14px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); font-size: 12.5px; line-height: 1.25; text-align: center; transition: box-shadow 200ms, transform 200ms; }
+.fp-club:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--ink-3); }
+.fp-club.is-on { box-shadow: inset 0 0 0 2px var(--turf); background: var(--turf-tint); }
+.fp-name { font-weight: 700; overflow-wrap: anywhere; }
+.fp-rank { position: absolute; top: 6px; inset-inline-end: 6px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--turf); color: #fff; font-size: 11px; font-weight: 800; }
+.fp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 6px; border-radius: 999px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); font-size: 12.5px; font-weight: 700; }
+.news-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.news-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+.news-title { font-size: 16px; line-height: 1.35; }
+.news-body p { margin: 0 0 12px; line-height: 1.75; }
+.notif-kinds li { align-items: center; }
+@media (max-width: 560px) { .fp-picked { grid-template-columns: 1fr; } }

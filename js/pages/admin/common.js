@@ -40,6 +40,7 @@
     { key: 'games', page: 'adminGames', label: 'Free slots & games', href: '#/admin/games', icon: 'pitch' },
     { key: 'broadcast', page: 'adminBroadcast', label: 'Broadcasts', href: '#/admin/broadcast', icon: 'megaphone' },
     { key: 'promos', page: 'adminPromos', label: 'Promo codes', href: '#/admin/promos', icon: 'gift' },
+    { key: 'news', page: 'adminNews', label: 'News', href: '#/admin/news', icon: 'news' },
     { key: 'content', page: 'adminContent', label: 'Site content', href: '#/admin/content', icon: 'news' },
     { key: 'fantasy', page: 'adminFantasy', label: 'Fantasy', href: '#/admin/fantasy', icon: 'trophy' },
     { group: 'Insights' },

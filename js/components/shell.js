@@ -122,7 +122,7 @@
 
   const openNotifications = () => {
     const list = store.get().notifications.filter((n) => !SA.core.isPaused?.(n.link));  // none from closed parts
-    const kindIcon = { fantasy: 'trophy', match: 'users', booking: 'pitch', shop: 'bag' };
+    const kindIcon = { fantasy: 'trophy', match: 'users', booking: 'pitch', shop: 'bag', news: 'news' };
     const m = SA.ui.overlay.open({
       drawer: true, title: 'Notifications', subtitle: list.some((n) => !n.read) ? `${list.filter((n) => !n.read).length} unread` : 'You’re all caught up',
       body: list.length ? `<ul class="notif-list">${list.map((n) => `<li><a href="#${n.link || '/'}" class="notif ${n.read ? '' : 'is-unread'}" data-nid="${n.id}">

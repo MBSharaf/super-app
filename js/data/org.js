@@ -70,9 +70,9 @@
     { id: 'compliance', title: 'Compliance agent', dept: 'legal', reportsTo: 'counsel', holder: 'ai', name: 'Clause', cost: 1000, sections: ['audit', 'sellers', 'partners', 'approvals'], can: ['audit'], limit: 0,
       duties: ['Keeps the compliance calendar', 'Checks seller and partner IDs', 'Reads the audit log for rule breaks'], watch: ['admin.impersonate', 'admin.settings', 'ceo.'] },
 
-    { id: 'cmo', title: 'Marketing lead', dept: 'marketing', reportsTo: 'ceo', holder: 'ai', name: 'Pulse', cost: 2200, sections: ['overview', 'promos', 'broadcast', 'analytics', 'content'], can: ['promo', 'broadcast', 'content'], limit: 0,
+    { id: 'cmo', title: 'Marketing lead', dept: 'marketing', reportsTo: 'ceo', holder: 'ai', name: 'Pulse', cost: 2200, sections: ['overview', 'promos', 'broadcast', 'analytics', 'content', 'news'], can: ['promo', 'broadcast', 'content'], limit: 0,
       duties: ['Plans campaigns within the budget', 'Creates promo codes', 'Sends broadcasts to the right people'], watch: ['admin.promo', 'admin.broadcast'] },
-    { id: 'social', title: 'Social media & content agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Buzz', cost: 1700, sections: ['content', 'community', 'broadcast'], can: ['content'], limit: 0,
+    { id: 'social', title: 'Social media & content agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Buzz', cost: 1700, sections: ['content', 'news', 'community', 'broadcast'], can: ['content'], limit: 0,
       duties: ['Posts on social media every day', 'Banners, pop-ups and the announcement bar', 'Runs the official communities'], watch: ['admin.content', 'admin.banner', 'admin.community.post'] },
     { id: 'arena', title: 'Fantasy & games agent', dept: 'marketing', reportsTo: 'cmo', holder: 'ai', name: 'Arena', cost: 900, sections: ['fantasy', 'games', 'community'], can: ['fantasy'], limit: 0,
       duties: ['Runs fantasy leagues and prizes', 'Free-slot games and player safety', 'Match-day content'], watch: ['admin.fantasy', 'admin.games', 'fantasy.'] },
