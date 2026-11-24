@@ -31,6 +31,11 @@ public sealed class PushWorker(PushQueue queue, FcmClient fcm, IServiceScopeFact
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Said once at start: a key file the site can't read turns push off without any other sign
+        if (log.IsEnabled(LogLevel.Information))
+        {
+            log.LogInformation("Push notifications are {State}", fcm.IsOn ? "on" : "off (no readable Firebase key file)");
+        }
         await foreach (var (users, message) in queue.Reader.ReadAllAsync(stoppingToken))
         {
             try

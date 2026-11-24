@@ -18,7 +18,7 @@ public enum PushResult
 
 /// <summary>
 /// Firebase Cloud Messaging (HTTP v1). The service account key is a JSON file on the server only:
-/// PUSH__FCM__CREDENTIALSFILE (e.g. /etc/supermalaab/fcm.json). Without it push is off and nothing is sent.
+/// PUSH__FCM__CREDENTIALSFILE (e.g. /etc/supermalaab-push/fcm.json, a folder the site can read). Without it push is off and nothing is sent.
 /// </summary>
 public sealed class FcmClient(IHttpClientFactory http, IConfiguration configuration, ILogger<FcmClient> log) : IDisposable
 {
