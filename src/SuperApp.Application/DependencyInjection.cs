@@ -70,6 +70,7 @@ public static class DependencyInjection
         Features.Shop.ShopRegistration.AddShop(services);
         services.AddScoped<IReviewsService, ReviewsService>();
         services.AddScoped<Features.Waitlist.IWaitlistService, Features.Waitlist.WaitlistService>();
+        services.AddScoped<Features.Push.IPushDevicesService, Features.Push.PushDevicesService>();
         services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();
         services.AddScoped<Features.FreeSlots.IFreeSlotsService, Features.FreeSlots.FreeSlotsService>();
         services.AddScoped<Features.Games.IGamesService, Features.Games.GamesService>();

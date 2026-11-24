@@ -35,3 +35,54 @@
     new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 })(window.SA);
+
+/**
+ * Push notifications in the Android app (Firebase). When someone is signed in, the app asks once for permission,
+ * gets this phone's token and gives it to the server (POST /me/push-devices); the server then sends every
+ * notification of the bell to the phone too. Signing out takes the phone off first. Tapping a notification opens its page.
+ */
+(function (SA) {
+  const Push = SA.core.native.isApp ? window.Capacitor.Plugins?.PushNotifications : null;
+  if (!Push) return;
+  const t = (s) => SA.i18n?.t?.(s) || s;
+  let token = null;
+  let sentFor = null;   // the account the token was last given to
+
+  const send = async () => {
+    const me = SA.services.session?.me();
+    if (!token || !me || sentFor === me.id) return;
+    try { await SA.services.api.post('/me/push-devices', { token, platform: 'android' }); sentFor = me.id; } catch (e) { console.warn('push register', e); }
+  };
+
+  const start = async () => {
+    try {
+      let perm = await Push.checkPermissions();
+      if (perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale') perm = await Push.requestPermissions();
+      if (perm.receive !== 'granted') return;
+      await Push.createChannel({ id: 'default', name: t('Super Malaab notifications'), description: t('Bookings, games, orders and offers'), importance: 4, visibility: 1 }).catch(() => {});
+      await Push.register();
+    } catch (e) { console.warn('push start', e); }
+  };
+
+  Push.addListener('registration', ({ value }) => { token = value; sentFor = null; send(); });
+  Push.addListener('registrationError', (e) => console.warn('push registration', e));
+  Push.addListener('pushNotificationActionPerformed', ({ notification }) => {
+    const link = notification?.data?.link;
+    if (link && /^#?\//.test(link)) SA.core.router.go(link.startsWith('#') ? link : `#${link}`);
+  });
+
+  const wire = () => {
+    const session = SA.services.session;
+    if (!session) { setTimeout(wire, 300); return; }
+    session.subscribe((me) => { if (me) (token ? send() : start()); });
+    if (session.me()) start();
+    // Before signing out, this phone stops getting the account's notifications
+    const signOut = session.signOut;
+    session.signOut = async (...args) => {
+      if (token && sentFor) await SA.services.api.post('/me/push-devices/remove', { token }).catch(() => {});
+      sentFor = null;
+      return signOut(...args);
+    };
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+})(window.SA);

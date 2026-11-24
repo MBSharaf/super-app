@@ -8,8 +8,8 @@ using SuperApp.Infrastructure.Persistence;
 
 namespace SuperApp.Infrastructure.Services;
 
-/// <summary>Writes notifications to notify.Notifications (the site's bell). Live push (SignalR) comes with Phase 6.</summary>
-public sealed class Notifier(AppDbContext db) : INotifier
+/// <summary>Writes notifications to notify.Notifications (the site's bell) and queues the same message as a phone push (FCM).</summary>
+public sealed class Notifier(AppDbContext db, IPushQueue push) : INotifier
 {
     private const int BatchSize = 1000;
 
@@ -17,6 +17,7 @@ public sealed class Notifier(AppDbContext db) : INotifier
     {
         db.Set<Notification>().Add(ToRow(userId, message));
         await db.SaveChangesAsync(ct);
+        push.Enqueue([userId], message);
     }
 
     public async Task NotifyManyAsync(IReadOnlyList<(Guid UserId, NotificationMessage Message)> items, CancellationToken ct)
@@ -28,6 +29,10 @@ public sealed class Notifier(AppDbContext db) : INotifier
             await db.SaveChangesAsync(ct);
             rows.ForEach(r => db.Entry(r).State = EntityState.Detached);   // keeps memory flat for large audiences
         }
+        foreach (var group in items.GroupBy(i => i.Message))
+        {
+            push.Enqueue(group.Select(i => i.UserId).ToList(), group.Key);
+        }
     }
 
     public async Task NotifyStaffAsync(string permission, NotificationMessage message, CancellationToken ct)
@@ -35,6 +40,7 @@ public sealed class Notifier(AppDbContext db) : INotifier
         var people = await StaffWithAsync(permission).ToListAsync(ct);
         db.Set<Notification>().AddRange(people.Select(id => ToRow(id, message)));
         await db.SaveChangesAsync(ct);
+        push.Enqueue(people, message);
     }
 
     /// <summary>Active people (not agents) holding the permission through a role or a direct grant, plus the CEO.</summary>

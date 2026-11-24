@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "39105608095",
+    "project_id": "super-malaab-app",
+    "storage_bucket": "super-malaab-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39105608095:android:eeaa0c989a0254408425aa",
+        "android_client_info": {
+          "package_name": "com.supermalaab.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAX3f9bP-gzReOzZyyObpUrs1Mzt9qZfYU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -81,6 +81,11 @@ public static class DependencyInjection
         services.Configure<Application.Common.Options.ExternalLoginOptions>(configuration.GetSection(Application.Common.Options.ExternalLoginOptions.Section));
         services.AddHttpClient(Identity.External.GoogleLoginVerifier.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(10));
         services.AddHttpClient(Identity.External.FacebookLoginVerifier.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient(Push.FcmClient.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(15));
+        services.AddSingleton<Push.FcmClient>();
+        services.AddSingleton<Push.PushQueue>();
+        services.AddSingleton<Application.Abstractions.Notifications.IPushQueue>(sp => sp.GetRequiredService<Push.PushQueue>());
+        services.AddHostedService<Push.PushWorker>();
         services.AddSingleton<Identity.External.GoogleKeyCache>();
         services.AddScoped<IExternalLoginVerifier, Identity.External.GoogleLoginVerifier>();
         services.AddScoped<IExternalLoginVerifier, Identity.External.FacebookLoginVerifier>();
@@ -120,6 +125,7 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.Games.IGameRepository, GameRepository>();
         Webhooks.WebhookRegistration.AddWebhooks(services);
         services.AddScoped<Application.Features.Waitlist.IWaitlistRepository, WaitlistRepository>();
+        services.AddScoped<Application.Features.Push.IPushDeviceRepository, PushDeviceRepository>();
         services.AddScoped<Application.Features.Cancellations.ICancellationRepository, CancellationRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();

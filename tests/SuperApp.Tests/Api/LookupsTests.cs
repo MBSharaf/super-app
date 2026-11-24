@@ -27,7 +27,7 @@ public sealed class LookupsTests(AccountsApiFactory api) : IClassFixture<Account
     {
         var settings = (await (await api.ClientAsync()).GetAsync("/api/v1/lookups/settings/public")).Body.Data();
         settings.GetProperty("vat.rate").GetDecimal().ShouldBe(0.14m);
-        settings.GetProperty("popups.timing").GetProperty("interval").GetInt32().ShouldBe(10);
+        settings.GetProperty("popups.timing").GetProperty("interval").GetInt32().ShouldBe(30);
         settings.TryGetProperty("commission.bookings", out _).ShouldBeFalse();
         settings.TryGetProperty("limits.payoutCeo", out _).ShouldBeFalse();
     }

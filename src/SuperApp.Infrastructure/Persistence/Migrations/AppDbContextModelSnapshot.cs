@@ -5823,6 +5823,52 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SuperApp.Domain.Entities.Notifications.PushDevice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(512)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PushDevices_Token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_PushDevices_UserId");
+
+                    b.ToTable("PushDevices", "notify", t =>
+                        {
+                            t.HasCheckConstraint("CK_PushDevices_Platform", "[Platform] IN ('android','ios')");
+                        });
+                });
+
             modelBuilder.Entity("SuperApp.Domain.Entities.Ops.AuditLog", b =>
                 {
                     b.Property<long>("Id")
@@ -11688,6 +11734,17 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SuperApp.Domain.Entities.Notifications.PushDevice", b =>
+                {
+                    b.HasOne("SuperApp.Domain.Entities.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

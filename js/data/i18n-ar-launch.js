@@ -2,6 +2,9 @@
 (function (SA) {
   const D = SA.data.i18nAr;
   Object.assign(D.strings, {
+    /* ---------- Android app: push notifications (2026-11-24) ---------- */
+    'Notifications are on for this phone.': 'الإشعارات اشتغلت على الموبايل ده.', 'Notifications are off for this phone.': 'الإشعارات اتقفلت على الموبايل ده.',
+    'Super Malaab notifications': 'إشعارات سوبر ملعب', 'Bookings, games, orders and offers': 'الحجوزات والماتشات والطلبات والعروض',
     /* ---------- Legal ---------- */
     'Legal': 'القانونية', 'Terms, privacy and policies': 'الشروط والخصوصية والسياسات', 'Everything you agree to when you use Super Malaab, in plain words.': 'كل اللي بتوافق عليه لما تستخدم سوبر ملعب، بكلام بسيط.',
     'Draft — to be reviewed by a lawyer before launch.': 'مسودة — المحامي هيراجعها قبل الإطلاق.', 'Questions? Contact support': 'عندك سؤال؟ كلّم الدعم', 'Legal documents': 'المستندات القانونية', 'Help center': 'مركز المساعدة',
