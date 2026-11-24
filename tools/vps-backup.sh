@@ -110,6 +110,9 @@ backup() {
   if docker volume inspect n8n_data >/dev/null 2>&1; then   # n8n workflows, credentials and its key
     tar -czf "$dir/n8n.tar.gz" -C /var/lib/docker/volumes/n8n_data _data -C /etc/supermalaab n8n.env
   fi
+  if [ -d /etc/supermalaab/android ]; then   # the Android app's signing key (every app version needs the same one)
+    tar -czf "$dir/android-key.tar.gz" -C /etc/supermalaab android
+  fi
   chmod -R go-rwx "$dir"
   find "$DEST" -mindepth 1 -maxdepth 1 -type d -mtime +"$KEEP_DAYS" -exec rm -rf {} +
   echo "Backup OK: $dir ($(du -sh "$dir" | cut -f1)) — database verified"

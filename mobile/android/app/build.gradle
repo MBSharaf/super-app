@@ -7,8 +7,9 @@ android {
         applicationId "com.supermalaab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // The cloud build numbers each build, so Google Play always gets a higher version
+        versionCode((System.getenv("APP_VERSION_CODE") ?: "1") as int)
+        versionName System.getenv("APP_VERSION_NAME") ?: "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +17,27 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // The app's own signing key. It lives only in the GitHub secrets (never in the repository); the cloud build
+    // writes it to a file and passes its path here. With the same key on every build, Google sign-in
+    // recognises the app and new versions install over old ones.
+    def keystorePath = System.getenv("ANDROID_KEYSTORE_FILE")
+    def hasKey = keystorePath && file(keystorePath).exists()
+    signingConfigs {
+        if (hasKey) {
+            app {
+                storeFile file(keystorePath)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (hasKey) signingConfig signingConfigs.app
+        }
         release {
+            if (hasKey) signingConfig signingConfigs.app
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

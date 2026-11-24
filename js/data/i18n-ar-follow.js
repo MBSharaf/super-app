@@ -46,6 +46,8 @@
       'اكتب أخبار قصيرة مع رابط المصدر. الخبر اللي له فريق بيبلغ متابعين الفريق ده، والخبر المهم بيبلغ الكل. الأخبار المخفية بتتشال من الموقع.',
     'No stories yet': 'لسه مفيش أخبار', 'Write the first story: it shows on the News page and reaches the club’s followers.': 'اكتب أول خبر: هيظهر في صفحة الأخبار ويوصل لمتابعين الفريق.',
     'Football stories by the team, with notifications to followers': 'أخبار كورة من الفريق، مع إشعارات للمتابعين',
+    /* ---------- Google sign-in in the Android app ---------- */
+    'Continue with Google': 'كمّل بحساب جوجل', 'Google sign-in didn’t work. Try again or use your email.': 'الدخول بجوجل ما نجحش. جرّب تاني أو ادخل بالإيميل.',
     /* ---------- Match rounds ---------- */
     'First preliminary round': 'الدور التمهيدي الأول', 'Round of 32': 'دور الـ32', 'Third-place play-off': 'مباراة المركز الثالث',
   });
