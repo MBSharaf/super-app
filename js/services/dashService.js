@@ -445,7 +445,7 @@
     const rate = (wd, h) => {
       const n = days[wd];
       if (n < 3) return prior(h);
-      const r = Math.min(1, grid[wd][h] / n);
+      const r = Math.min(1, (grid[wd][Math.floor(h)] || 0) / n);   // padel slots start on half hours
       return n < 6 ? (r * n + prior(h) * (6 - n)) / 6 : r;
     };
     return { rate, weeks, lowConfidence: weeks < 3 };
@@ -471,7 +471,7 @@
           if (i === 0 && sl.hour <= nowH) return;
           exp += g.rate(wd, sl.hour);
           if (['booked', 'yours'].includes(sl.status)) booked++;
-          else if (sl.status === 'available') { free++; freeValue += sl.price; }
+          else if (sl.status === 'available') { free++; freeValue += +sl.price || 0; }
         });
         capH += slots.length; bookedH += booked;
         const extraHours = Math.min(free, Math.max(0, exp - booked));

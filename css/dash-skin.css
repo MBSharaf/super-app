@@ -206,6 +206,8 @@ html[data-skin="match"] body { background: var(--frame); }
   [data-skin="match"] body.dash-mode .app { padding: 0; }
   [data-skin="match"] .dash { grid-template-columns: minmax(0, 1fr); border-radius: 0; min-height: 100vh; }
   [data-skin="match"] .dash-top { top: 0; margin: 0; border-radius: 0 0 24px 24px; background: var(--glass); backdrop-filter: blur(14px); }
+  /* room for the bell, which sits in the corner on phones */
+  [data-skin="match"] .dash-top, [data-theme="dark"][data-skin="match"] .dash-top { padding-inline-end: 70px; }
   [data-skin="match"] .dash-body { padding: 14px 14px 24px; }
   [data-skin="match"] .dash-main { padding: 0; }
 }
