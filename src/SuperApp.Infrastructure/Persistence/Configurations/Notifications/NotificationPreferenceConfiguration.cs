@@ -13,7 +13,7 @@ internal sealed class NotificationPreferenceConfiguration : IEntityTypeConfigura
     {
         builder.ToTable("NotificationPreferences", "notify", t =>
         {
-            t.HasCheckConstraint("CK_NotificationPreferences_Category", "[Category] BETWEEN 0 AND 10");
+            t.HasCheckConstraint("CK_NotificationPreferences_Category", "[Category] BETWEEN 0 AND 12");
         });
         builder.HasKey(x => new { x.UserId, x.Category });
         builder.Property(x => x.Category).HasConversion<byte>();

@@ -215,6 +215,7 @@ public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment 
     FotMobIds ids, ILogger<LiveScoresJob> logger) : BackgroundService
 {
     private static readonly TimeSpan Tick = TimeSpan.FromMinutes(1);
+    private readonly ConcurrentDictionary<long, bool> lineupsTold = new();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -244,7 +245,7 @@ public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment 
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
         var rows = await db.Set<Fixture>().Include(f => f.HomeClub).Include(f => f.AwayClub).Include(f => f.Gameweek.Season.Competition)
-            .Where(f => f.Gameweek.Season.IsCurrent && f.KickoffAt >= now.AddHours(-3) && f.KickoffAt <= now.AddMinutes(10)
+            .Where(f => f.Gameweek.Season.IsCurrent && f.KickoffAt >= now.AddHours(-3) && f.KickoffAt <= now.AddMinutes(LineupsBefore)
                 && (f.Status == FixtureStatus.Scheduled || f.Status == FixtureStatus.Live))
             .ToListAsync(ct);
         if (rows.Count == 0)
@@ -259,6 +260,7 @@ public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment 
             live.AddRange(await feed.DayAsync(day, ct));
         }
         var pairs = LiveMatcher.Pair(rows.Select(f => new LiveMatcher.Ours(f.Id, f.HomeClub.NameEn, f.AwayClub.NameEn, f.KickoffAt)).ToList(), live);
+        var alerts = new List<MatchAlert>();
         foreach (var row in rows)
         {
             if (pairs.TryGetValue(row.Id, out var found))
@@ -267,12 +269,58 @@ public sealed class LiveScoresJob(IServiceScopeFactory scopes, IHostEnvironment 
             }
             if (pairs.TryGetValue(row.Id, out var m) && m.Status is { } status)
             {
+                var before = new MatchState(row.Status, row.HomeGoals, row.AwayGoals);
                 Apply(row, m, status);
                 clocks.Set(row.Id, status == FixtureStatus.Live ? m.Clock : null, now);
+                alerts.AddRange(MatchAlerts.Moments(before, new MatchState(row.Status, row.HomeGoals, row.AwayGoals))
+                    .Select(moment => AlertOf(row, moment, before)));
             }
         }
         await db.SaveChangesAsync(ct);
+        await TellAsync(scope.ServiceProvider, rows, alerts, now, ct);
         return pairs.Count;
+    }
+
+    /// <summary>Line-ups are looked for from this many minutes before kick-off (they come about an hour before).</summary>
+    private const int LineupsBefore = 65;
+
+    private static MatchAlert AlertOf(Fixture row, MatchMoment moment, MatchState before) =>
+        new(row.Id, row.KickoffAt, new AlertClub(row.HomeClubId, row.HomeClub.NameEn, row.HomeClub.NameAr),
+            new AlertClub(row.AwayClubId, row.AwayClub.NameEn, row.AwayClub.NameAr), moment, row.HomeGoals, row.AwayGoals, row.Minute,
+            HomeScored: (row.HomeGoals ?? 0) > (before.HomeGoals ?? 0));
+
+    /// <summary>Sends the moments of this update, plus line-ups of followed matches about to start (once per match).</summary>
+    private async Task TellAsync(IServiceProvider services, IReadOnlyList<Fixture> rows, List<MatchAlert> alerts, DateTime now, CancellationToken ct)
+    {
+        var sender = services.GetRequiredService<MatchAlertSender>();
+        var insights = services.GetRequiredService<Application.Features.Content.IMatchInsights>();
+        foreach (var row in rows.Where(r => r.Status is FixtureStatus.Scheduled or FixtureStatus.Live && r.KickoffAt >= now.AddMinutes(-20)
+                     && !lineupsTold.ContainsKey(r.Id)))
+        {
+            try
+            {
+                if (!await sender.FollowedAsync(row.HomeClubId, row.AwayClubId, ct))
+                {
+                    continue;   // nobody follows these clubs (yet): look again next minute
+                }
+                if (await sender.LineupsToldAsync(row.Id, row.KickoffAt, ct))
+                {
+                    lineupsTold[row.Id] = true;
+                    continue;
+                }
+                var facts = await insights.FactsAsync(row.Id, ct);
+                if (facts?.Home is not null && facts.Away is not null)
+                {
+                    alerts.Insert(0, AlertOf(row, MatchMoment.Lineups, new MatchState(row.Status, row.HomeGoals, row.AwayGoals)));
+                    lineupsTold[row.Id] = true;
+                }
+            }
+            catch (Exception ex) when (!ct.IsCancellationRequested)
+            {
+                logger.LogWarning(ex, "Line-ups of a match could not be read");
+            }
+        }
+        await sender.SendAsync(alerts, ct);
     }
 
     private static void Apply(Fixture row, LiveMatch m, FixtureStatus status)

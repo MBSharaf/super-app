@@ -13,7 +13,7 @@ internal sealed class NotificationConfiguration : IEntityTypeConfiguration<Notif
     {
         builder.ToTable("Notifications", "notify", t =>
         {
-            t.HasCheckConstraint("CK_Notifications_Category", "[Category] BETWEEN 0 AND 10");
+            t.HasCheckConstraint("CK_Notifications_Category", "[Category] BETWEEN 0 AND 12");
             t.HasCheckConstraint("CK_Notifications_Link", "[Link] IS NULL OR [Link] LIKE '#/%'");
             t.HasCheckConstraint("CK_Notifications_Tone", "[Tone] BETWEEN 0 AND 3");
         });

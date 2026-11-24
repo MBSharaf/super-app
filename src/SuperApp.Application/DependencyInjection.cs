@@ -71,6 +71,9 @@ public static class DependencyInjection
         services.AddScoped<IReviewsService, ReviewsService>();
         services.AddScoped<Features.Waitlist.IWaitlistService, Features.Waitlist.WaitlistService>();
         services.AddScoped<Features.Push.IPushDevicesService, Features.Push.PushDevicesService>();
+        services.AddScoped<Features.Favorites.IFavoriteClubsService, Features.Favorites.FavoriteClubsService>();
+        services.AddScoped<Features.Inbox.IInboxService, Features.Inbox.InboxService>();
+        services.AddScoped<Features.News.INewsService, Features.News.NewsService>();
         services.AddScoped<IPartnerReviewsService, PartnerReviewsService>();
         services.AddScoped<Features.FreeSlots.IFreeSlotsService, Features.FreeSlots.FreeSlotsService>();
         services.AddScoped<Features.Games.IGamesService, Features.Games.GamesService>();

@@ -26,7 +26,7 @@ public sealed class PushQueue(FcmClient fcm) : IPushQueue
     }
 }
 
-/// <summary>Sends queued notifications to every phone of each person; forgets tokens Firebase says are gone.</summary>
+/// <summary>Sends queued notifications to every phone of each person (unless they switched that kind off); forgets tokens Firebase says are gone.</summary>
 public sealed class PushWorker(PushQueue queue, FcmClient fcm, IServiceScopeFactory scopes, ILogger<PushWorker> log) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,7 +50,9 @@ public sealed class PushWorker(PushQueue queue, FcmClient fcm, IServiceScopeFact
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         foreach (var chunk in users.Distinct().Chunk(500))
         {
-            var devices = await db.Set<PushDevice>().Where(d => chunk.Contains(d.UserId)).ToListAsync(ct);
+            var off = await db.Set<NotificationPreference>().AsNoTracking()
+                .Where(p => chunk.Contains(p.UserId) && p.Category == message.Category && !p.Push).Select(p => p.UserId).ToListAsync(ct);
+            var devices = await db.Set<PushDevice>().Where(d => chunk.Contains(d.UserId) && !off.Contains(d.UserId)).ToListAsync(ct);
             var dead = new List<PushDevice>();
             foreach (var device in devices)
             {

@@ -3053,6 +3053,78 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SuperApp.Domain.Entities.Content.NewsPost", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(6000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ClubId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<bool>("Important")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.Property<string>("SourceName")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("SourceUrl")
+                        .HasMaxLength(500)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2(0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClubId")
+                        .HasDatabaseName("IX_NewsPosts_ClubId");
+
+                    b.HasIndex("IsPublished", "PublishedAt")
+                        .HasDatabaseName("IX_NewsPosts_Published");
+
+                    b.ToTable("NewsPosts", "content", t =>
+                        {
+                            t.HasCheckConstraint("CK_NewsPosts_Language", "[Language] IN ('ar','en')");
+
+                            t.HasCheckConstraint("CK_NewsPosts_SourceUrl", "[SourceUrl] IS NULL OR [SourceUrl] LIKE 'https://%'");
+                        });
+                });
+
             modelBuilder.Entity("SuperApp.Domain.Entities.Content.PopupAd", b =>
                 {
                     b.Property<long>("Id")
@@ -3939,6 +4011,36 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_FantasyTeams_Bank", "[Bank] >= 0");
 
                             t.HasCheckConstraint("CK_FantasyTeams_FreeTransfers", "[FreeTransfers] <= 5");
+                        });
+                });
+
+            modelBuilder.Entity("SuperApp.Domain.Entities.Fantasy.FavoriteClub", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("ClubId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2(0)")
+                        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+                    b.Property<byte>("Rank")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("UserId", "ClubId");
+
+                    b.HasIndex("ClubId")
+                        .HasDatabaseName("IX_FavoriteClubs_ClubId");
+
+                    b.HasIndex("UserId", "Rank")
+                        .IsUnique()
+                        .HasDatabaseName("UX_FavoriteClubs_UserRank");
+
+                    b.ToTable("FavoriteClubs", "fantasy", t =>
+                        {
+                            t.HasCheckConstraint("CK_FavoriteClubs_Rank", "[Rank] BETWEEN 1 AND 3");
                         });
                 });
 
@@ -5714,7 +5816,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("Notifications", "notify", t =>
                         {
-                            t.HasCheckConstraint("CK_Notifications_Category", "[Category] BETWEEN 0 AND 10");
+                            t.HasCheckConstraint("CK_Notifications_Category", "[Category] BETWEEN 0 AND 12");
 
                             t.HasCheckConstraint("CK_Notifications_Link", "[Link] IS NULL OR [Link] LIKE '#/%'");
 
@@ -5746,7 +5848,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("NotificationPreferences", "notify", t =>
                         {
-                            t.HasCheckConstraint("CK_NotificationPreferences_Category", "[Category] BETWEEN 0 AND 10");
+                            t.HasCheckConstraint("CK_NotificationPreferences_Category", "[Category] BETWEEN 0 AND 12");
                         });
                 });
 
@@ -11033,6 +11135,16 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                     b.Navigation("ReviewedBy");
                 });
 
+            modelBuilder.Entity("SuperApp.Domain.Entities.Content.NewsPost", b =>
+                {
+                    b.HasOne("SuperApp.Domain.Entities.Fantasy.Club", "Club")
+                        .WithMany()
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Club");
+                });
+
             modelBuilder.Entity("SuperApp.Domain.Entities.Factories.Factory", b =>
                 {
                     b.HasOne("SuperApp.Domain.Entities.Geo.Area", "Area")
@@ -11227,6 +11339,25 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Season");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SuperApp.Domain.Entities.Fantasy.FavoriteClub", b =>
+                {
+                    b.HasOne("SuperApp.Domain.Entities.Fantasy.Club", "Club")
+                        .WithMany()
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SuperApp.Domain.Entities.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Club");
 
                     b.Navigation("User");
                 });

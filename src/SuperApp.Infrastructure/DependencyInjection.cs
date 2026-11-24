@@ -126,6 +126,9 @@ public static class DependencyInjection
         Webhooks.WebhookRegistration.AddWebhooks(services);
         services.AddScoped<Application.Features.Waitlist.IWaitlistRepository, WaitlistRepository>();
         services.AddScoped<Application.Features.Push.IPushDeviceRepository, PushDeviceRepository>();
+        services.AddScoped<Application.Features.Favorites.IFavoriteClubsRepository, FavoriteClubsRepository>();
+        services.AddScoped<Application.Features.Inbox.IInboxRepository, InboxRepository>();
+        services.AddScoped<Application.Features.News.INewsRepository, NewsRepository>();
         services.AddScoped<Application.Features.Cancellations.ICancellationRepository, CancellationRepository>();
         services.AddSingleton<IExcelExporter, ExcelExporter>();
         services.AddScoped<ISettingsReader, SettingsReader>();

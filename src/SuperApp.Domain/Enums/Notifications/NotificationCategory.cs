@@ -13,4 +13,6 @@ public enum NotificationCategory : byte
     Support = 8,
     Fantasy = 9,
     System = 10,
+    Matches = 11,
+    News = 12,
 }

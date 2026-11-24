@@ -39,6 +39,7 @@ public static class FantasyInfrastructureRegistration
         services.AddSingleton<FotMobIds>();
         services.AddMemoryCache();
         services.AddScoped<Application.Features.Content.IMatchInsights, MatchInsights>();
+        services.AddScoped<MatchAlertSender>();
         services.AddHostedService<LiveScoresJob>();
         return services;
     }

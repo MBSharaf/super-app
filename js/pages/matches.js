@@ -136,8 +136,10 @@
           ${S.api.isLive() ? '' : `<p class="xs muted demo-note" style="margin-top:18px">${icon('info', 12)} Demo fixtures and scores. Connect a live data provider for official schedules.</p>`}
         </section>`}`;
     },
-    mount(el) {
+    mount(el, ctx) {
       const offs = [c.tickCountdowns(el)];
+      // A match alert (phone or bell) opens its match centre: #/matches?date=…&open=m-<id>
+      if (ctx?.query?.open) setTimeout(() => { if (el.isConnected) openCentre(ctx.query.open); }, 60);
       el.addEventListener('click', (e) => {
         const bell = e.target.closest('[data-remind]');
         if (bell) {

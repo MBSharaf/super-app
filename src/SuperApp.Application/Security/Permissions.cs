@@ -62,6 +62,7 @@ public static class Permissions
 
         new("content.banners", "Content", "Edit banners", "تعديل البانرات"),
         new("content.popups", "Content", "Edit pop-ups", "تعديل النوافذ المنبثقة"),
+        new("content.news", "Content", "Write and publish news", "كتابة ونشر الأخبار"),
         new("content.help", "Content", "Edit help articles", "تعديل مقالات المساعدة"),
         new("content.legal", "Content", "Edit legal documents", "تعديل المستندات القانونية", true),
         new("content.categories", "Content", "Edit categories", "تعديل الفئات"),
