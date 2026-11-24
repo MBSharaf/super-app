@@ -73,6 +73,20 @@ public sealed class LiveScoresTests
     }
 
     [Fact]
+    public void The_fixture_sync_leaves_a_match_on_now_to_the_live_job()
+    {
+        var now = new DateTime(2026, 11, 24, 21, 9, 0, DateTimeKind.Utc);
+        var playing = new Fixture { Status = FixtureStatus.Live, KickoffAt = now.AddMinutes(-69), HomeGoals = 0, AwayGoals = 1 };
+        FantasySyncRepository.LiveOwns(playing, Fd(FixtureStatus.Live, 1, 1), now).ShouldBeTrue();   // the goal alert stays with the live job
+        FantasySyncRepository.LiveOwns(playing, Fd(FixtureStatus.Finished, 1, 1), now).ShouldBeTrue();
+        FantasySyncRepository.LiveOwns(playing, Fd(FixtureStatus.Postponed, null, null), now).ShouldBeFalse();
+        FantasySyncRepository.LiveOwns(new Fixture { Status = FixtureStatus.Scheduled, KickoffAt = now.AddMinutes(30) }, Fd(FixtureStatus.Live, 0, 0), now).ShouldBeTrue();
+        FantasySyncRepository.LiveOwns(new Fixture { Status = FixtureStatus.Live, KickoffAt = now.AddHours(-4) }, Fd(FixtureStatus.Finished, 2, 1), now).ShouldBeFalse();
+        FantasySyncRepository.LiveOwns(new Fixture { Status = FixtureStatus.Finished, KickoffAt = now.AddMinutes(-100) }, Fd(FixtureStatus.Finished, 2, 1), now).ShouldBeFalse();
+        FantasySyncRepository.LiveOwns(new Fixture { Status = FixtureStatus.Scheduled, KickoffAt = now.AddDays(2) }, Fd(FixtureStatus.Scheduled, null, null), now).ShouldBeFalse();
+    }
+
+    [Fact]
     public void The_live_clock_is_dropped_when_stale()
     {
         var clocks = new LiveClock();

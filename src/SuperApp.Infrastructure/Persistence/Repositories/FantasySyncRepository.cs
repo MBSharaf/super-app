@@ -151,8 +151,9 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
             }
             row.GameweekId = gameweeks[f.Round];
             (row.HomeClubId, row.AwayClubId) = (clubs[f.HomeClubExternalId], clubs[f.AwayClubExternalId]);
+            var isNew = row.Id == 0;
             row.KickoffAt = f.KickoffAt;
-            if (!BehindLive(row, f))
+            if (isNew || (!BehindLive(row, f) && !LiveOwns(row, f, clock.UtcNow)))
             {
                 row.Status = f.Status;
                 row.HomeGoals = (byte?)f.HomeGoals;
@@ -169,6 +170,16 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
     /// True when the source is behind what the live feed (LiveScoresJob) already saved: it still says "not started" for a
     /// match that is on or over, or "on" without a score for one that is over. A postponement or a final score always wins.
     /// </summary>
+    /// <summary>
+    /// True while the live feed (LiveScoresJob) looks after the match: from 65 minutes before kick-off until 3 hours after, while it
+    /// is not over. The live job compares each score with the one before to send kick-off, goal and full-time alerts, so this
+    /// sync must not write the new score first (the alert would be lost). A postponement or a cancellation always wins.
+    /// </summary>
+    public static bool LiveOwns(Fixture row, FdFixture f, DateTime now) =>
+        f.Status is not (FixtureStatus.Postponed or FixtureStatus.Cancelled)
+        && row.Status is FixtureStatus.Scheduled or FixtureStatus.Live
+        && row.KickoffAt >= now.AddHours(-3) && row.KickoffAt <= now.AddMinutes(65);
+
     public static bool BehindLive(Fixture row, FdFixture f) =>
         f.Status is not (FixtureStatus.Postponed or FixtureStatus.Cancelled)
         && ((f.Status == FixtureStatus.Scheduled && row.Status is FixtureStatus.Live or FixtureStatus.Finished)
