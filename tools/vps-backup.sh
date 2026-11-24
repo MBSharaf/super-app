@@ -10,7 +10,7 @@
 # Each backup is one folder in /var/backups/supermalaab/<date-time>/ (root only):
 #   SuperMalaab.bak.gz  full SQL Server backup (checked with RESTORE VERIFYONLY)
 #   files.tar.gz        uploaded files (storage) and data-protection keys (logins survive a restore)
-#   n8n.tar.gz          n8n data + its encryption key (when n8n is installed)
+#   <volume>.tar.gz     n8n data + its encryption key (each n8n volume found); docker-compose.tar.gz: /docker
 # Backups older than KEEP_DAYS (default 14) are deleted. Restoring is done by the owner with supermalaab-restore.
 # Off-site copy: when Google Drive is connected (--offsite-setup), each backup is also copied, encrypted with
 # rclone crypt, to the Drive folder SuperMalaab-backups/<date-time>; copies older than OFFSITE_DAYS (30) are deleted.
@@ -115,9 +115,16 @@ backup() {
   docker exec mssql rm -f "$inside"
   gzip -6 "$dir/$DB.bak"
   tar -czf "$dir/files.tar.gz" -C /opt/supermalaab storage keys 2>/dev/null || tar -czf "$dir/files.tar.gz" -C /opt/supermalaab storage
-  if docker volume inspect n8n_data >/dev/null 2>&1; then   # n8n workflows, credentials and its key
-    tar -czf "$dir/n8n.tar.gz" -C /var/lib/docker/volumes/n8n_data _data -C /etc/supermalaab n8n.env
-  fi
+  # n8n workflows, credentials and its key: ours (n8n_data + n8n.env) or Hostinger's template (<project>_n8n_data,
+  # its key lives inside the volume's config file)
+  for v in $(docker volume ls -q | grep -E '(^|_)n8n_data$' || true); do
+    if [ -f /etc/supermalaab/n8n.env ] && [ "$v" = n8n_data ]; then
+      tar -czf "$dir/$v.tar.gz" -C /var/lib/docker/volumes/$v _data -C /etc/supermalaab n8n.env
+    else
+      tar -czf "$dir/$v.tar.gz" -C /var/lib/docker/volumes/$v _data
+    fi
+  done
+  [ -d /docker ] && tar -czf "$dir/docker-compose.tar.gz" --exclude='*/data' -C / docker 2>/dev/null || true
   if [ -d /etc/supermalaab/android ]; then   # the Android app's signing key (every app version needs the same one)
     tar -czf "$dir/android-key.tar.gz" -C /etc/supermalaab android
   fi
