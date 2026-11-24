@@ -1,4 +1,4 @@
-package app.superapp.eg;
+package com.supermalaab.app;
 
 import com.getcapacitor.BridgeActivity;
 

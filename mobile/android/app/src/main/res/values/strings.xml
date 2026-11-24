@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Super Malaab</string>
     <string name="title_activity_main">Super Malaab</string>
-    <string name="package_name">app.superapp.eg</string>
-    <string name="custom_url_scheme">app.superapp.eg</string>
+    <string name="package_name">com.supermalaab.app</string>
+    <string name="custom_url_scheme">com.supermalaab.app</string>
 </resources>
