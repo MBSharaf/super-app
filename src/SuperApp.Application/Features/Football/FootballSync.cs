@@ -50,6 +50,12 @@ public interface IFantasySyncRepository
     /// <summary>Creates or moves gameweeks. A scored gameweek keeps "Finished" unless new statistics arrived.</summary>
     Task<IReadOnlyDictionary<int, long>> UpsertGameweeksAsync(long seasonId, IReadOnlyList<GameweekPlan> plans, CancellationToken ct);
 
+    /// <summary>
+    /// After a competition moved to FotMob (negative ids): removes the season's matches of the old source (none with
+    /// player statistics) and unlinks its old clubs, so no match or club shows twice.
+    /// </summary>
+    Task DropOtherSourcesAsync(long seasonId, CancellationToken ct);
+
     Task<int> UpsertFixturesAsync(IReadOnlyList<FdFixture> fixtures, IReadOnlyDictionary<int, long> gameweeks, IReadOnlyDictionary<int, long> clubs, CancellationToken ct);
 
     /// <summary>

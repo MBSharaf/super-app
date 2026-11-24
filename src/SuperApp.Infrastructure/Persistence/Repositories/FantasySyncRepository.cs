@@ -131,6 +131,13 @@ public sealed class FantasySyncRepository(AppDbContext db, IClock clock) : IFant
         return rows.ToDictionary(r => r.Key, r => r.Value.Id);
     }
 
+    public async Task DropOtherSourcesAsync(long seasonId, CancellationToken ct)
+    {
+        await db.Set<Fixture>().Where(f => f.Gameweek.SeasonId == seasonId && f.ExternalId > 0 && !f.PlayerStats.Any()).ExecuteDeleteAsync(ct);
+        await db.Set<SeasonClub>().Where(sc => sc.SeasonId == seasonId && sc.Club.ExternalId > 0
+            && !db.Set<Fixture>().Any(f => f.Gameweek.SeasonId == seasonId && (f.HomeClubId == sc.ClubId || f.AwayClubId == sc.ClubId))).ExecuteDeleteAsync(ct);
+    }
+
     public async Task<int> UpsertFixturesAsync(IReadOnlyList<FdFixture> fixtures, IReadOnlyDictionary<int, long> gameweeks, IReadOnlyDictionary<int, long> clubs, CancellationToken ct)
     {
         var ids = fixtures.Select(f => f.ExternalId).ToList();

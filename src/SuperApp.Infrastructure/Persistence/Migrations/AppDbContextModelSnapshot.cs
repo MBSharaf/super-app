@@ -3805,7 +3805,7 @@ namespace SuperApp.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("CK_Competitions_MaxPerClub", "[MaxPerClub] BETWEEN 1 AND 5");
 
-                            t.HasCheckConstraint("CK_Competitions_Provider", "[Provider] IN ('fpl', 'thesportsdb', 'api-football')");
+                            t.HasCheckConstraint("CK_Competitions_Provider", "[Provider] IN ('fpl', 'fotmob', 'thesportsdb', 'api-football')");
 
                             t.HasCheckConstraint("CK_Competitions_SquadBudget", "[SquadBudget] > 0");
                         });

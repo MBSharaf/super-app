@@ -67,6 +67,7 @@ public static class FantasyInfrastructureRegistration
             http.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; SuperMalaab/1.0)");
             http.Timeout = TimeSpan.FromSeconds(20);
         }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AutomaticDecompression = System.Net.DecompressionMethods.All });
+        services.AddTransient<FotMobFootballData>();
         services.AddHttpClient<TheSportsDbFootballData>(http =>
         {
             http.BaseAddress = new Uri($"{TheSportsDbFootballData.BaseAddress}{configuration["Football:TheSportsDb:Key"] ?? "123"}/");

@@ -73,6 +73,10 @@
     Italy: 'إيطاليا', Croatia: 'كرواتيا', Switzerland: 'سويسرا', Austria: 'النمسا', Sweden: 'السويد', Norway: 'النرويج', Denmark: 'الدنمارك', Scotland: 'اسكتلندا',
     Czechia: 'التشيك', 'Bosnia and Herzegovina': 'البوسنة والهرسك', Turkiye: 'تركيا', 'Türkiye': 'تركيا', Turkey: 'تركيا', Poland: 'بولندا', Serbia: 'صربيا', Ukraine: 'أوكرانيا',
     Wales: 'ويلز', Hungary: 'المجر', Romania: 'رومانيا', Slovakia: 'سلوفاكيا', Slovenia: 'سلوفينيا', Greece: 'اليونان', Ireland: 'أيرلندا', Albania: 'ألبانيا', Georgia: 'جورجيا',
+    // CAF cups: more clubs from the group stages and preliminary rounds (Nov 2026)
+    'CR Bélouizdad': 'شباب بلوزداد', 'Kaizer Chiefs': 'كايزر تشيفز', 'Al-Hilal': 'الهلال', 'Al-Ahli': 'الأهلي', Tusker: 'تاسكر', Zarzis: 'جرجيس',
+    Hafia: 'حافيا', 'AS Douanes': 'الجمارك', 'Rayon Sport': 'رايون سبورت', 'Al-Ghazal': 'الغزال', 'Kabuscorp Palanca': 'كابوسكورب', 'Shooting Stars': 'شوتينج ستارز',
+    'El Kanemi Warriors': 'الكانمي واريورز', 'AS Cotonou': 'كوتونو', 'Vitesse': 'فيتيس', 'Nations': 'نيشنز', Diambars: 'ديامبارس', 'Green Mamba': 'جرين مامبا',
   };
   const SUFFIX = /\s+(FC|SC|CF|AFC|AC|SAD|FK|Club)$|^(FC|AFC|SC|AC)\s+/;
   /** The Arabic name of a club or national team, or the name as given when it isn't known */

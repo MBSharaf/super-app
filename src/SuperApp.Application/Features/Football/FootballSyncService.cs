@@ -26,6 +26,7 @@ public sealed class FootballSyncService(
     private const int MaxStatsPerRun = 25;   // a real provider: about one gameweek of matches per run (the simulated one has no limit)
     private const string ApiFootball = "api-football";
     private const string Fpl = "fpl";
+    private const string FotMob = "fotmob";
     private static readonly TimeSpan SquadRefresh = TimeSpan.FromDays(7);
     private static readonly TimeSpan FullRefresh = TimeSpan.FromDays(1);
 
@@ -60,13 +61,17 @@ public sealed class FootballSyncService(
         var seasonId = await repository.EnsureSeasonAsync(comp.Id, season, ct);
         var now = clock.UtcNow;
         var full = await repository.FullSyncDueAsync(seasonId, now - FullRefresh, ct);
-        var rounds = full ? null : await repository.RoundsBetweenAsync(seasonId, now.AddDays(-3), now.AddDays(10), ct);
+        var rounds = full || data.Provider == FotMob ? null : await repository.RoundsBetweenAsync(seasonId, now.AddDays(-3), now.AddDays(10), ct);
         var fixtures = rounds is { Count: 0 } ? [] : await data.FixturesAsync(comp.ExternalLeagueId, season, rounds, ct);
         var (clubs, players) = comp.FantasyEnabled
             ? await SyncSquadsAsync(data, comp, season, seasonId, ct)
             : (await repository.UpsertClubsAsync(seasonId, await data.ClubsAsync(comp.ExternalLeagueId, season, ct), ct), 0);
         var gameweeks = await repository.UpsertGameweeksAsync(seasonId, FootballSyncRules.Gameweeks(fixtures, now), ct);
         var saved = await repository.UpsertFixturesAsync(fixtures, gameweeks, clubs, ct);
+        if (data.Provider == FotMob && fixtures.Count > 0)
+        {
+            await repository.DropOtherSourcesAsync(seasonId, ct);   // the matches and clubs read before from TheSportsDB
+        }
         var (stats, scored) = comp.FantasyEnabled ? await SyncFantasyAsync(data, comp, seasonId, ct) : (0, []);
         await repository.MarkSyncedAsync(seasonId, now, full, ct);
         return new SyncResult(comp.Key, data.Provider, season, clubs.Count, players, saved, stats, scored, null);

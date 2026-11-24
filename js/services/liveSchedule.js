@@ -26,7 +26,7 @@
   let loadedAt = 0;
   let loading = null;
 
-  const CUP_ROUNDS = { 32: 'Knockout play-off', 16: 'Round of 16', 125: 'Quarter-final', 150: 'Semi-final', 200: 'Final' };
+  const CUP_ROUNDS = { 101: 'First preliminary round', 102: 'Second preliminary round', 32: 'Knockout play-off', 33: 'Round of 32', 16: 'Round of 16', 125: 'Quarter-final', 150: 'Semi-final', 190: 'Third-place play-off', 200: 'Final' };
   const roundLabel = (key, n) => CUP_ROUNDS[n] && !['egy', 'epl', 'laliga', 'seriea', 'bundesliga', 'ligue1', 'superlig'].includes(key)
     ? CUP_ROUNDS[n] : `${key === 'epl' ? 'Matchweek' : key === 'egy' ? 'Gameweek' : 'Matchday'} ${n}`;
   const STATUS = { Scheduled: 'upcoming', Postponed: 'upcoming', Cancelled: 'upcoming', Live: 'live', Finished: 'finished' };
