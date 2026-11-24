@@ -94,7 +94,7 @@ sql "USE SuperMalaab;
 ALTER ROLE db_datareader ADD MEMBER supermalaab_app;
 ALTER ROLE db_datawriter ADD MEMBER supermalaab_app;
 GRANT EXECUTE TO supermalaab_app;
-GRANT UPDATE ON SCHEMA::[money] TO supermalaab_app;
+IF SCHEMA_ID('money') IS NOT NULL GRANT UPDATE ON SCHEMA::[money] TO supermalaab_app;
 IF IS_ROLEMEMBER('db_owner','supermalaab_app') = 1 ALTER ROLE db_owner DROP MEMBER supermalaab_app;" >/dev/null
 echo "site login: $(sql "SET NOCOUNT ON; USE SuperMalaab; SELECT CONCAT('db_owner=', IS_ROLEMEMBER('db_owner','supermalaab_app'), ' schemas_owned=', (SELECT COUNT(*) FROM sys.schemas WHERE principal_id = USER_ID('supermalaab_app')))" | grep db_owner | tr -d ' ') (both 0 = limited)"
 
@@ -112,6 +112,8 @@ set -euo pipefail
 ENVF=/etc/supermalaab/migrate.env; [ -f "$ENVF" ] || ENVF=/etc/supermalaab/app.env
 export CONNECTIONSTRINGS__DEFAULT="$(grep '^CONNECTIONSTRINGS__DEFAULT=' "$ENVF" | cut -d= -f2-)"
 /opt/supermalaab/migrate-bundle --connection "$CONNECTIONSTRINGS__DEFAULT"
+# A new schema (e.g. money on an empty server) needs the site's grant again
+docker exec mssql bash -c '/opt/mssql-tools18/bin/sqlcmd -C -I -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -b -Q "USE SuperMalaab; IF SCHEMA_ID('"'"'money'"'"') IS NOT NULL GRANT UPDATE ON SCHEMA::[money] TO supermalaab_app;"' >/dev/null
 systemctl restart supermalaab
 echo "Database is up to date."
 EOF
