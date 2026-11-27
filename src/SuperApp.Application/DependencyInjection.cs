@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<Features.Payments.IPaymentListener, PackagePaymentListener>();
         services.AddScoped<Features.Payments.IPaymentListener, Features.Fantasy.FantasyPassPaymentListener>();
         services.AddScoped<Features.Payments.IPaymentsService, Features.Payments.PaymentsService>();
+        services.AddScoped<Features.Auth.Services.AccountDeletionService>();
         services.AddScoped<IPartnerAccess, PartnerAccess>();
         services.AddScoped<IPartnerVenuesService, PartnerVenuesService>();
         services.AddScoped<IPartnerPitchesService, PartnerPitchesService>();

@@ -26,7 +26,8 @@ public static class ProductionGuard
     public static IEnumerable<string> Problems(IConfiguration c)
     {
         var simulatedAllowed = c.GetValue("Launch:AllowSimulatedPayments", false);
-        if (!simulatedAllowed)
+        var instaPay = SuperApp.Infrastructure.Payments.PaymentsInfrastructure.GatewayMode(c) == "instapay";   // manual, confirmed by the team
+        if (!simulatedAllowed && !instaPay)
         {
             foreach (var key in new[] { "SecretKey", "PublicKey", "HmacSecret", "IntegrationIds" }.Where(k => string.IsNullOrWhiteSpace(c[$"Payments:Paymob:{k}"])))
             {

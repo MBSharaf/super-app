@@ -44,6 +44,9 @@ public interface IPaymentRepository
     Task<Payment?> FindAsync(string code, CancellationToken ct);
 
     Task<Payment?> FindByKeyAsync(string idempotencyKey, CancellationToken ct);
+
+    /// <summary>InstaPay payments for the team: "waiting" (number sent, not decided), "unsent" (still pending, no number) or "all".</summary>
+    Task<IReadOnlyList<InstaPayQueueItem>> InstaPayQueueAsync(string status, CancellationToken ct);
 }
 
 /// <summary>Called when a payment for its purpose is confirmed or fails (bookings, later orders, passes…).</summary>
@@ -66,7 +69,8 @@ public sealed record PaymentRequest(PaymentPurpose Purpose, decimal Amount, Guid
 /// <summary>The payment record and, for a real gateway, the page to send the payer to (null = already paid).</summary>
 public sealed record PaymentStarted(Payment Payment, string? RedirectUrl);
 
-public sealed record PaymentStatusDto(string Code, string Purpose, decimal Amount, string Status, string Provider, DateTime? PaidAt, string? RedirectUrl);
+public sealed record PaymentStatusDto(string Code, string Purpose, decimal Amount, string Status, string Provider, DateTime? PaidAt, string? RedirectUrl,
+    InstaPayInfo? InstaPay = null);
 
 public interface IPaymentsService
 {
@@ -80,6 +84,9 @@ public interface IPaymentsService
 
     /// <summary>Gateway callback. Wrong signature → 400; a repeated callback changes nothing.</summary>
     Task WebhookAsync(string provider, IReadOnlyDictionary<string, string> query, string body, CancellationToken ct);
+
+    /// <summary>Marks a pending payment paid (points, audit) or failed and tells its listeners — for the gateway callback and manual InstaPay.</summary>
+    Task SettleAsync(Payment payment, bool paid, CancellationToken ct);
 }
 
 public sealed class PaymentsService(
@@ -92,7 +99,8 @@ public sealed class PaymentsService(
     ICurrentUser currentUser,
     IClock clock,
     Money.ILedger ledger,
-    Money.SuperPoints points) : IPaymentsService
+    Money.SuperPoints points,
+    IInstaPaySettings instaPay) : IPaymentsService
 {
     public const string WalletProvider = "wallet";
 
@@ -134,6 +142,10 @@ public sealed class PaymentsService(
             throw new BusinessRuleException("This payment can no longer be paid.", "payment_closed");
         }
         payment.Status = PaymentStatus.Pending;
+        if (payment.Provider == InstaPayService.Provider)
+        {
+            payment.RawWebhookJson = null;      // a refused InstaPay number: the payer sends a new one
+        }
         var url = await OpenSessionAsync(payment, payment.Purpose.ToString(), "#/bookings", ct);
         await unitOfWork.SaveChangesAsync(ct);
         return ToDto(payment, url);
@@ -155,6 +167,11 @@ public sealed class PaymentsService(
         payment.RawWebhookJson = e.RawJson;
         // Once paid, keep the gateway's transaction id: a refund (late payment, cancellation) is made against it
         payment.ProviderRef = paid && e.TransactionId is { Length: > 0 } transaction ? transaction : payment.ProviderRef ?? e.ProviderRef;
+        await SettleAsync(payment, paid, ct);
+    }
+
+    public async Task SettleAsync(Payment payment, bool paid, CancellationToken ct)
+    {
         payment.Status = paid ? PaymentStatus.Paid : PaymentStatus.Failed;
         payment.PaidAt = paid ? clock.UtcNow : null;
         if (paid)
@@ -163,7 +180,7 @@ public sealed class PaymentsService(
         }
         await unitOfWork.SaveChangesAsync(ct);
         await audit.LogAsync(AuditSystem.Site, paid ? "payment.paid" : "payment.failed",
-            $"Payment {payment.Code} {(paid ? "paid" : "failed")} ({payment.Amount:0.##} EGP)", "Payment", payment.Code, ct: ct);
+            $"Payment {payment.Code} {(paid ? "paid" : "failed")} ({payment.Amount:0.##} EGP, {payment.Provider})", "Payment", payment.Code, ct: ct);
         foreach (var l in listeners.Where(l => l.Purpose == payment.Purpose))
         {
             await (paid ? l.PaidAsync(payment, ct) : l.FailedAsync(payment, ct));
@@ -177,6 +194,7 @@ public sealed class PaymentsService(
         var reference = $"{payment.Code}.{new DateTimeOffset(clock.UtcNow).ToUnixTimeSeconds()}";
         var session = await gateway.StartAsync(new GatewayStart(reference, payment.Amount, description, payer.Name, payer.Email, payer.Phone, returnPath), ct);
         payment.ProviderRef = session.ProviderRef;
+        payment.Provider = gateway.Provider;        // a payment retried after the gateway changed (InstaPay → Paymob) follows the new one
         return session.RedirectUrl;
     }
 
@@ -187,8 +205,15 @@ public sealed class PaymentsService(
         return payment is not null && payment.PayerUserId == me ? payment : throw new NotFoundException("Payment not found.");
     }
 
-    private static PaymentStatusDto ToDto(Payment p, string? url) =>
-        new(p.Code, p.Purpose.ToString(), p.Amount, p.Status.ToString(), p.Provider, p.PaidAt, url);
+    private PaymentStatusDto ToDto(Payment p, string? url) =>
+        new(p.Code, p.Purpose.ToString(), p.Amount, p.Status.ToString(), p.Provider, p.PaidAt, url, p.Provider == InstaPayService.Provider ? InstaPayInfoOf(p) : null);
+
+    private InstaPayInfo InstaPayInfoOf(Payment p)
+    {
+        var claim = InstaPayClaim.Read(p);
+        return new InstaPayInfo(instaPay.Address, instaPay.Link, (int)InstaPayService.PayWithin.TotalMinutes, p.CreatedAt + InstaPayService.PayWithin,
+            claim.Reference, claim.Sender, claim.SubmittedAt);
+    }
 }
 
 /// <summary>The payer's name, email and phone for the gateway's billing data.</summary>

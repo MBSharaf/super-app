@@ -75,6 +75,7 @@ public static class DependencyInjection
     {
         services.AddScoped<PermissionReader>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<Application.Features.Auth.Services.IAccountDeletionStore, AccountDeletionStore>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<ITwoFactorService, TwoFactorService>();
         // "Continue with Google / Facebook": tokens are checked with the providers themselves

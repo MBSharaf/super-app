@@ -39,6 +39,25 @@ public sealed class PaymentRepository(AppDbContext db) : IPaymentRepository
 
     public Task<Payment?> FindByKeyAsync(string idempotencyKey, CancellationToken ct) =>
         db.Set<Payment>().FirstOrDefaultAsync(p => p.IdempotencyKey == idempotencyKey, ct);
+
+    public async Task<IReadOnlyList<InstaPayQueueItem>> InstaPayQueueAsync(string status, CancellationToken ct)
+    {
+        var q = db.Set<Payment>().Where(p => p.Provider == InstaPayService.Provider);
+        q = status switch
+        {
+            "waiting" => q.Where(p => p.Status == PaymentStatus.Pending && p.RawWebhookJson != null),
+            "unsent" => q.Where(p => p.Status == PaymentStatus.Pending && p.RawWebhookJson == null),
+            _ => q,
+        };
+        var rows = await q.OrderByDescending(p => p.CreatedAt).Take(200)
+            .Join(db.Set<User>(), p => p.PayerUserId, u => u.Id, (p, u) => new { p, u.FullName, u.Email, u.PhoneNumber }).ToListAsync(ct);
+        return rows.Select(r =>
+        {
+            var c = InstaPayClaim.Read(r.p);
+            return new InstaPayQueueItem(r.p.Code, r.p.Purpose.ToString(), r.p.Amount, r.p.Status.ToString(), r.FullName, r.Email ?? string.Empty,
+                r.PhoneNumber ?? string.Empty, r.p.CreatedAt, c.Reference, c.Sender, c.SubmittedAt, c.Note);
+        }).ToList();
+    }
 }
 
 public sealed class PayerDirectory(AppDbContext db) : IPayerDirectory
@@ -83,8 +102,11 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
         using var scope = scopes.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
+        var (cut, instaCut) = (now - PayWithin, now - InstaPayService.PayWithin);
         var late = await db.Set<Booking>().Include(b => b.Payment)
-            .Where(b => b.Status == BookingStatus.AwaitingPayment && b.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
+            .Where(b => b.Status == BookingStatus.AwaitingPayment && (b.Payment == null || b.Payment.Provider != InstaPayService.Provider
+                ? b.CreatedAt <= cut
+                : b.Payment.RawWebhookJson == null && b.CreatedAt <= instaCut)).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var b in late)
         {
             b.Status = BookingStatus.CancelledByCustomer;
@@ -99,14 +121,16 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
         await db.Set<BookingSlot>().Where(s => ids.Contains(s.BookingId)).ExecuteUpdateAsync(u => u.SetProperty(s => s.IsActive, false), ct);
         // Tournament teams whose entry fee was never paid give their spot back
         var teams = await db.Set<TournamentTeam>().Include(t => t.Payment)
-            .Where(t => t.Status == TournamentTeamStatus.Registered && t.Payment != null && t.Payment.Status == PaymentStatus.Pending && t.Payment.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
+            .Where(t => t.Status == TournamentTeamStatus.Registered && t.Payment != null && t.Payment.Status == PaymentStatus.Pending
+                && (t.Payment.Provider != InstaPayService.Provider ? t.Payment.CreatedAt <= cut : t.Payment.RawWebhookJson == null && t.Payment.CreatedAt <= instaCut)).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var t in teams)
         {
             t.Status = TournamentTeamStatus.Withdrawn;
             t.Payment!.Status = PaymentStatus.Failed;
         }
         var requests = await db.Set<GameRequest>().Include(r => r.Payment)
-            .Where(r => r.Status != GameRequestStatus.Withdrawn && r.Payment != null && r.Payment.Status == PaymentStatus.Pending && r.Payment.CreatedAt <= now - PayWithin).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
+            .Where(r => r.Status != GameRequestStatus.Withdrawn && r.Payment != null && r.Payment.Status == PaymentStatus.Pending
+                && (r.Payment.Provider != InstaPayService.Provider ? r.Payment.CreatedAt <= cut : r.Payment.RawWebhookJson == null && r.Payment.CreatedAt <= instaCut)).OrderBy(x => x.Id).Take(100).ToListAsync(ct);
         foreach (var r in requests)
         {
             r.Status = GameRequestStatus.Withdrawn;
@@ -120,7 +144,9 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
     private static async Task<int> ExpireOrdersAsync(IServiceProvider services, AppDbContext db, DateTime now, CancellationToken ct)
     {
         var orders = await db.Set<Order>().Include(o => o.Items).Include(o => o.Fulfilments).Include(o => o.Payment)
-            .Where(o => o.Status == OrderStatus.Placed && o.CreatedAt <= now - PayWithin).OrderBy(o => o.Id).Take(100).ToListAsync(ct);
+            .Where(o => o.Status == OrderStatus.Placed && (o.Payment == null || o.Payment.Provider != InstaPayService.Provider
+                ? o.CreatedAt <= now - PayWithin
+                : o.Payment.RawWebhookJson == null && o.CreatedAt <= now - InstaPayService.PayWithin)).OrderBy(o => o.Id).Take(100).ToListAsync(ct);
         foreach (var o in orders)
         {
             MyOrdersService.Cancel(o, [], "Not paid in time");
@@ -145,12 +171,36 @@ public sealed class AwaitingPaymentExpiry(IServiceScopeFactory scopes, IHostEnvi
 
 public static class PaymentsInfrastructure
 {
-    /// <summary>Paymob when its secret key is in .env, else the simulated gateway.</summary>
+    /// <summary>
+    /// Which gateway takes payments. <c>Payments:Mode</c> (PAYMENTS__MODE) = paymob | instapay | simulated picks one; when it is
+    /// empty: Paymob if its secret key is set, else InstaPay if the account is set, else simulated. Switching back from
+    /// InstaPay to Paymob is only this setting and a restart.
+    /// </summary>
+    public static string GatewayMode(IConfiguration configuration)
+    {
+        var paymob = !string.IsNullOrWhiteSpace(configuration["Payments:Paymob:SecretKey"]);
+        var instapay = new InstaPaySettings(configuration).Configured;
+        return (configuration["Payments:Mode"] ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "paymob" when paymob => "paymob",
+            "instapay" when instapay => "instapay",
+            "simulated" => "simulated",
+            _ => paymob ? "paymob" : instapay ? "instapay" : "simulated",
+        };
+    }
+
     public static IServiceCollection AddPayments(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IPayerDirectory, PayerDirectory>();
-        if (!string.IsNullOrWhiteSpace(configuration["Payments:Paymob:SecretKey"]))
+        services.AddSingleton<IInstaPaySettings, InstaPaySettings>();
+        services.AddScoped<InstaPayService>();
+        var mode = GatewayMode(configuration);
+        if (mode == "instapay")
+        {
+            services.AddSingleton<IPaymentGateway, InstaPayGateway>();
+        }
+        else if (mode == "paymob")
         {
             services.AddHttpClient<IPaymentGateway, PaymobGateway>(http =>
             {

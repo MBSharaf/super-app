@@ -308,3 +308,9 @@
 .garment-skel { display: block; width: 100%; max-width: 100%; border-radius: 14px; background: linear-gradient(100deg, var(--surface-2) 30%, var(--surface-3) 50%, var(--surface-2) 70%); background-size: 300% 100%; animation: skelShine 1.2s linear infinite; }
 @keyframes skelShine { from { background-position: 100% 0; } to { background-position: -50% 0; } }
 @media (prefers-reduced-motion: reduce) { .garment-skel { animation: none; } }
+
+/* InstaPay payment page (/pay/:code) */
+.pay-ip-qr { background: #fff; border-radius: 14px; padding: 8px; line-height: 0; border: 1px solid var(--line, rgba(0,0,0,.08)); }
+.pay-ip-qr svg { width: 180px; height: 180px; display: block; }
+.pay-ip-state { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: var(--surface-2, rgba(0,0,0,.04)); }
+.pay-ip-state > svg { flex: none; margin-top: 2px; }

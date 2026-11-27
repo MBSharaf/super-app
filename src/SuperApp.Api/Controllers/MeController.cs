@@ -36,6 +36,18 @@ public sealed class MeController(IMeService me) : ApiControllerBase
 
     private const long MaxUpload = 6 * 1024 * 1024;
 
+    /// <summary>
+    /// Deletes the signed-in person's account for good: { confirm: "DELETE", password } (no password for Google-only
+    /// accounts). 409 staff_account / business_account / open_bookings / wallet_balance · 400 wrong_password.
+    /// </summary>
+    [HttpPost("delete")]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
+    public async Task<IActionResult> Delete(DeleteAccountRequest request, [FromServices] AccountDeletionService deletion, CancellationToken ct)
+    {
+        await deletion.DeleteAsync(request, ct);
+        return NoContent();
+    }
+
     [HttpPut("password")]
     [EnableRateLimiting(RateLimitPolicies.Auth)]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken ct)

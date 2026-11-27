@@ -15,13 +15,36 @@
     const boards = me.dashboards.filter((d) => DASHBOARDS[d]).map((d) => `<a class="btn btn-ghost btn-sm" href="${DASHBOARDS[d][2]}">${icon(DASHBOARDS[d][0], 14)} ${DASHBOARDS[d][1]}</a>`).join('');
     const mail = me.emailConfirmed ? `<span class="badge badge-turf">${icon('check', 11)} Email confirmed</span>` : `<span class="badge badge-gold">Email not confirmed</span> <button class="btn btn-ghost btn-sm" data-resend>Send the link again</button>`;
     return `<section class="panel panel-pad acc-real">${icon('shield', 26)}<div class="grow"><h2 class="h4">${esc(me.fullName)}</h2><p class="small soft" dir="ltr" style="text-align:start">${esc(me.email)}${me.phone ? ` · ${esc(me.phone)}` : ''}</p><div class="row wrap" style="--gap:6px;margin-top:6px">${mail}${me.twoFactorEnabled ? `<span class="badge badge-turf">${icon('lock', 11)} Two-step on</span>` : ''}</div>${boards ? `<div class="row wrap" style="--gap:6px;margin-top:8px">${boards}</div>` : ''}</div>
-      <div class="row wrap" style="--gap:8px"><button class="btn btn-ghost btn-sm" data-signout-all>Sign out on all devices</button><button class="btn btn-outline btn-sm" data-signout>${icon('logout', 14)} Sign out</button></div></section>`;
+      <div class="row wrap" style="--gap:8px"><button class="btn btn-ghost btn-sm" data-signout-all>Sign out on all devices</button><button class="btn btn-outline btn-sm" data-signout>${icon('logout', 14)} Sign out</button></div>
+      <div class="xs muted" style="flex-basis:100%;margin-top:6px"><button class="btn btn-ghost btn-sm" data-delete-account style="color:var(--danger)">${icon('trash', 13)} Delete my account</button></div></section>`;
   };
+  /** Deleting the account (Google Play rule): typed confirmation + password; the server refuses business/staff accounts with the reason */
+  SA.ui.deleteAccount = () => SA.ui.overlay.open({
+    title: 'Delete your account?',
+    body: `<form id="del-acc" class="stack" style="--gap:12px">
+      <p class="small">This deletes your name, email, phone, photo and player profile, signs you out everywhere, and can’t be undone. Your Super Points and booking history go with it. Receipts stay in our books without your details, as the law requires.</p>
+      <p class="small soft">Pitch owners, sellers and the Super Malaab team: contact support to close a business account.</p>
+      <div class="field"><label for="del-pw">Password</label><input class="input" id="del-pw" name="password" type="password" autocomplete="current-password" /><p class="xs muted">Leave empty if you only sign in with Google.</p></div>
+      <div class="field"><label for="del-ok">Type DELETE to confirm</label><input class="input" id="del-ok" name="confirm" required autocomplete="off" dir="ltr" /></div></form>`,
+    footer: '<button class="btn btn-outline" data-close>Keep my account</button><button class="btn btn-primary" form="del-acc" type="submit" style="background:var(--danger);border-color:var(--danger)">Delete for good</button>',
+    onMount(m, close) {
+      m.querySelector('#del-acc').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const d = SA.core.utils.formData(e.target);
+        try {
+          await S.api.post('/me/delete', { confirm: d.confirm.trim(), password: d.password || null });
+          close(); try { await S.session.signOut(); } catch { /* already signed out */ }
+          SA.ui.overlay.toast('Your account was deleted'); SA.core.router.go('/', { replace: true }); SA.app.rerender();
+        } catch (err) { SA.ui.overlay.toast(Object.values(err.details || {})[0] || err.message, { type: 'error' }); }
+      });
+    },
+  });
   const bindAccountPanel = (el) => {
     const run = async (fn, msg) => { try { await fn(); if (msg) SA.ui.overlay.toast(msg); SA.app.rerender(); } catch (err) { SA.ui.overlay.toast(err.message, { type: 'error' }); } };
     el.querySelector('[data-signout]')?.addEventListener('click', () => run(() => S.session.signOut(), 'Signed out'));
     el.querySelector('[data-signout-all]')?.addEventListener('click', () => run(() => S.session.signOut(true), 'Signed out on every device'));
     el.querySelector('[data-resend]')?.addEventListener('click', () => run(() => S.session.resendConfirmation(), 'We sent you a new link'));
+    el.querySelector('[data-delete-account]')?.addEventListener('click', () => SA.ui.deleteAccount());
   };
 
   SA.pages.profile = {
@@ -240,6 +263,33 @@
         });
       });
     },
+  };
+
+  /** Public page for Google Play's "delete account" link: how to delete, and a button when signed in */
+  SA.pages.deleteAccount = {
+    title: 'Delete your Super Malaab account',
+    async render() {
+      await S.api.ready;
+      const live = S.api.isLive();
+      if (live && !S.session.loaded()) await S.session.load();
+      const me = live ? S.session.me() : null;
+      return `${c.pageHead({ crumbs: [['Home', '#/'], ['Delete account']], title: 'Delete your Super Malaab account' })}
+      <div class="container" style="max-width:720px"><section class="panel panel-pad stack" style="--gap:14px">
+        <p>You can delete your Super Malaab account at any time, from the app or this website.</p>
+        <ol class="stack small" style="--gap:6px;padding-inline-start:20px">
+          <li>Sign in to the app or to supermalaab.com.</li>
+          <li>Open <b>Profile</b> and tap <b>Delete my account</b>.</li>
+          <li>Type DELETE (and your password, if you have one) and confirm.</li>
+        </ol>
+        <h2 class="h4">What is deleted</h2>
+        <p class="small soft">Your name, email, phone, profile photo, player profile, saved addresses, Google sign-in link and phone notifications — straight away. Your Super Points and history go with the account.</p>
+        <h2 class="h4">What is kept</h2>
+        <p class="small soft">Payment receipts and accounting records are kept without your name or contact details, for as long as Egyptian law requires (up to 5 years).</p>
+        <p class="small soft">Pitch owners, sellers and store owners: contact support at <a href="#/contact">Contact us</a> so your bookings, orders and money are settled before the account is closed. You can also ask support to delete your data without signing in.</p>
+        <div class="row wrap" style="--gap:8px">${me ? `<button class="btn btn-primary" data-delete-account style="background:var(--danger);border-color:var(--danger)">${icon('trash', 16)} Delete my account</button>` : `<a class="btn btn-primary" href="#/auth/sign-in?next=/delete-account">${icon('lock', 16)} Sign in to delete</a>`}<a class="btn btn-outline" href="#/contact">Contact support</a></div>
+      </section></div>`;
+    },
+    mount(el) { el.querySelector('[data-delete-account]')?.addEventListener('click', () => SA.ui.deleteAccount()); },
   };
 
   SA.pages.notFound = {

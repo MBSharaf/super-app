@@ -41,6 +41,7 @@ public static class Permissions
         new("payouts.read", "Money", "See withdrawals", "عرض طلبات السحب", true),
         new("payouts.prepare", "Money", "Prepare withdrawals", "تجهيز طلبات السحب", true),
         new("payouts.send", "Money", "Send withdrawals", "إرسال طلبات السحب", true),
+        new("payments.confirm", "Money", "Confirm InstaPay payments", "تأكيد مدفوعات إنستاباي", true),
         new("refunds.issue", "Money", "Refund customers", "رد المبالغ للعملاء", true),
         new("credits.issue", "Money", "Credit customers", "إضافة رصيد للعملاء", true),
         new("revenue.read", "Money", "See revenue", "عرض الإيرادات", true),

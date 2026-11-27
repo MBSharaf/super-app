@@ -156,3 +156,47 @@ public sealed class PaymobGateway(HttpClient http, IConfiguration configuration)
         };
     }
 }
+
+/// <summary>The owner's InstaPay account from the server settings (<c>PAYMENTS__INSTAPAY__ADDRESS</c>, <c>PAYMENTS__INSTAPAY__LINK</c>).</summary>
+public sealed class InstaPaySettings(IConfiguration configuration) : IInstaPaySettings
+{
+    public string Address => (configuration["Payments:InstaPay:Address"] ?? string.Empty).Trim();
+
+    /// <summary>Only an https ipn.eg link is shown to payers (it opens the InstaPay app on the phone).</summary>
+    public string Link
+    {
+        get
+        {
+            var link = (configuration["Payments:InstaPay:Link"] ?? string.Empty).Trim();
+            return Uri.TryCreate(link, UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps && u.Host is "ipn.eg" or "www.ipn.eg" ? link : string.Empty;
+        }
+    }
+
+    public bool Configured => Address.Length > 0 && Link.Length > 0;
+}
+
+/// <summary>
+/// Manual InstaPay (until Paymob): nothing is paid here. The payer is sent to the site's InstaPay page, sends the money to the
+/// owner's account and types the transaction number; a team member confirms it (<see cref="InstaPayService"/>). Refunds are
+/// made by hand by the refunds team, so <see cref="RefundAsync"/> always leaves them Requested.
+/// </summary>
+public sealed class InstaPayGateway(IConfiguration configuration) : IPaymentGateway
+{
+    public string Provider => InstaPayService.Provider;
+
+    public bool IsSimulated => false;
+
+    public Task<GatewaySession> StartAsync(GatewayStart request, CancellationToken ct)
+    {
+        var url = configuration["Site:PublicUrl"];
+        var site = string.IsNullOrWhiteSpace(url) ? "/super-app/" : url.TrimEnd('/') + "/";
+        var code = request.MerchantRef.Split('.')[0];
+        var next = Uri.EscapeDataString(request.ReturnPath.TrimStart('#'));
+        return Task.FromResult(new GatewaySession($"{site}pay/{code}?next={next}", request.MerchantRef));
+    }
+
+    public GatewayEvent? VerifyWebhook(IReadOnlyDictionary<string, string> query, string body) => null;
+
+    public Task<string> RefundAsync(string transactionId, decimal amount, CancellationToken ct) =>
+        throw new InvalidOperationException("InstaPay refunds are made by hand.");
+}

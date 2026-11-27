@@ -7,7 +7,7 @@
   const { icon } = SA.ui;
   const GROUPS = [
     { title: 'Site', icon: 'home', links: [
-      ['Home', '#/'], ['Pitches', '#/pitches'], ['Pitch page', '#/pitches/p-zayed-22'], ['Book a pitch', '#/book/p-zayed-22'], ['Padel courts', '#/pitches?sport=padel'], ['Padel court page', '#/pitches/p-padel-smash-1'], ['Book a padel court', '#/book/p-padel-smash-1'], ['Padel Open Match', '#/players/m-1101'], ['My bookings', '#/bookings'],
+      ['Home', '#/'], ['Pitches', '#/pitches'], ['Pitch page', '#/pitches/p-zayed-22'], ['Book a pitch', '#/book/p-zayed-22'], ['Padel courts', '#/pitches?sport=padel'], ['Padel court page', '#/pitches/p-padel-smash-1'], ['Book a padel court', '#/book/p-padel-smash-1'], ['Padel Open Match', '#/players/m-1101'], ['My bookings', '#/bookings'], ['Pay with InstaPay', '#/pay/PY-DEMO'], ['Delete account', '#/delete-account'],
       ['Find players', '#/players'], ['Post a game', '#/players/new'], ['Matches', '#/matches'], ['News', '#/news'], ['A news story', '#/news/1'], ['Notification settings', '#/notification-settings'], ['Admin: news', '#/admin/news'],
       ['Tournaments', '#/tournaments'], ['Tournament page', '#/tournaments/tr-autumn-cup'], ['Profile', '#/profile'], ['Wallet & points', '#/wallet'], ['Help & support', '#/support'], ['About us', '#/about'], ['Contact us', '#/contact'],
     ] },
@@ -63,7 +63,7 @@
       ['Admin: factories', '#/admin/factories'], ['Admin: late & problems', '#/admin/factories?tab=jobs'], ['Admin: courier', '#/admin/factories?tab=shipping'], ['Admin: price requests', '#/admin/factories?tab=prices'], ['Admin: factory money', '#/admin/factories?tab=money'],
     ] },
     { title: 'Admin console', icon: 'shield', as: [['acc-admin', 'Super Malaab HQ']], links: [
-      ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['Finance approvals', '#/admin/finance-approvals'], ['Returns', '#/admin/returns'], ['Cancellation requests', '#/admin/cancellations'], ['Revenue', '#/admin/revenue'], ['Pitch accounts', '#/admin/settlements'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
+      ['Overview', '#/admin'], ['Withdrawals', '#/admin/payouts'], ['InstaPay payments', '#/admin/instapay'], ['Finance approvals', '#/admin/finance-approvals'], ['Returns', '#/admin/returns'], ['Cancellation requests', '#/admin/cancellations'], ['Revenue', '#/admin/revenue'], ['Pitch accounts', '#/admin/settlements'], ['Customers', '#/admin/customers'], ['Partners', '#/admin/partners'], ['Sellers', '#/admin/sellers'],
       ['Approvals', '#/admin/approvals'], ['Product review', '#/admin/approvals?tab=products'], ['Communities', '#/admin/community'], ['Orders & bookings', '#/admin/orders'], ['Tournaments', '#/admin/tournaments'], ['Support', '#/admin/support'], ['Super Malaab Store', '#/admin/store'], ['Reviews', '#/admin/reviews'],
       ['Design review', '#/admin/designs'], ['Level review', '#/admin/levels'], ['Samples', '#/admin/samples'], ['Print orders', '#/admin/print'], ['Print catalogue', '#/admin/catalog'], ['Broadcasts', '#/admin/broadcast'],
       ['Promo codes', '#/admin/promos'], ['Site content', '#/admin/content'], ['Pop-up ads', '#/admin/content?tab=popups'], ['Fantasy', '#/admin/fantasy'], ['Analytics', '#/admin/analytics'], ['Audit log', '#/admin/audit'], ['Platform settings', '#/admin/settings'],
