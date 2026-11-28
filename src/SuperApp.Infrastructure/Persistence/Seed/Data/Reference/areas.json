@@ -82,5 +82,1468 @@
     "ar": "سموحة",
     "lat": 31.2156,
     "lng": 29.9418
+  },
+  {
+    "governorate": "C",
+    "en": "Downtown",
+    "ar": "وسط البلد",
+    "lat": 30.0459,
+    "lng": 31.2421
+  },
+  {
+    "governorate": "C",
+    "en": "Shubra",
+    "ar": "شبرا",
+    "lat": 30.0866,
+    "lng": 31.2448
+  },
+  {
+    "governorate": "C",
+    "en": "Ain Shams",
+    "ar": "عين شمس",
+    "lat": 30.131,
+    "lng": 31.3283
+  },
+  {
+    "governorate": "C",
+    "en": "El Marg",
+    "ar": "المرج",
+    "lat": 30.152,
+    "lng": 31.336
+  },
+  {
+    "governorate": "C",
+    "en": "El Matareya",
+    "ar": "المطرية",
+    "lat": 30.1213,
+    "lng": 31.3138
+  },
+  {
+    "governorate": "C",
+    "en": "El Salam City",
+    "ar": "مدينة السلام",
+    "lat": 30.164,
+    "lng": 31.409
+  },
+  {
+    "governorate": "C",
+    "en": "Hadayek El Kobba",
+    "ar": "حدائق القبة",
+    "lat": 30.088,
+    "lng": 31.286
+  },
+  {
+    "governorate": "C",
+    "en": "Abbasia",
+    "ar": "العباسية",
+    "lat": 30.0725,
+    "lng": 31.283
+  },
+  {
+    "governorate": "C",
+    "en": "Sayeda Zeinab",
+    "ar": "السيدة زينب",
+    "lat": 30.03,
+    "lng": 31.235
+  },
+  {
+    "governorate": "C",
+    "en": "Old Cairo",
+    "ar": "مصر القديمة",
+    "lat": 30.006,
+    "lng": 31.23
+  },
+  {
+    "governorate": "C",
+    "en": "Helwan",
+    "ar": "حلوان",
+    "lat": 29.85,
+    "lng": 31.334
+  },
+  {
+    "governorate": "C",
+    "en": "15th of May",
+    "ar": "15 مايو",
+    "lat": 29.853,
+    "lng": 31.378
+  },
+  {
+    "governorate": "C",
+    "en": "Tagamoa",
+    "ar": "التجمع",
+    "lat": 30.008,
+    "lng": 31.428
+  },
+  {
+    "governorate": "C",
+    "en": "El Shorouk",
+    "ar": "الشروق",
+    "lat": 30.143,
+    "lng": 31.629
+  },
+  {
+    "governorate": "C",
+    "en": "Badr City",
+    "ar": "مدينة بدر",
+    "lat": 30.137,
+    "lng": 31.714
+  },
+  {
+    "governorate": "C",
+    "en": "El Obour",
+    "ar": "العبور",
+    "lat": 30.226,
+    "lng": 31.472
+  },
+  {
+    "governorate": "C",
+    "en": "New Administrative Capital",
+    "ar": "العاصمة الإدارية",
+    "lat": 30.02,
+    "lng": 31.76
+  },
+  {
+    "governorate": "C",
+    "en": "Ain El Sira",
+    "ar": "عين الصيرة",
+    "lat": 30.008,
+    "lng": 31.251
+  },
+  {
+    "governorate": "C",
+    "en": "El Zaytoun",
+    "ar": "الزيتون",
+    "lat": 30.105,
+    "lng": 31.31
+  },
+  {
+    "governorate": "C",
+    "en": "El Nozha",
+    "ar": "النزهة",
+    "lat": 30.116,
+    "lng": 31.346
+  },
+  {
+    "governorate": "C",
+    "en": "Dar El Salam",
+    "ar": "دار السلام",
+    "lat": 29.995,
+    "lng": 31.243
+  },
+  {
+    "governorate": "C",
+    "en": "El Basatin",
+    "ar": "البساتين",
+    "lat": 29.98,
+    "lng": 31.28
+  },
+  {
+    "governorate": "C",
+    "en": "Zahraa El Maadi",
+    "ar": "زهراء المعادي",
+    "lat": 29.964,
+    "lng": 31.317
+  },
+  {
+    "governorate": "GZ",
+    "en": "Giza Square",
+    "ar": "الجيزة",
+    "lat": 30.0131,
+    "lng": 31.2089
+  },
+  {
+    "governorate": "GZ",
+    "en": "Mohandessin",
+    "ar": "المهندسين",
+    "lat": 30.056,
+    "lng": 31.2
+  },
+  {
+    "governorate": "GZ",
+    "en": "Agouza",
+    "ar": "العجوزة",
+    "lat": 30.056,
+    "lng": 31.212
+  },
+  {
+    "governorate": "GZ",
+    "en": "Imbaba",
+    "ar": "إمبابة",
+    "lat": 30.076,
+    "lng": 31.207
+  },
+  {
+    "governorate": "GZ",
+    "en": "Faisal",
+    "ar": "فيصل",
+    "lat": 30.01,
+    "lng": 31.172
+  },
+  {
+    "governorate": "GZ",
+    "en": "Haram",
+    "ar": "الهرم",
+    "lat": 29.992,
+    "lng": 31.15
+  },
+  {
+    "governorate": "GZ",
+    "en": "Hadayek El Ahram",
+    "ar": "حدائق الأهرام",
+    "lat": 29.977,
+    "lng": 31.099
+  },
+  {
+    "governorate": "GZ",
+    "en": "Boulaq El Dakrour",
+    "ar": "بولاق الدكرور",
+    "lat": 30.034,
+    "lng": 31.184
+  },
+  {
+    "governorate": "GZ",
+    "en": "Omraniya",
+    "ar": "العمرانية",
+    "lat": 30.005,
+    "lng": 31.195
+  },
+  {
+    "governorate": "GZ",
+    "en": "Warraq",
+    "ar": "الوراق",
+    "lat": 30.095,
+    "lng": 31.205
+  },
+  {
+    "governorate": "GZ",
+    "en": "Hawamdiya",
+    "ar": "الحوامدية",
+    "lat": 29.901,
+    "lng": 31.258
+  },
+  {
+    "governorate": "GZ",
+    "en": "Badrashin",
+    "ar": "البدرشين",
+    "lat": 29.852,
+    "lng": 31.277
+  },
+  {
+    "governorate": "GZ",
+    "en": "El Ayat",
+    "ar": "العياط",
+    "lat": 29.62,
+    "lng": 31.257
+  },
+  {
+    "governorate": "GZ",
+    "en": "Kerdasa",
+    "ar": "كرداسة",
+    "lat": 30.031,
+    "lng": 31.11
+  },
+  {
+    "governorate": "GZ",
+    "en": "Abu Rawash",
+    "ar": "أبو رواش",
+    "lat": 30.048,
+    "lng": 31.087
+  },
+  {
+    "governorate": "GZ",
+    "en": "Hadayek October",
+    "ar": "حدائق أكتوبر",
+    "lat": 29.93,
+    "lng": 30.93
+  },
+  {
+    "governorate": "ALX",
+    "en": "Downtown Alexandria",
+    "ar": "محطة الرمل",
+    "lat": 31.2,
+    "lng": 29.9
+  },
+  {
+    "governorate": "ALX",
+    "en": "Sidi Gaber",
+    "ar": "سيدي جابر",
+    "lat": 31.219,
+    "lng": 29.942
+  },
+  {
+    "governorate": "ALX",
+    "en": "Miami",
+    "ar": "ميامي",
+    "lat": 31.269,
+    "lng": 30.007
+  },
+  {
+    "governorate": "ALX",
+    "en": "Mandara",
+    "ar": "المندرة",
+    "lat": 31.281,
+    "lng": 30.017
+  },
+  {
+    "governorate": "ALX",
+    "en": "Montaza",
+    "ar": "المنتزه",
+    "lat": 31.288,
+    "lng": 30.016
+  },
+  {
+    "governorate": "ALX",
+    "en": "Sporting",
+    "ar": "سبورتنج",
+    "lat": 31.212,
+    "lng": 29.931
+  },
+  {
+    "governorate": "ALX",
+    "en": "Stanley",
+    "ar": "ستانلي",
+    "lat": 31.234,
+    "lng": 29.947
+  },
+  {
+    "governorate": "ALX",
+    "en": "Gleem",
+    "ar": "جليم",
+    "lat": 31.24,
+    "lng": 29.96
+  },
+  {
+    "governorate": "ALX",
+    "en": "Sidi Bishr",
+    "ar": "سيدي بشر",
+    "lat": 31.258,
+    "lng": 29.989
+  },
+  {
+    "governorate": "ALX",
+    "en": "Agami",
+    "ar": "العجمي",
+    "lat": 31.096,
+    "lng": 29.76
+  },
+  {
+    "governorate": "ALX",
+    "en": "Borg El Arab",
+    "ar": "برج العرب",
+    "lat": 30.918,
+    "lng": 29.542
+  },
+  {
+    "governorate": "ALX",
+    "en": "Amreya",
+    "ar": "العامرية",
+    "lat": 31.028,
+    "lng": 29.793
+  },
+  {
+    "governorate": "ALX",
+    "en": "Moharam Bek",
+    "ar": "محرم بك",
+    "lat": 31.19,
+    "lng": 29.92
+  },
+  {
+    "governorate": "ALX",
+    "en": "Abu Qir",
+    "ar": "أبو قير",
+    "lat": 31.317,
+    "lng": 30.064
+  },
+  {
+    "governorate": "ALX",
+    "en": "Mansheya",
+    "ar": "المنشية",
+    "lat": 31.199,
+    "lng": 29.893
+  },
+  {
+    "governorate": "ALX",
+    "en": "Al Max",
+    "ar": "المكس",
+    "lat": 31.15,
+    "lng": 29.84
+  },
+  {
+    "governorate": "ALX",
+    "en": "Victoria",
+    "ar": "فيكتوريا",
+    "lat": 31.251,
+    "lng": 29.976
+  },
+  {
+    "governorate": "KB",
+    "en": "Banha",
+    "ar": "بنها",
+    "lat": 30.466,
+    "lng": 31.185
+  },
+  {
+    "governorate": "KB",
+    "en": "Shubra El Kheima",
+    "ar": "شبرا الخيمة",
+    "lat": 30.128,
+    "lng": 31.242
+  },
+  {
+    "governorate": "KB",
+    "en": "Qalyub",
+    "ar": "قليوب",
+    "lat": 30.179,
+    "lng": 31.206
+  },
+  {
+    "governorate": "KB",
+    "en": "El Khanka",
+    "ar": "الخانكة",
+    "lat": 30.217,
+    "lng": 31.368
+  },
+  {
+    "governorate": "KB",
+    "en": "Obour City (Qalyubia)",
+    "ar": "العبور (القليوبية)",
+    "lat": 30.229,
+    "lng": 31.48
+  },
+  {
+    "governorate": "KB",
+    "en": "Tukh",
+    "ar": "طوخ",
+    "lat": 30.353,
+    "lng": 31.201
+  },
+  {
+    "governorate": "KB",
+    "en": "Shibin El Qanater",
+    "ar": "شبين القناطر",
+    "lat": 30.313,
+    "lng": 31.32
+  },
+  {
+    "governorate": "KB",
+    "en": "Qaha",
+    "ar": "قها",
+    "lat": 30.283,
+    "lng": 31.201
+  },
+  {
+    "governorate": "DK",
+    "en": "Mansoura",
+    "ar": "المنصورة",
+    "lat": 31.0409,
+    "lng": 31.3785
+  },
+  {
+    "governorate": "DK",
+    "en": "Talkha",
+    "ar": "طلخا",
+    "lat": 31.053,
+    "lng": 31.378
+  },
+  {
+    "governorate": "DK",
+    "en": "Mit Ghamr",
+    "ar": "ميت غمر",
+    "lat": 30.716,
+    "lng": 31.26
+  },
+  {
+    "governorate": "DK",
+    "en": "Aga",
+    "ar": "أجا",
+    "lat": 30.94,
+    "lng": 31.29
+  },
+  {
+    "governorate": "DK",
+    "en": "Sinbillawin",
+    "ar": "السنبلاوين",
+    "lat": 30.888,
+    "lng": 31.46
+  },
+  {
+    "governorate": "DK",
+    "en": "Dikirnis",
+    "ar": "دكرنس",
+    "lat": 31.089,
+    "lng": 31.596
+  },
+  {
+    "governorate": "DK",
+    "en": "Belqas",
+    "ar": "بلقاس",
+    "lat": 31.216,
+    "lng": 31.358
+  },
+  {
+    "governorate": "DK",
+    "en": "Gamasa",
+    "ar": "جمصة",
+    "lat": 31.443,
+    "lng": 31.532
+  },
+  {
+    "governorate": "BH",
+    "en": "Damanhour",
+    "ar": "دمنهور",
+    "lat": 31.034,
+    "lng": 30.468
+  },
+  {
+    "governorate": "BH",
+    "en": "Kafr El Dawwar",
+    "ar": "كفر الدوار",
+    "lat": 31.134,
+    "lng": 30.129
+  },
+  {
+    "governorate": "BH",
+    "en": "Rashid",
+    "ar": "رشيد",
+    "lat": 31.404,
+    "lng": 30.417
+  },
+  {
+    "governorate": "BH",
+    "en": "Edku",
+    "ar": "إدكو",
+    "lat": 31.307,
+    "lng": 30.299
+  },
+  {
+    "governorate": "BH",
+    "en": "Abu Hummus",
+    "ar": "أبو حمص",
+    "lat": 31.092,
+    "lng": 30.315
+  },
+  {
+    "governorate": "BH",
+    "en": "Kom Hamada",
+    "ar": "كوم حمادة",
+    "lat": 30.761,
+    "lng": 30.699
+  },
+  {
+    "governorate": "BH",
+    "en": "Wadi El Natrun",
+    "ar": "وادي النطرون",
+    "lat": 30.38,
+    "lng": 30.34
+  },
+  {
+    "governorate": "GH",
+    "en": "Tanta",
+    "ar": "طنطا",
+    "lat": 30.7865,
+    "lng": 31.0004
+  },
+  {
+    "governorate": "GH",
+    "en": "El Mahalla El Kubra",
+    "ar": "المحلة الكبرى",
+    "lat": 30.97,
+    "lng": 31.166
+  },
+  {
+    "governorate": "GH",
+    "en": "Kafr El Zayat",
+    "ar": "كفر الزيات",
+    "lat": 30.824,
+    "lng": 30.815
+  },
+  {
+    "governorate": "GH",
+    "en": "Zefta",
+    "ar": "زفتى",
+    "lat": 30.714,
+    "lng": 31.244
+  },
+  {
+    "governorate": "GH",
+    "en": "Samannud",
+    "ar": "سمنود",
+    "lat": 30.961,
+    "lng": 31.242
+  },
+  {
+    "governorate": "GH",
+    "en": "Santa",
+    "ar": "السنطة",
+    "lat": 30.747,
+    "lng": 31.13
+  },
+  {
+    "governorate": "MNF",
+    "en": "Shibin El Kom",
+    "ar": "شبين الكوم",
+    "lat": 30.552,
+    "lng": 31.009
+  },
+  {
+    "governorate": "MNF",
+    "en": "Menouf",
+    "ar": "منوف",
+    "lat": 30.465,
+    "lng": 30.93
+  },
+  {
+    "governorate": "MNF",
+    "en": "Sadat City",
+    "ar": "مدينة السادات",
+    "lat": 30.37,
+    "lng": 30.51
+  },
+  {
+    "governorate": "MNF",
+    "en": "Ashmoun",
+    "ar": "أشمون",
+    "lat": 30.297,
+    "lng": 30.976
+  },
+  {
+    "governorate": "MNF",
+    "en": "Quesna",
+    "ar": "قويسنا",
+    "lat": 30.559,
+    "lng": 31.146
+  },
+  {
+    "governorate": "MNF",
+    "en": "Tala",
+    "ar": "تلا",
+    "lat": 30.679,
+    "lng": 30.944
+  },
+  {
+    "governorate": "MNF",
+    "en": "El Bagour",
+    "ar": "الباجور",
+    "lat": 30.431,
+    "lng": 31.037
+  },
+  {
+    "governorate": "SHR",
+    "en": "Zagazig",
+    "ar": "الزقازيق",
+    "lat": 30.5877,
+    "lng": 31.502
+  },
+  {
+    "governorate": "SHR",
+    "en": "10th of Ramadan",
+    "ar": "العاشر من رمضان",
+    "lat": 30.296,
+    "lng": 31.75
+  },
+  {
+    "governorate": "SHR",
+    "en": "Belbeis",
+    "ar": "بلبيس",
+    "lat": 30.417,
+    "lng": 31.562
+  },
+  {
+    "governorate": "SHR",
+    "en": "Minya El Qamh",
+    "ar": "منيا القمح",
+    "lat": 30.514,
+    "lng": 31.348
+  },
+  {
+    "governorate": "SHR",
+    "en": "Abu Kabir",
+    "ar": "أبو كبير",
+    "lat": 30.725,
+    "lng": 31.671
+  },
+  {
+    "governorate": "SHR",
+    "en": "Faqous",
+    "ar": "فاقوس",
+    "lat": 30.728,
+    "lng": 31.797
+  },
+  {
+    "governorate": "SHR",
+    "en": "Hihya",
+    "ar": "ههيا",
+    "lat": 30.671,
+    "lng": 31.588
+  },
+  {
+    "governorate": "KFS",
+    "en": "Kafr El Sheikh City",
+    "ar": "كفر الشيخ",
+    "lat": 31.1107,
+    "lng": 30.9388
+  },
+  {
+    "governorate": "KFS",
+    "en": "Desouk",
+    "ar": "دسوق",
+    "lat": 31.132,
+    "lng": 30.645
+  },
+  {
+    "governorate": "KFS",
+    "en": "Baltim",
+    "ar": "بلطيم",
+    "lat": 31.555,
+    "lng": 31.09
+  },
+  {
+    "governorate": "KFS",
+    "en": "Sidi Salem",
+    "ar": "سيدي سالم",
+    "lat": 31.27,
+    "lng": 30.786
+  },
+  {
+    "governorate": "KFS",
+    "en": "Fuwwah",
+    "ar": "فوه",
+    "lat": 31.203,
+    "lng": 30.55
+  },
+  {
+    "governorate": "DT",
+    "en": "Damietta City",
+    "ar": "دمياط",
+    "lat": 31.4165,
+    "lng": 31.8133
+  },
+  {
+    "governorate": "DT",
+    "en": "New Damietta",
+    "ar": "دمياط الجديدة",
+    "lat": 31.44,
+    "lng": 31.68
+  },
+  {
+    "governorate": "DT",
+    "en": "Ras El Bar",
+    "ar": "رأس البر",
+    "lat": 31.51,
+    "lng": 31.82
+  },
+  {
+    "governorate": "DT",
+    "en": "Faraskur",
+    "ar": "فارسكور",
+    "lat": 31.329,
+    "lng": 31.715
+  },
+  {
+    "governorate": "DT",
+    "en": "Kafr Saad",
+    "ar": "كفر سعد",
+    "lat": 31.354,
+    "lng": 31.687
+  },
+  {
+    "governorate": "PTS",
+    "en": "Port Said City",
+    "ar": "بورسعيد",
+    "lat": 31.2653,
+    "lng": 32.3019
+  },
+  {
+    "governorate": "PTS",
+    "en": "Port Fouad",
+    "ar": "بورفؤاد",
+    "lat": 31.25,
+    "lng": 32.32
+  },
+  {
+    "governorate": "PTS",
+    "en": "El Zohour",
+    "ar": "الزهور",
+    "lat": 31.26,
+    "lng": 32.28
+  },
+  {
+    "governorate": "PTS",
+    "en": "El Manakh",
+    "ar": "المناخ",
+    "lat": 31.27,
+    "lng": 32.295
+  },
+  {
+    "governorate": "IS",
+    "en": "Ismailia City",
+    "ar": "الإسماعيلية",
+    "lat": 30.5965,
+    "lng": 32.2715
+  },
+  {
+    "governorate": "IS",
+    "en": "Fayed",
+    "ar": "فايد",
+    "lat": 30.324,
+    "lng": 32.301
+  },
+  {
+    "governorate": "IS",
+    "en": "El Qantara",
+    "ar": "القنطرة",
+    "lat": 30.857,
+    "lng": 32.317
+  },
+  {
+    "governorate": "IS",
+    "en": "Abu Suwir",
+    "ar": "أبو صوير",
+    "lat": 30.56,
+    "lng": 32.09
+  },
+  {
+    "governorate": "IS",
+    "en": "El Tal El Kebir",
+    "ar": "التل الكبير",
+    "lat": 30.544,
+    "lng": 31.781
+  },
+  {
+    "governorate": "SUZ",
+    "en": "Suez City",
+    "ar": "السويس",
+    "lat": 29.9668,
+    "lng": 32.5498
+  },
+  {
+    "governorate": "SUZ",
+    "en": "Ataqah",
+    "ar": "عتاقة",
+    "lat": 29.95,
+    "lng": 32.43
+  },
+  {
+    "governorate": "SUZ",
+    "en": "Ain Sokhna",
+    "ar": "العين السخنة",
+    "lat": 29.6,
+    "lng": 32.32
+  },
+  {
+    "governorate": "SUZ",
+    "en": "El Arbaeen",
+    "ar": "الأربعين",
+    "lat": 29.975,
+    "lng": 32.54
+  },
+  {
+    "governorate": "FYM",
+    "en": "Faiyum City",
+    "ar": "الفيوم",
+    "lat": 29.3084,
+    "lng": 30.8428
+  },
+  {
+    "governorate": "FYM",
+    "en": "New Faiyum",
+    "ar": "الفيوم الجديدة",
+    "lat": 29.26,
+    "lng": 30.95
+  },
+  {
+    "governorate": "FYM",
+    "en": "Sinnuris",
+    "ar": "سنورس",
+    "lat": 29.408,
+    "lng": 30.866
+  },
+  {
+    "governorate": "FYM",
+    "en": "Ibshaway",
+    "ar": "إبشواي",
+    "lat": 29.362,
+    "lng": 30.684
+  },
+  {
+    "governorate": "FYM",
+    "en": "Tamiya",
+    "ar": "طامية",
+    "lat": 29.476,
+    "lng": 30.96
+  },
+  {
+    "governorate": "BNS",
+    "en": "Beni Suef City",
+    "ar": "بني سويف",
+    "lat": 29.0661,
+    "lng": 31.0994
+  },
+  {
+    "governorate": "BNS",
+    "en": "New Beni Suef",
+    "ar": "بني سويف الجديدة",
+    "lat": 29.07,
+    "lng": 31.13
+  },
+  {
+    "governorate": "BNS",
+    "en": "El Wasta",
+    "ar": "الواسطى",
+    "lat": 29.337,
+    "lng": 31.206
+  },
+  {
+    "governorate": "BNS",
+    "en": "Biba",
+    "ar": "ببا",
+    "lat": 28.922,
+    "lng": 30.984
+  },
+  {
+    "governorate": "BNS",
+    "en": "Nasser",
+    "ar": "ناصر",
+    "lat": 29.15,
+    "lng": 31.13
+  },
+  {
+    "governorate": "MN",
+    "en": "Minya City",
+    "ar": "المنيا",
+    "lat": 28.1099,
+    "lng": 30.7503
+  },
+  {
+    "governorate": "MN",
+    "en": "New Minya",
+    "ar": "المنيا الجديدة",
+    "lat": 28.05,
+    "lng": 30.82
+  },
+  {
+    "governorate": "MN",
+    "en": "Mallawi",
+    "ar": "ملوي",
+    "lat": 27.731,
+    "lng": 30.842
+  },
+  {
+    "governorate": "MN",
+    "en": "Samalut",
+    "ar": "سمالوط",
+    "lat": 28.312,
+    "lng": 30.71
+  },
+  {
+    "governorate": "MN",
+    "en": "Beni Mazar",
+    "ar": "بني مزار",
+    "lat": 28.5,
+    "lng": 30.8
+  },
+  {
+    "governorate": "MN",
+    "en": "Maghagha",
+    "ar": "مغاغة",
+    "lat": 28.648,
+    "lng": 30.842
+  },
+  {
+    "governorate": "MN",
+    "en": "Abu Qurqas",
+    "ar": "أبو قرقاص",
+    "lat": 27.931,
+    "lng": 30.838
+  },
+  {
+    "governorate": "AST",
+    "en": "Asyut City",
+    "ar": "أسيوط",
+    "lat": 27.1809,
+    "lng": 31.1837
+  },
+  {
+    "governorate": "AST",
+    "en": "New Asyut",
+    "ar": "أسيوط الجديدة",
+    "lat": 27.2,
+    "lng": 31.3
+  },
+  {
+    "governorate": "AST",
+    "en": "Dayrut",
+    "ar": "ديروط",
+    "lat": 27.556,
+    "lng": 30.808
+  },
+  {
+    "governorate": "AST",
+    "en": "Manfalut",
+    "ar": "منفلوط",
+    "lat": 27.31,
+    "lng": 30.97
+  },
+  {
+    "governorate": "AST",
+    "en": "Abnub",
+    "ar": "أبنوب",
+    "lat": 27.269,
+    "lng": 31.151
+  },
+  {
+    "governorate": "SHG",
+    "en": "Sohag City",
+    "ar": "سوهاج",
+    "lat": 26.5591,
+    "lng": 31.6957
+  },
+  {
+    "governorate": "SHG",
+    "en": "New Sohag",
+    "ar": "سوهاج الجديدة",
+    "lat": 26.47,
+    "lng": 31.76
+  },
+  {
+    "governorate": "SHG",
+    "en": "Akhmim",
+    "ar": "أخميم",
+    "lat": 26.564,
+    "lng": 31.746
+  },
+  {
+    "governorate": "SHG",
+    "en": "Girga",
+    "ar": "جرجا",
+    "lat": 26.338,
+    "lng": 31.891
+  },
+  {
+    "governorate": "SHG",
+    "en": "Tahta",
+    "ar": "طهطا",
+    "lat": 26.77,
+    "lng": 31.502
+  },
+  {
+    "governorate": "KN",
+    "en": "Qena City",
+    "ar": "قنا",
+    "lat": 26.1551,
+    "lng": 32.716
+  },
+  {
+    "governorate": "KN",
+    "en": "Nag Hammadi",
+    "ar": "نجع حمادي",
+    "lat": 26.049,
+    "lng": 32.242
+  },
+  {
+    "governorate": "KN",
+    "en": "Qus",
+    "ar": "قوص",
+    "lat": 25.914,
+    "lng": 32.763
+  },
+  {
+    "governorate": "KN",
+    "en": "Dishna",
+    "ar": "دشنا",
+    "lat": 26.124,
+    "lng": 32.474
+  },
+  {
+    "governorate": "LX",
+    "en": "Luxor City",
+    "ar": "الأقصر",
+    "lat": 25.6872,
+    "lng": 32.6396
+  },
+  {
+    "governorate": "LX",
+    "en": "New Luxor",
+    "ar": "طيبة الجديدة",
+    "lat": 25.74,
+    "lng": 32.78
+  },
+  {
+    "governorate": "LX",
+    "en": "Esna",
+    "ar": "إسنا",
+    "lat": 25.293,
+    "lng": 32.554
+  },
+  {
+    "governorate": "LX",
+    "en": "Armant",
+    "ar": "أرمنت",
+    "lat": 25.615,
+    "lng": 32.533
+  },
+  {
+    "governorate": "ASN",
+    "en": "Aswan City",
+    "ar": "أسوان",
+    "lat": 24.0889,
+    "lng": 32.8998
+  },
+  {
+    "governorate": "ASN",
+    "en": "Kom Ombo",
+    "ar": "كوم أمبو",
+    "lat": 24.476,
+    "lng": 32.946
+  },
+  {
+    "governorate": "ASN",
+    "en": "Edfu",
+    "ar": "إدفو",
+    "lat": 24.978,
+    "lng": 32.873
+  },
+  {
+    "governorate": "ASN",
+    "en": "Daraw",
+    "ar": "دراو",
+    "lat": 24.404,
+    "lng": 32.923
+  },
+  {
+    "governorate": "BA",
+    "en": "Hurghada",
+    "ar": "الغردقة",
+    "lat": 27.2579,
+    "lng": 33.8116
+  },
+  {
+    "governorate": "BA",
+    "en": "Safaga",
+    "ar": "سفاجا",
+    "lat": 26.729,
+    "lng": 33.936
+  },
+  {
+    "governorate": "BA",
+    "en": "El Gouna",
+    "ar": "الجونة",
+    "lat": 27.395,
+    "lng": 33.678
+  },
+  {
+    "governorate": "BA",
+    "en": "Marsa Alam",
+    "ar": "مرسى علم",
+    "lat": 25.068,
+    "lng": 34.89
+  },
+  {
+    "governorate": "BA",
+    "en": "El Quseir",
+    "ar": "القصير",
+    "lat": 26.104,
+    "lng": 34.278
+  },
+  {
+    "governorate": "WAD",
+    "en": "Kharga",
+    "ar": "الخارجة",
+    "lat": 25.439,
+    "lng": 30.559
+  },
+  {
+    "governorate": "WAD",
+    "en": "Dakhla",
+    "ar": "الداخلة",
+    "lat": 25.493,
+    "lng": 28.979
+  },
+  {
+    "governorate": "WAD",
+    "en": "Farafra",
+    "ar": "الفرافرة",
+    "lat": 27.058,
+    "lng": 27.97
+  },
+  {
+    "governorate": "MT",
+    "en": "Marsa Matrouh",
+    "ar": "مرسى مطروح",
+    "lat": 31.3543,
+    "lng": 27.2373
+  },
+  {
+    "governorate": "MT",
+    "en": "El Alamein",
+    "ar": "العلمين",
+    "lat": 30.83,
+    "lng": 28.95
+  },
+  {
+    "governorate": "MT",
+    "en": "New Alamein",
+    "ar": "العلمين الجديدة",
+    "lat": 30.87,
+    "lng": 28.74
+  },
+  {
+    "governorate": "MT",
+    "en": "Sahel (North Coast)",
+    "ar": "الساحل الشمالي",
+    "lat": 30.95,
+    "lng": 28.6
+  },
+  {
+    "governorate": "MT",
+    "en": "El Dabaa",
+    "ar": "الضبعة",
+    "lat": 31.033,
+    "lng": 28.438
+  },
+  {
+    "governorate": "MT",
+    "en": "Siwa",
+    "ar": "سيوة",
+    "lat": 29.203,
+    "lng": 25.519
+  },
+  {
+    "governorate": "SIN",
+    "en": "El Arish",
+    "ar": "العريش",
+    "lat": 31.1316,
+    "lng": 33.7984
+  },
+  {
+    "governorate": "SIN",
+    "en": "Bir El Abd",
+    "ar": "بئر العبد",
+    "lat": 31.019,
+    "lng": 33.012
+  },
+  {
+    "governorate": "SIN",
+    "en": "Sheikh Zuweid",
+    "ar": "الشيخ زويد",
+    "lat": 31.214,
+    "lng": 34.11
+  },
+  {
+    "governorate": "JS",
+    "en": "Sharm El Sheikh",
+    "ar": "شرم الشيخ",
+    "lat": 27.9158,
+    "lng": 34.3299
+  },
+  {
+    "governorate": "JS",
+    "en": "Dahab",
+    "ar": "دهب",
+    "lat": 28.501,
+    "lng": 34.513
+  },
+  {
+    "governorate": "JS",
+    "en": "El Tor",
+    "ar": "الطور",
+    "lat": 28.236,
+    "lng": 33.623
+  },
+  {
+    "governorate": "JS",
+    "en": "Nuweiba",
+    "ar": "نويبع",
+    "lat": 29.03,
+    "lng": 34.66
+  },
+  {
+    "governorate": "C",
+    "en": "Other area (Cairo)",
+    "ar": "منطقة تانية (القاهرة)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "GZ",
+    "en": "Other area (Giza)",
+    "ar": "منطقة تانية (الجيزة)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "ALX",
+    "en": "Other area (Alexandria)",
+    "ar": "منطقة تانية (الإسكندرية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "KB",
+    "en": "Other area (Qalyubia)",
+    "ar": "منطقة تانية (القليوبية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "DK",
+    "en": "Other area (Dakahlia)",
+    "ar": "منطقة تانية (الدقهلية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "BH",
+    "en": "Other area (Beheira)",
+    "ar": "منطقة تانية (البحيرة)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "GH",
+    "en": "Other area (Gharbia)",
+    "ar": "منطقة تانية (الغربية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "MNF",
+    "en": "Other area (Monufia)",
+    "ar": "منطقة تانية (المنوفية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "SHR",
+    "en": "Other area (Sharqia)",
+    "ar": "منطقة تانية (الشرقية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "KFS",
+    "en": "Other area (Kafr El Sheikh)",
+    "ar": "منطقة تانية (كفر الشيخ)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "DT",
+    "en": "Other area (Damietta)",
+    "ar": "منطقة تانية (دمياط)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "PTS",
+    "en": "Other area (Port Said)",
+    "ar": "منطقة تانية (بورسعيد)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "IS",
+    "en": "Other area (Ismailia)",
+    "ar": "منطقة تانية (الإسماعيلية)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "SUZ",
+    "en": "Other area (Suez)",
+    "ar": "منطقة تانية (السويس)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "FYM",
+    "en": "Other area (Faiyum)",
+    "ar": "منطقة تانية (الفيوم)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "BNS",
+    "en": "Other area (Beni Suef)",
+    "ar": "منطقة تانية (بني سويف)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "MN",
+    "en": "Other area (Minya)",
+    "ar": "منطقة تانية (المنيا)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "AST",
+    "en": "Other area (Asyut)",
+    "ar": "منطقة تانية (أسيوط)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "SHG",
+    "en": "Other area (Sohag)",
+    "ar": "منطقة تانية (سوهاج)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "KN",
+    "en": "Other area (Qena)",
+    "ar": "منطقة تانية (قنا)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "LX",
+    "en": "Other area (Luxor)",
+    "ar": "منطقة تانية (الأقصر)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "ASN",
+    "en": "Other area (Aswan)",
+    "ar": "منطقة تانية (أسوان)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "BA",
+    "en": "Other area (Red Sea)",
+    "ar": "منطقة تانية (البحر الأحمر)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "WAD",
+    "en": "Other area (New Valley)",
+    "ar": "منطقة تانية (الوادي الجديد)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "MT",
+    "en": "Other area (Matrouh)",
+    "ar": "منطقة تانية (مطروح)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "SIN",
+    "en": "Other area (North Sinai)",
+    "ar": "منطقة تانية (شمال سيناء)",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "governorate": "JS",
+    "en": "Other area (South Sinai)",
+    "ar": "منطقة تانية (جنوب سيناء)",
+    "lat": null,
+    "lng": null
   }
 ]

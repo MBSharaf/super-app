@@ -34,7 +34,7 @@ public sealed class ReferenceSeedTests(SeedDatabaseFixture fixture) : IClassFixt
         (await SnapshotAsync()).ShouldBe(first);
 
         first["governorates"].ShouldBe(27);
-        first["areas"].ShouldBe(12);
+        first["areas"].ShouldBe(221);
         first["permissions"].ShouldBe(Permissions.All.Count);
         first["roles"].ShouldBe(13);
         first["settings"].ShouldBeGreaterThan(20);

@@ -10,20 +10,25 @@
     { id: 'store', icon: 'bag', title: 'My own store', text: 'Sell products you already have. You keep the stock, our courier delivers every order, and we take 5% of each sale.' },
     { id: 'both', icon: 'sparkle', title: 'Both', text: 'Run your designs and your own products from one store page and one wallet.' },
   ];
-  const PAYOUTS = ['InstaPay', 'Vodafone Cash', 'Bank transfer'];
+  const PAYOUTS = ['InstaPay', 'Bank transfer'];
   /** Print on demand off (the store sells sellers' own products only): one way to sell, store rules, no design tools */
   const POD = () => SA.config.podEnabled;
   const modes = () => (POD() ? MODES : MODES.filter((m) => m.id === 'store'));
-  const STORE_RULES = [
+  /** How customers pay right now (server setting Features:ShopPayment): cash on delivery, online, or both */
+  const PAY = () => ({
+    cod: ['Customers pay our courier in cash when the order arrives.', 'Customers pay cash on delivery and our courier collects and delivers.'],
+    both: ['Customers pay online or in cash on delivery.', 'Customers pay online or cash on delivery, and our courier collects and delivers.'],
+  }[SA.config.shopPayment] || ['Customers pay online.', 'Customers pay online and our courier collects and delivers.']);
+  const STORE_RULES = () => [
     'Only sell genuine products you own and can hand to our courier.',
     'No fakes or copies of other brands. Every product is reviewed before it goes on sale.',
-    'Customers pay online. Our courier collects from you and delivers. Super Malaab takes 5% of each sale.',
+    `<span>${PAY()[0]}</span> <span>Our courier collects from you and delivers.</span> <span>Super Malaab takes 5% of each sale.</span>`,
     'A product with a problem can be returned within 24 hours of delivery — the refund and the return delivery are on you.',
   ];
-  const STORE_STEPS = [
+  const STORE_STEPS = () => [
     ['user', 'Apply', 'We review your store within one working day.'],
     ['bag', 'Add your products', 'Each product is checked before it goes on sale.'],
-    ['truck', 'We deliver', 'Customers pay online and our courier collects and delivers.'],
+    ['truck', 'We deliver', PAY()[1]],
     ['wallet', 'Get paid', 'Your money is available 24 hours after delivery. Withdraw to InstaPay or your bank.'],
   ];
   const RULES = [
@@ -111,7 +116,7 @@
   const liveStatus = (a) => `<div class="container section-tight ap-page"><div class="page-head"><a class="back-link" href="#/profile">${icon('chevronLeft', 16)} Profile</a><h1 class="h1" style="margin-top:10px">Sell on Super Malaab</h1></div>${L().statusCard(a)}</div>`;
   const applySellerLive = async (data, form, idData) => {
     const answers = {
-      fullName: data.fullName, phone: data.phone, nationalId: data.nationalId, storeName: data.name, handle: null, mode: data.mode, bio: data.bio || null,
+      fullName: L().clean(data.fullName), phone: L().clean(data.phone), nationalId: L().clean(data.nationalId), storeName: L().clean(data.name), handle: null, mode: data.mode, bio: data.bio || null,
       payoutMethod: L().PAYOUT[data.payoutMethod] || data.payoutMethod, payoutDetail: data.payoutDetail, acceptTerms: form.agree.checked,
     };
     const fd = new FormData();
@@ -137,6 +142,9 @@
       if (mine) return SA.pages.sell.welcome(mine);
       const user = S.user.me();
       const suggested = S.sellers.slug(`${user.firstName || user.name}-designs`);
+      // One way to sell (print on demand off): no choice to make, so the step is skipped and the numbers move up
+      const one = modes().length === 1;
+      const n = (i) => (one ? i - 1 : i);
       return `<section class="sell-hero">
         <div class="container sell-hero-in">
           <div>
@@ -146,7 +154,7 @@
             <div class="sell-points">
               <span>${icon('shirt', 18)} We print &amp; ship</span><span>${icon('wallet', 18)} Profit in your wallet</span><span>${icon('trend', 18)} Levels with real perks</span>
             </div>` : `<h1 class="display">Sell your products<br />to Egypt’s players and fans</h1>
-            <p class="lead">Open a store for the sports gear you already have. Customers pay online, our courier delivers, and your money lands in your wallet.</p>
+            <p class="lead"><span>Open a store for the sports gear you already have.</span> <span>${PAY()[1]}</span> <span>Your money lands in your wallet.</span></p>
             <div class="sell-points">
               <span>${icon('truck', 18)} We deliver</span><span>${icon('wallet', 18)} Paid to your wallet</span><span>${icon('tag', 18)} 5% per sale</span>
             </div>`}
@@ -157,30 +165,27 @@
       <div class="container sell-layout">
         ${rejected ? L().statusCard(rejected) : ''}
         <form id="sell-form" class="stack" style="--gap:20px" ${rejected ? `data-code="${esc(rejected.code)}"` : ''} novalidate>
-          <section class="panel panel-pad">
-            <h2 class="h4">1. How do you want to sell?</h2>
+          ${one ? `<input type="hidden" name="mode" value="${modes()[0].id}" />` : `<section class="panel panel-pad">
+            <h2 class="h4">${n(1)}. How do you want to sell?</h2>
             <div class="sell-modes" role="radiogroup" aria-label="How you sell">${modes().map((m, i) => `<label class="sell-mode"><input type="radio" name="mode" value="${m.id}" ${i === 0 ? 'checked' : ''} />
               <span class="sell-mode-ic">${icon(m.icon, 22)}</span><b>${m.title}</b><span class="small soft">${m.text}</span><span class="radio-dot"></span></label>`).join('')}</div>
-          </section>
+          </section>`}
           <section class="panel panel-pad">
-            <h2 class="h4">2. Your store</h2>
+            <h2 class="h4">${n(2)}. Your store</h2>
             <div class="form-grid" style="margin-top:14px">
               <div class="field"><label for="sl-name">Store name</label><input class="input" id="sl-name" name="name" maxlength="40" required placeholder="e.g. Koora Ink" /><span class="field-hint">Your store link is made from the name — you can change it later.</span><p class="field-error" data-err="name"></p></div>
-              <div class="field span-2"><label for="sl-bio">About your store <span class="muted">(optional)</span></label><textarea class="textarea" id="sl-bio" name="bio" maxlength="280" placeholder="What do you make? Who is it for?"></textarea><span class="field-hint" data-count>0 / 280</span></div>
+              <div class="field span-2"><label for="sl-bio">About your store <span class="muted">(optional)</span></label><textarea class="textarea" id="sl-bio" name="bio" maxlength="400" placeholder="${esc(SA.i18n?.t?.('What do you sell? Who is it for?') || 'What do you sell? Who is it for?')}"></textarea><span class="field-hint" data-count>0 / 400</span></div>
             </div>
           </section>
-          ${SA.ui.sellerIdFields(user)}
+          ${SA.ui.sellerIdFields(user, `${n(3)}. About you`)}
           <section class="panel panel-pad">
-            <h2 class="h4">3. How we pay you</h2>
-            <div class="form-grid" style="margin-top:14px">
-              <div class="field"><label for="sl-pm">Method</label><select class="select" id="sl-pm" name="payoutMethod">${PAYOUTS.filter((p) => !L().live() || L().PAYOUT[p]).map((p) => `<option>${p}</option>`).join('')}</select></div>
-              <div class="field"><label for="sl-pd">Account</label><input class="input" id="sl-pd" name="payoutDetail" maxlength="60" placeholder="Phone, email or IBAN" dir="ltr" /><p class="field-error" data-err="payoutDetail"></p></div>
-            </div>
-            <p class="small soft sell-note">${icon('info', 14)} ${POD() ? `Profit becomes available ${S.pod.cfg().holdDays} days after delivery.` : 'Your money becomes available 24 hours after delivery (the return window).'} You can withdraw from <b>${money(S.pod.cfg().minWithdraw)}</b>.</p>
+            <h2 class="h4">${n(4)}. How we pay you</h2>
+            <div class="form-grid" style="margin-top:14px">${L().payoutFields(PAYOUTS)}</div>
+            <p class="small soft sell-note">${icon('info', 14)} <span>${POD() ? `Profit becomes available ${S.pod.cfg().holdDays} days after delivery.` : 'Your money becomes available 24 hours after delivery (the return window).'}</span> <span>Minimum withdrawal:</span> <b>${money(S.pod.cfg().minWithdraw)}</b></p>
           </section>
           <section class="panel panel-pad">
-            <h2 class="h4">4. Seller rules</h2>
-            <ul class="sell-rules">${(POD() ? RULES : STORE_RULES).map((r) => `<li>${icon('shield', 16)}<span>${r}</span></li>`).join('')}</ul>
+            <h2 class="h4">${n(5)}. Seller rules</h2>
+            <ul class="sell-rules">${(POD() ? RULES : STORE_RULES()).map((r) => `<li>${icon('shield', 16)}<span>${r}</span></li>`).join('')}</ul>
             <label class="choice" style="margin-top:14px"><input type="checkbox" name="agree" /><span class="radio-dot" style="border-radius:6px"></span><span class="grow"><b>I agree to the <a class="link" href="#/legal/seller" target="_blank" rel="noopener">seller agreement</a></b></span></label><p class="field-error" data-err="agree"></p>
           </section>
           <button class="btn btn-blaze btn-lg sell-submit" type="submit">${icon('sparkle', 18)} Send my application</button>
@@ -193,7 +198,7 @@
             <div style="margin-top:12px">${ladder(-1)}</div>
           </div>` : `<div class="panel panel-pad">
             <h2 class="h4">How it works</h2>
-            <div class="stack" style="--gap:12px;margin-top:12px">${STORE_STEPS.map(([ic, t, x]) => `<div class="sell-next-item">${icon(ic, 20)}<div><b>${t}</b><p class="small soft">${x}</p></div></div>`).join('')}</div>
+            <div class="stack" style="--gap:12px;margin-top:12px">${STORE_STEPS().map(([ic, t, x]) => `<div class="sell-next-item">${icon(ic, 20)}<div><b>${t}</b><p class="small soft">${x}</p></div></div>`).join('')}</div>
           </div>`}
         </aside>
       </div>`;
@@ -253,11 +258,22 @@
 
       const idData = { idPhoto: '', idPhotoBack: '' };
       SA.ui.bindSellerId(el, idData);
-      form.bio.addEventListener('input', () => (el.querySelector('[data-count]').textContent = `${form.bio.value.length} / 280`));
+      form.bio.addEventListener('input', () => (el.querySelector('[data-count]').textContent = `${form.bio.value.length} / 400`));
+      L().bindPayout(form);
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = SA.core.utils.formData(form);
+        // Every problem shows at once, in the person's language, before anything is sent
+        const errs = {};
+        L().personErrors(data, idData, 'fullName', errs);
+        const name = L().clean(data.name);
+        if (name.length < 2 || name.length > 40) errs.name = 'The store name customers will see (2–40 letters).';
+        L().payoutErrors(data, errs);
+        if (!form.agree.checked) errs.agree = 'Tick the box to accept the agreement.';
+        if (L().stopIf(form, errs)) return;
+        SA.ui.showApplyErrors(form, {});
+        data.payoutDetail = L().payoutDetail(data);
         if (L().live()) {
           const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
           try {

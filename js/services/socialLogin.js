@@ -46,7 +46,10 @@
         const why = String(err?.message || err || '').slice(0, 140);
         // Closing the account picker on purpose says nothing; anything else shows Google's reason too
         if (!/^(user )?cancel(l)?ed|USER_CANCELED|activity is cancelled by the user/i.test(why)) {
-          SA.ui.overlay.toast(`${SA.i18n?.t?.('Google sign-in didn’t work. Try again or use your email.') || 'Google sign-in didn’t work. Try again or use your email.'} (${SA.core.utils.esc(why)})`, { type: 'error' });
+          // Google's long technical text becomes a short code the team can look up; the full text stays in the log
+          const code = (why.match(/\[(\d+)\]/) || [])[1];
+          const msg = SA.i18n?.t?.('Google sign-in didn’t work. Try again or use your email.') || 'Google sign-in didn’t work. Try again or use your email.';
+          SA.ui.overlay.toast(code ? `${msg} (${SA.i18n?.t?.('code') || 'code'} ${code})` : `${msg} (${SA.core.utils.esc(why.slice(0, 80))})`, { type: 'error' });
         }
         console.warn('google native', err);
       } finally { btn.disabled = false; }

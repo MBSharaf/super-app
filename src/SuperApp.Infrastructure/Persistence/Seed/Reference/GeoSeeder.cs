@@ -7,7 +7,7 @@ namespace SuperApp.Infrastructure.Persistence.Seed.Reference;
 public sealed class GeoSeeder(AppDbContext db) : ISeeder
 {
     private sealed record GovernorateRow(string Code, string En, string Ar);
-    private sealed record AreaRow(string Governorate, string En, string Ar, decimal Lat, decimal Lng);
+    private sealed record AreaRow(string Governorate, string En, string Ar, decimal? Lat, decimal? Lng);
 
     public int Order => 1;
 
